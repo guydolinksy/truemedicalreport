@@ -1,0 +1,17 @@
+services:
+  backend:
+    build:
+      target: dev
+      context: ./
+      dockerfile: backend/Dockerfile
+
+  frontend:
+    build:
+      target: dev
+      context: ./
+      dockerfile: frontend/Dockerfile
+
+  proxy:
+    image: nginx:latest
+    volumes:
+      - "./proxy/conf/:/etc/nginx.conf/"
