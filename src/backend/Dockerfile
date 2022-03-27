@@ -4,4 +4,6 @@ WORKDIR /opt
 COPY backend /opt/backend
 RUN python -m pip install -e /opt/backend
 
+ENV DEBUG=1
+
 CMD python -m tmr

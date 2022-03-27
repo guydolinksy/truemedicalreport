@@ -1,3 +1,7 @@
+import os
+
 import uvicorn
 
-uvicorn.run("tmr.app:app", host="0.0.0.0", port=8000)
+debug = bool(os.environ.get('DEBUG'))
+
+uvicorn.run("tmr.app:app", host="0.0.0.0", port=8000, debug=debug)

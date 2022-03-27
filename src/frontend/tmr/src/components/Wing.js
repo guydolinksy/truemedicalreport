@@ -4,8 +4,7 @@ import {Row, Col, Card} from 'antd';
 import {Patient} from "./Patient";
 
 
-export const Wing = (data) => {
-    const wingId = data.wingId;
+export const Wing = ({id}) => {
     const blocks = [
         {
             name: 'מסדרון ימין',
@@ -24,7 +23,7 @@ export const Wing = (data) => {
     const unassignedPatients = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
     let patientCount = "N/A";
-    Axios.get(`/api/wing/${wingId}/patient_count`).then(response => {
+    Axios.get(`/api/wing/${id}/patient_count`).then(response => {
         patientCount = response;
     }).catch(error => {
         console.error(error)
