@@ -66,8 +66,8 @@ def init_patients():
             'loading': 'פענוח סיטי',
             'measures': {'pulse': 80, 'blood_pressure': "140/80", 'temperature': 38},
             'wing': '5321',
-            'bed_num': bed_number
-
+            'bed_num': bed_number,
+            'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (bed_number == 8 or bed_number == 5) else []
         })
 
 
