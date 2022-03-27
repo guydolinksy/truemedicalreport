@@ -12,10 +12,12 @@ class MedicalDal:
         return self.db.patients.count_documents({"wing_id": ObjectId(wing_id)})
 
     def patients_in_wing(self, wing_id: str) -> dict:
-        return self.db.patients.find({"wing_id": ObjectId(wing_id)}, {"bed_num": 1})
+        for patient in self.db.patients.find({"wing_id": ObjectId(wing_id)}, {"bed_num": 1}):
+            yield dict(_id=patient.pop('_id').binary.hex(), **patient)
 
     def get_wing_details(self, wing_id: str) -> dict:
-        return self.db.wings.find_one({"_id": ObjectId(wing_id)})
+        wing = self.db.wings.find_one({"_id": ObjectId(wing_id)})
+        return dict(_id=wing.pop('_id').binary.hex(), **wing)
 
     def get_patient_info_by_id(self, patient_id: str) -> dict:
         return dumps(self.db.patients.find_one({"_id": ObjectId(patient_id)}))

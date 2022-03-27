@@ -20,8 +20,7 @@ def patient_count(wing_id: str, dal: MedicalDal = Depends(medical_dal)) -> int:
 def wing_structure_with_patient_info(wing_id: str, dal: MedicalDal = Depends(medical_dal)) -> dict:
     patients = dal.patients_in_wing(wing_id)
     wing_structure = dal.get_wing_details(wing_id)
-    return dumps(dict(patients=patients, **wing_structure))
-
+    return dict(patients=patients, **wing_structure)
 
 @wing_router.get("/{wing_id}/details")
 def wing_details(wing_id: str, dal: MedicalDal = Depends(medical_dal)) -> dict:
