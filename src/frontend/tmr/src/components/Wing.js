@@ -5,7 +5,7 @@ import {Patient} from "./Patient";
 import {useNavigate} from 'react-router';
 
 export const Wing = ({id}) => {
-    const [wingData, setWingData] = useState({patientCount: "N/A", unassignedPatients: [], blocks: []});
+    const [wingData, setWingData] = useState({patients: [], blocks: []});
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -29,10 +29,10 @@ export const Wing = ({id}) => {
                 </Card>
             </Col>)}
         </Row>
-        <Card bordered={false} bodyStyle={{backgroundColor: "#f9f0ff"}} title={wingData.patientCount}>
+        <Card bordered={false} bodyStyle={{backgroundColor: "#f9f0ff"}} title={wingData.patients.length}>
             <Row gutter={16}>
-                {wingData.unassignedPatients.map((patientId, i) =>
-                    <Col key={i} span={4}><Patient id={patientId}/></Col>)}
+                {wingData.patients.filter(({id, bed}) => !bed).map(({id}, i) =>
+                    <Col key={id} span={4}><Patient id={id}/></Col>)}
             </Row>
         </Card>
 
