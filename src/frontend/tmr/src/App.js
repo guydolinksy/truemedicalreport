@@ -1,22 +1,29 @@
 import './App.css';
-import {Wing} from './components/Wing'
+import React from 'react-dom'
 import {ConfigProvider, Layout} from 'antd';
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import {WingView, WING_URL} from "./pages/WingView";
+import {DepartmentView, DEPARTMENT_URL} from "./pages/DepartmentView";
 
 const {Header, Content} = Layout;
 
 function App() {
-    const wingId = 0;
     return (
         <ConfigProvider direction="rtl">
             <div className="App" style={{backgroundColor: "#dcdcdc"}} dir={"rtl"}>
-                <Layout>
-                    <Header>
+                <Router>
+                    <Layout>
+                        <Header>
 
-                    </Header>
-                    <Content>
-                        <Wing wingId={wingId} />
-                    </Content>
-                </Layout>
+                        </Header>
+                        <Content>
+                            <Routes>
+                                <Route path={WING_URL} element={<WingView/>}/>
+                                <Route path={DEPARTMENT_URL} element={<DepartmentView/>}/>
+                            </Routes>
+                        </Content>
+                    </Layout>
+                </Router>
             </div>
         </ConfigProvider>
     );
