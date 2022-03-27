@@ -1,25 +1,24 @@
-import logo from './logo.svg';
 import './App.css';
+import {Wing} from './components/Wing'
+import {ConfigProvider, Layout} from 'antd';
+
+const {Header, Content} = Layout;
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    return (
+        <ConfigProvider direction="rtl">
+            <div className="App" style={{backgroundColor: "#dcdcdc"}} dir={"rtl"}>
+                <Layout>
+                    <Header>
+
+                    </Header>
+                    <Content>
+                        <Wing/>
+                    </Content>
+                </Layout>
+            </div>
+        </ConfigProvider>
+    );
 }
 
 export default App;
