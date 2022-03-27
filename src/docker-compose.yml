@@ -14,6 +14,8 @@ services:
       target: dev
       context: ./
       dockerfile: frontend/Dockerfile
+    volumes:
+      - "./frontend/tmr/src:/opt/frontend/tmr/src"
 
   proxy:
     image: nginx:latest
