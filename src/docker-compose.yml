@@ -4,6 +4,10 @@ services:
       target: dev
       context: ./
       dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./backend/tmr:/opt/backend/tmr"
 
   frontend:
     build:
