@@ -66,11 +66,11 @@ def init_patients():
             'flagged': False,
             'loading': 'פענוח סיטי',
             'measures': {'pulse': 80, 'blood_pressure': "140/80", 'temperature': 38},
-            'wing': db.wings.find_one({'name': 'אגף א׳'})["_id"],
+            'wing_id': db.wings.find_one({'name': 'אגף א׳'})["_id"],
             'bed_num': bed_number,
             'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (bed_number == 8 or bed_number == 5) else []
         })
-    for bed_number in range(17, 32):
+    for bed_number in range(17, 33):
         db.patients.insert_one({
             'name': 'ישראל ישראלי',
             'complaint': 'קוצר נשימה',
@@ -78,11 +78,11 @@ def init_patients():
             'flagged': False,
             'loading': 'פענוח סיטי',
             'measures': {'pulse': 80, 'blood_pressure': "140/80", 'temperature': 38},
-            'wing': db.wings.find_one({'name': 'אגף ב׳'})["_id"],
+            'wing_id': db.wings.find_one({'name': 'אגף ב׳'})["_id"],
             'bed_num': bed_number,
             'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (bed_number == 25 or bed_number == 19) else []
         })
-    for bed_number in range(32, 49):
+    for bed_number in range(33, 49):
         db.patients.insert_one({
             'name': 'ישראל ישראלי',
             'complaint': 'קוצר נשימה',
@@ -90,7 +90,7 @@ def init_patients():
             'flagged': False,
             'loading': 'פענוח סיטי',
             'measures': {'pulse': 80, 'blood_pressure': "140/80", 'temperature': 38},
-            'wing': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
+            'wing_id': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
             'bed_num': bed_number,
             'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (bed_number == 38 or bed_number == 45) else []
         })
