@@ -1,9 +1,11 @@
 import React from 'react';
+import Axios from 'axios';
 import {Row, Col, Card} from 'antd';
 import {Patient} from "./Patient";
 
 
-export const Wing = () => {
+export const Wing = (data) => {
+    const wingId = data.wingId;
     const blocks = [
         {
             name: 'מסדרון ימין',
@@ -21,6 +23,13 @@ export const Wing = () => {
     ];
     const unassignedPatients = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
+    let patientCount = "N/A";
+    Axios.get(`/api/wing/${wingId}/patient_count`).then(response => {
+        patientCount = response;
+    }).catch(error => {
+        console.error(error)
+    })
+
     return <Col style={{padding: 16}}>
         <Row gutter={16} style={{marginBottom: 16}}>{blocks.map((block, i) =>
             <Col key={i} span={24 / blocks.length}>
@@ -33,7 +42,7 @@ export const Wing = () => {
                 </Card>
             </Col>)}
         </Row>
-        <Card bordered={false} bodyStyle={{backgroundColor: "#f9f0ff"}}>
+        <Card bordered={false} bodyStyle={{backgroundColor: "#f9f0ff"}} title={patientCount}>
             <Row gutter={16}>
                 {unassignedPatients.map((patientId, i) =>
                     <Col key={i} span={4}><Patient id={patientId}/></Col>)}
