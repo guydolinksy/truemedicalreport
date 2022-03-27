@@ -26,3 +26,8 @@ def wing_structure_with_patient_info(wing_id: str, dal: MedicalDal = Depends(med
 @wing_router.get("/{wing_id}/details")
 def wing_details(wing_id: str, dal: MedicalDal = Depends(medical_dal)) -> dict:
     return dal.get_wing_details(wing_id)
+
+
+@wing_router.get("/")
+def get_all_wings_names(dal: MedicalDal = Depends(medical_dal)) -> dict:
+    return dal.get_all_wings_names()
