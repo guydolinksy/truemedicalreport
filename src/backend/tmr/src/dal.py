@@ -4,7 +4,6 @@ from bson.json_util import dumps
 from pymongo.database import Database
 
 
-
 @dataclass
 class MedicalDal:
     db: Database
@@ -13,10 +12,10 @@ class MedicalDal:
         return self.db.patients.count_documents({"wing_id": ObjectId(wing_id)})
 
     def patients_in_wing(self, wing_id: str) -> dict:
-        return dumps(self.db.patients.find({"wing_id": ObjectId(wing_id)}))
+        return self.db.patients.find({"wing_id": ObjectId(wing_id)}, {"bed_num": 1})
 
     def get_wing_details(self, wing_id: str) -> dict:
-        return dumps(self.db.wings.find_one({"_id": ObjectId(wing_id)}))
+        return self.db.wings.find_one({"_id": ObjectId(wing_id)})
 
     def get_patient_info_by_id(self, patient_id: str) -> dict:
         return dumps(self.db.patients.find_one({"_id": ObjectId(patient_id)}))
