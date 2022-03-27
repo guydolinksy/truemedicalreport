@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
-import {Avatar, Badge, Button, Card, Carousel, Input, Tooltip} from "antd";
+import {Button, Card, Carousel, Input, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faClock,

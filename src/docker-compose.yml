@@ -15,3 +15,14 @@ services:
     image: nginx:latest
     volumes:
       - "./proxy/conf/:/etc/nginx.conf/"
+
+  bootstrap:
+    build:
+      target: dev
+      context: ./
+      dockerfile: bootstrap/Dockerfile
+
+  medical-db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
