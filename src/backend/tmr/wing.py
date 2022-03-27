@@ -16,5 +16,5 @@ def patient_count(wing_id: int, dal: MedicalDal = Depends(medical_dal)) -> int:
 
 
 @wing_router.get("/{wing_id}")
-def wing_structure(wing_id: int, dal: MedicalDal = Depends(medical_dal)) -> dict:
-    return dal.wing_structure(wing_id)
+def patients_in_wing(wing_id: int, dal: MedicalDal = Depends(medical_dal)) -> dict:
+    return dal.patients_in_wing(wing_id)
