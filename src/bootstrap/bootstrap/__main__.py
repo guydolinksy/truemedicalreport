@@ -55,4 +55,21 @@ def init_wings():
     })
 
 
+def init_patients():
+    db.patients.delete_many({})
+    for bed_number in range(1, 47):
+        db.patients.insert_one({
+            'name': 'ישראל ישראלי',
+            'complaint': 'קוצר נשימה',
+            'awating': 'פענוח סיטי',
+            'flagged': False,
+            'loading': 'פענוח סיטי',
+            'measures': {'pulse': 80, 'blood_pressure': "140/80", 'temperature': 38},
+            'wing': '5321',
+            'bed_num': bed_number
+
+        })
+
+
 init_wings()
+init_patients()
