@@ -23,3 +23,6 @@ class MedicalDal:
 
     def get_patient_info_by_id(self, patient_id: str) -> dict:
         return json.loads(dumps(self.db.patients.find_one({"_id": ObjectId(patient_id)})))
+
+    def get_patient_info_by_bed(self, bed: str) -> dict:
+        return json.loads(dumps(self.db.patients.find_one({"bed": bed})))

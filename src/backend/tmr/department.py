@@ -17,5 +17,5 @@ def get_department_overview(dal: MedicalDal = Depends(medical_dal)) -> dict:
     for wing in wings_data:
         patient_count = dal.patient_count_in_wing(wing["_id"]["$oid"])
         wing["patient_count"] = patient_count
-        wing["waiting_petient"] = (patient_count / 2)
+        wing["waiting_petient"] = int(patient_count / 2)
     return wings_data
