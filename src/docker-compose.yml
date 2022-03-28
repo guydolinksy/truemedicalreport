@@ -14,6 +14,8 @@ services:
       target: dev
       context: ./
       dockerfile: frontend/Dockerfile
+    ports:
+      - "3000:3000"
     volumes:
       - "./frontend/tmr/src:/opt/frontend/tmr/src"
 
