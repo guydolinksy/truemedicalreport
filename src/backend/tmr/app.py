@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 
-from .wing import wing_router
-from .patient import patient_router
-from .department import department_router
+from tmr.routes.wing import wing_router
+from tmr.routes.patient import patient_router
+from tmr.routes.department import department_router
 
 
 def create_app() -> FastAPI:

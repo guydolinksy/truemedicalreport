@@ -7,17 +7,18 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - "./medical_dal/tmr:/opt/medical_dal/tmr"
+      - "./backend/tmr:/opt/backend/tmr"
 
-  medical_db:
+
+  medical_dal:
     build:
       target: dev
       context: ./
       dockerfile: medical_dal/Dockerfile
     ports:
-      - "8000:8000"
+      - "8050:8050"
     volumes:
-      - "./backend/tmr:/opt/backend/tmr"
+      - "./medical_dal/tmr:/opt/medical_dal/tmr"
 
   frontend:
     build:
