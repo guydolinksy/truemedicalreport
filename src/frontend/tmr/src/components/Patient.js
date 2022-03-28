@@ -1,5 +1,5 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
-import {Button, Card, Carousel, Input, Tooltip} from "antd";
+import React, {useRef, useState} from "react";
+import {Button, Card, Carousel, Input, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faClock,
@@ -9,57 +9,20 @@ import {
     faUserNurse,
     faWarning,
 } from "@fortawesome/free-solid-svg-icons";
-import {AlertOutlined, CheckOutlined, FlagOutlined, UserOutlined} from '@ant-design/icons'
-import Axios from 'axios';
-import useWebSocket from "react-use-websocket";
+import {AlertOutlined, CheckOutlined, FlagOutlined, UserOutlined} from '@ant-design/icons';
+import {createContext} from "./DataContext";
 
-const Data = React.createContext(null);
-
-const DataContext = ({url, updateURL, socketURL, defaultValue, fetchOnMount, ...props}) => {
-    const [{loadingData, value}, setValue] = useState({loading: false, value: defaultValue});
-    const {lastMessage} = useWebSocket(`wss://${window.location.host}/api/ws`, {queryParams: {url: socketURL}});
-
-    useEffect(() => {
-        if (!fetchOnMount) return;
-        Axios.get(url).then(response => {
-            setValue({loading: false, value: response.data});
-        }).catch(error => {
-            console.error(error)
-        })
-    }, [url, fetchOnMount, lastMessage]);
-
-    const getData = useCallback((path) =>
-            path.reduce((data, name) => data ? data[name] : undefined, value),
-        [value]);
-
-    const updateData = useCallback((path, newValue) => {
-        const deepReplace = (path, data, value) => {
-            if (!path.length) {
-                return value
-            }
-            const key = path.pop()
-            return Object.assign({}, data, {[key]: deepReplace(path, data[key], value)});
-        }
-        setValue(prevState => {
-            const newData = deepReplace(path.slice().reverse(), prevState.value, newValue)
-            Axios.post(updateURL, {data: newData, path: path, value: newValue}).catch(error => {
-                console.error(error)
-            });
-            return {loading: prevState.loading, value: newData}
-        });
-    }, [updateURL]);
-
-    return <Data.Provider value={{getData: getData, updateData: updateData, loadingData: loadingData}}>
-        {props.children({getData: getData, updateData: updateData, loadingData: loadingData, ...props})}
-    </Data.Provider>
-}
-const withData = Component => ({...props}) => {
-    return <Data.Consumer>{({getData, updateData, loadingData}) =>
-        <Component loadingData={loadingData} getData={getData} updateData={updateData} {...props}/>
-    }</Data.Consumer>
-};
-
-const PatientData = withData(({path, hover, icon, size, editable, loadingData, getData, updateData}) => {
+const patientDataContext = createContext(null);
+const PatientData = patientDataContext.withData(({
+                                                     path,
+                                                     hover,
+                                                     icon,
+                                                     size,
+                                                     editable,
+                                                     loadingData,
+                                                     getData,
+                                                     updateData
+                                                 }) => {
     const [editing, setEditing] = useState(false)
 
     const content = <span style={{userSelect: "none"}}><FontAwesomeIcon icon={icon}/>&nbsp;{getData(path)}</span>;
@@ -85,11 +48,14 @@ const dataItems = [
     {path: ['esiScore'], icon: faUserNurse, hover: 'ערך ESI אחרון', showMinimized: true},
 ]
 
-export const Patient = ({bed, id, defaultData}) => {
+export const Patient = ({bed, id}) => {
     const slider = useRef(null);
     const uri = bed ? `/api/patient/bed/${bed}` : `/api/patient/id/${id}`
-    return <DataContext url={uri} updateURL={uri} socketURL={uri} fetchOnMount defaultValue={defaultData}>
+    return <patientDataContext.Provider url={uri} updateURL={uri} socketURL={uri} fetchOnMount defaultValue={{}}>
         {({loadingData, getData, updateData}) => {
+            if (loadingData)
+                return <Spin/>
+
             let avatar;
             if ((getData(['warnings']) || []).length)
                 avatar = <Button shape={"circle"} type={"primary"} icon={<AlertOutlined/>} danger/>
@@ -145,5 +111,5 @@ export const Patient = ({bed, id, defaultData}) => {
                 </Carousel>
             </Card>
         }}
-    </DataContext>
+    </patientDataContext.Provider>
 };
