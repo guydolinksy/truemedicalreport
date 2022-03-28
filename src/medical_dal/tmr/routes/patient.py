@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
 
-from .src.dal import MedicalDal
+from ..dal.dal import MedicalDal
 
 patient_router = APIRouter()
 

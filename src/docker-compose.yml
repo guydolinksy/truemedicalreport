@@ -5,9 +5,20 @@ services:
       context: ./
       dockerfile: backend/Dockerfile
     ports:
-      - "8000:8000"
+      - "8080:8080"
     volumes:
       - "./backend/tmr:/opt/backend/tmr"
+
+
+  medical_dal:
+    build:
+      target: dev
+      context: ./
+      dockerfile: medical_dal/Dockerfile
+    ports:
+      - "8050:8050"
+    volumes:
+      - "./medical_dal/tmr:/opt/medical_dal/tmr"
 
   frontend:
     build:

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from pymongo import MongoClient
 from bson.json_util import dumps
 
-from .src.dal import MedicalDal
+from ..dal.dal import MedicalDal
 
 wing_router = APIRouter()
 
