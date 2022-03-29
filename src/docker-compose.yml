@@ -9,9 +9,8 @@ services:
     volumes:
       - "./backend/tmr:/opt/backend/tmr"
     depends_on:
-      - medical-db
       - medical_dal
-
+      - broadcast-redis
 
   medical_dal:
     build:
@@ -24,6 +23,7 @@ services:
       - "./medical_dal/tmr:/opt/medical_dal/tmr"
     depends_on:
       - medical-db
+      - broadcast-redis
 
   frontend:
     build:
@@ -34,6 +34,8 @@ services:
       - "3000:3000"
     volumes:
       - "./frontend/tmr/src:/opt/frontend/tmr/src"
+    depends_on:
+      - backend
 
   proxy:
     image: nginx:latest
@@ -54,8 +56,15 @@ services:
       dockerfile: bootstrap/Dockerfile
     volumes:
       - "./bootstrap/bootstrap:/opt/bootstrap/bootstrap"
+    depends_on:
+      - medical_dal
 
   medical-db:
     image: mongo:latest
     ports:
       - "27017:27017"
+
+  broadcast-redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"

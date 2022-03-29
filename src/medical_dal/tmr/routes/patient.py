@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
 from ..dal.dal import MedicalDal
@@ -19,3 +19,9 @@ def get_patient_info_by_id(bed: str, dal: MedicalDal = Depends(medical_dal)) -> 
 @patient_router.get("/id/{patient_id}")
 def get_patient_info_by_id(patient_id: str, dal: MedicalDal = Depends(medical_dal)) -> dict:
     return dal.get_patient_info_by_id(patient_id)
+
+
+@patient_router.post("/id/{patient_id}")
+def update_patient_info_by_id(patient_id: str, path=Body(...), value=Body(...), data=Body(...),
+                              dal: MedicalDal = Depends(medical_dal)) -> bool:
+    return dal.update_patient_info_by_id(patient_id, path, value, data)

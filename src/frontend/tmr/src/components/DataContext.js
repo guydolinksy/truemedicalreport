@@ -9,18 +9,20 @@ export const createContext = (defaultValue) => {
     const Provider = ({url, updateURL, socketURL, defaultValue = undefined, fetchOnMount = false, ...props}) => {
 
         const [{loadingData, value}, setValue] = useState({loading: false, value: defaultValue});
-        const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/ws`, {queryParams: {url: socketURL}});
+        const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/ws`, {queryParams: {key: socketURL}});
         const navigate = useNavigate();
 
         useEffect(() => {
             console.log(lastMessage)
             if (!fetchOnMount) return;
-            Axios.get(url).then(response => {
+            const s = Axios.CancelToken.source()
+            Axios.get(url, {cancelToken: s.token}).then(response => {
                 setValue({loading: false, value: response.data});
             }).catch(error => {
                 navigate('/');
                 console.error(error)
             })
+            return () => s.cancel()
         }, [url, fetchOnMount, lastMessage]);
 
         const getData = useCallback((path) =>
