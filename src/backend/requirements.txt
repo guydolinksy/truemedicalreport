@@ -2,3 +2,7 @@ fastapi==0.75.0
 pymongo==4.0.2
 uvicorn==0.17.6
 requests
+broadcaster
+asyncio_redis
+logbook
+websockets

@@ -50,7 +50,7 @@ const dataItems = [
 
 export const Patient = ({bed, id}) => {
     const slider = useRef(null);
-    const uri = bed ? `/api/patient/bed/${bed}` : `/api/patient/id/${id}`
+    const uri = bed ? `/api/patients/bed/${bed}` : `/api/patients/id/${id}`
     return <patientDataContext.Provider url={uri} updateURL={uri} socketURL={uri} fetchOnMount defaultValue={{}}>
         {({loadingData, getData, updateData}) => {
             if (loadingData)
