@@ -9,10 +9,11 @@ export const createContext = (defaultValue) => {
     const Provider = ({url, updateURL, socketURL, defaultValue = undefined, fetchOnMount = false, ...props}) => {
 
         const [{loadingData, value}, setValue] = useState({loading: false, value: defaultValue});
-        const {lastMessage} = useWebSocket(`wss://${window.location.host}/api/ws`, {queryParams: {url: socketURL}});
+        const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/ws`, {queryParams: {url: socketURL}});
         const navigate = useNavigate();
 
         useEffect(() => {
+            console.log(lastMessage)
             if (!fetchOnMount) return;
             Axios.get(url).then(response => {
                 setValue({loading: false, value: response.data});
