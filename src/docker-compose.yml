@@ -54,8 +54,19 @@ services:
       dockerfile: bootstrap/Dockerfile
     volumes:
       - "./bootstrap/bootstrap:/opt/bootstrap/bootstrap"
+    depends_on:
+      - chameleon-db
 
   medical-db:
     image: mongo:latest
     ports:
       - "27017:27017"
+
+  chameleon-db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - "1433:1433"
+    environment:
+     - SA_PASSWORD=Password123
+     - ACCEPT_EULA=Y
+     - MSSQL_TCP_PORT=1433
