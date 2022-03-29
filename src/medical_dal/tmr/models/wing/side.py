@@ -1,7 +1,7 @@
 from pydantic import BaseModel
+from typing import List
 
 
 class Side(BaseModel):
     name: str
-    beds: list[str]
-
+    beds: List[str]
