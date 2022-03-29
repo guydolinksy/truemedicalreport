@@ -4,6 +4,7 @@ from typing import List
 
 
 class Wing(BaseModel):
+    _id: str
     name: str
     blocks: List[Isle]
 

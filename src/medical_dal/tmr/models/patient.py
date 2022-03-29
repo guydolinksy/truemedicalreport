@@ -1,10 +1,10 @@
-from pydantic import BaseModel, Field, StrictBool
-from measures import Measures
+from pydantic import BaseModel, Field
+from data_models.measures.measures import Measures
 from py_objectid import PyObjectId
 
 
 class Patient(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    _id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str = Field(...)
     complaint: str = Field(...)
     awating: str = Field(...)
