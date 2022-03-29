@@ -19,3 +19,8 @@ def get_patient_info_by_id(bed: str, dal: MedicalDal = Depends(medical_dal)) -> 
 @patient_router.get("/id/{patient_id}")
 def get_patient_info_by_id(patient_id: str, dal: MedicalDal = Depends(medical_dal)) -> dict:
     return dal.get_patient_info_by_id(patient_id)
+
+
+@patient_router.get("/{patient_id}/measures")
+def get_patient_measures(patient_id: str, dal: MedicalDal = Depends(medical_dal)) -> dict:
+    return dal.get_patient_measures(patient_id)
