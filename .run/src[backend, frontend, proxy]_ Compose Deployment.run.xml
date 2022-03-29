@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="src[backend, frontend, proxy, bootstrap, medical-db]: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+  <configuration default="false" name="src[backend, frontend, proxy, bootstrap, medical-db, medical_dal]: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
     <deployment type="docker-compose.yml">
       <settings>
         <option name="envFilePath" value="" />
@@ -11,6 +11,7 @@
             <option value="proxy" />
             <option value="bootstrap" />
             <option value="medical-db" />
+            <option value="medical_dal" />
           </list>
         </option>
         <option name="sourceFilePath" value="src/docker-compose.yml" />
