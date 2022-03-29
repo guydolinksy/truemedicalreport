@@ -1,3 +1,7 @@
-fastapi==0.75.0
-pymongo==4.0.2
-uvicorn==0.17.6
+fastapi~=0.75.0
+requests~=2.27.1
+uvicorn~=0.17.6
+setuptools~=60.2.0
+pymongo~=4.0.2
+pydantic~=1.9.0
+pydentic~=0.0.1.dev3
