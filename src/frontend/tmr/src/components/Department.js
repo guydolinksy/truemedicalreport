@@ -11,7 +11,7 @@ import {createContext} from "./DataContext";
 
 const departmentDataContext = createContext(null);
 export const Department = () => {
-    const uri = `/api/department`;
+    const uri = `/api/departments/`;
     return <departmentDataContext.Provider url={uri} updateURL={uri} socketURL={uri} fetchOnMount defaultValue={[]}>
         {({loadingData, getData}) => <Row gutter={16}>
             {loadingData ? <Spin/> : (getData([]) || []).map((wing, i) => {

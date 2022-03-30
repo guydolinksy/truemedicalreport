@@ -9,7 +9,9 @@ services:
     volumes:
       - "./backend/tmr:/opt/backend/tmr"
       - "./common/data_models:/opt/common/data_models"
-
+    depends_on:
+      - medical_dal
+      - broadcast-redis
 
   medical_dal:
     build:
@@ -21,6 +23,9 @@ services:
     volumes:
       - "./medical_dal/tmr:/opt/medical_dal/tmr"
       - "./common/data_models:/opt/common/data_models"
+    depends_on:
+      - medical-db
+      - broadcast-redis
 
   frontend:
     build:
@@ -31,6 +36,8 @@ services:
       - "3000:3000"
     volumes:
       - "./frontend/tmr/src:/opt/frontend/tmr/src"
+    depends_on:
+      - backend
 
   proxy:
     image: nginx:latest
@@ -39,6 +46,10 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    depends_on:
+      - backend
+      - frontend
+      - medical_dal
 
   bootstrap:
     build:
@@ -47,8 +58,25 @@ services:
       dockerfile: bootstrap/Dockerfile
     volumes:
       - "./bootstrap/bootstrap:/opt/bootstrap/bootstrap"
+    depends_on:
+      - medical_dal
+      - chameleon-db
 
   medical-db:
     image: mongo:latest
     ports:
       - "27017:27017"
+
+  broadcast-redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  chameleon-db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - "1433:1433"
+    environment:
+     - SA_PASSWORD=Password123
+     - ACCEPT_EULA=Y
+     - MSSQL_TCP_PORT=1433

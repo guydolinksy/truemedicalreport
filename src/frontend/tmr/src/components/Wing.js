@@ -8,12 +8,12 @@ import {createContext} from "./DataContext";
 const wingDataContext = createContext(null);
 
 export const Wing = ({id}) => {
-    const uri = `/api/wing/${id}`;
+    const uri = `/api/wings/${id}`;
     return <wingDataContext.Provider url={uri} updateURL={uri} socketURL={uri} fetchOnMount
                                      defaultValue={{patients: [], structure: {blocks: []}}}>
         {({loadingData, getData}) => {
             const assignedPatients = (getData(['patients']) || []).filter(({id, bed}) => bed)
-            const title = <span>מטופלים במיטות: {assignedPatients.length}</span>
+            const title = <span>אגף: {getData(['structure', 'name'])} מטופלים במיטות: {assignedPatients.length}</span>
             const unassignedPatients = (getData(['patients']) || []).filter(({id, bed}) => !bed)
             const overflowTitle = <span>מטופלים ללא מיטה: {unassignedPatients.length}</span>
 
@@ -36,8 +36,9 @@ export const Wing = ({id}) => {
                 <Card bordered={false} bodyStyle={{backgroundColor: "#f9f0ff"}} title={overflowTitle}>
                     <Row gutter={16}>
                         {unassignedPatients.map((patient, i) =>
-                            <Col key={patient['_id']['$oid']} flex={1} style={{minWidth: 300}}><Patient
-                                id={patient['_id']['$oid']}/></Col>)}
+                            <Col key={patient['_id']['$oid']} flex={"1 1 300"}>
+                                <Patient id={patient['_id']['$oid']}/>
+                            </Col>)}
                     </Row>
                 </Card>
             </Col>
