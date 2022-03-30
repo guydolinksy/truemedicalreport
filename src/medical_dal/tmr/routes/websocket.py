@@ -1,5 +1,6 @@
 import asyncio
 from asyncio import Condition
+from dataclasses import dataclass
 
 from broadcaster import Broadcast
 from fastapi import WebSocket, APIRouter
@@ -7,6 +8,11 @@ from logbook import Logger
 from starlette.websockets import WebSocketState
 
 logger = Logger(__name__)
+
+
+@dataclass
+class ValuedCondition(Condition):
+    value: str
 
 
 class EventManager(object):
@@ -20,7 +26,7 @@ class EventManager(object):
             async with event:
                 return await event.wait()
 
-    async def notify(self, key):
+    async def notify(self, key, value):
         event = self.events.setdefault(key, Condition())
         async with event:
             event.notify_all()
@@ -44,7 +50,7 @@ def websocket_api(broadcast_backing, ws_uri='/ws', channel='sync'):
         async def listen():
             async with broadcast.subscribe(channel=channel) as subscriber:
                 async for event in subscriber:
-                    await events.notify(event.message)
+                    await events.notify(*event.message)
 
         asyncio.create_task(listen())
 
@@ -74,8 +80,8 @@ def websocket_api(broadcast_backing, ws_uri='/ws', channel='sync'):
                 await websocket.send_json(wait.result())
                 wait = None
 
-    async def notify_(key):
-        await broadcast.publish(channel=channel, message=key)
+    async def notify_(key, value):
+        await broadcast.publish(channel=channel, message=(key, value))
 
     return router_, notify_
 

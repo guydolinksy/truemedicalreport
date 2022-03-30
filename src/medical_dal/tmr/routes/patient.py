@@ -25,3 +25,13 @@ def get_patient_info_by_id(patient_id: str, dal: MedicalDal = Depends(medical_da
 def update_patient_info_by_id(patient_id: str, path=Body(...), value=Body(...), data=Body(...),
                               dal: MedicalDal = Depends(medical_dal)) -> bool:
     return dal.update_patient_info_by_id(patient_id, path, value, data)
+
+
+@patient_router.post("/id/{patient_id}/warning")
+async def warn_patient_by_id(patient_id: str, warning=Body(...), dal: MedicalDal = Depends(medical_dal)) -> bool:
+    update_result = dal.append_warning_to_patient_by_id(patient_id, warning)
+    if not update_result:
+        return update_result
+
+    await notify(patient_id)  # Todo: is this correct?
+    return True
