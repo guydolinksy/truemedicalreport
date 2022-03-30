@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from bson import objectid
+from datetime import datetime
 
 db = MongoClient(host='medical-db').tmr
 
@@ -68,7 +69,27 @@ def init_patients():
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
             'flagged': False,
-            'measures': {'pulse': 80, 'bloodPressure': "140/80", 'temperature': 38},
+            'measures': {
+                "temperature": {"value": 38, "is_live": False, "min": 24.3, "max": 39.1,
+                                "time": datetime.now().isoformat()},
+                "blood_pressure": {
+                    "systolic": {
+                        "value": 140,
+                        "min": 90,
+                        "max": 190,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    },
+                    "dyastolic": {
+                        "value": 140,
+                        "min": 90,
+                        "max": 190,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    }
+                },
+                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 42, "max": 200}
+            },
             'esiScore': bed_number % 5,
             'wing_id': db.wings.find_one({'name': 'אגף א׳'})["_id"],
             'bed': str(bed_number),
@@ -80,7 +101,27 @@ def init_patients():
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
             'flagged': False,
-            'measures': {'pulse': 80, 'bloodPressure': "140/80", 'temperature': 38},
+            'measures': {
+                "temperature": {"value": 38, "is_live": False, "min": 24.3, "max": 39.1,
+                                "time": datetime.now().isoformat()},
+                "blood_pressure": {
+                    "systolic": {
+                        "value": 140,
+                        "min": 90,
+                        "max": 190,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    },
+                    "dyastolic": {
+                        "value": 140,
+                        "min": 90,
+                        "max": 190,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    }
+                },
+                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 42, "max": 200}
+            },
             'esiScore': bed_number % 5,
             'wing_id': db.wings.find_one({'name': 'אגף ב׳'})["_id"],
             'bed': str(bed_number),
@@ -92,7 +133,27 @@ def init_patients():
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
             'flagged': False,
-            'measures': {'pulse': 80, 'bloodPressure': "140/80", 'temperature': 38},
+            'measures': {
+                "temperature": {"value": 38, "is_live": False, "min": 24.3, "max": 39.1,
+                                "time": datetime.now().isoformat()},
+                "blood_pressure": {
+                    "systolic": {
+                        "value": 140,
+                        "min": 90,
+                        "max": 190,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    },
+                    "dyastolic": {
+                        "value": 140,
+                        "min": 90,
+                        "max": 190,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    }
+                },
+                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 42, "max": 200}
+            },
             'esiScore': bed_number % 5,
             'wing_id': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
             'bed': str(bed_number),
@@ -104,7 +165,27 @@ def init_patients():
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
             'flagged': False,
-            'measures': {'pulse': 80, 'bloodPressure': "140/80", 'temperature': 38},
+            'measures': {
+                "temperature": {"value": 38, "is_live": False, "min": 24.3, "max": 39.1,
+                                "time": datetime.now().isoformat()},
+                "blood_pressure": {
+                    "systolic": {
+                        "value": 140,
+                        "min": 90,
+                        "max": 190,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    },
+                    "dyastolic": {
+                        "value": 140,
+                        "min": 90,
+                        "max": 190,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    }
+                },
+                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 42, "max": 200}
+            },
             'esiScore': i % 5,
             'wing_id': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
             'bed': None,
@@ -117,7 +198,27 @@ def init_patients():
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
             'flagged': False,
-            'measures': {'pulse': 80, 'bloodPressure': "140/80", 'temperature': 38},
+            'measures': {
+                "temperature": {"value": 38.2, "is_live": False, "min": 24.3, "max": 39.1,
+                                "time": datetime.now().isoformat()},
+                "blood_pressure": {
+                    "systolic": {
+                        "value": 140,
+                        "min": 90,
+                        "max": 190,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    },
+                    "dyastolic": {
+                        "value": 140,
+                        "min": 90,
+                        "max": 190,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    }
+                },
+                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 42, "max": 200}
+            },
             'esiScore': i % 5,
             'wing_id': db.wings.find_one({'name': 'אגף מהלכים'})["_id"],
             'bed': None,

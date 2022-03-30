@@ -1,7 +1,7 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 
 class Side(BaseModel):
     name: str
-    beds: List[str]
+    beds: Optional[List[str]]

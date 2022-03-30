@@ -8,6 +8,7 @@ services:
       - "8080:8080"
     volumes:
       - "./backend/tmr:/opt/backend/tmr"
+      - "./common/data_models:/opt/common/data_models"
 
 
   medical_dal:
@@ -19,6 +20,7 @@ services:
       - "8050:8050"
     volumes:
       - "./medical_dal/tmr:/opt/medical_dal/tmr"
+      - "./common/data_models:/opt/common/data_models"
 
   frontend:
     build:
