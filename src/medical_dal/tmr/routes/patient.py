@@ -33,6 +33,10 @@ def get_patient_measures(patient_id: str, dal: MedicalDal = Depends(medical_dal)
 
 
 @patient_router.post("/id/{patient_id}")
-def update_patient_info_by_id(patient_id: str, path=Body(...), value=Body(...), data=Body(...),
-                              dal: MedicalDal = Depends(medical_dal)) -> bool:
-    return dal.update_patient_info_by_id(patient_id, path, value, data)
+def update_patient_info_by_id(patient_id: str, update_object: dict, dal: MedicalDal = Depends(medical_dal)) -> bool:
+    return dal.update_patient_info_by_id(patient_id, update_object)
+
+
+@patient_router.post("/bed/{bed}")
+def update_patient_info_by_bed(bed: str, update_object: dict, dal: MedicalDal = Depends(medical_dal)) -> bool:
+    return dal.update_patient_info_by_bed(bed, update_object)
