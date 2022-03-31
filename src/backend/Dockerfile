@@ -1,6 +1,10 @@
 FROM python:3.10-alpine AS dev
 WORKDIR /opt
 
+COPY common /opt/common
+RUN python -m pip install -e /opt/common
+
+
 COPY backend /opt/backend
 RUN python -m pip install -e /opt/backend
 

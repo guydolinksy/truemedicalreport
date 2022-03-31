@@ -1,4 +1,4 @@
-from pydentic import BaseModel
+from pydantic import BaseModel
 from datetime import datetime
 
 
@@ -8,4 +8,3 @@ class Temperature(BaseModel):
     is_live: bool
     min: float
     max: float
-

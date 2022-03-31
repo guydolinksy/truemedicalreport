@@ -12,9 +12,10 @@ export const Wing = ({id}) => {
     return <wingDataContext.Provider url={uri} updateURL={uri} socketURL={uri} fetchOnMount
                                      defaultValue={{patients: [], structure: {blocks: []}}}>
         {({loadingData, getData}) => {
-            const assignedPatients = (getData(['patients']) || []).filter(({id, bed}) => bed)
-            const title = <span>אגף: {getData(['structure', 'name'])} מטופלים במיטות: {assignedPatients.length}</span>
-            const unassignedPatients = (getData(['patients']) || []).filter(({id, bed}) => !bed)
+        console.log(getData(['patients_beds']))
+            const assignedPatients = (getData(['patients_beds']) || []).filter(({id, bed}) => bed)
+            const title = <span>{getData(['structure', 'name'])} מטופלים במיטות: {assignedPatients.length}</span>
+            const unassignedPatients = (getData(['patients_beds']) || []).filter(({id, bed}) => !bed)
             const overflowTitle = <span>מטופלים ללא מיטה: {unassignedPatients.length}</span>
 
             const blocks = (getData(['structure', 'blocks']) || []);
@@ -36,8 +37,8 @@ export const Wing = ({id}) => {
                 <Card bordered={false} bodyStyle={{backgroundColor: "#f9f0ff"}} title={overflowTitle}>
                     <Row gutter={16}>
                         {unassignedPatients.map((patient, i) =>
-                            <Col key={patient['_id']['$oid']} flex={"1 1 300"}>
-                                <Patient id={patient['_id']['$oid']}/>
+                            <Col key={patient['oid']} flex={"1 1 300"}>
+                                <Patient id={patient['oid']}/>
                             </Col>)}
                     </Row>
                 </Card>
