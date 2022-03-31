@@ -1,7 +1,7 @@
 from pydantic import BaseModel
-from blood_pressure.blood_pressure import BloodPressure
-from temperature import Temperature
-from pulse import Pulse
+from .blood_pressure.blood_pressure import BloodPressure
+from data_models.measures.temperature import Temperature
+from data_models.measures.pulse import Pulse
 
 
 class Measures(BaseModel):
@@ -21,5 +21,6 @@ class Measures(BaseModel):
             Temperature: lambda temperature: {"value": {temperature.value},
                                               "is_valid": {temperature.min <= temperature.value <= temperature.max},
                                               "time": {temperature.time}},
-            Pulse: lambda pulse: {"value": pulse.value, "is_valid": pulse.min <= pulse.value <= pulse.max}
+            Pulse: lambda pulse: {"value": pulse.value, "is_valid": pulse.min <= pulse.value <= pulse.max,
+                                  "time": pulse.time}
         }
