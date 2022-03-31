@@ -12,7 +12,6 @@ export const Wing = ({id}) => {
     return <wingDataContext.Provider url={uri} updateURL={uri} socketURL={uri} fetchOnMount
                                      defaultValue={{patients: [], structure: {blocks: []}}}>
         {({loadingData, getData}) => {
-        console.log(getData(['patients_beds']))
             const assignedPatients = (getData(['patients_beds']) || []).filter(({id, bed}) => bed)
             const title = <span>{getData(['structure', 'name'])} מטופלים במיטות: {assignedPatients.length}</span>
             const unassignedPatients = (getData(['patients_beds']) || []).filter(({id, bed}) => !bed)

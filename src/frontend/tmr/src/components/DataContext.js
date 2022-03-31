@@ -40,7 +40,7 @@ export const createContext = (defaultValue) => {
             setValue(prevState => {
                 const newData = deepReplace(path.slice().reverse(), prevState.value, newValue)
                 Axios.post(updateURL, {data: newData, path: path, value: newValue}).catch(error => {
-                    console.error(error)
+                    console.error("update error",error)
                 });
                 return {loading: prevState.loading, value: newData}
             });
