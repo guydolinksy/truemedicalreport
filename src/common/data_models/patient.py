@@ -9,7 +9,7 @@ class Patient(BaseModel):
     oid: Optional[str] = Field(default_factory=ObjectId)
     name: Optional[str]
     complaint: Optional[str]
-    awating: Optional[str]
+    awaiting: Optional[str]
     flagged: Optional[bool] = False
     measures: Optional[Measures]
     esi_score: Optional[int]

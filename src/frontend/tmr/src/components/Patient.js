@@ -42,10 +42,10 @@ const PatientData = patientDataContext.withData(({
 
 
 const dataItems = [
-    {path: ['measures', 'temperature'], icon: faTemperatureHalf, hover: 'מדידת חום אחרונה', showMinimized: true},
-    {path: ['measures', 'bloodPressure'], icon: faHeart, hover: 'מדידת לחץ דם אחרונה', showMinimized: true},
-    {path: ['measures', 'pulse'], icon: faHeartPulse, hover: 'מדידת דופק אחרונה', showMinimized: true},
-    {path: ['esiScore'], icon: faUserNurse, hover: 'ערך ESI אחרון', showMinimized: true},
+    {path: ['measures', 'temperature','value'], icon: faTemperatureHalf, hover: 'מדידת חום אחרונה', showMinimized: true},
+    {path: ['measures', 'blood_pressure','value'], icon: faHeart, hover: 'מדידת לחץ דם אחרונה', showMinimized: true},
+    {path: ['measures', 'pulse','value'], icon: faHeartPulse, hover: 'מדידת דופק אחרונה', showMinimized: true},
+    {path: ['esi_score'], icon: faUserNurse, hover: 'ערך ESI אחרון', showMinimized: true},
 ]
 
 export const Patient = ({bed, id}) => {
