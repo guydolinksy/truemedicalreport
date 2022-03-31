@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 import requests
 from data_models.patient_count import PatientCount
-from data_models.wing.wing import Wing
+from data_models.wing.wing import Wing, WingSummarize
 from typing import List
 
 wing_router = APIRouter()
@@ -10,14 +10,12 @@ wing_router = APIRouter()
 @wing_router.get("/{wing_id}/patient_count", response_model=PatientCount)
 def patient_count(wing_id: str) -> PatientCount:
     return PatientCount(
-        patient_count=requests.get(f"http://medical_dal:8050/medical_dal/wing/{wing_id}/patient_count").json())
+        **requests.get(f"http://medical_dal:8050/medical_dal/wing/{wing_id}/patient_count").json())
 
 
-@wing_router.get("/{wing_id}")
-def wing_structure_with_patient_info(wing_id: str) -> dict:
-    res = requests.get(f"http://medical_dal:8050/medical_dal/wing/{wing_id}").json()
-    print(res)
-    return res
+@wing_router.get("/{wing_id}", response_model=WingSummarize, response_model_exclude_unset=True)
+def wing_structure_with_patient_info(wing_id: str) -> WingSummarize:
+    return WingSummarize(**requests.get(f"http://medical_dal:8050/medical_dal/wing/{wing_id}").json())
 
 
 @wing_router.get("/{wing_id}/details", response_model=Wing)

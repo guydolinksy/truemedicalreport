@@ -70,25 +70,25 @@ def init_patients():
             'awaiting': 'פענוח סיטי',
             'flagged': False,
             'measures': {
-                "temperature": {"value": 38, "is_live": False, "min": 24.3, "max": 39.1,
+                "temperature": {"value": 38.5, "is_live": False, "min": 36.5, "max": 37.5,
                                 "time": datetime.now().isoformat()},
                 "blood_pressure": {
                     "systolic": {
                         "value": 140,
                         "min": 90,
-                        "max": 190,
+                        "max": 120,
                         "time": datetime.now().isoformat(),
                         "is_live": False
                     },
                     "dyastolic": {
-                        "value": 140,
-                        "min": 90,
-                        "max": 190,
+                        "value": 80,
+                        "min": 60,
+                        "max": 100,
                         "time": datetime.now().isoformat(),
                         "is_live": False
                     }
                 },
-                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 42, "max": 200}
+                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 60, "max": 90}
             },
             'esiScore': bed_number % 5,
             'wing_id': db.wings.find_one({'name': 'אגף א׳'})["_id"],

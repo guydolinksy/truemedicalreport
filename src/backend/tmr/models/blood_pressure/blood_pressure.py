@@ -10,6 +10,12 @@ class BloodPressure(BaseModel):
     class Config:
         orm_mode = True
         json_encoders = {
-            Dyastolic: lambda pressure: {"is_valid": {pressure.min <= pressure.value <= pressure.max}, },
-            Systolic: lambda pressure: {"is_valid": {pressure.min <= pressure.value <= pressure.max}, },
+            Dyastolic: lambda pressure: {"is_valid": {pressure.min <= pressure.value <= pressure.max},
+                                         "value": pressure.value,
+                                         "time": pressure.time,
+                                         "is_live": pressure.is_live},
+            Systolic: lambda pressure: {"is_valid": {pressure.min <= pressure.value <= pressure.max},
+                                        "value": pressure.value,
+                                        "time": pressure.time,
+                                        "is_live": pressure.is_live},
         }

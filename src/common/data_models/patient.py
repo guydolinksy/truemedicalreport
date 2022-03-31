@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from data_models.measures.measures import Measures
-from data_models.py_objectid import PyObjectId
 from bson.objectid import ObjectId
+from json import loads
 
 
 class Patient(BaseModel):
@@ -19,3 +19,6 @@ class Patient(BaseModel):
 
     class Config:
         orm_mode = True
+        json_encoders = {
+            Measures: lambda measures: loads(measures.json(models_as_dict=False))
+        }
