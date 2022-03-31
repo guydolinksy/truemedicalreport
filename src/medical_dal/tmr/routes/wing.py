@@ -29,8 +29,3 @@ def wing_structure_with_patient_info(wing_id: str, dal: MedicalDal = Depends(med
 def wing_details(wing_id: str, dal: MedicalDal = Depends(medical_dal)) -> Wing:
     res = dal.get_wing_details(wing_id)
     return Wing(oid=res["_id"]["$oid"], **res)
-
-# @wing_router.get("/", response_model=List[Wing], response_model_exclude_unset=True)
-# def get_all_wings_names(dal: MedicalDal = Depends(medical_dal)) -> List[Wing]:
-#     return [Wing(oid=wing["_id"]["$oid"], name=wing["name"]).dict(exclude_unset=True) for wing in
-#             dal.get_all_wings_names()]
