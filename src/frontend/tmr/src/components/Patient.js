@@ -1,4 +1,4 @@
-import React, {useRef, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import {Button, Card, Carousel, Input, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
@@ -25,17 +25,25 @@ const PatientData = patientDataContext.withData(({
                                                  }) => {
     const [editing, setEditing] = useState(false)
 
-    const content = <span style={{userSelect: "none"}}><FontAwesomeIcon icon={icon}/>&nbsp;{getData(path)}</span>;
-    return <Tooltip overlay={hover}>
+    const [value, setValue] = useState(getData(path))
+    useEffect(() => {
+        setValue(getData(path));
+        setEditing(false)
+    }, [path, getData])
+
+    const onSave = useCallback(() => {
+        updateData(path, value);
+        setEditing(false)
+    }, [path, value, updateData])
+
+    const content = <span style={{userSelect: "none"}}><FontAwesomeIcon icon={icon}/>&nbsp;{value}</span>;
+    return loadingData ? <Spin/> : <Tooltip overlay={hover}>
         {!editable ? content : !editing ?
-            <Button type={"text"} onClick={() => setEditing(true)}>{content}</Button> :
+            <Button style={{padding: 0}} type={"text"} onClick={() => setEditing(true)}>{content}</Button> :
             <Input.Group compact>
-                <Input size={size} style={{width: 150}}
-                       value={getData(path)}
-                       onChange={e => updateData(path, e.target.value)}
-                       onPressEnter={() => setEditing(false)}
-                />
-                <Button type="primary" size={size} onClick={() => setEditing(false)} icon={<CheckOutlined/>}/>
+                <Input size={size} style={{width: 150}} value={value}
+                       onChange={e => setValue(e.target.value)} onPressEnter={onSave}/>
+                <Button type="primary" size={size} onClick={onSave} icon={<CheckOutlined/>}/>
             </Input.Group>}
     </Tooltip>
 });
@@ -48,7 +56,9 @@ const dataItems = [
     {path: ['esiScore'], icon: faUserNurse, hover: 'ערך ESI אחרון', showMinimized: true},
 ]
 
-export const Patient = ({bed, id}) => {
+const {Meta} = Card;
+
+export const Patient = ({bed, id, style}) => {
     const slider = useRef(null);
     const uri = bed ? `/api/patients/bed/${bed}` : `/api/patients/id/${id}`
     return <patientDataContext.Provider url={uri} updateURL={uri} socketURL={uri} fetchOnMount defaultValue={{}}>
@@ -56,18 +66,16 @@ export const Patient = ({bed, id}) => {
             if (loadingData)
                 return <Spin/>
 
-            let avatar;
+            let avatar, props = {shape: 'circle'};
             if ((getData(['warnings']) || []).length)
-                avatar = <Button shape={"circle"} type={"primary"} icon={<AlertOutlined/>} danger/>
+                avatar = <Button {...props} icon={<AlertOutlined/>} danger/>
             else if (getData(['flagged']))
-                avatar = <Button shape={"circle"} type={"primary"} icon={<FlagOutlined/>} danger
-                                 onClick={() => updateData(['flagged'], false)}/>
+                avatar =
+                    <Button {...props} icon={<FlagOutlined/>} danger onClick={() => updateData(['flagged'], false)}/>
             else if (bed)
-                avatar = <Button shape={"circle"} type={"primary"}
-                                 onClick={() => updateData(['flagged'], true)}>{bed}</Button>
+                avatar = <Button {...props} onClick={() => updateData(['flagged'], true)}>{bed}</Button>
             else
-                avatar = <Button shape={"circle"} type={"primary"} icon={<UserOutlined/>}
-                                 onClick={() => updateData(['flagged'], true)}/>;
+                avatar = <Button  {...props} icon={<UserOutlined/>} onClick={() => updateData(['flagged'], true)}/>;
 
             const title = <span>{avatar}&nbsp;{getData(['name'])}</span>
             const actions = dataItems.filter(({path, showMinimized}) => (bed || showMinimized)).map(
@@ -79,7 +87,7 @@ export const Patient = ({bed, id}) => {
 
             return <Card type={"inner"} size={"small"} headStyle={{backgroundColor: "#e6fffb"}}
                          bodyStyle={{padding: 0}}
-                         style={{marginBottom: 16}}
+                         style={{border: "1px solid black", margin: 8, maxWidth: '400px', ...style}}
                          title={title} actions={actions} extra={extra}>
                 <Carousel ref={slider} autoplay dotPosition={"top"}>
                     <div>
@@ -94,7 +102,7 @@ export const Patient = ({bed, id}) => {
                             {getData(['complaint'])}
                         </div>
                     </div>
-                    {(getData(['warnings']) || []).map((warning, i) =>
+                    {(getData(['warnings']) || []).slice(0,0).map((warning, i) =>
                         <div key={i}>
                             <div
                                 style={{

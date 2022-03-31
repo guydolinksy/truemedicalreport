@@ -23,7 +23,7 @@ export const createContext = (defaultValue) => {
                 console.error(error)
             })
             return () => s.cancel()
-        }, [url, fetchOnMount, lastMessage]);
+        }, [url, fetchOnMount, lastMessage, navigate]);
 
         const getData = useCallback((path) =>
                 path.reduce((data, name) => data ? data[name] : undefined, value),

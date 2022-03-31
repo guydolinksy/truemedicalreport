@@ -12,7 +12,7 @@ function App() {
         <ConfigProvider direction="rtl">
             <div className="App" style={{backgroundColor: "#dcdcdc"}} dir={"rtl"}>
                 <Router>
-                    <Layout>
+                    <Layout style={{height: '100vh'}}>
                         <Header>
 
                         </Header>

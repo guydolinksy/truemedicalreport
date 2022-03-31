@@ -1,9 +1,7 @@
-import React, {useEffect, useState} from "react";
-import Axios from "axios";
+import React from "react";
 import {Card, Col, Row, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUser, faUserDoctor} from "@fortawesome/free-solid-svg-icons";
-import {useNavigate} from "react-router";
 import {FullscreenOutlined} from "@ant-design/icons";
 import {Link} from "react-router-dom";
 

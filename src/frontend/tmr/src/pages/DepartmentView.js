@@ -1,6 +1,4 @@
-import React, {useEffect, useState} from 'react';
-import Axios from 'axios';
-import {Row, Col, Card} from 'antd';
+import React from 'react';
 import {Department} from "../components/Department";
 
 export const DEPARTMENT_URL = '/'
