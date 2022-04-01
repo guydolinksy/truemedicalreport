@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class Dyastolic(BaseModel):
+class Diastolic(BaseModel):
     value: int
     time: datetime
     is_live: bool

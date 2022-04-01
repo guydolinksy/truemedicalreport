@@ -12,13 +12,13 @@ class Measures(BaseModel):
     class Config:
         orm_mode = True
         json_encoders = {
-            BloodPressure: lambda pressure: {"value": f"{pressure.systolic.value}/{pressure.dyastolic.value}",
+            BloodPressure: lambda pressure: {"value": f"{pressure.systolic.value}/{pressure.diastolic.value}",
                                              "is_valid": (
                                                                  pressure.systolic.min <= pressure.systolic.value <= pressure.systolic.max) and
                                                          (
-                                                                 pressure.dyastolic.min <= pressure.dyastolic.value <= pressure.dyastolic.max),
-                                             "time": min(pressure.systolic.time, pressure.dyastolic.time),
-                                             "is_live": pressure.systolic.is_live and pressure.dyastolic.is_valid},
+                                                                 pressure.diastolic.min <= pressure.diastolic.value <= pressure.diastolic.max),
+                                             "time": min(pressure.systolic.time, pressure.diastolic.time),
+                                             "is_live": pressure.systolic.is_live and pressure.diastolic.is_valid},
             Temperature: lambda temperature: {"value": temperature.value,
                                               "is_valid": temperature.min <= temperature.value <= temperature.max,
                                               "time": temperature.time},

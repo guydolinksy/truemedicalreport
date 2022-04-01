@@ -16,14 +16,13 @@ def medical_dal() -> MedicalDal:
 @patient_router.get("/bed/{bed}", response_model=Patient)
 def get_patient_info_by_bed(bed: str, dal: MedicalDal = Depends(medical_dal)) -> Patient:
     patient_dal = dal.get_patient_info_by_bed(bed)
-    return Patient(oid=patient_dal["_id"]["$oid"],
-                   wing=patient_dal["wing_id"]["$oid"], **patient_dal)
+    return Patient(oid=patient_dal["_id"]["$oid"], wing=patient_dal["wing_id"]["$oid"], **patient_dal)
 
 
-@patient_router.get("/id/{patient_id}")
-def get_patient_info_by_id(patient_id: str, dal: MedicalDal = Depends(medical_dal)) -> dict:
+@patient_router.get("/id/{patient_id}", response_model=Patient)
+def get_patient_info_by_id(patient_id: str, dal: MedicalDal = Depends(medical_dal)) -> Patient:
     patient_dal = dal.get_patient_info_by_id(patient_id)
-    return dict(oid=patient_dal["_id"]["$oid"], wing=patient_dal["wing_id"]["$oid"], **patient_dal)
+    return Patient(oid=patient_dal["_id"]["$oid"], wing=patient_dal["wing_id"]["$oid"], **patient_dal)
 
 
 @patient_router.get("/{patient_id}/measures", response_model=Measures)

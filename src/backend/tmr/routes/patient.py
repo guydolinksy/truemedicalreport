@@ -19,8 +19,7 @@ def get_patient_info_by_bed(bed: str) -> dict:
 
 @patient_router.get("/id/{patient_id}")
 def get_patient_info_by_id(patient_id: str) -> dict:
-    patient = Patient(
-        **requests.get(f"http://medical_dal:8050/medical_dal/patient/id/{patient_id}").json())
+    patient = Patient(**requests.get(f"http://medical_dal:8050/medical_dal/patient/id/{patient_id}").json())
     return loads(patient.json(models_as_dict=False))
 
 

@@ -63,7 +63,7 @@ def init_patients():
                         "time": datetime.now().isoformat(),
                         "is_live": False
                     },
-                    "dyastolic": {
+                    "diastolic": {
                         "value": 80,
                         "min": 60,
                         "max": 100,
@@ -90,7 +90,27 @@ def init_patients():
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
             'flagged': False,
-            'measures': {'pulse': 80, 'bloodPressure': "140/80", 'temperature': 38},
+            'measures': {
+                "temperature": {"value": 37.2, "is_live": False, "min": 36.5, "max": 37.5,
+                                "time": datetime.now().isoformat()},
+                "blood_pressure": {
+                    "systolic": {
+                        "value": 140,
+                        "min": 90,
+                        "max": 120,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    },
+                    "diastolic": {
+                        "value": 80,
+                        "min": 60,
+                        "max": 100,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    }
+                },
+                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 60, "max": 90}
+            },
             'esi_score': {
                 "value": i % 5 + 1,
                 "min": 3,
@@ -119,7 +139,7 @@ def init_patients():
                         "time": datetime.now().isoformat(),
                         "is_live": False
                     },
-                    "dyastolic": {
+                    "diastolic": {
                         "value": 80,
                         "min": 60,
                         "max": 100,
@@ -146,7 +166,27 @@ def init_patients():
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
             'flagged': False,
-            'measures': {'pulse': 80, 'bloodPressure': "140/80", 'temperature': 38},
+            'measures': {
+                "temperature": {"value": 37.2, "is_live": False, "min": 36.5, "max": 37.5,
+                                "time": datetime.now().isoformat()},
+                "blood_pressure": {
+                    "systolic": {
+                        "value": 140,
+                        "min": 90,
+                        "max": 120,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    },
+                    "diastolic": {
+                        "value": 80,
+                        "min": 60,
+                        "max": 100,
+                        "time": datetime.now().isoformat(),
+                        "is_live": False
+                    }
+                },
+                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 60, "max": 90}
+            },
             'esi_score': {
                 "value": i % 5 + 1,
                 "min": 3,
@@ -174,7 +214,7 @@ def init_patients():
                         "time": datetime.now().isoformat(),
                         "is_live": False
                     },
-                    "dyastolic": {
+                    "diastolic": {
                         "value": 80,
                         "min": 60,
                         "max": 100,
@@ -212,7 +252,7 @@ def init_patients():
                         "time": datetime.now().isoformat(),
                         "is_live": False
                     },
-                    "dyastolic": {
+                    "diastolic": {
                         "value": 80,
                         "min": 60,
                         "max": 100,
@@ -251,7 +291,7 @@ def init_patients():
                         "time": datetime.now().isoformat(),
                         "is_live": False
                     },
-                    "dyastolic": {
+                    "diastolic": {
                         "value": 80,
                         "min": 60,
                         "max": 100,

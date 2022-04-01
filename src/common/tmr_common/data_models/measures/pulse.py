@@ -7,4 +7,3 @@ class Pulse(BaseModel):
     time: datetime
     min: int
     max: int
-

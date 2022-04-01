@@ -1,16 +1,16 @@
 from pydantic import BaseModel
 from tmr_common.data_models.measures.blood_pressure.systolic import Systolic
-from tmr_common.data_models.measures.blood_pressure.dyastolic import Dyastolic
+from tmr_common.data_models.measures.blood_pressure.diastolic import Diastolic
 
 
 class BloodPressure(BaseModel):
-    dyastolic: Dyastolic
+    diastolic: Diastolic
     systolic: Systolic
 
     class Config:
         orm_mode = True
         json_encoders = {
-            Dyastolic: lambda pressure: {"is_valid": {pressure.min <= pressure.value <= pressure.max},
+            Diastolic: lambda pressure: {"is_valid": {pressure.min <= pressure.value <= pressure.max},
                                          "value": pressure.value,
                                          "time": pressure.time,
                                          "is_live": pressure.is_live},

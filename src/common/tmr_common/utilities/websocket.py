@@ -25,7 +25,7 @@ def websocket_api(broadcast_backing, ws_uri='/ws'):
             broadcast_messages = aiter(subscriber)
             websocket_messages = aiter(websocket.iter_json())
             read_broadcast, read_websocket, event = None, None, None
-            while websocket.client_state != WebSocketState.DISCONNECTED:
+            while broadcast_messages and websocket_messages:
                 if event:
                     event, _ = None, await websocket.send_json(event.message)
                     continue
@@ -36,9 +36,15 @@ def websocket_api(broadcast_backing, ws_uri='/ws'):
                 done, pending = await asyncio.wait([read_broadcast, read_websocket],
                                                    return_when=asyncio.FIRST_COMPLETED)
                 if read_websocket in done:
-                    read_websocket, _ = None, read_websocket.result()
+                    try:
+                        read_websocket, _ = None, read_websocket.result()
+                    except StopAsyncIteration:
+                        websocket_messages = None
                 if read_broadcast in done:
-                    read_broadcast, event = None, read_broadcast.result()
+                    try:
+                        read_broadcast, event = None, read_broadcast.result()
+                    except StopAsyncIteration:
+                        broadcast_messages = None
 
     async def notify_(key, value):
         await broadcast.publish(channel=key, message=value)
