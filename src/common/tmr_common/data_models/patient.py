@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from .esi_score import ESIScore
 from .measures.measures import Measures
+from json import loads
 
 
 class Patient(BaseModel):
@@ -21,3 +22,6 @@ class Patient(BaseModel):
 
     class Config:
         orm_mode = True
+        json_encoders = {
+            Measures: lambda measures: loads(measures.json(models_as_dict=False))
+        }

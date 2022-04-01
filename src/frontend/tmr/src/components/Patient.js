@@ -49,7 +49,7 @@ const Measure = patientDataContext.withData(
 
 const dataItems = [
     {path: ['measures', 'temperature',], icon: faTemperatureHalf, hover: 'מדידת חום אחרונה', showMinimized: true},
-    {path: ['measures', 'bloodPressure'], icon: faHeart, hover: 'מדידת לחץ דם אחרונה', showMinimized: true},
+    {path: ['measures', 'blood_pressure'], icon: faHeart, hover: 'מדידת לחץ דם אחרונה', showMinimized: true},
     {path: ['measures', 'pulse'], icon: faHeartPulse, hover: 'מדידת דופק אחרונה', showMinimized: true},
     {path: ['esi_score'], icon: faUserNurse, hover: 'ערך ESI אחרון', showMinimized: true},
 ]
