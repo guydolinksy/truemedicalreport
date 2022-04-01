@@ -27,7 +27,7 @@ def get_patient_info_by_id(patient_id: str) -> dict:
 async def update_patient_info_by_id(patient_id: str, path=Body(...), value=Body(...), data=Body(...)) -> dict:
     update_object = prepare_update_object(path, value)
     requests.post(f"http://medical_dal:8050/medical_dal/patient/id/{patient_id}", json=dict(**update_object)).json()
-    return await notify(f'/api/patients/id/{patient_id}')
+    return await notify(f"/api/patients/id/{patient_id}", "")
 
 
 @patient_router.post("/bed/{bed}")
@@ -35,4 +35,4 @@ async def update_patient_info_by_bed(bed: str, path=Body(...), value=Body(...), 
     update_object = prepare_update_object(path, value)
     requests.post(f"http://medical_dal:8050/medical_dal/patient/bed/{bed}",
                   json=dict(**update_object)).json()
-    return await notify(f'api/patients/bed/{bed}')
+    return await notify(f"/api/patients/bed/{bed}", "")

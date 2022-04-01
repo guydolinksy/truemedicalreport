@@ -22,9 +22,9 @@ def init_wings():
         'columns': [{'flex': '1'}, {'width': 50}, {'flex': '1'}, {'flex': '1'}, {'width': 50}, {'flex': '1'}],
         'rows': [{'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}],
         'beds': [
-            ["13", None, "16, 19", None, "22"],
-            ["14", None, "17, 20", None, "23"],
-            ["15", None, "18, 21", None, "24"],
+            ["13", None, "16", "19", None, "22"],
+            ["14", None, "17", "20", None, "23"],
+            ["15", None, "18", "21", None, "24"],
         ],
     })
     db.wings.insert_one({
@@ -32,10 +32,10 @@ def init_wings():
         'columns': [{'flex': '1'}, {'width': 50}, {'flex': '1'}, {'flex': '1'}, {'width': 50}, {'flex': '1'}],
         'rows': [{'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}],
         'beds': [
-            ["25", None, "29, 33", None, "37"],
-            ["26", None, "30, 34", None, "38"],
-            ["27", None, "31, 35", None, "39"],
-            ["28", None, "32, 36", None, "40"],
+            ["25", None, "29", "33", None, "37"],
+            ["26", None, "30", "34", None, "38"],
+            ["27", None, "31", "35", None, "39"],
+            ["28", None, "32", "36", None, "40"],
         ],
     })
     db.wings.insert_one({
