@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body
 import requests
-from data_models.patient import Patient
-from data_models.measures.measures import Measures
+from tmr_common.data_models.patient import Patient
+from tmr_common.data_models.measures.measures import Measures
 
 from .websocket import notify
 
@@ -19,7 +19,7 @@ def get_patient_info_by_id(patient_id: str) -> dict:
 
 
 @patient_router.get("/{patient_id}/measures")
-def get_patient_measures(patient_id: str) -> dict:
+def get_patient_measures(patient_id: str) -> Measures:
     return Measures(requests.get(f"http://medical_dal:8050/medical_dal/patient/{patient_id}").json())
 
 

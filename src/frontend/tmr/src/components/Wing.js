@@ -17,9 +17,9 @@ export const Wing = ({id}) => {
     return <wingDataContext.Provider url={uri} updateURL={uri} socketURL={uri} fetchOnMount
                                      defaultValue={{patients: [], structure: {blocks: []}}}>
         {({loadingData, getData}) => {
-            const assignedPatients = (getData(['patients']) || []).filter(({id, bed}) => bed)
+            const assignedPatients = (getData(['patients_beds']) || []).filter(({oid, bed}) => bed)
             const title = <span>מטופלים במיטות: {assignedPatients.length}</span>
-            const unassignedPatients = (getData(['patients']) || []).filter(({id, bed}) => !bed)
+            const unassignedPatients = (getData(['patients_beds']) || []).filter(({oid, bed}) => !bed)
             const overflowTitle = <span>מטופלים ללא מיטה: {unassignedPatients.length}</span>
 
             const structure = (getData(['structure']) || []);
@@ -45,7 +45,7 @@ export const Wing = ({id}) => {
                             {(structure.rows || []).map((row, i) =>
                                 <Row key={i} style={row} wrap={false}>
                                     {(structure.columns || []).map((column, j) =>
-                                        structure.beds[i][j] === 0 ? <div key={j} style={column}/> :
+                                        structure.beds[i][j] === null ? <div key={j} style={column}/> :
                                             <Patient key={j} style={column} bed={structure.beds[i][j]}/>
                                     )}
                                 </Row>
@@ -56,7 +56,7 @@ export const Wing = ({id}) => {
                 <Card style={{width: '100%', flex: '1'}}>
                     <Row gutter={4}>
                         {unassignedPatients.map(patient =>
-                                <Patient key={patient['_id']['$oid']} id={patient['_id']['$oid']} style={{flex: '1', minWidth: 300}}/>)}
+                                <Patient key={patient.oid} id={patient.oid} style={{flex: '1', minWidth: 300}}/>)}
                     </Row>
                 </Card>
             </Col>

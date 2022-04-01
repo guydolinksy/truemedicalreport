@@ -13,47 +13,45 @@ import {AlertOutlined, CheckOutlined, FlagOutlined, UserOutlined} from '@ant-des
 import {createContext} from "./DataContext";
 
 const patientDataContext = createContext(null);
-const PatientData = patientDataContext.withData(({
-                                                     path,
-                                                     hover,
-                                                     icon,
-                                                     size,
-                                                     editable,
-                                                     loadingData,
-                                                     getData,
-                                                     updateData
-                                                 }) => {
-    const [editing, setEditing] = useState(false)
+const PatientData = patientDataContext.withData(
+    ({path, hover, icon, size, editable, loadingData, getData, updateData}) => {
+        const [editing, setEditing] = useState(false)
 
-    const [value, setValue] = useState(getData(path))
-    useEffect(() => {
-        setValue(getData(path));
-        setEditing(false)
-    }, [path, getData])
+        const [value, setValue] = useState(getData(path))
+        useEffect(() => {
+            setValue(getData(path));
+            setEditing(false)
+        }, [path, getData])
 
-    const onSave = useCallback(() => {
-        updateData(path, value);
-        setEditing(false)
-    }, [path, value, updateData])
+        const onSave = useCallback(() => {
+            updateData(path, value);
+            setEditing(false)
+        }, [path, value, updateData])
 
-    const content = <span style={{userSelect: "none"}}><FontAwesomeIcon icon={icon}/>&nbsp;{value}</span>;
-    return loadingData ? <Spin/> : <Tooltip overlay={hover}>
-        {!editable ? content : !editing ?
-            <Button style={{padding: 0}} type={"text"} onClick={() => setEditing(true)}>{content}</Button> :
-            <Input.Group compact>
-                <Input size={size} style={{width: 150}} value={value}
-                       onChange={e => setValue(e.target.value)} onPressEnter={onSave}/>
-                <Button type="primary" size={size} onClick={onSave} icon={<CheckOutlined/>}/>
-            </Input.Group>}
-    </Tooltip>
-});
+        const content = <span style={{userSelect: "none"}}><FontAwesomeIcon icon={icon}/>&nbsp;{value}</span>;
+        return loadingData ? <Spin/> : <Tooltip overlay={hover}>
+            {!editable ? content : !editing ?
+                <Button style={{padding: 0}} type={"text"} onClick={() => setEditing(true)}>{content}</Button> :
+                <Input.Group compact>
+                    <Input size={size} style={{width: 150}} value={value}
+                           onChange={e => setValue(e.target.value)} onPressEnter={onSave}/>
+                    <Button type="primary" size={size} onClick={onSave} icon={<CheckOutlined/>}/>
+                </Input.Group>}
+        </Tooltip>
+    }
+);
 
+const Measure = patientDataContext.withData(
+    ({path, loadingData, getData, updateData, ...props}) => {
+        return <PatientData path={path.concat('value')} {...props}/>
+    }
+);
 
 const dataItems = [
-    {path: ['measures', 'temperature'], icon: faTemperatureHalf, hover: 'מדידת חום אחרונה', showMinimized: true},
+    {path: ['measures', 'temperature',], icon: faTemperatureHalf, hover: 'מדידת חום אחרונה', showMinimized: true},
     {path: ['measures', 'bloodPressure'], icon: faHeart, hover: 'מדידת לחץ דם אחרונה', showMinimized: true},
     {path: ['measures', 'pulse'], icon: faHeartPulse, hover: 'מדידת דופק אחרונה', showMinimized: true},
-    {path: ['esiScore'], icon: faUserNurse, hover: 'ערך ESI אחרון', showMinimized: true},
+    {path: ['esi_score'], icon: faUserNurse, hover: 'ערך ESI אחרון', showMinimized: true},
 ]
 
 const {Meta} = Card;
@@ -80,7 +78,7 @@ export const Patient = ({bed, id, style}) => {
             const title = <span>{avatar}&nbsp;{getData(['name'])}</span>
             const actions = dataItems.filter(({path, showMinimized}) => (bed || showMinimized)).map(
                 ({path, icon, hover}) =>
-                    <PatientData editable={false} icon={icon} path={path} hover={hover}/>
+                    <Measure editable={false} icon={icon} path={path} hover={hover}/>
             );
             const extra = <PatientData editable size={"small"} icon={faClock} hover={'ממתין.ה עבור'}
                                        path={["awaiting"]}/>
@@ -102,7 +100,7 @@ export const Patient = ({bed, id, style}) => {
                             {getData(['complaint'])}
                         </div>
                     </div>
-                    {(getData(['warnings']) || []).slice(0,0).map((warning, i) =>
+                    {(getData(['warnings']) || []).slice(0, 0).map((warning, i) =>
                         <div key={i}>
                             <div
                                 style={{

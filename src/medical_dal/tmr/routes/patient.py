@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
 from ..dal.dal import MedicalDal
-from data_models.patient import Patient
-from data_models.measures.measures import Measures
+from tmr_common.data_models.patient import Patient
+from tmr_common.data_models.measures.measures import Measures
 
 patient_router = APIRouter()
 
@@ -20,11 +20,10 @@ def get_patient_info_by_bed(bed: str, dal: MedicalDal = Depends(medical_dal)) ->
                    wing=patient_dal["wing_id"]["$oid"], **patient_dal)
 
 
-@patient_router.get("/id/{patient_id}", response_model=Patient)
-def get_patient_info_by_id(patient_id: str, dal: MedicalDal = Depends(medical_dal)) -> Patient:
+@patient_router.get("/id/{patient_id}")
+def get_patient_info_by_id(patient_id: str, dal: MedicalDal = Depends(medical_dal)) -> dict:
     patient_dal = dal.get_patient_info_by_id(patient_id)
-    return Patient(oid=patient_dal["_id"]["$oid"],
-                   wing=patient_dal["wing_id"]["$oid"], **patient_dal)
+    return dict(oid=patient_dal["_id"]["$oid"], wing=patient_dal["wing_id"]["$oid"], **patient_dal)
 
 
 @patient_router.get("/{patient_id}/measures", response_model=Measures)

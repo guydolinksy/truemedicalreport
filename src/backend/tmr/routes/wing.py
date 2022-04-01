@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 import requests
-from data_models.patient_count import PatientCount
-from data_models.wing.wing import Wing
+from tmr_common.data_models.patient_count import PatientCount
+from tmr_common.data_models.wing.wing import Wing
 from typing import List
 
 wing_router = APIRouter()
@@ -16,7 +16,12 @@ def patient_count(wing_id: str) -> PatientCount:
 @wing_router.get("/{wing_id}")
 def wing_structure_with_patient_info(wing_id: str) -> dict:
     res = requests.get(f"http://medical_dal:8050/medical_dal/wing/{wing_id}").json()
-    print(res)
+    return res
+
+
+@wing_router.get("/{wing_id}/notifications")
+def wing_notifications(wing_id: str) -> dict:
+    res = requests.get(f"http://medical_dal:8050/medical_dal/wing/{wing_id}/notifications").json()
     return res
 
 

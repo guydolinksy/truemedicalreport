@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from .blood_pressure.blood_pressure import BloodPressure
-from data_models.measures.temperature import Temperature
-from data_models.measures.pulse import Pulse
+from tmr_common.data_models.measures.temperature import Temperature
+from tmr_common.data_models import Pulse
 
 
 class Measures(BaseModel):

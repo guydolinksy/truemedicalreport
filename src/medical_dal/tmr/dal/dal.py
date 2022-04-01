@@ -3,8 +3,8 @@ from bson.objectid import ObjectId
 from bson.json_util import dumps
 import json
 from pymongo.database import Database
-from data_models.patient_count import PatientCount
-from data_models.patient import Patient
+from tmr_common.data_models.patient_count import PatientCount
+from tmr_common.data_models.patient import Patient
 from typing import List
 from pymongo.results import UpdateResult
 

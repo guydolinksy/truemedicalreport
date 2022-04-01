@@ -13,7 +13,6 @@ export const createContext = (defaultValue) => {
         const navigate = useNavigate();
 
         useEffect(() => {
-            console.log(lastMessage)
             if (!fetchOnMount) return;
             const s = Axios.CancelToken.source()
             Axios.get(url, {cancelToken: s.token}).then(response => {

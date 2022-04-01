@@ -13,15 +13,14 @@ export const Department = () => {
     return <departmentDataContext.Provider url={uri} updateURL={uri} socketURL={uri} fetchOnMount defaultValue={[]}>
         {({loadingData, getData}) => <Row gutter={16}>
             {loadingData ? <Spin/> : (getData([]) || []).map((wing, i) => {
-                const id = wing['_id']['$oid'];
                 const actions = [
                     <Tooltip overlay={"מטופלים המשוייכים לאגף"}><span style={{userSelect: "none"}}>
-                    <FontAwesomeIcon icon={faUser}/>&nbsp;{wing.patient_count}
+                    <FontAwesomeIcon icon={faUser}/>&nbsp;{wing.patient_count.patient_count}
                 </span></Tooltip>,
                     <Tooltip overlay={"מטופלים הממתינים לרופא.ה"}><span style={{userSelect: "none", color: "red"}}>
-                    <FontAwesomeIcon icon={faUserDoctor}/>&nbsp;{wing.waiting_petient}
+                    <FontAwesomeIcon icon={faUserDoctor}/>&nbsp;{wing.waiting_patient.patient_count}
                 </span></Tooltip>];
-                const extra = <Link to={`/wing/${id}`}><FullscreenOutlined/></Link>
+                const extra = <Link to={`/wing/${wing.oid}`}><FullscreenOutlined/></Link>
                 return <Col key={i} span={12}>
                     <Card title={wing.name} actions={actions} extra={extra} style={{marginBottom: 16}}>
 

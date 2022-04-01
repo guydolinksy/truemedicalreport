@@ -12,9 +12,9 @@ def init_wings():
         'columns': [{'flex': '1'}, {'width': 50}, {'flex': '1'}, {'flex': '1'}, {'width': 50}, {'flex': '1'}],
         'rows': [{'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}],
         'beds': [
-            [1, 0, 4, 7, 0, 10],
-            [2, 0, 5, 8, 0, 11],
-            [3, 0, 6, 9, 0, 12],
+            ["1", None, "4", "7", None, "10"],
+            ["2", None, "5", "8", None, "11"],
+            ["3", None, "6", "9", None, "12"],
         ],
     })
     db.wings.insert_one({
@@ -22,9 +22,9 @@ def init_wings():
         'columns': [{'flex': '1'}, {'width': 50}, {'flex': '1'}, {'flex': '1'}, {'width': 50}, {'flex': '1'}],
         'rows': [{'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}],
         'beds': [
-            [13, 0, 16, 19, 0, 22],
-            [14, 0, 17, 20, 0, 23],
-            [15, 0, 18, 21, 0, 24],
+            ["13", None, "16, 19", None, "22"],
+            ["14", None, "17, 20", None, "23"],
+            ["15", None, "18, 21", None, "24"],
         ],
     })
     db.wings.insert_one({
@@ -32,10 +32,10 @@ def init_wings():
         'columns': [{'flex': '1'}, {'width': 50}, {'flex': '1'}, {'flex': '1'}, {'width': 50}, {'flex': '1'}],
         'rows': [{'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}],
         'beds': [
-            [25, 0, 29, 33, 0, 37],
-            [26, 0, 30, 34, 0, 38],
-            [27, 0, 31, 35, 0, 39],
-            [28, 0, 32, 36, 0, 40],
+            ["25", None, "29, 33", None, "37"],
+            ["26", None, "30, 34", None, "38"],
+            ["27", None, "31, 35", None, "39"],
+            ["28", None, "32, 36", None, "40"],
         ],
     })
     db.wings.insert_one({
@@ -73,7 +73,13 @@ def init_patients():
                 },
                 "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 42, "max": 200}
             },
-            'esiScore': bed_number % 5,
+            'esi_score': {
+                "value": bed_number % 5 + 1,
+                "min": 3,
+                "max": 5,
+                "time": datetime.now().isoformat(),
+                "is_live": False
+            },
             'wing_id': db.wings.find_one({'name': 'אגף א׳'})["_id"],
             'bed': str(bed_number),
             # 'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (bed_number == 8 or bed_number == 5) else []
@@ -85,7 +91,13 @@ def init_patients():
             'awaiting': 'פענוח סיטי',
             'flagged': False,
             'measures': {'pulse': 80, 'bloodPressure': "140/80", 'temperature': 38},
-            'esiScore': i % 5,
+            'esi_score': {
+                "value": i % 5 + 1,
+                "min": 3,
+                "max": 5,
+                "time": datetime.now().isoformat(),
+                "is_live": False
+            },
             'wing_id': db.wings.find_one({'name': 'אגף א׳'})["_id"],
             'bed': None,
             'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (i == 3 or i == 8) else []
@@ -117,8 +129,14 @@ def init_patients():
                 },
                 "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 42, "max": 200}
             },
-            'esiScore': bed_number % 5,
-            'wing_id': db.wings.find_one({'name': 'אגף ב׳'})["_id"],
+
+            'esi_score': {
+                "value": bed_number % 5 + 1,
+                "min": 3,
+                "max": 5,
+                "time": datetime.now().isoformat(),
+                "is_live": False
+            }, 'wing_id': db.wings.find_one({'name': 'אגף ב׳'})["_id"],
             'bed': str(bed_number),
             'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (bed_number == 25 or bed_number == 19) else []
         })
@@ -129,8 +147,14 @@ def init_patients():
             'awaiting': 'פענוח סיטי',
             'flagged': False,
             'measures': {'pulse': 80, 'bloodPressure': "140/80", 'temperature': 38},
-            'esiScore': i % 5,
-            'wing_id': db.wings.find_one({'name': 'אגף ב׳'})["_id"],
+
+            'esi_score': {
+                "value": i % 5 + 1,
+                "min": 3,
+                "max": 5,
+                "time": datetime.now().isoformat(),
+                "is_live": False
+            }, 'wing_id': db.wings.find_one({'name': 'אגף ב׳'})["_id"],
             'bed': None,
             'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (i == 3 or i == 8) else []
         })
@@ -161,8 +185,14 @@ def init_patients():
                 },
                 "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 42, "max": 200}
             },
-            'esiScore': bed_number % 5,
-            'wing_id': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
+
+            'esi_score': {
+                "value": bed_number % 5 + 1,
+                "min": 3,
+                "max": 5,
+                "time": datetime.now().isoformat(),
+                "is_live": False
+            }, 'wing_id': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
             'bed': str(bed_number),
             'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (bed_number == 38 or bed_number == 45) else []
         })
@@ -193,8 +223,14 @@ def init_patients():
                 },
                 "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 42, "max": 200}
             },
-            'esiScore': i % 5,
-            'wing_id': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
+
+            'esi_score': {
+                "value": i % 5 + 1,
+                "min": 3,
+                "max": 5,
+                "time": datetime.now().isoformat(),
+                "is_live": False
+            }, 'wing_id': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
             'bed': None,
             'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (i == 3 or i == 8) else []
         })
@@ -226,7 +262,13 @@ def init_patients():
                 },
                 "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 42, "max": 200}
             },
-            'esiScore': i % 5,
+            'esi_score': {
+                "value": i % 5 + 1,
+                "min": 3,
+                "max": 5,
+                "time": datetime.now().isoformat(),
+                "is_live": False
+            },
             'wing_id': db.wings.find_one({'name': 'אגף מהלכים'})["_id"],
             'bed': None,
             'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (i == 3 or i == 8) else []
