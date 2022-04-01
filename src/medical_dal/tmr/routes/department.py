@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
 from typing import List
-from data_models.patient_count import PatientCount
-from data_models.wing.wing import Wing, WingOverview
+from tmr_common.data_models.patient_count import PatientCount
+from tmr_common.data_models.wing.wing import WingOverview
 from ..dal.dal import MedicalDal
 
 department_router = APIRouter()

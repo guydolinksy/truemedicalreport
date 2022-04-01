@@ -3,9 +3,10 @@ from bson.objectid import ObjectId
 from bson.json_util import dumps
 import json
 from pymongo.database import Database
-from data_models.patient_count import PatientCount
-from data_models.patient import Patient
+from tmr_common.data_models.patient_count import PatientCount
+from tmr_common.data_models.patient import Patient
 from typing import List
+from pymongo.results import UpdateResult
 
 
 @dataclass
@@ -48,3 +49,10 @@ class MedicalDal:
 
     def get_patient_measures(self, patient_id: str) -> dict:
         return json.loads(dumps(self.db.patients.find_one({"_id": ObjectId(patient_id)}, {"measures": 1})))
+
+    def append_warning_to_patient_by_id(self, patient_id: str, warning: str) -> bool:
+        update_result: UpdateResult = self.db.patients.update_one(
+            {"_id": ObjectId(patient_id)},
+            {'$push': {"warnings": {ObjectId(), warning}}}
+        )
+        return update_result.modified_count >= 1

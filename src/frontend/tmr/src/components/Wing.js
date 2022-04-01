@@ -1,44 +1,62 @@
-import React, {useEffect, useState} from 'react';
-import Axios from 'axios';
-import {Row, Col, Card, Spin} from 'antd';
+import React from 'react';
+import {Card, Col, Row, Spin} from 'antd';
 import {Patient} from "./Patient";
-import {useNavigate} from 'react-router';
 import {createContext} from "./DataContext";
+import {Link} from "react-router-dom";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {
+    faRightFromBracket,
+} from "@fortawesome/free-solid-svg-icons";
 
 const wingDataContext = createContext(null);
+const notificationsDataContext = createContext(null);
 
 export const Wing = ({id}) => {
     const uri = `/api/wings/${id}`;
+    const notificationsURI = `/api/wings/${id}/notifications`;
     return <wingDataContext.Provider url={uri} updateURL={uri} socketURL={uri} fetchOnMount
                                      defaultValue={{patients: [], structure: {blocks: []}}}>
         {({loadingData, getData}) => {
-            const assignedPatients = (getData(['patients_beds']) || []).filter(({id, bed}) => bed)
-            const title = <span>{getData(['structure', 'name'])} מטופלים במיטות: {assignedPatients.length}</span>
-            const unassignedPatients = (getData(['patients_beds']) || []).filter(({id, bed}) => !bed)
+            const assignedPatients = (getData(['patients_beds']) || []).filter(({oid, bed}) => bed)
+            const title = <span>מטופלים במיטות: {assignedPatients.length}</span>
+            const unassignedPatients = (getData(['patients_beds']) || []).filter(({oid, bed}) => !bed)
             const overflowTitle = <span>מטופלים ללא מיטה: {unassignedPatients.length}</span>
 
-            const blocks = (getData(['structure', 'blocks']) || []);
-            return loadingData ? <Spin/> : <Col style={{padding: 16}}>
-                {blocks.length > 0 &&
-                    <Card bordered={false} bodyStyle={{backgroundColor: "#f6ffed"}} title={title}>
-                        <Row gutter={16} style={{marginBottom: 16}}>{blocks.map((block, i) =>
-                            <Col key={i} span={24 / blocks.length}>
-                                <Card bordered={false}>
-                                    <Row gutter={16}>{block.sides.map((side, j, a) =>
-                                        <Col key={j} span={24 / a.length}>{side.beds.map((bed, k) =>
-                                            <Patient key={k} bed={bed}/>)}
-                                        </Col>)}
-                                    </Row>
-                                </Card>
-                            </Col>)}
-                        </Row>
-                    </Card>}
-                <Card bordered={false} bodyStyle={{backgroundColor: "#f9f0ff"}} title={overflowTitle}>
-                    <Row gutter={16}>
-                        {unassignedPatients.map((patient, i) =>
-                            <Col key={patient['oid']} flex={"1 1 300"}>
-                                <Patient id={patient['oid']}/>
-                            </Col>)}
+            const structure = (getData(['structure']) || []);
+            return loadingData ? <Spin/> : <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
+                <Row gutter={16} style={{marginBottom: 16}}>
+                    <Col span={4}>
+                        <Card title={structure.name} size={"small"} bordered={false}
+                              style={{width: '100%', height: '100%'}}
+                              extra={<Link to={'/'}><FontAwesomeIcon icon={faRightFromBracket}/></Link>}>
+                            <notificationsDataContext.Provider url={notificationsURI} updateURL={notificationsURI}
+                                                               socketURL={notificationsURI} fetchOnMount
+                                                               defaultValue={[]}>
+                                {({loadingData, getData}) => loadingData ? <Spin/> :
+                                    getData([]).map((notification, i) =>
+                                        <Card key={i} title={notification.title} size={"small"}>
+                                            {notification.content}
+                                        </Card>)}
+                            </notificationsDataContext.Provider>
+                        </Card>
+                    </Col>
+                    <Col span={20}>
+                        <Card style={{width: '100%', height: '100%'}}>
+                            {(structure.rows || []).map((row, i) =>
+                                <Row key={i} style={row} wrap={false}>
+                                    {(structure.columns || []).map((column, j) =>
+                                        structure.beds[i][j] === null ? <div key={j} style={column}/> :
+                                            <Patient key={j} style={column} bed={structure.beds[i][j]}/>
+                                    )}
+                                </Row>
+                            )}
+                        </Card>
+                    </Col>
+                </Row>
+                <Card style={{width: '100%', flex: '1'}}>
+                    <Row gutter={4}>
+                        {unassignedPatients.map(patient =>
+                                <Patient key={patient.oid} id={patient.oid} style={{flex: '1', minWidth: 300}}/>)}
                     </Row>
                 </Card>
             </Col>

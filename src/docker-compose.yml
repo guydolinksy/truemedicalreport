@@ -8,7 +8,7 @@ services:
       - "8080:8080"
     volumes:
       - "./backend/tmr:/opt/backend/tmr"
-      - "./common/data_models:/opt/common/data_models"
+      - "./common/tmr_common:/opt/common/tmr_common"
     depends_on:
       - medical_dal
       - broadcast-redis
@@ -22,7 +22,7 @@ services:
       - "8050:8050"
     volumes:
       - "./medical_dal/tmr:/opt/medical_dal/tmr"
-      - "./common/data_models:/opt/common/data_models"
+      - "./common/tmr_common:/opt/common/tmr_common"
     depends_on:
       - medical-db
       - broadcast-redis
@@ -36,6 +36,7 @@ services:
       - "3000:3000"
     volumes:
       - "./frontend/tmr/src:/opt/frontend/tmr/src"
+      - "./frontend/tmr/public:/opt/frontend/tmr/public"
     depends_on:
       - backend
 

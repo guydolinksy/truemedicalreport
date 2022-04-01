@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 import requests
-from data_models.wing.wing import WingOverview
+from tmr_common.data_models.wing.wing import WingOverview
 from typing import List
 
 department_router = APIRouter()
