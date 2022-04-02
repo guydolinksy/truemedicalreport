@@ -2,7 +2,7 @@ import asyncio
 
 from broadcaster import Broadcast
 from fastapi import APIRouter
-from starlette.websockets import WebSocket, WebSocketState
+from starlette.websockets import WebSocket
 
 
 def websocket_api(broadcast_backing, ws_uri='/ws'):
@@ -46,7 +46,7 @@ def websocket_api(broadcast_backing, ws_uri='/ws'):
                     except StopAsyncIteration:
                         broadcast_messages = None
 
-    async def notify_(key, value):
+    async def notify_(key, value=None):
         await broadcast.publish(channel=key, message=value)
 
     return router_, notify_

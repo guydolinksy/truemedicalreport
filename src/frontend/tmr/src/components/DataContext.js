@@ -9,7 +9,7 @@ export const createContext = (defaultValue) => {
     const Provider = ({url, updateURL, socketURL, defaultValue = undefined, fetchOnMount = false, ...props}) => {
 
         const [{loadingData, value}, setValue] = useState({loading: false, value: defaultValue});
-        const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/ws`, {queryParams: {key: socketURL}});
+        const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/sync/ws`, {queryParams: {key: socketURL}});
         const navigate = useNavigate();
 
         useEffect(() => {
@@ -18,6 +18,8 @@ export const createContext = (defaultValue) => {
             Axios.get(url, {cancelToken: s.token}).then(response => {
                 setValue({loading: false, value: response.data});
             }).catch(error => {
+                if (Axios.isCancel(error))
+                    return;
                 navigate('/');
                 console.error(error)
             })

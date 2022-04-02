@@ -11,11 +11,11 @@ from logbook import StreamHandler
 
 
 def create_app() -> FastAPI:
-    app_ = FastAPI(root_path='/api')
-    app_.include_router(wing_router, prefix="/wings")
-    app_.include_router(patient_router, prefix="/patients")
-    app_.include_router(department_router, prefix="/departments")
-    app_.include_router(websocket_router)
+    app_ = FastAPI(openapi_url='/api/openapi.json', docs_url='/api/docs')
+    app_.include_router(wing_router, prefix="/api/wings")
+    app_.include_router(patient_router, prefix="/api/patients")
+    app_.include_router(department_router, prefix="/api/departments")
+    app_.include_router(websocket_router, prefix="/api/sync")
 
     StreamHandler(sys.stdout).push_application()
 

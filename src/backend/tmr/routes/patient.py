@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Body
 import requests
 from tmr_common.data_models.patient import Patient
-from tmr_common.data_models.measures.measures import Measures
 from json import loads
 
 from .websocket import notify

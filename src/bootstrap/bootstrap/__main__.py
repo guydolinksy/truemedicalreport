@@ -9,7 +9,7 @@ def init_wings():
     db.wings.delete_many({})
     db.wings.insert_one({
         'name': 'אגף א׳',
-        'columns': [{'flex': '1'}, {'width': 50}, {'flex': '1'}, {'flex': '1'}, {'width': 50}, {'flex': '1'}],
+        'columns': [{'flex': 4}, {'flex': 1}, {'flex': 4}, {'flex': 4}, {'flex': 1}, {'flex': 4}],
         'rows': [{'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}],
         'beds': [
             ["1", None, "4", "7", None, "10"],
@@ -19,7 +19,7 @@ def init_wings():
     })
     db.wings.insert_one({
         'name': 'אגף ב׳',
-        'columns': [{'flex': '1'}, {'width': 50}, {'flex': '1'}, {'flex': '1'}, {'width': 50}, {'flex': '1'}],
+        'columns': [{'flex': 4}, {'flex': 1}, {'flex': 4}, {'flex': 4}, {'flex': 1}, {'flex': 4}],
         'rows': [{'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}],
         'beds': [
             ["13", None, "16", "19", None, "22"],
@@ -29,7 +29,7 @@ def init_wings():
     })
     db.wings.insert_one({
         'name': 'אגף ג׳',
-        'columns': [{'flex': '1'}, {'width': 50}, {'flex': '1'}, {'flex': '1'}, {'width': 50}, {'flex': '1'}],
+        'columns': [{'flex': 4}, {'flex': 1}, {'flex': 4}, {'flex': 4}, {'flex': 1}, {'flex': 4}],
         'rows': [{'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}],
         'beds': [
             ["25", None, "29", "33", None, "37"],
@@ -155,7 +155,7 @@ def init_patients():
                 "max": 5,
                 "time": datetime.now().isoformat(),
                 "is_live": False
-            }, 
+            },
             'wing_id': db.wings.find_one({'name': 'אגף ב׳'})["_id"],
             'bed': str(bed_number),
             'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (bed_number == 25 or bed_number == 19) else []
@@ -230,7 +230,7 @@ def init_patients():
                 "max": 5,
                 "time": datetime.now().isoformat(),
                 "is_live": False
-            }, 
+            },
             'wing_id': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
             'bed': str(bed_number),
             'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (bed_number == 38 or bed_number == 45) else []
@@ -269,7 +269,7 @@ def init_patients():
                 "time": datetime.now().isoformat(),
                 "is_live": False
             },
-             'wing_id': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
+            'wing_id': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
             'bed': None,
             'warnings': ['מחכה לך', 'טרופונין 18 מ״ג/ליטר'] if (i == 3 or i == 8) else []
         })

@@ -13,15 +13,10 @@ function App() {
             <div className="App" style={{backgroundColor: "#dcdcdc"}} dir={"rtl"}>
                 <Router>
                     <Layout style={{height: '100vh'}}>
-                        <Header>
-
-                        </Header>
-                        <Content>
-                            <Routes>
-                                <Route path={WING_URL} element={<WingView/>}/>
-                                <Route path={DEPARTMENT_URL} element={<DepartmentView/>}/>
-                            </Routes>
-                        </Content>
+                        <Routes>
+                            <Route path={WING_URL} element={<WingView/>}/>
+                            <Route path={DEPARTMENT_URL} element={<DepartmentView/>}/>
+                        </Routes>
                     </Layout>
                 </Router>
             </div>

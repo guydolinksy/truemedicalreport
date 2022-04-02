@@ -23,5 +23,12 @@ class Patient(BaseModel):
     class Config:
         orm_mode = True
         json_encoders = {
-            Measures: lambda measures: loads(measures.json(models_as_dict=False))
+            Measures: lambda measures: loads(measures.json(models_as_dict=False)),
+            ESIScore: lambda esi_score: {
+                'value': esi_score.value,
+                'is_valid': esi_score.min <= esi_score.value <= esi_score.max,
+                'time': esi_score.time,
+                'min': esi_score.min,
+                'max': esi_score.max,
+            }
         }

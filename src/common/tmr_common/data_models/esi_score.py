@@ -8,3 +8,5 @@ class ESIScore(BaseModel):
     min: int
     max: int
 
+    class Config:
+        orm_mode = True
