@@ -16,7 +16,6 @@ def patient_count(wing_id: str) -> PatientCount:
 @wing_router.get("/{wing_id}")
 def wing_structure_with_patient_info(wing_id: str) -> dict:
     res = requests.get(f"http://medical_dal:8050/medical_dal/wing/{wing_id}").json()
-    print(res)
     return res
 
 

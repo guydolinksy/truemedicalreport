@@ -1,8 +1,11 @@
 import asyncio
 
+import logbook
 from broadcaster import Broadcast
 from fastapi import APIRouter
 from starlette.websockets import WebSocket
+
+logger = logbook.Logger(__name__)
 
 
 def websocket_api(broadcast_backing, ws_uri='/ws'):
@@ -46,7 +49,7 @@ def websocket_api(broadcast_backing, ws_uri='/ws'):
                     except StopAsyncIteration:
                         broadcast_messages = None
 
-    async def notify_(key, value=None):
+    async def notify_(key, value=''):
         await broadcast.publish(channel=key, message=value)
 
     return router_, notify_

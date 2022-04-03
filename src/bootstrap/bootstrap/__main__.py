@@ -9,33 +9,40 @@ def init_wings():
     db.wings.delete_many({})
     db.wings.insert_one({
         'name': 'אגף א׳',
-        'columns': [{'flex': 4}, {'flex': 1}, {'flex': 4}, {'flex': 4}, {'flex': 1}, {'flex': 4}],
-        'rows': [{'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}],
+        'columns': [{'flex': 4}, {'flex': 1}, {'flex': 4}, {'width': 16}, {'flex': 4}, {'flex': 1}, {'flex': 4}],
+        'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}],
         'beds': [
-            ["1", None, "4", "7", None, "10"],
-            ["2", None, "5", "8", None, "11"],
-            ["3", None, "6", "9", None, "12"],
+            ["1", None, "4", None, "7", None, "10"],
+            [None] * 7,
+            ["2", None, "5", None, "8", None, "11"],
+            [None] * 7,
+            ["3", None, "6", None, "9", None, "12"],
         ],
     })
     db.wings.insert_one({
         'name': 'אגף ב׳',
-        'columns': [{'flex': 4}, {'flex': 1}, {'flex': 4}, {'flex': 4}, {'flex': 1}, {'flex': 4}],
-        'rows': [{'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}],
+        'columns': [{'flex': 4}, {'flex': 1}, {'flex': 4}, {'width': 16}, {'flex': 4}, {'flex': 1}, {'flex': 4}],
+        'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}],
         'beds': [
-            ["13", None, "16", "19", None, "22"],
-            ["14", None, "17", "20", None, "23"],
-            ["15", None, "18", "21", None, "24"],
+            ["13", None, "16", None, "19", None, "22"],
+            [None] * 7,
+            ["14", None, "17", None, "20", None, "23"],
+            [None] * 7,
+            ["15", None, "18", None, "21", None, "24"],
         ],
     })
     db.wings.insert_one({
         'name': 'אגף ג׳',
-        'columns': [{'flex': 4}, {'flex': 1}, {'flex': 4}, {'flex': 4}, {'flex': 1}, {'flex': 4}],
-        'rows': [{'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}, {'flex': '0 1'}],
+        'columns': [{'flex': 4}, {'flex': 1}, {'flex': 4}, {'width': 16}, {'flex': 4}, {'flex': 1}, {'flex': 4}],
+        'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}],
         'beds': [
-            ["25", None, "29", "33", None, "37"],
-            ["26", None, "30", "34", None, "38"],
-            ["27", None, "31", "35", None, "39"],
-            ["28", None, "32", "36", None, "40"],
+            ["25", None, "29", None, "33", None, "37"],
+            [None] * 7,
+            ["26", None, "30", None, "34", None, "38"],
+            [None] * 7,
+            ["27", None, "31", None, "35", None, "39"],
+            [None] * 7,
+            ["28", None, "32", None, "36", None, "40"],
         ],
     })
     db.wings.insert_one({

@@ -1,40 +1,59 @@
 import asyncio
-import logging
-from dataclasses import dataclass, field
-from typing import Callable, Coroutine
+import json
+from asyncio import CancelledError
 
-import requests
+import logbook
+from typing import Callable, Coroutine, List
+
+import fastapi
 import websockets
 
 from tmr.routes.websocket import notify
-from tmr_common.data_models.patient import Patient
 
-logger = logging.getLogger(__name__)
+logger = logbook.Logger(__name__)
 
 
-@dataclass
-class WebSocketSubscriber:
-    websocket_url: str
+def websocket_subscriber(websocket_url):
+    handlers: List[Coroutine] = []
+    router_ = fastapi.APIRouter()
+    tasks = []
 
-    def subscribe(self, key: str):
+    def subscribe_(key: str):
         def decorator(func: Callable[[str], Coroutine]):
             async def wrapper():
-                async with websockets.connect(f"{self.websocket_url}?key={key}") as ws:
-                    async for message in ws:
-                        await func(message)
+                try:
+                    async for ws in websockets.connect(f"{websocket_url}?key={key}"):
+                        async for message in ws:
+                            await func(json.loads(message))
+                except CancelledError:
+                    pass
+
+            handlers.append(wrapper())
             return wrapper
+
         return decorator
 
+    @router_.on_event('startup')
+    async def on_startup():
+        for func in handlers:
+            tasks.append(asyncio.create_task(func))
 
-subscriber = WebSocketSubscriber(websocket_url="ws://medical_dal/medical_dal/sync/ws")
+    @router_.on_event('shutdown')
+    async def on_shutdown():
+        for task in tasks:
+            task.cancel()
+
+    return router_, subscribe_
 
 
-@subscriber.subscribe(key="patient")
+subscriber_router, subscribe = websocket_subscriber(websocket_url="ws://medical_dal:8050/medical_dal/sync/ws")
+
+
+@subscribe(key="patient_id")
 async def patient_handler(patient_id):
+    await notify(f"/api/patients/id/{patient_id}")
 
-    patient = Patient(**requests.get(f"http://medical_dal:8050/medical_dal/patient/id/{patient_id}").json())
-    if patient.bed:
-        notify(f"/api/patients/bed/{patient.bed}")
-    else:
-        notify(f"/api/patients/id/{patient_id}")
 
+@subscribe(key="patient_bed")
+async def patient_handler(patient_bed):
+    await notify(f"/api/patients/bed/{patient_bed}")

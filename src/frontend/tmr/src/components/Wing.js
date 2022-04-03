@@ -63,7 +63,7 @@ export const Wing = ({id}) => {
                     <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                         {structure.beds && <Card style={{width: '100%', marginBottom: 16}} bodyStyle={{rowGap: 16}}>
                             {(structure.rows || []).map((row, i) =>
-                                <Row key={i} style={{columnGap: 16, ...row}} wrap={false}>
+                                <Row key={i} style={row} wrap={false}>
                                     {(structure.columns || []).map((column, j) =>
                                         structure.beds[i][j] === null ? <div key={j} style={column}/> :
                                             <Patient key={j} style={column} bed={structure.beds[i][j]}/>

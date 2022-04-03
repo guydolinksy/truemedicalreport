@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
+from .websocket import notify
 from ..dal.dal import MedicalDal
 from tmr_common.data_models.patient import Patient
 from tmr_common.data_models.measures.measures import Measures
@@ -31,13 +32,19 @@ def get_patient_measures(patient_id: str, dal: MedicalDal = Depends(medical_dal)
 
 
 @patient_router.post("/id/{patient_id}")
-def update_patient_info_by_id(patient_id: str, update_object: dict, dal: MedicalDal = Depends(medical_dal)) -> bool:
-    return dal.update_patient_info_by_id(patient_id, update_object)
+async def update_patient_info_by_id(patient_id: str, update_object: dict, dal: MedicalDal = Depends(medical_dal)) -> bool:
+    dal.update_patient_info_by_id(patient_id, update_object)
+
+    await notify('patient_id', patient_id)
+    return True
 
 
 @patient_router.post("/bed/{bed}")
-def update_patient_info_by_bed(bed: str, update_object: dict, dal: MedicalDal = Depends(medical_dal)) -> bool:
-    return dal.update_patient_info_by_bed(bed, update_object)
+async def update_patient_info_by_bed(bed: str, update_object: dict, dal: MedicalDal = Depends(medical_dal)) -> bool:
+    dal.update_patient_info_by_bed(bed, update_object)
+
+    await notify('patient_bed', bed)
+    return True
 
 
 @patient_router.post("/id/{patient_id}/warning")
@@ -46,5 +53,4 @@ async def warn_patient_by_id(patient_id: str, warning=Body(...), dal: MedicalDal
     if not update_result:
         return update_result
 
-    await notify(patient_id)  # Todo: is this correct?
     return True
