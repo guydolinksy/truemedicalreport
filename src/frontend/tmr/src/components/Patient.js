@@ -11,6 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {AlertOutlined, CheckOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
 import {createContext} from "./DataContext";
+import {useLocation, useParams} from "react-router";
 
 const patientDataContext = createContext(null);
 const PatientData = patientDataContext.withData(
@@ -61,11 +62,13 @@ const {Meta} = Card;
 
 export const Patient = ({bed, id, style}) => {
     const slider = useRef(null);
+    const {hash} = useLocation();
     const uri = bed ? `/api/patients/bed/${bed}` : `/api/patients/id/${id}`
     return <patientDataContext.Provider url={uri} updateURL={uri} socketURL={uri} fetchOnMount defaultValue={{}}>
         {({loadingData, getData, updateData}) => {
             if (loadingData)
                 return <Spin/>
+            const oid = getData(['oid']);
             const flagged = getData(['flagged']), warnings = getData(['warnings']) || []
             const avatar = <Button shape={"circle"} onClick={() => updateData(['flagged'], !flagged)}
                                    icon={bed || <UserOutlined/>}/>;
@@ -111,7 +114,14 @@ export const Patient = ({bed, id, style}) => {
                 </div>
             else if (flagged)
                 content = <div style={style}><Badge.Ribbon text={<FlagFilled/>}>{carousel}</Badge.Ribbon></div>
-            return <Card type={"inner"} size={"small"} headStyle={{backgroundColor: "#e6fffb"}}
+
+            let animation = undefined;
+            if (hash === `#${oid}`)
+                animation = 'highlight-open 1s ease-out'
+            else if (hash === `#!${oid}`)
+                animation = 'highlight-close 1s';
+            return <Card type={"inner"} size={"small"}
+                         headStyle={{backgroundColor: "#e6fffb", animation: animation}}
                          bodyStyle={{padding: 0}} style={{margin: 0, maxWidth: '400px', ...style}}
                          title={title} actions={actions} extra={extra}>{content}</Card>
         }}
