@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Card, Col, Menu, Row, Spin} from 'antd';
 import {Patient} from "./Patient";
 import {createContext} from "./DataContext";
@@ -10,6 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {Layout} from "antd";
 import {UserOutlined} from "@ant-design/icons";
+import {useNavigate} from "react-router";
 
 const {Content, Sider} = Layout;
 const {SubMenu, ItemGroup, Item} = Menu;
@@ -19,6 +20,9 @@ const notificationsDataContext = createContext(null);
 export const Wing = ({id}) => {
     const uri = `/api/wings/${id}`;
     const notificationsURI = `/api/wings/${id}/notifications`;
+    const navigate = useNavigate();
+    const [openKeys, setOpenKeys] = useState([]);
+
     return <wingDataContext.Provider url={uri} updateURL={uri} socketURL={uri} fetchOnMount
                                      defaultValue={{patients_beds: [], structure: {}}}>
         {({loadingData, getData}) => {
@@ -28,15 +32,22 @@ export const Wing = ({id}) => {
             const overflowTitle = <span>מטופלים ללא מיטה: {unassignedPatients.length}</span>
 
             const structure = (getData(['structure']) || []);
+
             return loadingData ? <Spin/> : <Layout>
-                <Sider breakpoint={"lg"}>
+                <Sider breakpoint={"lg"} width={230}>
                     <notificationsDataContext.Provider url={notificationsURI}
                                                        updateURL={notificationsURI}
                                                        socketURL={notificationsURI} fetchOnMount
                                                        defaultValue={[]}>
                         {({loadingData, getData}) => loadingData ? <Spin/> :
-                            <div style={{display: "flex", flexDirection: "column", height: '100vh', justifyContent: "space-between"}}>
-                                <Menu selectable={false} theme={"dark"} mode={"inline"} style={{userSelect: "none"}}>
+                            <div style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                height: '100vh',
+                                justifyContent: "space-between"
+                            }}>
+                                <Menu selectable={false} theme={"dark"} mode={"inline"} style={{userSelect: "none"}}
+                                      openKeys={openKeys} onOpenChange={setOpenKeys}>
                                     <Item key={'wing'} icon={<FontAwesomeIcon icon={faBuilding}/>}>
                                         {structure.name}
                                     </Item>
@@ -44,7 +55,12 @@ export const Wing = ({id}) => {
                                         <SubMenu key={notification.patient.oid} title={notification.patient.name}
                                                  icon={<UserOutlined/>}
                                                  style={notification.danger ? {color: '#ff4d4f'} : {}}
-                                                 onTitleClick={() => console.log(notification.patient.oid)}>
+                                                 onTitleClick={() => {
+                                                     if (openKeys.includes(notification.patient.oid))
+                                                         navigate(`#!${notification.patient.oid}`)
+                                                     else
+                                                         navigate(`#${notification.patient.oid}`)
+                                                 }}>
                                             {notification.messages.map((message, j) =>
                                                 <Item key={j} danger={message.danger}>{message.content}</Item>
                                             )}

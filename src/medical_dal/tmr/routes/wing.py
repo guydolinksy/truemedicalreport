@@ -31,7 +31,7 @@ def wing_notifications(wing_id: str, dal: MedicalDal = Depends(medical_dal)) -> 
     return [{
         'patient': {'name': 'ישראל ישראלי', 'oid': patient.oid},
         'danger': not i % 15,
-        'messages': [{'danger': not i % 15, 'content': 'bar'}]
+        'messages': [{'danger': not i % 15, 'content': 'התקבלה תוצאת מעבדה'}]
     } for (i, patient) in enumerate(patients)]
 
 
