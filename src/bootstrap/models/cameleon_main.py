@@ -12,7 +12,7 @@ Base = declarative_base()
 class CameleonMain(Base):
     __tablename__ = "cameleon_main"
 
-    Id_Num = Column("Id_Num", Integer(), primary_key=True),
+    Id_Num = Column("Id_Num", String(), primary_key=True),
     patient = Column("patient", Integer()),
     name = Column("name", String(30)),
     Unit = Column("Unit", Integer()),

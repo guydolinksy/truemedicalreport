@@ -1,3 +1,5 @@
+import uuid
+
 from faker import Faker
 from sqlalchemy.orm import Session
 
@@ -12,7 +14,7 @@ class CameleonMainInserter(DataInserterBase):
 
     def generate_object(self):
         cameleon_main_object = CameleonMain()
-        cameleon_main_object.Id_Num = self.faker.pyint(min=100000, max=999999)
+        cameleon_main_object.Id_Num = uuid.uuid4()
         cameleon_main_object.patient = self.faker.pyint()
         cameleon_main_object.name = self.faker.name()
         cameleon_main_object.Unit = self.faker.pyint()
