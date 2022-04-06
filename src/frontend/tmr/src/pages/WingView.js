@@ -1,8 +1,12 @@
-import {useParams} from 'react-router';
+import {useParams, useNavigate} from 'react-router';
 import {Wing} from "../components/Wing";
+import {LoginRequired} from "../components/LoginContext";
 
 export const WING_URL = '/wing/:wing';
-export const WingView = () => {
+
+export const WingView = (() => {
+
+
     const params = useParams()
-    return <Wing id={params.wing}/>
-}
+    return <LoginRequired><Wing id={params.wing}/></LoginRequired>
+});

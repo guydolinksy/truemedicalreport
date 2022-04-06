@@ -1,8 +1,10 @@
 import './App.css';
 import React from 'react-dom'
 import {ConfigProvider, Layout} from 'antd';
+import {LoginProvider} from "./components/LoginContext";
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import {WingView, WING_URL} from "./pages/WingView";
+import {LoginView, LOGIN_URL} from "./pages/LoginView";
 import {DepartmentView, DEPARTMENT_URL} from "./pages/DepartmentView";
 
 const {Header, Content} = Layout;
@@ -12,12 +14,17 @@ function App() {
         <ConfigProvider direction="rtl">
             <div className="App" style={{backgroundColor: "#dcdcdc"}} dir={"rtl"}>
                 <Router>
-                    <Layout style={{height: '100vh'}}>
-                        <Routes>
-                            <Route path={WING_URL} element={<WingView/>}/>
-                            <Route path={DEPARTMENT_URL} element={<DepartmentView/>}/>
-                        </Routes>
-                    </Layout>
+                    <LoginProvider>
+                        {({user}) =>
+                            <Layout style={{height: '100vh'}}>
+                                <Routes>
+                                    <Route path={LOGIN_URL} element={<LoginView/>}/>
+                                    <Route path={WING_URL} element={<WingView/>}/>
+                                    <Route path={DEPARTMENT_URL} element={<DepartmentView/>}/>
+                                </Routes>
+                            </Layout>
+                        }
+                    </LoginProvider>
                 </Router>
             </div>
         </ConfigProvider>
