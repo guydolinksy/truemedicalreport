@@ -1,6 +1,6 @@
 USE [master]
 GO
-/****** Object:  Database [chameleon_db]    Script Date: 29/03/2022 17:05:32 ******/
+/****** Object:  Database [chameleon_db]    Script Date: 06/04/2022 13:29:09 ******/
 CREATE DATABASE [chameleon_db]
  CONTAINMENT = NONE
  ON  PRIMARY
@@ -82,39 +82,80 @@ ALTER DATABASE [chameleon_db] SET QUERY_STORE = OFF
 GO
 USE [chameleon_db]
 GO
-/****** Object:  Table [dbo].[chameleon_main]    Script Date: 29/03/2022 17:05:32 ******/
+/****** Object:  Table [dbo].[chameleon_main]    Script Date: 06/04/2022 13:29:09 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[chameleon_main](
-	[id_num] [bigint] NULL,
-	[patient] [bigint] NULL,
-	[name] [varchar](100) NULL,
+	[id_num] [varchar](250) NULL,
+	[patient_id] [bigint] NULL,
+	[patient_name] [varchar](200) NULL,
 	[unit] [int] NULL,
 	[unit_wing] [int] NULL,
-	[main_cause] [varchar](150) NULL,
+	[main_cause] [varchar](250) NULL,
 	[esi] [int] NULL,
 	[bed_num] [int] NULL,
 	[warnings] [varchar](150) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[measurements]    Script Date: 29/03/2022 17:05:33 ******/
+/****** Object:  Table [dbo].[measurements]    Script Date: 06/04/2022 13:29:09 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[measurements](
-	[id_num] [bigint] NULL,
+	[id_num] [varchar](250) NULL,
 	[Parameter_Date] [date] NULL,
-	[Parameter_Name] [varchar](100) NULL,
-	[Result] [varchar](150) NULL,
-	[warnings] [varchar](50) NULL
+	[Parameter_Id] [int] NULL,
+	[Parameter_Name] [varchar](200) NULL,
+	[Result] [float] NULL,
+	[Min_Value] [float] NULL,
+	[Max_Value] [float] NULL,
+	[Warnings] [varchar](50) NULL
 ) ON [PRIMARY]
+GO
+INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings]) VALUES (N'ASDFGR53GF', 123456789, N'אבי נוסבאום', 5, 4, N'כאבי בטן', 1, 1, NULL)
+GO
+INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings]) VALUES (N'GJKB45BV3H', 637284537, N'נפטלי בנט', 5, 4, N'כאבי ראש', 1, 2, NULL)
+GO
+INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings]) VALUES (N'GC34B5B4LD', 494651134, N'אלברט אינשטיין', 5, 3, N'הקאות', 2, 1, NULL)
+GO
+INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings]) VALUES (N'PEND8SB4H6', 187356296, N'משה דיין', 5, 2, N'פציעה בעין', 3, 1, NULL)
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'ASDFGR53GF', CAST(N'2022-04-06' AS Date), 101, N'לחץ סיסטולי', 160, 90, 140, N'1')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'ASDFGR53GF', CAST(N'2022-04-06' AS Date), 102, N'לחץ דיאסטולי', 70, 60, 90, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'ASDFGR53GF', CAST(N'2022-04-06' AS Date), 11, N'טמפ', 36.6, 35.9, 36.8, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'ASDFGR53GF', CAST(N'2022-04-06' AS Date), 12, N'דופק', 75, 60, 100, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GJKB45BV3H', CAST(N'2022-04-06' AS Date), 101, N'לחץ סיסטולי', 100, 90, 140, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GJKB45BV3H', CAST(N'2022-04-06' AS Date), 102, N'לחץ דיאסטולי', 120, 60, 90, N'1')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GJKB45BV3H', CAST(N'2022-04-06' AS Date), 11, N'טמפ', 36.5, 35.9, 36.8, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GJKB45BV3H', CAST(N'2022-04-06' AS Date), 12, N'דופק', 80, 60, 100, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GC34B5B4LD', CAST(N'2022-04-06' AS Date), 101, N'לחץ סיסטולי', 120, 90, 140, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GC34B5B4LD', CAST(N'2022-04-06' AS Date), 102, N'לחץ דיאסטולי', 80, 60, 90, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GC34B5B4LD', CAST(N'2022-04-06' AS Date), 11, N'טמפ', 38.6, 35.9, 36.8, N'1')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GC34B5B4LD', CAST(N'2022-04-06' AS Date), 12, N'דופק', 75, 60, 100, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'PEND8SB4H6', CAST(N'2022-04-06' AS Date), 101, N'לחץ סיסטולי', 130, 90, 140, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'PEND8SB4H6', CAST(N'2022-04-06' AS Date), 102, N'לחץ דיאסטולי', 65, 60, 90, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'PEND8SB4H6', CAST(N'2022-04-06' AS Date), 11, N'טמפ', 36.5, 35.9, 36.8, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'PEND8SB4H6', CAST(N'2022-04-06' AS Date), 12, N'דופק', 120, 60, 100, N'1')
 GO
 USE [master]
 GO
 ALTER DATABASE [chameleon_db] SET  READ_WRITE
-GO
-COMMIT
 GO
