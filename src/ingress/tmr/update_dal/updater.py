@@ -3,8 +3,8 @@ from enum import Enum
 import requests
 from sqlalchemy import select
 
+from models.cameleon_main import CameleonMain
 from models.measurements import Measurements
-from tmr.data_query_booststrap.chameleon_patient import ChameleonPatient
 
 from tmr.data_query_booststrap.data_query import DataQuery
 
@@ -29,37 +29,24 @@ class MeasurementsIds(Enum):
     ESIScore = 13
 
 
-#
-# MeasurementsIds = {
-#     10: "BloodPressure",
-#     101: "Systolic",
-#     102: "Diastolic",
-#     11: "Temperature",
-#     12: "Pulse"
-# }
-
-
-# measurements_db_dal_kv = {"id_num": "oid", "Result":}
-
-
 class DalUpdater(object):
     def __init__(self, data_query: DataQuery):
         self._data_query = data_query
 
     def update_all_patients(self, sql_results):
-        for patinet_obj in sql_results.scalars():
-            single_patient_info = self._get_single_patient_info(patinet_obj)
-            self.post_single_patient(patinet_obj.Id_Num, single_patient_info)
+        for chameleon_patinet_obj in sql_results.scalars():
+            single_patient_info = self._get_single_patient_info(chameleon_patinet_obj)
+            self.post_single_patient(chameleon_patinet_obj.Id_Num, single_patient_info)
 
     def post_single_patient(self, patient_id: str, info: dict):
         requests.post("http://localhost/medical_dal/patient/id/" + patient_id, data=info)
 
-    def _get_single_patient_info(self, patient_obj: ChameleonPatient):
+    def _get_single_patient_info(self, patient_obj: CameleonMain):
         patient_info = {}
         patient_info["oid"] = patient_obj.Id_Num
         patient_info["name"] = patient_obj.name
         patient_info["Complaint"] = patient_obj.Main_cause
-        patient_info["awaiting"] = "guys what is this"
+        patient_info["awaiting"] = "We will add this to cameleon main"
         patient_info["measures"], patient_info["esi_score"] = self._get_patient_measurments(patient_obj.Id_Num)
         patient_info["wing"] = patient_obj.unit_wing
         patient_info["bed"] = patient_obj.bed_num
@@ -105,6 +92,3 @@ class DalUpdater(object):
             measurements_values["min"] = patient_measurements.Min
             measurements_values["max"] = patient_measurements.Max
         return measurements_values
-
-    def _update_patient_info_by_id(self, patient_id: str, info: dict):
-        res = requests
