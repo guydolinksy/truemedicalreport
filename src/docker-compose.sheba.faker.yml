@@ -10,6 +10,7 @@ services:
 
   chameleon-db:
     build:
+      context: ./
       dockerfile: sheba/chameleon_db/Dockerfile
     ports:
       - "1433:1433"

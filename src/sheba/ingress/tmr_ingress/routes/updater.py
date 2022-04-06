@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, Body, Depends
 from ..updater.update_dal.updater import DalUpdater
 from ..updater.data_query_booststrap.data_query import DataQuery
