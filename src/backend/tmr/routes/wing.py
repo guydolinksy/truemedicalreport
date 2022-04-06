@@ -10,28 +10,28 @@ wing_router = APIRouter()
 @wing_router.get("/{wing_id}/patient_count", response_model=PatientCount)
 def patient_count(wing_id: str) -> PatientCount:
     return PatientCount(
-        **requests.get(f"http://medical_dal:8050/medical_dal/wing/{wing_id}/patient_count").json())
+        **requests.get(f"http://medical-dal/medical-dal/wing/{wing_id}/patient_count").json())
 
 
 @wing_router.get("/{wing_id}")
 def wing_structure_with_patient_info(wing_id: str) -> dict:
-    res = requests.get(f"http://medical_dal:8050/medical_dal/wing/{wing_id}").json()
+    res = requests.get(f"http://medical-dal/medical-dal/wing/{wing_id}").json()
     return res
 
 
 @wing_router.get("/{wing_id}/notifications")
 def wing_notifications(wing_id: str) -> dict:
-    res = requests.get(f"http://medical_dal:8050/medical_dal/wing/{wing_id}/notifications").json()
+    res = requests.get(f"http://medical-dal/medical-dal/wing/{wing_id}/notifications").json()
     return res
 
 
 @wing_router.get("/{wing_id}/details", response_model=Wing)
 def wing_details(wing_id: str) -> Wing:
-    response = requests.get(f"http://medical_dal:8050/medical_dal/wing/{wing_id}/details").json()
+    response = requests.get(f"http://medical-dal/medical-dal/wing/{wing_id}/details").json()
     return Wing(**response)
 
 
 @wing_router.get("/", response_model=List[Wing], response_model_include={"name", "oid"})
 def get_all_wings_names() -> List[Wing]:
-    wings = requests.get(f"http://medical_dal:8050/medical_dal/wing/").json()
+    wings = requests.get(f"http://medical-dal/medical-dal/wing/").json()
     return wings

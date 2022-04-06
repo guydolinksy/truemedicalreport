@@ -9,8 +9,8 @@ from sqlalchemy.orm import relationship
 Base = declarative_base()
 
 
-class CameleonMain(Base):
-    __tablename__ = "cameleon_main"
+class ChameleonMain(Base):
+    __tablename__ = "chameleon_main"
 
     Id_Num = Column("Id_Num", String(), primary_key=True),
     patient = Column("patient", Integer()),

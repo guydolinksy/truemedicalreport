@@ -1,8 +1,8 @@
-from pymongo import MongoClient
-from bson import objectid
 from datetime import datetime
 
-db = MongoClient(host='medical-db').tmr
+from pymongo import MongoClient
+
+db = MongoClient(host='localhost', port=27017).tmr
 
 
 def init_wings():
@@ -34,7 +34,8 @@ def init_wings():
     db.wings.insert_one({
         'name': 'אגף ג׳',
         'columns': [{'flex': 4}, {'flex': 1}, {'flex': 4}, {'width': 16}, {'flex': 4}, {'flex': 1}, {'flex': 4}],
-        'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}],
+        'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16},
+                 {'flex': '0 1'}],
         'beds': [
             ["25", None, "29", None, "33", None, "37"],
             [None] * 7,

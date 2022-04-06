@@ -3,10 +3,9 @@ from enum import Enum
 import requests
 from sqlalchemy import select
 
-from models.measurements import Measurements
-from tmr.data_query_booststrap.chameleon_patient import ChameleonPatient
+from ...models import Measurements
 
-from tmr.data_query_booststrap.data_query import DataQuery
+from ..data_query_booststrap.data_query import DataQuery
 
 # measurements = {}
 patient_db_to_dal = {"id_num": "oid",
@@ -52,7 +51,7 @@ class DalUpdater(object):
             self.post_single_patient(patinet_obj.Id_Num, single_patient_info)
 
     def post_single_patient(self, patient_id: str, info: dict):
-        requests.post("http://localhost/medical_dal/patient/id/" + patient_id, data=info)
+        requests.post("http://medical-dal/medical-dal/patient/id/" + patient_id, data=info)
 
     def _get_single_patient_info(self, patient_obj: ChameleonPatient):
         patient_info = {}

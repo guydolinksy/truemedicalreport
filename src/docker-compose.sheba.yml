@@ -1,0 +1,21 @@
+services:
+
+  ingress:
+    build:
+      target: dev
+      dockerfile: sheba/ingress/Dockerfile
+    environment:
+      - "CHAMELEON_CONNECTION_STRING=foo"
+    volumes:
+      - "./sheba/ingress/tmr_ingress:/opt/ingress/tmr_ingress"
+    ports:
+      - "8020:80"
+    depends_on:
+      - medical-dal
+
+  proxy:
+    volumes:
+      - "./sheba/proxy/conf.dev/ingress/:/etc/nginx/ingress.d/"
+      - "./sheba/proxy/conf.dev/upstream/:/etc/nginx/upstream.d/"
+    depends_on:
+      - ingress

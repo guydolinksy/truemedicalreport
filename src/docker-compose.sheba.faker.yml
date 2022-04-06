@@ -1,0 +1,15 @@
+services:
+
+  ingress:
+    environment:
+      - "CHAMELEON_CONNECTION_STRING=chameleon-db"
+      - "FAKER=1"
+    depends_on:
+      - chameleon-db
+
+
+  chameleon-db:
+    build:
+      dockerfile: sheba/chameleon_db/Dockerfile
+    ports:
+      - "1433:1433"

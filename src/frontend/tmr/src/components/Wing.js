@@ -75,7 +75,7 @@ export const Wing = ({id}) => {
                             </div>}
                     </notificationsDataContext.Provider>
                 </Sider>
-                <Content>
+                <Content style={{backgroundColor: "#000d17"}}>
                     <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                         {structure.beds && <Card style={{width: '100%', marginBottom: 16}} bodyStyle={{rowGap: 16}}>
                             {(structure.rows || []).map((row, i) =>

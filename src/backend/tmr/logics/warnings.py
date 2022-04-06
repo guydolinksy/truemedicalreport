@@ -46,7 +46,7 @@ def websocket_subscriber(websocket_url):
     return router_, subscribe_
 
 
-subscriber_router, subscribe = websocket_subscriber(websocket_url="ws://medical_dal:8050/medical_dal/sync/ws")
+subscriber_router, subscribe = websocket_subscriber(websocket_url="ws://medical-dal/medical-dal/sync/ws")
 
 
 @subscribe(key="patient_id")

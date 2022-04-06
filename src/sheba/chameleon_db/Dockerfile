@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/mssql/server:2019-latest
 
 WORKDIR /opt/chameleon_db
-COPY chameleon_db /opt/chameleon_db
+COPY sheba/chameleon_db /opt/chameleon_db
 
 EXPOSE 1433
 

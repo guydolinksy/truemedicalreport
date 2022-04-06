@@ -12,26 +12,26 @@ patient_router = APIRouter()
 
 @patient_router.get("/bed/{bed}")
 def get_patient_info_by_bed(bed: str) -> dict:
-    patient = Patient(**requests.get(f"http://medical_dal:8050/medical_dal/patient/bed/{bed}").json())
+    patient = Patient(**requests.get(f"http://medical-dal/medical-dal/patient/bed/{bed}").json())
     return loads(patient.json(models_as_dict=False))
 
 
 @patient_router.get("/id/{patient_id}")
 def get_patient_info_by_id(patient_id: str) -> dict:
-    patient = Patient(**requests.get(f"http://medical_dal:8050/medical_dal/patient/id/{patient_id}").json())
+    patient = Patient(**requests.get(f"http://medical-dal/medical-dal/patient/id/{patient_id}").json())
     return loads(patient.json(models_as_dict=False))
 
 
 @patient_router.post("/id/{patient_id}")
 async def update_patient_info_by_id(patient_id: str, path=Body(...), value=Body(...), data=Body(...)) -> dict:
     update_object = prepare_update_object(path, value)
-    requests.post(f"http://medical_dal:8050/medical_dal/patient/id/{patient_id}", json=dict(**update_object)).json()
+    requests.post(f"http://medical-dal/medical-dal/patient/id/{patient_id}", json=dict(**update_object)).json()
     return {}
 
 
 @patient_router.post("/bed/{bed}")
 async def update_patient_info_by_bed(bed: str, path=Body(...), value=Body(...), data=Body(...)) -> dict:
     update_object = prepare_update_object(path, value)
-    requests.post(f"http://medical_dal:8050/medical_dal/patient/bed/{bed}",
+    requests.post(f"http://medical-dal/medical-dal/patient/bed/{bed}",
                   json=dict(**update_object)).json()
     return {}

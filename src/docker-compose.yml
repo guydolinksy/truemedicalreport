@@ -5,21 +5,21 @@ services:
       context: ./
       dockerfile: backend/Dockerfile
     ports:
-      - "8080:8080"
+      - "8000:80"
     volumes:
       - "./backend/tmr:/opt/backend/tmr"
       - "./common/tmr_common:/opt/common/tmr_common"
     depends_on:
-      - medical_dal
+      - medical-dal
       - broadcast-redis
 
-  medical_dal:
+  medical-dal:
     build:
       target: dev
       context: ./
       dockerfile: medical_dal/Dockerfile
     ports:
-      - "8050:8050"
+      - "8010:80"
     volumes:
       - "./medical_dal/tmr:/opt/medical_dal/tmr"
       - "./common/tmr_common:/opt/common/tmr_common"
@@ -50,18 +50,7 @@ services:
     depends_on:
       - backend
       - frontend
-      - medical_dal
-
-  bootstrap:
-    build:
-      target: dev
-      context: ./
-      dockerfile: bootstrap/Dockerfile
-    volumes:
-      - "./bootstrap/bootstrap:/opt/bootstrap/bootstrap"
-    depends_on:
-      - medical_dal
-      - chameleon-db
+      - medical-dal
 
   medical-db:
     image: mongo:latest
@@ -72,10 +61,3 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
-
-  chameleon-db:
-    build:
-      context: ./
-      dockerfile: chameleon_db/Dockerfile
-    ports:
-      - "1433:1433"
