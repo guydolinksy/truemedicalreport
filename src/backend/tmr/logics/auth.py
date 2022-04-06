@@ -27,3 +27,7 @@ def login(response: Response, username=Body(...), password=Body(...)):
     )
     manager.set_cookie(response, access_token)
     return True
+
+@auth_router.get('/user')
+def get_user(user=Depends(manager)):
+    return dict(user='foo')
