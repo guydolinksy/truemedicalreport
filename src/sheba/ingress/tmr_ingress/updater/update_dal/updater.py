@@ -3,21 +3,11 @@ from enum import Enum
 import requests
 from sqlalchemy import select
 
-from ...models.cameleon_main import ChameleonMain
+from ...models.cameleon_main import Patients
 from ...models.measurements import Measurements
-
+from tmr_common.data_models.measures.measures import Measures
+from tmr_common.data_models.patient import Patient
 from ..data_query_booststrap.data_query import DataQuery
-
-# measurements = {}
-patient_db_to_dal = {"id_num": "oid",
-                     "name": "name",
-                     "main_cause": "complaint",
-                     "true": "awaiting",
-                     "false": "flagged",
-                     "esi": "esi_score",
-                     "unit_wing": "wing",
-                     "bed_num": "bed",
-                     "warnings": "warnings"}
 
 
 class MeasurementsIds(Enum):
@@ -34,14 +24,22 @@ class DalUpdater(object):
         self._data_query = data_query
 
     def update_all_patients(self, sql_results):
-        for chameleon_patinet_obj in sql_results.scalars():
-            single_patient_info = self._get_single_patient_info(chameleon_patinet_obj)
-            self.post_single_patient(chameleon_patinet_obj.Id_Num, single_patient_info)
+        for chameleon_patient_obj in sql_results.scalars():
+            single_patient_info = self._get_single_patient_info(chameleon_patient_obj)
+            self.post_single_patient(chameleon_patient_obj.Id_Num, single_patient_info)
 
     def post_single_patient(self, patient_id: str, info: dict):
-        requests.post("http://localhost/medical_dal/patient/id/" + patient_id, data=info)
+        requests.post(f"http://localhost/medical_dal/patient/id/{patient_id}", data=info)
 
-    def _get_single_patient_info(self, patient_obj: ChameleonMain):
+    def post_patient_measures(self, patient_id: str):
+        measures = self._get_patient_measurments(patient_id)
+
+    def update_esi_score(self, wing):
+        patients_in_wing = self._data_query.execute_query(
+            select(Patients).where(wing=wing).with_entities("id_num").join(Measurements.Id_Num))
+        return patients_in_wing
+
+    def _get_single_patient_info(self, patient_obj: Patients):
         patient_info = {}
         patient_info["oid"] = patient_obj.Id_Num
         patient_info["name"] = patient_obj.name
@@ -57,6 +55,7 @@ class DalUpdater(object):
     def _get_patient_measurments(self, patient_id: str) -> {}:
         patient_measurements = self._data_query.execute_query(
             select(Measurements).where(Measurements.id_num == patient_id))
+
         systolic, diastolic, temperature, pulse, blood_pressure, esi_score = {}, {}, {}, {}, {}, {}
         for measurement_data in patient_measurements.scalars().all():
             measurements_values = self._get_measurments_data(measurement_data)

@@ -1,4 +1,7 @@
-fastapi==0.75.0
+fastapi
 uvicorn==0.17.6
 sqlalchemy
 logbook
+common
+pyodbc
+mssql

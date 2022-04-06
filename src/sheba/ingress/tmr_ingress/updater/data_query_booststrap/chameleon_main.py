@@ -1,7 +1,7 @@
 from data_query import DataQuery
 from sqlalchemy import select
-from ...models.cameleon_main import ChameleonMain
-STATEMENT = select(ChameleonMain)
+from ...models.cameleon_main import Patients
+STATEMENT = select(Patients)
 
 
 class ChameleonMainQuery(object):
