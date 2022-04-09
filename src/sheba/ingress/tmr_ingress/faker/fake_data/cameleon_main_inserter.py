@@ -1,24 +1,31 @@
-import uuid
-
 from sqlalchemy.orm import Session
+from fake_data.data_inserter_base import DataInserterBase
+from models.chameleon_main import CameleonMain
+import random
+import uuid
+from faker import Faker
 
-from tmr_ingress.faker.fake_data.data_inserter_base import DataInserterBase
-from tmr_ingress.models.cameleon_main import ChameleonMain
 
+class ChameleonMainInserter(DataInserterBase):
 
-class CameleonMainInserter(DataInserterBase):
+    def __init__(self, session):
+        super().__init__(session)
 
-    def __init__(self, sqlalchemy_session: Session):
-        super().__init__(sqlalchemy_session)
 
     def generate_object(self):
-        cameleon_main_object = ChameleonMain()
-        cameleon_main_object.Id_Num = uuid.uuid4()
-        cameleon_main_object.patient = self.faker.pyint()
-        cameleon_main_object.name = self.faker.name()
-        cameleon_main_object.Unit = self.faker.pyint()
-        cameleon_main_object.Unit_wing = self.faker.pyint()
-        cameleon_main_object.Main_cause = self.faker.sentence()
-        cameleon_main_object.ESI = self.faker.pyint()
-        cameleon_main_object.bed = self.faker.pyint()
-        cameleon_main_object.warnings = self.faker.sentence()
+        chameleon_main_object = CameleonMain()
+        chameleon_main_object.Id_Num = self.faker.pystr_format('?#?###???#?#?#?###?')
+        chameleon_main_object.patient_id = self.faker.pyint(min_value=000000000, max_value=999999999)
+        chameleon_main_object.patient_name = self.faker.name()
+        chameleon_main_object.gender = 'M' if random.randint(0, 1) == 0 else 'F'
+        chameleon_main_object.Unit = self.faker.pyint(min_value=1, max_value=3)
+        chameleon_main_object.Unit_wing = self.faker.pyint(min_value=1, max_value=4)
+        chameleon_main_object.Main_cause = random.choice(['קשיי נשימה','כאבים בחזה','סחרחורות','פגיעה בראש', 'פציעה בעין', 'חתך ביד', 'הקאות', 'כאבי ראש', 'כאבי בטן' ])
+        chameleon_main_object.ESI = random.choice([1, 2, 3, 4])
+        chameleon_main_object.bed_num = self.faker.pyint(min_value=0, max_value=8)
+        chameleon_main_object.warnings = self.faker.sentence()
+        self.faked_objects.append(chameleon_main_object)
+
+        # return chameleon_main_object
+        # print(chameleon_main_object)
+

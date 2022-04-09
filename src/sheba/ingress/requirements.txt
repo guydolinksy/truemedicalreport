@@ -5,3 +5,4 @@ logbook
 common
 pyodbc
 mssql
+faker

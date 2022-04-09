@@ -1,13 +1,13 @@
 USE [master]
 GO
-/****** Object:  Database [chameleon_db]    Script Date: 06/04/2022 13:29:09 ******/
+/****** Object:  Database [chameleon_db]    Script Date: 09/04/2022 19:57:57 ******/
 CREATE DATABASE [chameleon_db]
  CONTAINMENT = NONE
  ON  PRIMARY
 ( NAME = N'chameleon_db', FILENAME = N'/var/opt/mssql/data/chameleon_db.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
  LOG ON
 ( NAME = N'chameleon_db_log', FILENAME = N'/var/opt/mssql/data/chameleon_db_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
- WITH CATALOG_COLLATION = DATABASE_DEFAULT
+ COLLATE Hebrew_CI_AS
 GO
 ALTER DATABASE [chameleon_db] SET COMPATIBILITY_LEVEL = 150
 GO
@@ -82,7 +82,7 @@ ALTER DATABASE [chameleon_db] SET QUERY_STORE = OFF
 GO
 USE [chameleon_db]
 GO
-/****** Object:  Table [dbo].[chameleon_main]    Script Date: 06/04/2022 13:29:09 ******/
+/****** Object:  Table [dbo].[chameleon_main]    Script Date: 09/04/2022 19:57:57 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -96,64 +96,74 @@ CREATE TABLE [dbo].[chameleon_main](
 	[main_cause] [varchar](250) NULL,
 	[esi] [int] NULL,
 	[bed_num] [int] NULL,
-	[warnings] [varchar](150) NULL
+	[warnings] [varchar](150) NULL,
+	[gender] [varchar](2) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[measurements]    Script Date: 06/04/2022 13:29:09 ******/
+/****** Object:  Table [dbo].[measurements]    Script Date: 09/04/2022 19:57:57 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[measurements](
-	[id_num] [varchar](250) NULL,
-	[Parameter_Date] [date] NULL,
-	[Parameter_Id] [int] NULL,
+	[id_num] [varchar](250) NOT NULL,
+	[Parameter_Date] [datetime] NULL,
+	[Parameter_Id] [int] NOT NULL,
 	[Parameter_Name] [varchar](200) NULL,
 	[Result] [float] NULL,
 	[Min_Value] [float] NULL,
 	[Max_Value] [float] NULL,
-	[Warnings] [varchar](50) NULL
+	[Warnings] [varchar](50) NULL,
+PRIMARY KEY CLUSTERED
+(
+	[id_num] ASC,
+	[Parameter_Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings]) VALUES (N'ASDFGR53GF', 123456789, N'אבי נוסבאום', 5, 4, N'כאבי בטן', 1, 1, NULL)
+INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender]) VALUES (N'ASDFGR53GF', 123456789, N'אבי נוסבאום', 5, 4, N'כאבי בטן', 1, 1, NULL, N'M')
 GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings]) VALUES (N'GJKB45BV3H', 637284537, N'נפטלי בנט', 5, 4, N'כאבי ראש', 1, 2, NULL)
+INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender]) VALUES (N'GJKB45BV3H', 637284537, N'נפטלי בנט', 5, 4, N'כאבי ראש', 1, 2, NULL, N'M')
 GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings]) VALUES (N'GC34B5B4LD', 494651134, N'אלברט אינשטיין', 5, 3, N'הקאות', 2, 1, NULL)
+INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender]) VALUES (N'GC34B5B4LD', 494651134, N'אלברט אינשטיין', 5, 3, N'הקאות', 2, 1, NULL, N'M')
 GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings]) VALUES (N'PEND8SB4H6', 187356296, N'משה דיין', 5, 2, N'פציעה בעין', 3, 1, NULL)
+INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender]) VALUES (N'PEND8SB4H6', 187356296, N'משה דיין', 5, 2, N'פציעה בעין', 3, 1, NULL, N'M')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'ASDFGR53GF', CAST(N'2022-04-06' AS Date), 101, N'לחץ סיסטולי', 160, 90, 140, N'1')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'ASDFGR53GF', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 11, N'טמפ', 36.6, 35.9, 36.8, N'0')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'ASDFGR53GF', CAST(N'2022-04-06' AS Date), 102, N'לחץ דיאסטולי', 70, 60, 90, N'0')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'ASDFGR53GF', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 12, N'דופק', 75, 60, 100, N'0')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'ASDFGR53GF', CAST(N'2022-04-06' AS Date), 11, N'טמפ', 36.6, 35.9, 36.8, N'0')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'ASDFGR53GF', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 101, N'לחץ סיסטולי', 160, 90, 140, N'1')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'ASDFGR53GF', CAST(N'2022-04-06' AS Date), 12, N'דופק', 75, 60, 100, N'0')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'ASDFGR53GF', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 102, N'לחץ דיאסטולי', 70, 60, 90, N'0')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GJKB45BV3H', CAST(N'2022-04-06' AS Date), 101, N'לחץ סיסטולי', 100, 90, 140, N'0')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'f4A645viP0D2H6h782Q', CAST(N'2022-04-09T00:00:00.000' AS DateTime), 102, N'לחץ דם דיאסטולי', 88.43, 66.2, 103.62, N'Number financial work keep management.')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GJKB45BV3H', CAST(N'2022-04-06' AS Date), 102, N'לחץ דיאסטולי', 120, 60, 90, N'1')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'F7G872Dll8B2h3G186O', CAST(N'2022-04-09T00:00:00.000' AS DateTime), 11, N'דופק', 17.1, 76.79, 119.62, N'Next cell check goal region mouth.')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GJKB45BV3H', CAST(N'2022-04-06' AS Date), 11, N'טמפ', 36.5, 35.9, 36.8, N'0')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GC34B5B4LD', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 11, N'טמפ', 38.6, 35.9, 36.8, N'1')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GJKB45BV3H', CAST(N'2022-04-06' AS Date), 12, N'דופק', 80, 60, 100, N'0')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GC34B5B4LD', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 12, N'דופק', 75, 60, 100, N'0')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GC34B5B4LD', CAST(N'2022-04-06' AS Date), 101, N'לחץ סיסטולי', 120, 90, 140, N'0')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GC34B5B4LD', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 101, N'לחץ סיסטולי', 120, 90, 140, N'0')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GC34B5B4LD', CAST(N'2022-04-06' AS Date), 102, N'לחץ דיאסטולי', 80, 60, 90, N'0')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GC34B5B4LD', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 102, N'לחץ דיאסטולי', 80, 60, 90, N'0')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GC34B5B4LD', CAST(N'2022-04-06' AS Date), 11, N'טמפ', 38.6, 35.9, 36.8, N'1')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GJKB45BV3H', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 11, N'טמפ', 36.5, 35.9, 36.8, N'0')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GC34B5B4LD', CAST(N'2022-04-06' AS Date), 12, N'דופק', 75, 60, 100, N'0')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GJKB45BV3H', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 12, N'דופק', 80, 60, 100, N'0')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'PEND8SB4H6', CAST(N'2022-04-06' AS Date), 101, N'לחץ סיסטולי', 130, 90, 140, N'0')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GJKB45BV3H', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 101, N'לחץ סיסטולי', 100, 90, 140, N'0')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'PEND8SB4H6', CAST(N'2022-04-06' AS Date), 102, N'לחץ דיאסטולי', 65, 60, 90, N'0')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'GJKB45BV3H', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 102, N'לחץ דיאסטולי', 120, 60, 90, N'1')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'PEND8SB4H6', CAST(N'2022-04-06' AS Date), 11, N'טמפ', 36.5, 35.9, 36.8, N'0')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'PEND8SB4H6', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 11, N'טמפ', 36.5, 35.9, 36.8, N'0')
 GO
-INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'PEND8SB4H6', CAST(N'2022-04-06' AS Date), 12, N'דופק', 120, 60, 100, N'1')
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'PEND8SB4H6', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 12, N'דופק', 120, 60, 100, N'1')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'PEND8SB4H6', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 101, N'לחץ סיסטולי', 130, 90, 140, N'0')
+GO
+INSERT [dbo].[measurements] ([id_num], [Parameter_Date], [Parameter_Id], [Parameter_Name], [Result], [Min_Value], [Max_Value], [Warnings]) VALUES (N'PEND8SB4H6', CAST(N'2022-04-06T00:00:00.000' AS DateTime), 102, N'לחץ דיאסטולי', 65, 60, 90, N'0')
 GO
 USE [master]
 GO
