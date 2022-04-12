@@ -6,14 +6,13 @@ import {useNavigate} from "react-router";
 export const createContext = (defaultValue) => {
     const context = React.createContext(defaultValue);
 
-    const Provider = ({url, updateURL, socketURL, defaultValue = undefined, fetchOnMount = false, ...props}) => {
+    const Provider = ({url, updateURL, socketURL, defaultValue = undefined, ...props}) => {
 
         const [{loadingData, value}, setValue] = useState({loading: false, value: defaultValue});
-        const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/sync/ws`, {queryParams: {key: socketURL}});
+        const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/sync/ws`, {queryParams: {key: socketURL || url}});
         const navigate = useNavigate();
 
         useEffect(() => {
-            if (!fetchOnMount) return;
             const s = Axios.CancelToken.source()
             Axios.get(url, {cancelToken: s.token}).then(response => {
                 setValue({loading: false, value: response.data});
@@ -24,10 +23,10 @@ export const createContext = (defaultValue) => {
                 console.error(error)
             })
             return () => s.cancel()
-        }, [url, fetchOnMount, lastMessage, navigate]);
+        }, [url, lastMessage, navigate]);
 
-        const getData = useCallback((path) =>
-                path.reduce((data, name) => data ? data[name] : undefined, value),
+        const getData = useCallback((path, defaultValue) =>
+                path.reduce((data, name) => data ? data[name] : undefined, value) || defaultValue,
             [value]);
 
         const updateData = useCallback((path, newValue) => {
@@ -40,24 +39,31 @@ export const createContext = (defaultValue) => {
             }
             setValue(prevState => {
                 const newData = deepReplace(path.slice().reverse(), prevState.value, newValue)
-                Axios.post(updateURL, {data: newData, path: path, value: newValue}).catch(error => {
-                    console.error("update error",error)
+                Axios.post(updateURL || url, {data: newData, path: path, value: newValue}).catch(error => {
+                    console.error("update error", error)
                 });
                 return {loading: prevState.loading, value: newData}
             });
-        }, [updateURL]);
+        }, [url, updateURL]);
 
-        return <context.Provider value={{getData: getData, updateData: updateData, loadingData: loadingData}}>
-            {props.children({getData: getData, updateData: updateData, loadingData: loadingData, ...props})}
+        return <context.Provider
+            value={{getData: getData, updateData: updateData, loadingData: loadingData, lastMessage: lastMessage}}>
+            {props.children({
+                getData: getData,
+                updateData: updateData,
+                loadingData: loadingData,
+                lastMessage: lastMessage, ...props
+            })}
         </context.Provider>
     }
 
     const withData = Component => ({...props}) => {
-        return <context.Consumer>{({getData, updateData, loadingData}) =>
-            <Component loadingData={loadingData} getData={getData} updateData={updateData} {...props}/>
+        return <context.Consumer>{({getData, updateData, loadingData, lastMessage}) =>
+            <Component loadingData={loadingData} getData={getData} updateData={updateData}
+                       lastMessage={lastMessage} {...props}/>
         }</context.Consumer>
     };
 
-    return {withData: withData, Provider: Provider}
+    return {withData: withData, Provider: Provider, context: context}
 }
 
