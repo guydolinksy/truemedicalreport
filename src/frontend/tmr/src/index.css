@@ -12,6 +12,11 @@ code {
     monospace;
 }
 
+@keyframes highlight {
+    from {
+        background-color: rgba(119, 81, 255, 0.66);
+    }
+}
 @keyframes highlight-open {
     from {
         background-color: rgba(119, 81, 255, 0.66);
@@ -22,4 +27,8 @@ code {
     from {
         background-color: rgba(119, 81, 255, 0.66);
     }
+}
+
+.ant-menu-item .ant-input-wrapper .anticon {
+    margin-left: 0;
 }
