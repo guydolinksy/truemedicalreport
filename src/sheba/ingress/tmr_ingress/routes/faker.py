@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from src.sheba.ingress.tmr_ingress.faker.fake_data.cameleon_main_inserter import ChameleonMainInserter
-from src.sheba.ingress.tmr_ingress.faker.fake_data.fake_main import FakeMain
+from ingress.tmr_ingress.faker.fake_data.fake_main import FakeMain
+
 
 faker_router = APIRouter()
 
