@@ -29,6 +29,6 @@ class ChameleonMainInserter(DataInserterBase):
         pass
 
     def release_update(self):
-        inner_patient_id = random.choice(self.select_inner_patient_id())
-        update_row_by_id(self, table_name, column_name, id, new_value)
-
+        # inner_patient_id = random.choice(self.select_inner_patient_id())
+        # update_row_by_id(self, table_name, column_name, id, new_value)
+        pass
