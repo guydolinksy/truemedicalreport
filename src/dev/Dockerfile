@@ -1,6 +1,6 @@
 FROM python:3.10-alpine AS dev
 
-RUN apk add build-base openldap-dev
+RUN apk add build-base openldap-dev unixodbc-dev
 RUN echo -n "INPUT ( libldap.so )" > /usr/lib/libldap_r.so
 COPY common/requirements.txt /opt/dev/requirements.common.txt
 RUN python -m pip install -r /opt/dev/requirements.common.txt
