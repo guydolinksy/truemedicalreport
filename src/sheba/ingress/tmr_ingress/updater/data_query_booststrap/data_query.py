@@ -4,11 +4,14 @@ from sqlalchemy import select, create_engine
 
 class DataQuery(object):
 
-    def __init__(self, host: str, port: int, username: str, password: str):
+    def __init__(self):
         self._engine = create_engine(
-            f"mssql+pyodbc://{username}:{password}@{host}:{port}/chameleon_db?driver=ODBC+Driver+17+for+SQL+Server")
+            'mssql+pyodbc://sa:Password123@chameleon-db:1433/chameleon_db?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes')
 
-    def execute_query(self, statement):
-        with self._engine.connect() as connection:
-            with Session(bind=connection) as session:
-                return session.execute(statement)
+    def execute(self, statement):
+        with Session(self._engine) as session:
+            return session.execute(statement)
+
+    def select(self, statement):
+        with Session(self._engine) as session:
+            return session.execute(statement).scalars().all()

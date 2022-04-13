@@ -35,35 +35,32 @@ class SqlToDal(object):
     def get_all_patients(self):
         patients_data_list = []
         for chameleon_patient_obj in self._get_cameleon_patient():
-            print(chameleon_patient_obj)
             single_patient_info = self._get_single_patient_info(chameleon_patient_obj)
             patients_data_list.append(single_patient_info)
         return patients_data_list
 
     def _get_cameleon_patient(self):
-        result = self._data_query.select(select(ChameleonMain).)
-        print(result)
-        return result
+        return self._data_query.select(select(ChameleonMain))
 
     def _get_single_patient_info(self, patient_obj: ChameleonMain) -> Patient:
         patient_data = Patient(
             cameleon_id=patient_obj.Id_Num,
-            name=patient_obj.name,
+            name=patient_obj.patient_name,
             Complaint=patient_obj.Main_cause,
             awaiting="We will add this to cameleon main",
             measures=self.get_patient_measurements(patient_obj.Id_Num),
-            wing=patient_obj.unit_wing,
+            wing=patient_obj.Unit_wing,
             bed=patient_obj.bed_num,
-            unit=patient_obj.unit,
+            unit=patient_obj.Unit,
             warnings=patient_obj.warnings)
         return patient_data
 
     def _get_all_patient_measurments(self, patient_id: str) -> {}:
-        patient_measurements = self._data_query.execute_query(
-            select(Measurements).where(Measurements.id_num == patient_id))
+        patient_measurements = self._data_query.select(
+            select(Measurements).where(Measurements.Id_Num == patient_id))
 
         systolic, diastolic, temperature, pulse, blood_pressure, esi_score = None, None, None, None, None, None
-        for measurement_data in patient_measurements.scalars().all():
+        for measurement_data in patient_measurements:
             measurements_values = self._get_measurments_data(measurement_data)
             parameter_num = measurement_data.Parameter_Id
             match parameter_num:
