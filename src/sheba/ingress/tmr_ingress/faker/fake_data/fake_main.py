@@ -20,14 +20,9 @@ class FakeMain:
         self.measurments_inserter.generate_all_measurements(inner_patient_id)
         self.measurments_inserter.add_rows()
 
-
     def update_measurments(self):
         self.measurments_inserter.update_measurement()
         self.measurments_inserter.add_rows()
 
-
-
-
-
-main = FakeMain()
-main.insert_new_patient()
+# main = FakeMain()
+# main.insert_new_patient()
