@@ -22,14 +22,14 @@ def update_measurements(patient_id: str, dal: SqlToDal = Depends(dal_updater)):
     return dal.get_patients_measurements(patient_id)
 
 
-@updater_router.post("/{wing}", tags=["Wing"])
-def load_patients_in_wing(wing: str, dal: SqlToDal = Depends(dal_updater)):
+@updater_router.post("/load_patients")
+def load_patients_in_wing(dal: SqlToDal = Depends(dal_updater)):
     """
     query all the patients in single wing from *Chameleon* and insert it to mongo
     :param wing: wing identifier in Chameleon
     :return:
     """
-    return dal.get_all_patients
+    return dal.get_all_patients()
 
 
 @updater_router.post("/esi_score")
