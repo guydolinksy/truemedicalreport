@@ -15,13 +15,13 @@ def medical_dal() -> MedicalDal:
 
 
 @patient_router.get("/bed/{bed}", response_model=Patient)
-def get_patient_info_by_bed(bed: str, dal: MedicalDal = Depends(medical_dal)) -> Patient:
+def get_patient_brief_by_bed(bed: str, dal: MedicalDal = Depends(medical_dal)) -> Patient:
     patient_dal = dal.get_patient_info_by_bed(bed)
     return Patient(oid=patient_dal["_id"]["$oid"], wing=patient_dal["wing_id"]["$oid"], **patient_dal)
 
 
 @patient_router.get("/id/{patient_id}", response_model=Patient)
-def get_patient_info_by_id(patient_id: str, dal: MedicalDal = Depends(medical_dal)) -> Patient:
+def get_patient_brief_by_id(patient_id: str, dal: MedicalDal = Depends(medical_dal)) -> Patient:
     patient_dal = dal.get_patient_info_by_id(patient_id)
     return Patient(oid=patient_dal["_id"]["$oid"], wing=patient_dal["wing_id"]["$oid"], **patient_dal)
 
@@ -32,18 +32,20 @@ def get_patient_measures(patient_id: str, dal: MedicalDal = Depends(medical_dal)
 
 
 @patient_router.post("/id/{patient_id}")
-async def update_patient_info_by_id(patient_id: str, update_object: dict, dal: MedicalDal = Depends(medical_dal)) -> bool:
+async def update_patient_brief_by_id(patient_id: str, update_object: dict,
+                                     dal: MedicalDal = Depends(medical_dal)) -> bool:
     dal.update_patient_info_by_id(patient_id, update_object)
 
-    await notify('patient_id', patient_id)
+    await notify_patient(dal, patient_id)
     return True
 
 
 @patient_router.post("/bed/{bed}")
-async def update_patient_info_by_bed(bed: str, update_object: dict, dal: MedicalDal = Depends(medical_dal)) -> bool:
+async def update_patient_brief_by_bed(bed: str, update_object: dict, dal: MedicalDal = Depends(medical_dal)) -> bool:
     dal.update_patient_info_by_bed(bed, update_object)
 
-    await notify('patient_bed', bed)
+    patient_dal = dal.get_patient_info_by_bed(bed)
+    await notify_patient(dal, patient_dal["_id"]["$oid"], bed)
     return True
 
 
@@ -54,3 +56,13 @@ async def warn_patient_by_id(patient_id: str, warning=Body(...), dal: MedicalDal
         return update_result
 
     return True
+
+
+async def notify_patient(dal, patient_id, bed=None):
+    await notify('patient_id', patient_id)
+    await notify('patient_info', patient_id)
+    if bed is None:
+        patient_dal = dal.get_patient_info_by_id(patient_id)
+        bed = patient_dal['bed']
+    if bed:
+        await notify('patient_bed', bed)
