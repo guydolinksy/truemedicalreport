@@ -1,8 +1,7 @@
 from datetime import datetime
 import random
-from fake_data.data_inserter_base import DataInserterBase
-from models.measurements import Measurements
-
+from tmr_ingress.faker.fake_data.data_inserter_base import DataInserterBase
+from tmr_ingress.models.measurements import Measurements
 
 class MeasurementsInserter(DataInserterBase):
 

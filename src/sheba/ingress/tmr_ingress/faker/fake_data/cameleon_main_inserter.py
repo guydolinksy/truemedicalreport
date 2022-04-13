@@ -1,9 +1,6 @@
-from sqlalchemy.orm import Session
-from fake_data.data_inserter_base import DataInserterBase
-from models.chameleon_main import CameleonMain
+from tmr_ingress.faker.fake_data.data_inserter_base import DataInserterBase
+from tmr_ingress.models.cameleon_main import CameleonMain
 import random
-import uuid
-from faker import Faker
 
 
 class ChameleonMainInserter(DataInserterBase):
