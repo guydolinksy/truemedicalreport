@@ -40,15 +40,10 @@ class SqlToDal(object):
             patients_data_list.append(single_patient_info)
         return patients_data_list
 
-
     def _get_cameleon_patient(self):
         patients_data = self._data_query.execute_query(select(Patients))
         return patients_data
 
-    def get_esi_score(self, wing):
-        patients_in_wing = self._data_query.execute_query(
-            select(Patients).where(wing=wing).with_entities("id_num").join(Measurements.Id_Num))
-        return patients_in_wing
 
     def _get_single_patient_info(self, patient_obj: Patients) -> Patient:
         patient_data = Patient(
@@ -89,11 +84,11 @@ class SqlToDal(object):
         patient_measures = Measures(blood_pressure=blood_pressure, pulse=pulse, temperature=temperature)
         return patient_measures, esi_score
 
-    def get_patients_measurements(self,patients_id):
+    def get_patienats_measurements(self, patients_id):
         patients_measurements = self._get_all_patient_measurments(patients_id)[0]
         return patients_measurements
 
-    def get_patients_esi(self,patients_id):
+    def get_patients_esi(self, patients_id):
         patients_esi = self._get_all_patient_measurments(patients_id)[1]
         return patients_esi
 
