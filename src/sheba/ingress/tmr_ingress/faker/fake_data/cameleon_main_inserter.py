@@ -11,7 +11,6 @@ class ChameleonMainInserter(DataInserterBase):
     def __init__(self, session):
         super().__init__(session)
 
-
     def generate_object(self):
         chameleon_main_object = CameleonMain()
         chameleon_main_object.Id_Num = self.faker.pystr_format('?#?###???#?#?#?###?')
@@ -23,9 +22,8 @@ class ChameleonMainInserter(DataInserterBase):
         chameleon_main_object.Main_cause = random.choice(['קשיי נשימה','כאבים בחזה','סחרחורות','פגיעה בראש', 'פציעה בעין', 'חתך ביד', 'הקאות', 'כאבי ראש', 'כאבי בטן' ])
         chameleon_main_object.ESI = random.choice([1, 2, 3, 4])
         chameleon_main_object.bed_num = self.faker.pyint(min_value=0, max_value=8)
-        chameleon_main_object.warnings = self.faker.sentence()
+        chameleon_main_object.warnings = self.faker.sentence(nb_words=3)
         self.faked_objects.append(chameleon_main_object)
+        return chameleon_main_object.Id_Num
 
-        # return chameleon_main_object
-        # print(chameleon_main_object)
 

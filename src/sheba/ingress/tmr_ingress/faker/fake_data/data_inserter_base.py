@@ -1,12 +1,12 @@
 from faker import Faker
+from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import select
+
 
 class DataInserterBase:
-    # CONNECTION_STRING = 'mssql+pyodbc://sa:Password123@127.0.0.1:1433'
 
-    def __init__(self, session):
-        # self.engine = create_engine(DataInserterBase.CONNECTION_STRING)
-        # self._sqlalchemy_session = sessionmaker(self.engine)
-        # self._sqlalchemy_session = sqlalchemy_session
+    def __init__(self, session: Session):
         self.faker = Faker()
         self.faked_objects = []
         self.session = session
@@ -18,3 +18,13 @@ class DataInserterBase:
         # session = Session()
         self.session.add_all(self.faked_objects)
         self.session.commit()
+
+    def delete_row(self, user_id):
+        pass
+
+    def update_row(self):
+        setattr()
+
+    def select_inner_patient_id(self, select_by):
+        query = select(select_by)
+        return self.session.execute(query)
