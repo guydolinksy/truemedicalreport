@@ -1,4 +1,4 @@
-import {Button, Card, Form, Input, Space} from "antd";
+import {Button, Card, Form, Input, Space, Switch} from "antd";
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import Axios from "axios";
 
@@ -37,6 +37,9 @@ const LDAPAuthentication = () => {
 
     return <Form ref={form} name={"ldap"} title={''} onFinish={onFinish} onValuesChange={() => setError(false)}
                  initialValues={initialValue}>
+        <Form.Item name={"enabled"} label={"חיבור LDAP מאופשר"} valuePropName={"checked"}>
+            <Switch/>
+        </Form.Item>
         <Form.Item name={"connection"} label={"ניתוב שרת LDAP"} hasFeedback rules={[
             {required: true, message: 'יש להזין את הניתוב לשרת LDAP'},
             () => ({
@@ -56,6 +59,11 @@ const LDAPAuthentication = () => {
             })
         ]}>
             <Input placeholder={"הניתוב לשרת"} autoComplete={"off"}/>
+        </Form.Item>
+        <Form.Item name={"user_dn"} label={"פורמט DN למשתמש"} rules={[
+            {required: true, message: 'יש להזין פורמט DN למשתמש'}
+        ]}>
+            <Input placeholder={"פורמט DN למשתמש"} autoComplete={"off"}/>
         </Form.Item>
         <Form.Item name={"bind_dn"} label={"מזהה DN לחיבור"} rules={[
             {required: true, message: 'יש להזין DN משתמש לחיבור'}

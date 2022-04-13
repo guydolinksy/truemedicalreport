@@ -57,7 +57,7 @@ const WingNotificationsInner = ({wingName}) => {
             <Menu selectable={false} theme={"dark"} mode={"inline"}
                   style={{userSelect: "none", overflowY: "scroll"}}
                   openKeys={openKeys} onOpenChange={setOpenKeys}>
-                <Item>
+                <Item key={'search'}>
                     <Search allowClear onChange={debounce(e => setSearch(e.target.value), 300)} placeholder={'חיפוש'}/>
                 </Item>
                 {getData([]).map((notification, i) =>

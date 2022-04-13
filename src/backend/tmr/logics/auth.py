@@ -1,3 +1,5 @@
+import shelve
+
 import interruptingcow
 import logbook
 from contextlib import asynccontextmanager
@@ -7,30 +9,31 @@ from fastapi_login.exceptions import InvalidCredentialsException
 from starlette.responses import Response
 import ldap
 
-
-SECRET = 'asdfsfgdfgsherfdbfsr'
-
-auth_router = APIRouter()
-manager = LoginManager(SECRET, token_url='/auth/token', use_cookie=True)
+from tmr.logics.settings import settings
 
 logger = logbook.Logger(__name__)
+auth_router = APIRouter()
+
+manager = LoginManager(settings.secret, token_url='/auth/token', use_cookie=True)
 
 
 @manager.user_loader()
-async def load_user(username: str):
-    return {'username': username, 'password': 'admin'}
+async def load_user(sub: str):
+    user_type, username = sub.split('#')
+    return {'username': username, 'source': user_type}
 
 
 @auth_router.post('/token')
 async def login(response: Response, username=Body(...), password=Body(...)):
-    user = await load_user(username)
-    if not user:
-        raise InvalidCredentialsException
-    elif password != user['password']:
+    if local_connect(username, password):
+        user_type = 'local'
+    elif ldap_connect(username, password):
+        user_type = 'ldap'
+    else:
         raise InvalidCredentialsException
 
     access_token = manager.create_access_token(
-        data=dict(sub=username)
+        data=dict(sub='#'.join([user_type, username]))
     )
     manager.set_cookie(response, access_token)
     return True
@@ -38,29 +41,45 @@ async def login(response: Response, username=Body(...), password=Body(...)):
 
 @auth_router.post('/change-password')
 async def change_password(user=Depends(manager), previous=Body(...), password=Body(...), confirm=Body(...)):
+    username = user['username']
+    users = {user: password for user, password in (settings.users or {}).items()}
+    if username not in users or users[username] != previous or password != confirm:
+        raise InvalidCredentialsException
+
+    users[username] = password
+    settings.users = users
     return True
 
 
 @auth_router.get('/ldap')
 async def get_ldap_settings(user=Depends(manager)):
-    return dict(
-        connection='ldap://ldap.forumsys.com',
-        bind_dn='cn=read-only-admin,dc=example,dc=com',
-        bind_password='password',
-        admin_ou='ou=mathematicians,dc=example,dc=com',
-        users_ou='ou=scientists,dc=example,dc=com',
-        test_user='einstein',
-        test_password='password',
-    )
+    return settings.ldap
+
+
+def ldap_connect(username, password):
+    ldap_settings = settings.ldap or {}
+    logger.debug(ldap_settings)
+    if not ldap_settings.get('enabled'):
+        return False
+
+    with interruptingcow.timeout(seconds=5, exception=TimeoutError):
+        connection = ldap.initialize(ldap_settings['connection'])
+        return connection.bind_s(ldap_settings.get('user_dn', '{}').format(username), password)
+
+
+def local_connect(username, password):
+    users = settings.users or {}
+    if username in users:
+        return users[username] == password
 
 
 @auth_router.post('/ldap')
-async def update_ldap_settings(user=Depends(manager), previous=Body(...), password=Body(...), confirm=Body(...)):
-    return True
+async def update_ldap_settings(user=Depends(manager), values=Body(...)):
+    settings.ldap = values
 
 
 @auth_router.post('/ldap/test')
-async def test_ldap_settings(args=Body(...), user=Depends(manager)):
+async def test_ldap_settings(user=Depends(manager), args=Body(...)):
     try:
         with interruptingcow.timeout(seconds=1, exception=TimeoutError):
             connection = ldap.initialize(args['connection'])
@@ -72,4 +91,4 @@ async def test_ldap_settings(args=Body(...), user=Depends(manager)):
 
 @auth_router.get('/user')
 def get_user(user=Depends(manager)):
-    return dict(user='foo', canChangePassword=True, admin=True)
+    return dict(user=user['username'], canChangePassword=user['source'] == 'local', admin=user['source'] == 'local')
