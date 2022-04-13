@@ -21,7 +21,7 @@ class ChameleonMainInserter(DataInserterBase):
         chameleon_main_object.ESI = random.choice([1, 2, 3, 4])
         chameleon_main_object.bed_num = self.faker.pyint(min_value=0, max_value=8)
         chameleon_main_object.warnings = self.faker.sentence(nb_words=3)
-        chameleon_main_object.stage = patient_stage
+        chameleon_main_object.stage = "מאושפז"
         self.faked_objects.append(chameleon_main_object)
         return chameleon_main_object.Id_Num
 

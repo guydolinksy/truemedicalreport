@@ -1,8 +1,7 @@
 from faker import Faker
 from sqlalchemy.orm import Session
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select, update
-from models.chameleon_main import ChameleonMain
+from ...models.cameleon_main import ChameleonMain
 
 
 class DataInserterBase:
@@ -16,7 +15,6 @@ class DataInserterBase:
         pass
 
     def add_rows(self):
-        # session = Session()
         self.session.add_all(self.faked_objects)
         self.session.commit()
 
@@ -24,7 +22,6 @@ class DataInserterBase:
         pass
 
     def update_row_by_id(self, table_name, column_name, id, new_value):
-        # setattr()
         self.session.query(table_name).filter().update({})
         query = update(table_name).where(column_name.c.id_num == id).values({table_name.column_name: new_value})
         self.session.commit()
