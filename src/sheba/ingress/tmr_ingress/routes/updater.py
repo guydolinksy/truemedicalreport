@@ -19,7 +19,7 @@ def update_measurements(patient_id: str, dal: SqlToDal = Depends(dal_updater)):
     :param patient_id:
     :return:
     """
-    return {}
+    return dal.get_patients_measurements(patient_id)
 
 
 @updater_router.post("/{wing}", tags=["Wing"])
@@ -29,12 +29,12 @@ def load_patients_in_wing(wing: str, dal: SqlToDal = Depends(dal_updater)):
     :param wing: wing identifier in Chameleon
     :return:
     """
-    return {}
+    return dal.get_all_patients
 
 
 @updater_router.post("/esi_score")
-def update_esi_score(wing, dal: SqlToDal = Depends(dal_updater)):
+def update_esi_score(patient_id, dal: SqlToDal = Depends(dal_updater)):
     """
     update the esi score of all the patients
     """
-    return dal.get_esi_score()
+    return dal.get_patients_esi(patient_id)
