@@ -20,6 +20,8 @@ class Patient(BaseModel):
     bed: Optional[str]
     warnings: Optional[List[str]]
 
+    cameleon_id : Optional[str] #Not currently in DAL
+    unit: Optional[str] #Not currently in DAL
     class Config:
         orm_mode = True
         json_encoders = {
