@@ -1,5 +1,5 @@
-from tmr_ingress.faker.fake_data.data_inserter_base import DataInserterBase
-from tmr_ingress.models.cameleon_main import CameleonMain
+from ..fake_data.data_inserter_base import DataInserterBase
+from ...models.cameleon_main import CameleonMain
 import random
 
 
@@ -7,6 +7,7 @@ class ChameleonMainInserter(DataInserterBase):
 
     def __init__(self, session):
         super().__init__(session)
+
 
     def generate_object(self):
         chameleon_main_object = CameleonMain()

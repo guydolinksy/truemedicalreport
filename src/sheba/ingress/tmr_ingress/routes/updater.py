@@ -8,7 +8,7 @@ updater_router = APIRouter()
 
 
 def dal_updater() -> SqlToDal:
-    return SqlToDal(DataQuery(host="chameleon-db", port=1433, username="sa", password="Password123"))
+    return SqlToDal(DataQuery())
 
 
 @updater_router.post("/{patient}/measurement", tags=["Patient"])
