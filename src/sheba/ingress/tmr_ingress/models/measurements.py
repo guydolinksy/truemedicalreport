@@ -1,5 +1,6 @@
-from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime
+from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime, ForeignKey
 from sqlalchemy.orm import declarative_base
+
 # from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -8,7 +9,7 @@ Base = declarative_base()
 class Measurements(Base):
     __tablename__ = "measurements"
 
-    Id_Num = Column("id_num", VARCHAR(200), primary_key=True)
+    Id_Num = Column("id_num", VARCHAR(200), primary_key=True,)
     Parameter_Date = Column("Parameter_Date", DateTime())
     Parameter_ID = Column("Parameter_Id", Integer(), primary_key=True)
     Parameter_Name = Column("Parameter_Name", VARCHAR(100))

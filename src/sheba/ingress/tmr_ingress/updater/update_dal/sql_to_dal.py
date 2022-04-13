@@ -12,7 +12,7 @@ from tmr_common.data_models.measures.blood_pressure.blood_pressure import BloodP
 from tmr_common.data_models.measures.pulse import Pulse
 from tmr_common.data_models.measures.temperature import Temperature
 
-from ...models.cameleon_main import CameleonMain
+from ...models.cameleon_main import ChameleonMain
 from ...models.measurements import Measurements
 from tmr_common.data_models.measures.measures import Measures
 from tmr_common.data_models.patient import Patient
@@ -33,19 +33,19 @@ class SqlToDal(object):
         self._data_query = data_query
 
     def get_all_patients(self):
-        sql_results = self._get_cameleon_patient()
         patients_data_list = []
-        for chameleon_patient_obj in sql_results.scalars():
+        for chameleon_patient_obj in self._get_cameleon_patient():
+            print(chameleon_patient_obj)
             single_patient_info = self._get_single_patient_info(chameleon_patient_obj)
             patients_data_list.append(single_patient_info)
         return patients_data_list
 
     def _get_cameleon_patient(self):
-        patients_data = self._data_query.execute_query(select(CameleonMain))
-        return patients_data
+        result = self._data_query.select(select(ChameleonMain).)
+        print(result)
+        return result
 
-
-    def _get_single_patient_info(self, patient_obj: CameleonMain) -> Patient:
+    def _get_single_patient_info(self, patient_obj: ChameleonMain) -> Patient:
         patient_data = Patient(
             cameleon_id=patient_obj.Id_Num,
             name=patient_obj.name,
