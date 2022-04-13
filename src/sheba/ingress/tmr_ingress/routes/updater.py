@@ -19,7 +19,7 @@ def update_measurements(patient_id: str, dal: SqlToDal = Depends(dal_updater)):
     :param patient_id:
     :return:
     """
-    return dal.get_patients_measurements(patient_id)
+    return dal.get_patient_measurements(patient_id)
 
 
 @updater_router.post("/load_patients")

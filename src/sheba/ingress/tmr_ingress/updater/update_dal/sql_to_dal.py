@@ -51,13 +51,11 @@ class SqlToDal(object):
             name=patient_obj.name,
             Complaint=patient_obj.Main_cause,
             awaiting="We will add this to cameleon main",
-            measures=self.get_patient_measurments(patient_obj.Id_Num)[0],
-            esi_score=self.get_patient_measurments(patient_obj.Id_Num)[1],
+            measures=self.get_patient_measurements(patient_obj.Id_Num),
             wing=patient_obj.unit_wing,
             bed=patient_obj.bed_num,
             unit=patient_obj.unit,
             warnings=patient_obj.warnings)
-
         return patient_data
 
     def _get_all_patient_measurments(self, patient_id: str) -> {}:
@@ -84,7 +82,7 @@ class SqlToDal(object):
         patient_measures = Measures(blood_pressure=blood_pressure, pulse=pulse, temperature=temperature)
         return patient_measures, esi_score
 
-    def get_patients_measurements(self, patients_id):
+    def get_patient_measurements(self, patients_id):
         patients_measurements = self._get_all_patient_measurments(patients_id)[0]
         return patients_measurements
 
