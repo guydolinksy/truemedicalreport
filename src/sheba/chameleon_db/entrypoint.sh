@@ -1,2 +1,2 @@
-sleep 10
-sh /opt/chameleon_db/run-initialization.sh
+sleep 15
+sh /opt/chameleon_db/run-initialization.sh & /opt/mssql/bin/sqlservr
