@@ -9,9 +9,10 @@ Base = declarative_base()
 class Measurements(Base):
     __tablename__ = "measurements"
 
-    Id_Num = Column("id_num", VARCHAR(200), primary_key=True,)
+    PK_ID = Column("pk_measurement_id", Integer(), primary_key=True)
+    Id_Num = Column("id_num", VARCHAR(200))
     Parameter_Date = Column("Parameter_Date", DateTime())
-    Parameter_ID = Column("Parameter_Id", Integer(), primary_key=True)
+    Parameter_ID = Column("Parameter_Id", Integer())
     Parameter_Name = Column("Parameter_Name", VARCHAR(100))
     Result = Column("Result", Float())
     Min_Value = Column("Min_Value", Float())

@@ -1,7 +1,8 @@
 from faker import Faker
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import select
+from sqlalchemy import select, update
+from models.chameleon_main import ChameleonMain
 
 
 class DataInserterBase:
@@ -22,9 +23,14 @@ class DataInserterBase:
     def delete_row(self, user_id):
         pass
 
-    def update_row(self):
-        setattr()
+    def update_row_by_id(self, table_name, column_name, id, new_value):
+        # setattr()
+        self.session.query(table_name).filter().update({})
+        query = update(table_name).where(column_name.c.id_num == id).values({table_name.column_name: new_value})
+        self.session.commit()
 
-    def select_inner_patient_id(self, select_by):
-        query = select(select_by)
-        return self.session.execute(query)
+    def select_inner_patient_id(self):
+        query = select(ChameleonMain.Id_Num)
+        result = self.session.execute(query).fetchall()
+        id_list = [item[0] for item in result]
+        return id_list

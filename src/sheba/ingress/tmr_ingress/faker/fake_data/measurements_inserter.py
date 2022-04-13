@@ -1,7 +1,7 @@
 from datetime import datetime
 import random
-from tmr_ingress.faker.fake_data.data_inserter_base import DataInserterBase
-from tmr_ingress.models.measurements import Measurements
+from ..fake_data.data_inserter_base import DataInserterBase
+from ...models.measurements import Measurements
 
 class MeasurementsInserter(DataInserterBase):
 
@@ -26,7 +26,7 @@ class MeasurementsInserter(DataInserterBase):
             self.generate_object(type_id, inner_patient_id)
 
     def update_measurement(self):
-        inner_patient_id = random.choice(self.select_inner_patient_id('measurments.Id_Num'))
-        measure_id = random.choice(self.measurement_types.keys())
+        inner_patient_id = random.choice(self.select_inner_patient_id())
+        measure_id = random.choice(list(self.measurement_types.keys()))
         self.generate_object(measure_id, inner_patient_id)
 

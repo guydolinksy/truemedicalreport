@@ -17,3 +17,4 @@ class ChameleonMain(Base):
     ESI = Column("esi", Integer())
     bed_num = Column("bed_num", Integer())
     warnings = Column("warnings", String())
+    stage = Column("stage", VARCHAR(150))
