@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 from .cameleon_main_inserter import ChameleonMainInserter
 from .measurements_inserter import MeasurementsInserter
 
-class FakeMain:
 
-    CONNECTION_STRING = 'mssql+pyodbc://sa:Password123@127.0.0.1:1433/chameleon_db?driver=ODBC+Driver+17+for+SQL+Server'
+class FakeMain:
+    CONNECTION_STRING = 'mssql+pyodbc://sa:Password123@chameleon-db:1433/chameleon_db?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes'
 
     def __init__(self):
         self.engine = create_engine(FakeMain.CONNECTION_STRING)
