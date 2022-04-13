@@ -15,7 +15,7 @@ class FakeMain:
         self.measurments_inserter = MeasurementsInserter(self._session)
 
     def run(self):
-        self.chameleon_inserter.generarte_object()
+        self.chameleon_inserter.generate_object()
         self.chameleon_inserter.add_rows()
         self._session.commit()
         self.measurments_inserter.generate_object()
