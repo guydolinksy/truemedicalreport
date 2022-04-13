@@ -84,7 +84,7 @@ class SqlToDal(object):
         patient_measures = Measures(blood_pressure=blood_pressure, pulse=pulse, temperature=temperature)
         return patient_measures, esi_score
 
-    def get_patienats_measurements(self, patients_id):
+    def get_patients_measurements(self, patients_id):
         patients_measurements = self._get_all_patient_measurments(patients_id)[0]
         return patients_measurements
 
