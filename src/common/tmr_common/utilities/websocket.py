@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 import logbook
 from broadcaster import Broadcast
@@ -30,7 +31,7 @@ def websocket_api(broadcast_backing, ws_uri='/ws'):
             read_broadcast, read_websocket, event = None, None, None
             while broadcast_messages and websocket_messages:
                 if event:
-                    event, _ = None, await websocket.send_json(event.message)
+                    event, _ = None, await websocket.send_json(json.loads(event.message))
                     continue
                 if not read_broadcast:
                     read_broadcast = asyncio.create_task(anext(broadcast_messages))
@@ -50,6 +51,6 @@ def websocket_api(broadcast_backing, ws_uri='/ws'):
                         broadcast_messages = None
 
     async def notify_(key, value=''):
-        await broadcast.publish(channel=key, message=value)
+        await broadcast.publish(channel=key, message=json.dumps(value))
 
     return router_, notify_
