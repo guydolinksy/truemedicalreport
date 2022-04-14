@@ -1,16 +1,38 @@
+volumes:
+  sqlpad:
+
+
 services:
 
   ingress:
     environment:
-      - "CHAMELEON_CONNECTION_STRING=chameleon-db"
+      - "CHAMELEON_CONNECTION_STRING='mssql+pyodbc://sa:Password123@chameleon:1433/chameleon_db?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes'"
       - "FAKER=1"
     depends_on:
-      - chameleon-db
+      - chameleon
 
+  sqlpad:
+    image: sqlpad/sqlpad
+    environment:
+      - "SQLPAD_PORT=80"
+      - "SQLPAD_ADMIN=admin@sqlpad.com"
+      - "SQLPAD_ADMIN_PASSWORD=Password123"
+      - "SQLPAD_BASE_URL=/sqlpad"
+    volumes:
+      - "sqlpad:/var/lib/sqlpad"
+    ports:
+      - "8030:80"
+    depends_on:
+      - chameleon
 
-  chameleon-db:
+  chameleon:
     build:
       context: ./
-      dockerfile: sheba/chameleon_db/Dockerfile
+      dockerfile: sheba/chameleon/Dockerfile
+    volumes:
+      - "./sheba/chameleon/initialize:/opt/chameleon/initialize"
+    environment:
+      - "MSSQL_TCP_PORT=1433"
+      - "SA_PASSWORD=Password123"
     ports:
       - "1433:1433"

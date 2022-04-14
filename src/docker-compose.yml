@@ -7,8 +7,8 @@ services:
     ports:
       - "8000:80"
     volumes:
-      - "./backend/tmr:/opt/backend/tmr"
       - "./config:/opt/config"
+      - "./backend/tmr:/opt/backend/tmr"
       - "./common/tmr_common:/opt/common/tmr_common"
     depends_on:
       - medical-dal

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="src[backend, medical-dal, frontend, proxy, medical-db, broadcast-redis, chameleon-db, ingress, dev]: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+  <configuration default="false" name="src[backend, medical-dal, frontend, proxy, medical-db, ingress, dev, sqlpad]: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
     <deployment type="docker-compose.yml">
       <settings>
         <option name="envFilePath" value="" />
@@ -17,10 +17,9 @@
             <option value="frontend" />
             <option value="proxy" />
             <option value="medical-db" />
-            <option value="broadcast-redis" />
-            <option value="chameleon-db" />
             <option value="ingress" />
             <option value="dev" />
+            <option value="sqlpad" />
           </list>
         </option>
         <option name="sourceFilePath" value="src/docker-compose.yml" />
