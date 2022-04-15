@@ -52,7 +52,7 @@ async def change_password(user=Depends(manager), previous=Body(...), password=Bo
 
 
 @auth_router.get('/ldap')
-async def get_ldap_settings(user=Depends(manager)):
+async def get_ldap_settings(_=Depends(manager)):
     return settings.ldap
 
 
@@ -74,12 +74,12 @@ def local_connect(username, password):
 
 
 @auth_router.post('/ldap')
-async def update_ldap_settings(user=Depends(manager), values=Body(...)):
+async def update_ldap_settings(_=Depends(manager), values=Body(...)):
     settings.ldap = values
 
 
 @auth_router.post('/ldap/test')
-async def test_ldap_settings(user=Depends(manager), args=Body(...)):
+async def test_ldap_settings(_=Depends(manager), args=Body(...)):
     try:
         with interruptingcow.timeout(seconds=1, exception=TimeoutError):
             connection = ldap.initialize(args['connection'])

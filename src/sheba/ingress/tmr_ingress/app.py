@@ -13,6 +13,9 @@ def create_app() -> FastAPI:
     from .routes.updater import updater_router
     app_.include_router(updater_router, prefix="/ingress/updater")
 
+    from .logics.startup import startup
+    app_.on_event('startup')(startup)
+
     if os.getenv('FAKER'):
         setup_faker(app_)
     return app_

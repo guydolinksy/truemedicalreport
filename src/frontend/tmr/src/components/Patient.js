@@ -1,24 +1,27 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
-import {Badge, Button, Card, Carousel, Col, Input, Row, Skeleton, Spin, Statistic, Tooltip} from "antd";
+import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
+import {Badge, Button, Card, Carousel, Input, Skeleton, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
-    faBed,
     faClock,
     faHeart,
-    faHeartPulse, faPercent,
+    faHeartPulse,
+    faPercent,
     faTemperatureHalf,
-    faUserNurse,
     faWarning,
 } from "@fortawesome/free-solid-svg-icons";
-import {AlertOutlined, CheckOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
+import {CheckOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
 import {createContext} from "./DataContext";
-import {useLocation, useNavigate, useParams} from "react-router";
+import {useLocation, useNavigate} from "react-router";
 import {HashMatch} from "./HashMatch";
 import debounce from 'lodash/debounce';
 
 import Moment from "react-moment";
 
-const patientDataContext = createContext(null);
+export const patientDataContext = createContext({
+    getData: (_, defaultValue) => defaultValue,
+    updateData: () => null
+});
+
 const PatientData = patientDataContext.withData(
     ({path, title, icon, size, editable, danger, loadingData, getData, updateData}) => {
         const [editing, setEditing] = useState(false)
@@ -56,32 +59,25 @@ const PatientData = patientDataContext.withData(
     }
 );
 
-const Measure = patientDataContext.withData(
-    ({id, path, icon, title, loadingData, getData}) => {
-        const navigate = useNavigate();
-        const oid = getData(['oid']);
-        return <div onClick={e => {
-            navigate(`#info#${oid}#measures#${id}`);
-            e.stopPropagation();
+const Measure = ({patient, measure, path, icon, title}) => {
+    const navigate = useNavigate();
+    const {getData} = useContext(patientDataContext.context);
+    console.log(getData(path.concat('is_valid'), 'as'))
+    return <div onClick={patient ? e => {
+        navigate(`#info#${patient}#measures#${measure}`);
+        e.stopPropagation();
+    } : null}>
+        <div style={{fontSize: 12}}>{title}&nbsp;<FontAwesomeIcon icon={icon}/></div>
+        <div style={{
+            userSelect: "none",
+            fontSize: 14,
+            color: !getData(path.concat('is_valid'), true) ? 'red' : undefined
         }}>
-            <div style={{fontSize: 12}}>{title}&nbsp;<FontAwesomeIcon icon={icon}/></div>
-            <div style={{
-                userSelect: "none",
-                fontSize: 14,
-                color: !getData(path.concat('is_valid')) ? 'red' : undefined
-            }}>
-                {loadingData ? <Skeleton/> : getData(path.concat('value'))}
-            </div>
+            {getData(path.concat('value'), '-')}
         </div>
-    }
-);
+    </div>
+};
 
-const dataItems = [
-    {id: 'temperature', path: ['measures', 'temperature',], icon: faTemperatureHalf, title: 'חום'},
-    {id: 'blood_pressure', path: ['measures', 'blood_pressure'], icon: faHeart, title: 'לחץ דם'},
-    {id: 'pulse', path: ['measures', 'pulse'], icon: faHeartPulse, title: 'דופק'},
-    {id: 'saturation', path: ['measures', 'saturation'], icon: faPercent, title: 'סטורציה'},
-]
 
 const {Meta} = Card;
 const severityBorderColor = {
@@ -100,97 +96,123 @@ export const severityColor = {
     5: "#274916",
     [undefined]: "#1a1a1a",
 }
-const genderedAge = {
-    male: 'בן',
-    female: 'בת',
+const PatientAge = ({patient}) => {
+    const {getData, loadingData} = useContext(patientDataContext.context);
+    const genderedAge = {
+        male: 'בן',
+        female: 'בת',
+    }
+    return !patient || loadingData ? null : <span>
+        ,&nbsp;{genderedAge[getData(['gender'], 'male')]}&nbsp;
+        <Tooltip overlay={<Moment date={getData(['birthdate'])} format={"DD/MM/YYYY"}/>}>
+            {getData(['age'])}
+        </Tooltip>
+    </span>
 }
-export const Patient = ({bed, id, style}) => {
+export const PatientComplaint = ({patient, style}) => {
+    const navigate = useNavigate();
+    const {getData} = useContext(patientDataContext.context);
+
+    return <div
+        style={{
+            userSelect: "none",
+            padding: 20,
+            backgroundColor: severityColor[getData(['severity', 'value'])],
+            cursor: patient ? "pointer": undefined,
+            textAlign: "center",
+            ...style
+        }}
+        onClick={patient ? e => {
+            navigate(`#info#${patient}#basic#complaint`);
+            e.stopPropagation();
+        } : null}>
+        {patient && <Tooltip overlay={'תלונה עיקרית'}>{getData(['complaint'])}</Tooltip>}
+        &nbsp;-&nbsp;
+        {patient && <Tooltip overlay={'זמן מקבלה'}>
+            <Moment durationFromNow format={'h:mm'}
+                    date={getData(['arrival'], '2022-04-12T09:00:00Z')}/>
+        </Tooltip>}
+    </div>
+}
+export const PatientWarning = ({patient, warning, index, style}) => {
+    const navigate = useNavigate();
+    return <div
+        style={{
+            userSelect: "none",
+            padding: 20,
+            backgroundColor: severityColor[warning.severity],
+            cursor: patient ? "pointer": undefined,
+            textAlign: "center",
+            ...style
+        }}
+        onClick={patient ? e => {
+            navigate(`#info#${patient}#basic#warning-${index}`);
+            e.stopPropagation();
+        } : null}>
+        <FontAwesomeIcon icon={faWarning}/>&nbsp;{warning.content}
+    </div>
+}
+
+const patientMeasures = (patient) => [
+    {id: 'temperature', path: ['measures', 'temperature',], icon: faTemperatureHalf, title: 'חום'},
+    {id: 'blood_pressure', path: ['measures', 'blood_pressure'], icon: faHeart, title: 'לחץ דם'},
+    {id: 'pulse', path: ['measures', 'pulse'], icon: faHeartPulse, title: 'דופק'},
+    {id: 'saturation', path: ['measures', 'saturation'], icon: faPercent, title: 'סטורציה'},
+].map(({id, path, icon, title}, i) =>
+    <Measure key={i} patient={patient} measure={id} icon={icon} path={path} title={title}/>)
+
+const PatientAwaiting = ({patient}) => {
+    return patient ?
+        <PatientData editable size={"small"} icon={faClock} title={'ממתין.ה עבור'} path={["awaiting"]}/> : null
+}
+
+const PatientHeader = ({patient, avatar}) => {
+    const {getData, updateData} = useContext(patientDataContext.context);
+    if (!patient)
+        return <Button shape={"circle"} type={"text"}>{avatar}</Button>
+    return <span>
+        <Tooltip overlay={'סימון דגל'}>
+            <Button shape={"circle"} type={"text"} onClick={e => {
+                updateData(['flagged'], !getData(['flagged'], false));
+                e.stopPropagation();
+            }}>{avatar || <UserOutlined/>}</Button>
+        </Tooltip>&nbsp;<Tooltip overlay={`ת.ז. ${getData(['id'], 'לא ידוע')}`}>
+            {getData(['name'])}
+        </Tooltip><PatientAge patient={patient}/>
+    </span>
+}
+const PatientInner = ({patient, avatar, style}) => {
     const ref = useRef(null);
     const {hash} = useLocation();
     const navigate = useNavigate();
-    const uri = bed ? `/api/patients/bed/${bed}` : `/api/patients/id/${id}`
-    return <patientDataContext.Provider url={uri} updateURL={uri} socketURL={uri} defaultValue={{}}>
-        {({loadingData, getData, updateData}) => {
-            const oid = getData(['oid']);
-            if (!oid)
-                return <div style={{maxWidth: 400, minWidth: 300, ...style}}/>
+    const {getData} = useContext(patientDataContext.context);
 
-            const flagged = getData(['flagged']), warnings = getData(['warnings'], []),
-                severity = getData(['severity', 'value']);
-            const avatar = <Tooltip overlay={'סימון דגל'}>
-                <Button disabled={loadingData} shape={"circle"} type={"text"} onClick={e => {
-                    updateData(['flagged'], !flagged);
-                    e.stopPropagation();
-                }}>{bed || <UserOutlined/>}</Button>
-            </Tooltip>
-            const name = <Tooltip overlay={`ת.ז. ${getData(['id'], 'לא ידוע')}`}>
-                {getData(['name'])}
-            </Tooltip>
-            const age = <Tooltip overlay={<Moment date={getData(['birthdate'])} format={"DD/MM/YYYY"}/>}>
-                {getData(['age'])}
-            </Tooltip>
-            const title = <span>{avatar}&nbsp;{name},&nbsp;{genderedAge[getData(['gender'], 'male')]}&nbsp;{age}</span>
-            const actions = dataItems.map(({id, path, icon, title}) =>
-                <Measure id={id} icon={icon} path={path} title={title}/>
-            );
-            const extra = <PatientData editable size={"small"} icon={faClock} title={'ממתין.ה עבור'}
-                                       path={["awaiting"]}/>
-            const carousel = <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
-                <div>
-                    <div style={{
-                        userSelect: "none",
-                        padding: 20,
-                        backgroundColor: severityColor[severity],
-                        textAlign: "center",
-                    }}
-                         onClick={e => {
-                             navigate(`#info#${oid}#basic#complaint`);
-                             e.stopPropagation();
-                         }}>
-                        <Tooltip overlay={'תלונה עיקרית'}>
-                            {getData(['complaint'])}
-                        </Tooltip>
-                        &nbsp;-&nbsp;
-                        <Tooltip overlay={'זמן מקבלה'}>
-                            <Moment durationFromNow format={'h:mm'}
-                                    date={getData(['arrival'], '2022-04-12T09:00:00Z')}/>
-                        </Tooltip>
-                    </div>
-                </div>
-                {warnings.map((warning, i) =>
-                    <div key={i}>
-                        <div
-                            style={{
-                                userSelect: "none",
-                                padding: 20,
-                                backgroundColor: severityColor[warning.severity],
-                                textAlign: "center",
-                                cursor: "pointer"
-                            }}
-                            onClick={e => {
-                                navigate(`#info#${oid}#basic#warning-${i}`);
-                                e.stopPropagation();
-                            }}>
-                            {warning.content}&nbsp;<FontAwesomeIcon icon={faWarning}/>
-                        </div>
-                    </div>)}
-            </Carousel>
-            let content = carousel;
-            if (warnings.length)
-                content = <div style={style}>
-                    <Badge.Ribbon text={warnings.length} color={"red"}>{carousel}</Badge.Ribbon>
-                </div>
-            else if (flagged)
-                content = <div style={style}><Badge.Ribbon text={<FlagFilled/>}>{carousel}</Badge.Ribbon></div>
+    const warnings = getData(['warnings'], []), severity = getData(['severity', 'value']);
 
-            if (hash.split('#').length > 2 && hash.split('#')[2] === oid && ref.current)
-                ref.current.scrollIntoViewIfNeeded(true);
-            return <HashMatch match={['highlight', oid]}>{({matched, match}) =>
-                <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
-                    marginRight: -4, animation: matched ? `highlight-${match[0]} 1s ease-out` : undefined
-                }} title={title} actions={actions} extra={extra} hoverable style={{
-                    margin: 0, maxWidth: 400, minWidth: 300, borderColor: severityBorderColor[severity], ...style
-                }} onClick={() => navigate(`#info#${oid}#basic`)}>{content}</Card>}</HashMatch>
-        }}
-    </patientDataContext.Provider>
+    let content = <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
+        <div><PatientComplaint patient={patient} style={{direction: "rtl"}}/></div>
+        {warnings.map((warning, i) => <div key={i}>
+            <PatientWarning patient={patient} warning={warning} index={i} style={{direction: "rtl"}}/>
+        </div>)}</Carousel>
+    if (warnings.length)
+        content = <Badge.Ribbon text={warnings.length} color={"red"}>{content}</Badge.Ribbon>
+    else if (getData(['flagged'], false))
+        content = <Badge.Ribbon text={<FlagFilled/>}>{content}</Badge.Ribbon>
+    if (hash.split('#').length > 2 && hash.split('#')[2] === patient && ref.current)
+        ref.current.scrollIntoViewIfNeeded(true);
+    return <HashMatch match={['highlight', patient]}>{({matched, match}) =>
+        <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
+            marginRight: -4, animation: matched ? `highlight-${match[0]} 1s ease-out` : undefined
+        }} title={<PatientHeader patient={patient} avatar={avatar}/>} actions={patientMeasures(patient)} style={{
+            margin: 0, maxWidth: 400, minWidth: 300, borderColor: severityBorderColor[severity], ...style
+        }} hoverable={patient} onClick={patient ? () => navigate(`#info#${patient}#basic`) : null}
+              extra={<PatientAwaiting patient={patient}/>}>
+            <div style={style}>{content}</div>
+        </Card>
+    }</HashMatch>
+}
+export const Patient = ({patient, avatar, style}) => {
+    return patient ? <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={{}}>
+        {({loadingData}) => loadingData ? <Spin/> : <PatientInner patient={patient} avatar={avatar} style={style}/>}
+    </patientDataContext.Provider> : <PatientInner avatar={avatar} style={style}/>
 };

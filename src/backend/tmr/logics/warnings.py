@@ -26,7 +26,10 @@ def websocket_subscriber(websocket_url):
                 try:
                     async for ws in websockets.connect(f"{websocket_url}?key={key}"):
                         async for message in ws:
-                            await func(json.loads(message))
+                            try:
+                                await func(json.loads(message))
+                            except Exception:
+                                logger.exception('Error running handler for message: {}', message)
                 except CancelledError:
                     pass
 
@@ -51,37 +54,22 @@ def websocket_subscriber(websocket_url):
 subscriber_router, subscribe = websocket_subscriber(websocket_url="ws://medical-dal/medical-dal/sync/ws")
 
 
-@subscribe(key="patient_id")
-async def patient_id_handler(patient_id):
-    logger.debug('ID TRIGGER: {}', patient_id)
+@subscribe(key="patient")
+async def patient_handler(patient):
+    logger.debug('ID TRIGGER: {}', patient)
 
-    await notify(f"/api/patients/id/{patient_id}", {'a': 1})
-
-    # TODO: should trigger notifications only if a notification was added.
-    patient = Patient(**requests.get(f"http://medical-dal/medical-dal/patient/id/{patient_id}").json())
-    await trigger_notification(patient.wing, patient.oid)
-
-
-@subscribe(key="patient_bed")
-async def patient_bed_handler(patient_bed):
-    logger.debug('BED TRIGGER: {}', patient_bed)
-
-    await notify(f"/api/patients/bed/{patient_bed}", {'b': 1})
-    # TODO: should trigger notifications only if a notification was added.
-    patient = Patient(**requests.get(f"http://medical-dal/medical-dal/patient/bed/{patient_bed}").json())
-    await trigger_notification(patient.wing, patient.oid)
-
-
-@subscribe(key="patient_info")
-async def patient_info_handler(patient_id):
-    logger.debug('INFO TRIGGER: {}', patient_id)
-
-    await notify(f"/api/patients/id/{patient_id}/info")
+    await notify(f"/api/patients/{patient}")
+    await notify(f"/api/patients/{patient}/info")
 
     # TODO: should trigger notifications only if a notification was added.
-    patient = Patient(**requests.get(f"http://medical-dal/medical-dal/patient/id/{patient_id}").json())
-    await trigger_notification(patient.wing, patient.oid)
+    patient = Patient(**requests.get(f"http://medical-dal/medical-dal/patients/{patient}").json())
+    await trigger_notification(patient)
 
 
-async def trigger_notification(wing, patient):
-    await notify(f"/api/wings/{wing}/notifications", {'openKeys': [patient]})
+@subscribe(key="admission")
+async def admission_handler(admission):
+    await notify(f"/api/departments/{admission.department}/wings/{admission.wing}/beds/{admission.bed}")
+
+
+async def trigger_notification(patient):
+    await notify(f"/api/wings/{patient.admission.wing}/notifications", {'openKeys': [patient.oid]})

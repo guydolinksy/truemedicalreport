@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 
 from pymongo import MongoClient
@@ -5,56 +6,11 @@ from pymongo import MongoClient
 db = MongoClient(host='medical-db', port=27017).tmr
 
 
-def init_wings():
-    db.wings.delete_many({})
-    db.wings.insert_one({
-        'name': 'אגף א׳',
-        'columns': [{'flex': "4 1 0px"}, {'flex': 1}, {'flex': "4 1 0px"}, {'width': 16}, {'flex': "4 1 0px"}, {'flex': 1}, {'flex': "4 1 0px"}],
-        'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}],
-        'beds': [
-            ["1", None, "4", None, "7", None, "10"],
-            [None] * 7,
-            ["2", None, "5", None, "8", None, "11"],
-            [None] * 7,
-            ["3", None, "6", None, "9", None, "12"],
-        ],
-    })
-    db.wings.insert_one({
-        'name': 'אגף ב׳',
-        'columns': [{'flex': "4 1 0px"}, {'flex': 1}, {'flex': "4 1 0px"}, {'width': 16}, {'flex': "4 1 0px"}, {'flex': 1}, {'flex': "4 1 0px"}],
-        'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}],
-        'beds': [
-            ["13", None, "16", None, "19", None, "22"],
-            [None] * 7,
-            ["14", None, "17", None, "20", None, "23"],
-            [None] * 7,
-            ["15", None, "18", None, "21", None, "24"],
-        ],
-    })
-    db.wings.insert_one({
-        'name': 'אגף ג׳',
-        'columns': [{'flex': "4 1 0px"}, {'flex': 1}, {'flex': "4 1 0px"}, {'width': 16}, {'flex': "4 1 0px"}, {'flex': 1}, {'flex': "4 1 0px"}],
-        'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16},
-                 {'flex': '0 1'}],
-        'beds': [
-            ["25", None, "29", None, "33", None, "37"],
-            [None] * 7,
-            ["26", None, "30", None, "34", None, "38"],
-            [None] * 7,
-            ["27", None, "31", None, "35", None, "39"],
-            [None] * 7,
-            ["28", None, "32", None, "36", None, "40"],
-        ],
-    })
-    db.wings.insert_one({
-        'name': 'אגף מהלכים',
-        'blocks': []
-    })
-
-
 def init_patients():
     db.patients.delete_many({})
     for bed_number in range(1, 13):
+        if random.randint(1, 3) == 1:
+            continue
         db.patients.insert_one({
             'name': 'ישראל ישראלי',
             'age': '70.2',
@@ -86,8 +42,7 @@ def init_patients():
                 "value": bed_number % 5 + 1,
                 "time": datetime.now().isoformat(),
             },
-            'wing_id': db.wings.find_one({'name': 'אגף א׳'})["_id"],
-            'bed': str(bed_number),
+            'admission': {'department': 'er', 'wing': 'b1', 'bed': str(bed_number)},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if bed_number == 3 else []) +
                          ([{'content': 'טרופונין 18 מ״ג/ליטר', 'severity': 1}] if bed_number == 8 else [])),
         })
@@ -123,12 +78,13 @@ def init_patients():
                 "value": i % 5 + 1,
                 "time": datetime.now().isoformat(),
             },
-            'wing_id': db.wings.find_one({'name': 'אגף א׳'})["_id"],
-            'bed': None,
+            'admission': {'department': 'er', 'wing': 'b1', 'bed': None},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if i == 3 else []) +
                          ([{'content': 'טרופונין 18 מ״ג/ליטר', 'severity': 1}] if i == 8 else [])),
         })
     for bed_number in range(13, 25):
+        if random.randint(1, 3) == 1:
+            continue
         db.patients.insert_one({
             'name': 'ישראל ישראלי',
             'age': '70.2',
@@ -160,8 +116,7 @@ def init_patients():
                 "value": bed_number % 5 + 1,
                 "time": datetime.now().isoformat(),
             },
-            'wing_id': db.wings.find_one({'name': 'אגף ב׳'})["_id"],
-            'bed': str(bed_number),
+            'admission': {'department': 'er', 'wing': 'b2', 'bed': str(bed_number)},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if bed_number == 3 else []) +
                          ([{'content': 'טרופונין 18 מ״ג/ליטר', 'severity': 1}] if bed_number == 8 else [])),
         })
@@ -197,12 +152,13 @@ def init_patients():
                 "value": i % 5 + 1,
                 "time": datetime.now().isoformat(),
             },
-            'wing_id': db.wings.find_one({'name': 'אגף ב׳'})["_id"],
-            'bed': None,
+            'admission': {'department': 'er', 'wing': 'b2', 'bed': None},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if i == 3 else []) +
                          ([{'content': 'טרופונין 18 מ״ג/ליטר', 'severity': 1}] if i == 8 else [])),
         })
     for bed_number in range(25, 41):
+        if random.randint(1, 3) == 1:
+            continue
         db.patients.insert_one({
             'name': 'ישראל ישראלי',
             'age': '70.2',
@@ -234,8 +190,7 @@ def init_patients():
                 "value": bed_number % 5 + 1,
                 "time": datetime.now().isoformat(),
             },
-            'wing_id': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
-            'bed': str(bed_number),
+            'admission': {'department': 'er', 'wing': 'b3', 'bed': str(bed_number)},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if bed_number == 3 else []) +
                          ([{'content': 'טרופונין 18 מ״ג/ליטר', 'severity': 1}] if bed_number == 8 else [])),
         })
@@ -271,8 +226,7 @@ def init_patients():
                 "value": i % 5 + 1,
                 "time": datetime.now().isoformat(),
             },
-            'wing_id': db.wings.find_one({'name': 'אגף ג׳'})["_id"],
-            'bed': None,
+            'admission': {'department': 'er', 'wing': 'b3', 'bed': None},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if i == 3 else []) +
                          ([{'content': 'טרופונין 18 מ״ג/ליטר', 'severity': 1}] if i == 8 else [])),
         })
@@ -309,12 +263,10 @@ def init_patients():
                 "value": i % 5 + 1,
                 "time": datetime.now().isoformat(),
             },
-            'wing_id': db.wings.find_one({'name': 'אגף מהלכים'})["_id"],
-            'bed': None,
+            'admission': {'department': 'er', 'wing': 'a', 'bed': None},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if i == 3 else []) +
                          ([{'content': 'טרופונין 18 מ״ג/ליטר', 'severity': 1}] if i == 8 else [])),
         })
 
 
-init_wings()
 init_patients()

@@ -2,7 +2,8 @@ import './App.css';
 import React from 'react-dom'
 import {ConfigProvider, Layout} from 'antd';
 import {LoginProvider} from "./components/LoginContext";
-import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import {BrowserRouter as Router, generatePath, Route, Routes} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import {WING_URL, WingView} from "./pages/WingView";
 import {LOGIN_URL, LoginView} from "./pages/LoginView";
 import {DEPARTMENT_URL, DepartmentView} from "./pages/DepartmentView";
@@ -21,6 +22,9 @@ function App() {
                                     <Route path={WING_URL} element={<WingView/>}/>
                                     <Route path={DEPARTMENT_URL} element={<DepartmentView/>}/>
                                     <Route path={SETTINGS_URL} element={<SettingsView/>}/>
+                                    <Route path={'*'} element={<Navigate to={generatePath(
+                                        DEPARTMENT_URL, {department: user && user.department || "er"}
+                                    )}/>}/>
                                 </Routes>
                             </Layout>
                         }

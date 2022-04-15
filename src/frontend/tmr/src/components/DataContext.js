@@ -25,9 +25,8 @@ export const createContext = (defaultValue) => {
             return () => s.cancel()
         }, [url, lastMessage, navigate]);
 
-        const getData = useCallback((path, defaultValue) =>
-                path.reduce((data, name) => data ? data[name] : undefined, value) || defaultValue,
-            [value]);
+        const getData = useCallback((path, defaultValue) => path.reduce((data, name) =>
+            (data === undefined || data[name] === undefined) ? defaultValue : data[name], value), [value]);
 
         const updateData = useCallback((path, newValue) => {
             const deepReplace = (path, data, value) => {

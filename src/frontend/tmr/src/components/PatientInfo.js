@@ -1,4 +1,4 @@
-import {Button, Collapse, Drawer, List, Radio, Timeline} from "antd";
+import {Collapse, Drawer, List, Radio, Timeline} from "antd";
 import React, {useContext, useEffect, useState} from "react";
 import {useNavigate} from "react-router";
 import Moment from "react-moment";
@@ -11,8 +11,7 @@ import theme from 'highcharts/themes/dark-unica';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faHeart, faHeartPulse, faPercent, faTemperatureHalf,} from "@fortawesome/free-solid-svg-icons";
 import {HashMatch} from "./HashMatch";
-import {severityColor} from "./Patient";
-import {value} from "lodash/seq";
+import {PatientComplaint, patientDataContext, PatientWarning, severityColor} from "./Patient";
 
 theme(Highcharts);
 highchartsMore(Highcharts);
@@ -32,7 +31,6 @@ const MeasureGraph = ({measure}) => {
         series: [measure]
     }}/>
 }
-const patientContext = createContext(null);
 export const PatientInfo = () => {
     const navigate = useNavigate();
 
@@ -41,14 +39,14 @@ export const PatientInfo = () => {
         {({matched, match}) => <Drawer title={title} placement={"left"} visible={matched}
                                        onClose={() => navigate('#')}>
             {matched &&
-                <patientContext.Provider url={`/api/patients/id/${match[0]}/info`} defaultValue={{}}>
+                <patientDataContext.Provider url={`/api/patients/${match[0]}/info`} defaultValue={{}}>
                     {() => <InternalPatientCard patient={match[0]} setTitle={setTitle}/>}
-                </patientContext.Provider>}
+                </patientDataContext.Provider>}
         </Drawer>}
     </HashMatch>
 }
 const InternalPatientCard = ({patient, setTitle}) => {
-    const {getData, updateData, loadingData} = useContext(patientContext.context);
+    const {getData, updateData, loadingData} = useContext(patientDataContext.context);
     useEffect(() => {
         if (loadingData)
             setTitle('')
@@ -60,9 +58,21 @@ const InternalPatientCard = ({patient, setTitle}) => {
     return <HashMatch match={['info', patient]}>
         {({match}) => <Collapse defaultActiveKey={['basic'].concat(...match.slice(0, 1))}>
             <Panel key={'basic'} showArrow={false} collapsible={"disabled"} header={'מידע בסיסי'}>
-                <div style={{display: "flex", width: '100%'}}>
-                    <p style={{lineHeight: "30px"}}>חומרה:&nbsp;</p>
-                    <Radio.Group value={getData(['severity', 'value'])}
+                {getData(['warnings'], ['פירוט התרעה 1']).map((warning, i) =>
+                    <HashMatch key={i} match={['info', patient, 'basic', `warning-${i}`]}>{({matched}) =>
+                        <PatientWarning patient={patient} warning={warning} index={i} style={{
+                            animation: matched ? 'highlight 2s ease-out' : undefined, marginBottom: 18
+                        }}/>
+                    }</HashMatch>
+                )}
+                <HashMatch match={['info', patient, 'basic', 'complaint']}>{({matched}) =>
+                    <PatientComplaint patient={patient} style={{
+                        animation: matched ? 'highlight 2s ease-out' : undefined, marginBottom: 18
+                    }}/>
+                }</HashMatch>
+                <div style={{display: "flex", width: '100%', marginBottom: 14}}>
+                    <span>דחיפות:&nbsp;</span>
+                    <Radio.Group value={getData(['severity', 'value'])} size={"small"}
                                  style={{flex: 1, display: "inline-flex", textAlign: "center"}}
                                  onChange={e => updateData(['severity', 'value'], e.target.value)}>
                         {[1, 2, 3, 4, 5].map(i => <Radio.Button key={i} value={i} style={{
@@ -71,18 +81,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                         }}>{i}</Radio.Button>)}
                     </Radio.Group>
                 </div>
-                <HashMatch match={['info', patient, 'basic', 'complaint']}>{({matched}) =>
-                    <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
-                        תלונה עיקרית: {getData(['complaint'], 'קוצר נשימה')}
-                    </p>
-                }</HashMatch>
-                {getData(['warnings'], ['פירוט התרעה 1']).map((warning, i) =>
-                    <HashMatch key={i} match={['info', patient, 'basic', `warning-${i}`]}>{({matched}) =>
-                        <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
-                            {warning}
-                        </p>}
-                    </HashMatch>
-                )}
+
                 <HashMatch match={['info', patient, 'basic', 'secondary-complaint']}>{({matched}) =>
                     <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
                         תלונה משנית: {getData(['secondary-complaint'], 'תלונה משנית')}

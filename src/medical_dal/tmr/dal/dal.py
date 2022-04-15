@@ -1,58 +1,58 @@
-from dataclasses import dataclass
-from bson.objectid import ObjectId
-from bson.json_util import dumps
 import json
-from pymongo.database import Database
-from tmr_common.data_models.patient_count import PatientCount
-from tmr_common.data_models.patient import Patient
+from dataclasses import dataclass
 from typing import List
-from pymongo.results import UpdateResult
+
+import logbook
+from bson.json_util import dumps
+from bson.objectid import ObjectId
+from pymongo.database import Database
+
+from tmr_common.data_models.patient import Patient
+
+logger = logbook.Logger(__name__)
 
 
 @dataclass
 class MedicalDal:
     db: Database
 
-    def patient_count_in_wing(self, wing_id: str) -> PatientCount:
-        count = json.loads(
-            dumps(self.db.patients.count_documents({"wing_id": ObjectId(wing_id)})))
-        return PatientCount(patient_count=count)
+    def get_department_wings(self, department: str) -> dict:
+        return json.loads(dumps(self.db.wings.find({"department": department}, {"_id": 1, "key": 1, "name": 1})))
 
-    def patients_in_wing(self, wing_id: str) -> List[Patient]:
-        return [Patient(oid=patient["_id"]["$oid"], **patient) for patient in
-                json.loads(dumps(self.db.patients.find({"wing_id": ObjectId(wing_id)}, {"bed": 1})))]
+    def get_wing(self, department: str, wing: str) -> dict:
+        return json.loads(dumps(self.db.wings.find_one({"department": department, "key": wing})))
 
-    def get_wing_details(self, wing_id: str) -> dict:
-        return json.loads(dumps(self.db.wings.find_one({"_id": ObjectId(wing_id)})))
+    def get_wing_patient_count(self, department: str, wing: str) -> int:
+        return self.db.patients.count_documents({"admission.department": department, "admission.wing": wing})
 
-    def get_all_wings_names(self) -> dict:
-        return json.loads(dumps(self.db.wings.find({}, {"_id": 1, "name": 1})))
+    def get_wing_patients(self, department: str, wing: str) -> List[Patient]:
+        return [Patient(oid=str(patient.pop("_id")), **patient) for patient in
+                self.db.patients.find({"admission.department": department, "admission.wing": wing}, {"admission": 1})]
 
-    def get_patient_info_by_id(self, patient_id: str) -> dict:
-        return json.loads(dumps(self.db.patients.find_one({"_id": ObjectId(patient_id)})))
+    def get_patient_by_id(self, patient: str) -> dict:
+        return self.db.patients.find_one({"_id": ObjectId(patient)})
 
-    def update_patient_info_by_id(self, patient_id: str, update_object: dict) -> bool:
-        self.db.patients.update_one(
-            {"_id": ObjectId(patient_id)},
+    def get_patient_by_bed(self, department: str, wing: str, bed: str) -> str:
+        res = self.db.patients.find_one({"admission": {"department": department, "wing": wing, "bed": bed}})
+        return str(res.pop('_id')) if res else None
+
+    def update_patient_by_id(self, patient: str, update_object: dict) -> bool:
+        update_result = self.db.patients.update_one({"_id": ObjectId(patient)}, {'$set': update_object})
+        return update_result.modified_count
+
+    def update_patient_by_bed(self, department: str, wing: str, bed: str, update_object: dict):
+        update_result = self.db.patients.update_one(
+            {"admission": {"department": department, "wing": wing, "bed": bed}},
             {'$set': update_object}
         )
-        return True
+        return update_result.modified_count
 
-    def update_patient_info_by_bed(self, bed: str, update_object: dict):
-        self.db.patients.update_one(
-            {"bed": bed},
-            {'$set': update_object})
-        return True
+    def get_patient_measures(self, patient: str) -> dict:
+        return json.loads(dumps(self.db.patients.find_one({"_id": ObjectId(patient)}, {"measures": 1})))
 
-    def get_patient_info_by_bed(self, bed: str) -> dict:
-        return json.loads(dumps(self.db.patients.find_one({"bed": bed})))
-
-    def get_patient_measures(self, patient_id: str) -> dict:
-        return json.loads(dumps(self.db.patients.find_one({"_id": ObjectId(patient_id)}, {"measures": 1})))
-
-    def append_warning_to_patient_by_id(self, patient_id: str, warning: str) -> bool:
-        update_result: UpdateResult = self.db.patients.update_one(
-            {"_id": ObjectId(patient_id)},
+    def append_warning_to_patient_by_id(self, patient: str, warning: str) -> bool:
+        update_result = self.db.patients.update_one(
+            {"_id": ObjectId(patient)},
             {'$push': {"warnings": {ObjectId(), warning}}}
         )
-        return update_result.modified_count >= 1
+        return update_result.modified_count

@@ -8,6 +8,15 @@ from .measures.measures import Measures
 from json import loads
 
 
+class Admission(BaseModel):
+    department: Optional[str]
+    wing: Optional[str]
+    bed: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+
 class Patient(BaseModel):
     oid: Optional[str] = Field(default_factory=ObjectId)
     name: Optional[str]
@@ -17,12 +26,12 @@ class Patient(BaseModel):
     flagged: Optional[bool] = False
     measures: Optional[Measures]
     severity: Optional[Severity]
-    wing: Optional[str] = Field(default_factory=ObjectId)
-    bed: Optional[str]
+    admission: Optional[Admission]
     warnings: Optional[List[dict]]
 
-    cameleon_id : Optional[str] #Not currently in DAL
-    unit: Optional[str] #Not currently in DAL
+    cameleon_id: Optional[str]  # Not currently in DAL
+    unit: Optional[str]  # Not currently in DAL
+
     class Config:
         orm_mode = True
         json_encoders = {

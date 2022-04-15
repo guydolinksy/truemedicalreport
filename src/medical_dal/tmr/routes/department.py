@@ -1,11 +1,15 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
-from typing import List
-from tmr_common.data_models.patient_count import PatientCount
+
 from tmr_common.data_models.wing.wing import WingOverview
+from .wing import wing_router
 from ..dal.dal import MedicalDal
 
 department_router = APIRouter()
+
+department_router.include_router(wing_router, prefix="/{department}/wings")
 
 
 # TODO remove duplicate use of medical_dal function
@@ -13,14 +17,10 @@ def medical_dal() -> MedicalDal:
     return MedicalDal(MongoClient("medical-db").tmr)
 
 
-@department_router.get("/", response_model=List[WingOverview], response_model_exclude_unset=True)
-def get_department_overview(dal: MedicalDal = Depends(medical_dal)) -> List[WingOverview]:
-    return [
-        WingOverview(
-            oid=wing["_id"]["$oid"], **wing,
-            patient_count=dal.patient_count_in_wing(wing_id=wing["_id"]["$oid"]),
-            waiting_patient=PatientCount(
-                patient_count=dal.patient_count_in_wing(wing_id=wing["_id"]["$oid"]).patient_count / 2))
-            .dict(exclude_unset=True)
-        for wing in dal.get_all_wings_names()
-    ]
+@department_router.get("/{department}", response_model=List[WingOverview], response_model_exclude_unset=True)
+def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> List[WingOverview]:
+    return [WingOverview(
+        oid=wing["_id"]["$oid"], **wing,
+        patient_count=dal.get_wing_patient_count(department, wing["key"]),
+        waiting_patient=10,
+    ) for wing in dal.get_department_wings(department)]

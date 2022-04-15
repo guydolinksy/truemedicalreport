@@ -10,6 +10,7 @@ import {useNavigate} from "react-router";
 import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
+import {Bed} from "./Bed";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -89,8 +90,8 @@ const WingNotificationsInner = ({wingName}) => {
         </Menu>
     </div>
 };
-const WingNotifications = ({wing, wingName}) => {
-    const notificationsURI = `/api/wings/${wing}/notifications`;
+const WingNotifications = ({department, wing, wingName}) => {
+    const notificationsURI = `/api/departments/${department}/wings/${wing}/notifications`;
 
     return <notificationsDataContext.Provider url={notificationsURI}
                                               updateURL={notificationsURI}
@@ -100,32 +101,36 @@ const WingNotifications = ({wing, wingName}) => {
     </notificationsDataContext.Provider>;
 }
 
-export const Wing = ({id}) => {
-    const uri = `/api/wings/${id}`;
+export const Wing = ({department, wing}) => {
+    const uri = `/api/departments/${department}/wings/${wing}`;
 
     return <wingDataContext.Provider url={uri} updateURL={uri} socketURL={uri}
-                                     defaultValue={{patients_beds: [], structure: {}}}>
+                                     defaultValue={{patients: [], details: {}}}>
         {({loadingData, getData}) => {
-            const assignedPatients = (getData(['patients_beds']) || []).filter(({oid, bed}) => bed)
+            const assignedPatients = (getData(['patients']) || []).filter(({oid, admission}) => admission.bed)
             const title = <span>מטופלים במיטות: {assignedPatients.length}</span>
-            const unassignedPatients = (getData(['patients_beds']) || []).filter(({oid, bed}) => !bed)
+            const unassignedPatients = (getData(['patients']) || []).filter(({oid, admission}) => !admission.bed)
             const overflowTitle = <span>מטופלים ללא מיטה: {unassignedPatients.length}</span>
 
-            const structure = (getData(['structure']) || []);
+            const details = (getData(['details']) || []);
 
             return <Layout>
                 <Sider breakpoint={"lg"} width={230}>
-                    <WingNotifications wing={id} wingName={structure.name}/>
+                    <WingNotifications department={department} wing={wing} wingName={details.name}/>
                 </Sider>
                 <Content style={{backgroundColor: "#000d17", overflowY: "scroll"}}>
                     <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                         {loadingData ? <Spin/> :
-                            (structure.beds ? [<Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
-                                {(structure.rows || []).map((row, i) =>
+                            (details.beds ? [<Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
+                                {(details.rows || []).map((row, i) =>
                                     <Row key={i} style={row} wrap={false}>
-                                        {(structure.columns || []).map((column, j) =>
-                                            structure.beds[i][j] === null ? <div key={j} style={column}/> :
-                                                <Patient key={j} style={column} bed={structure.beds[i][j]}/>
+                                        {(details.columns || []).map((column, j) =>
+                                            details.beds[i][j] === null ? <div key={j} style={column}/> :
+                                                <Bed key={j} style={column} admission={{
+                                                    department: department,
+                                                    wing: wing,
+                                                    bed: details.beds[i][j]
+                                                }}/>
                                         )}
                                     </Row>
                                 )}
@@ -137,7 +142,7 @@ export const Wing = ({id}) => {
                                         gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))"
                                     }}>
                                         {unassignedPatients.map(patient =>
-                                            <Patient key={patient.oid} id={patient.oid}
+                                            <Patient key={patient.oid} patient={patient.oid}
                                                      style={{flex: '1', minWidth: 300}}/>)}
                                     </div>
                                 </Card>)}
