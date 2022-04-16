@@ -62,7 +62,6 @@ const PatientData = patientDataContext.withData(
 const Measure = ({patient, measure, path, icon, title}) => {
     const navigate = useNavigate();
     const {getData} = useContext(patientDataContext.context);
-    console.log(getData(path.concat('is_valid'), 'as'))
     return <div onClick={patient ? e => {
         navigate(`#info#${patient}#measures#${measure}`);
         e.stopPropagation();
@@ -80,7 +79,7 @@ const Measure = ({patient, measure, path, icon, title}) => {
 
 
 const {Meta} = Card;
-const severityBorderColor = {
+export const severityBorderColor = {
     1: "#d32029",
     2: "#d87a16",
     3: "#d8bd14",

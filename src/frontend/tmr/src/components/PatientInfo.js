@@ -11,7 +11,7 @@ import theme from 'highcharts/themes/dark-unica';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faHeart, faHeartPulse, faPercent, faTemperatureHalf,} from "@fortawesome/free-solid-svg-icons";
 import {HashMatch} from "./HashMatch";
-import {PatientComplaint, patientDataContext, PatientWarning, severityColor} from "./Patient";
+import {PatientComplaint, patientDataContext, PatientWarning, severityBorderColor, severityColor} from "./Patient";
 
 theme(Highcharts);
 highchartsMore(Highcharts);
@@ -30,6 +30,19 @@ const MeasureGraph = ({measure}) => {
         plotOptions: {series: {marker: {radius: 3}, lineWidth: 1}},
         series: [measure]
     }}/>
+}
+const PatientSeverity = () => {
+    const {getData, updateData} = useContext(patientDataContext.context);
+    const value = getData(['severity', 'value']);
+    return <Radio.Group value={value} size={"small"} buttonStyle={"solid"}
+                        style={{flex: 1, display: "inline-flex", textAlign: "center"}}
+                        onChange={e => updateData(['severity', 'value'], e.target.value)}>
+        {[1, 2, 3, 4, 5].map(i => <Radio.Button key={i} value={i} style={{
+            flex: 1,
+            color: value === i ? undefined : severityBorderColor[i],
+            backgroundColor: value === i ? severityColor[i] : undefined,
+        }}>{i}</Radio.Button>)}
+    </Radio.Group>
 }
 export const PatientInfo = () => {
     const navigate = useNavigate();
@@ -71,15 +84,8 @@ const InternalPatientCard = ({patient, setTitle}) => {
                     }}/>
                 }</HashMatch>
                 <div style={{display: "flex", width: '100%', marginBottom: 14}}>
-                    <span>דחיפות:&nbsp;</span>
-                    <Radio.Group value={getData(['severity', 'value'])} size={"small"}
-                                 style={{flex: 1, display: "inline-flex", textAlign: "center"}}
-                                 onChange={e => updateData(['severity', 'value'], e.target.value)}>
-                        {[1, 2, 3, 4, 5].map(i => <Radio.Button key={i} value={i} style={{
-                            flex: 1,
-                            backgroundColor: severityColor[i],
-                        }}>{i}</Radio.Button>)}
-                    </Radio.Group>
+                    <span>דחיפות:&nbsp;</span><PatientSeverity/>
+
                 </div>
 
                 <HashMatch match={['info', patient, 'basic', 'secondary-complaint']}>{({matched}) =>
