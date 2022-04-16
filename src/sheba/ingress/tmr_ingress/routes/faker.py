@@ -8,7 +8,7 @@ faker_router = APIRouter()
 @faker_router.get("/ingress/faker/all", tags=["Patient"])
 def update_measurements():
     """
-    update the measurments of a single patient.
+    update the measurements of a single patient.
     query from sql insert to mongo
     :param patient_id:
     :return:

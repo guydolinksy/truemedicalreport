@@ -2,7 +2,7 @@ import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from .cameleon_main_inserter import ChameleonMainInserter
+from .chameleon_main_inserter import ChameleonMainInserter
 from .measurements_inserter import MeasurementsInserter
 
 
@@ -21,7 +21,7 @@ class FakeMain(object):
         self.measurements_inserter.generate_all_measurements(inner_patient_id)
         self.measurements_inserter.add_rows()
 
-    def update_measurments(self):
+    def update_measurements(self):
         self.measurements_inserter.update_measurement()
         self.measurements_inserter.add_rows()
 

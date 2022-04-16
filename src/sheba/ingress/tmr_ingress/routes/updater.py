@@ -14,7 +14,7 @@ def dal_updater() -> SqlToDal:
 @updater_router.post("/{patient}/measurement", tags=["Patient"])
 def update_measurements(patient_id: str, dal: SqlToDal = Depends(dal_updater)):
     """
-    update the measurments of a single patient.
+    update the measurements of a single patient.
     query from sql insert to mongo
     :param patient_id:
     :return:

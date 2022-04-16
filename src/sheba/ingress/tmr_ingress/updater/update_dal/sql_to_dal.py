@@ -12,7 +12,7 @@ from tmr_common.data_models.measures.blood_pressure.blood_pressure import BloodP
 from tmr_common.data_models.measures.pulse import Pulse
 from tmr_common.data_models.measures.temperature import Temperature
 
-from ...models.cameleon_main import ChameleonMain
+from ...models.chameleon_main import ChameleonMain
 from ...models.measurements import Measurements
 from tmr_common.data_models.measures.measures import Measures
 from tmr_common.data_models.patient import Patient
@@ -34,20 +34,20 @@ class SqlToDal(object):
 
     def get_all_patients(self):
         patients_data_list = []
-        for chameleon_patient_obj in self._get_cameleon_patient():
+        for chameleon_patient_obj in self._get_chameleon_patient():
             single_patient_info = self._get_single_patient_info(chameleon_patient_obj)
             patients_data_list.append(single_patient_info)
         return patients_data_list
 
-    def _get_cameleon_patient(self):
+    def _get_chameleon_patient(self):
         return self._data_query.select(select(ChameleonMain))
 
     def _get_single_patient_info(self, patient_obj: ChameleonMain) -> Patient:
         patient_data = Patient(
-            cameleon_id=patient_obj.Id_Num,
+            chameleon_id=patient_obj.Id_Num,
             name=patient_obj.patient_name,
             Complaint=patient_obj.Main_cause,
-            awaiting="We will add this to cameleon main",
+            awaiting="We will add this to chameleon main",
             measures=self.get_patient_measurements(patient_obj.Id_Num),
             wing=patient_obj.Unit_wing,
             bed=patient_obj.bed_num,
@@ -55,13 +55,13 @@ class SqlToDal(object):
             warnings=patient_obj.warnings)
         return patient_data
 
-    def _get_all_patient_measurments(self, patient_id: str) -> {}:
+    def _get_all_patient_measurements(self, patient_id: str) -> {}:
         patient_measurements = self._data_query.select(
             select(Measurements).where(Measurements.Id_Num == patient_id))
 
         systolic, diastolic, temperature, pulse, blood_pressure, esi_score = None, None, None, None, None, None
         for measurement_data in patient_measurements:
-            measurements_values = self._get_measurments_data(measurement_data)
+            measurements_values = self._get_measurements_data(measurement_data)
             parameter_num = measurement_data.Parameter_Id
             match parameter_num:
                 case MeasurementsIds.Systolic.value:
@@ -80,14 +80,14 @@ class SqlToDal(object):
         return patient_measures, esi_score
 
     def get_patient_measurements(self, patients_id):
-        patients_measurements = self._get_all_patient_measurments(patients_id)[0]
+        patients_measurements = self._get_all_patient_measurements(patients_id)[0]
         return patients_measurements
 
     def get_patients_esi(self, patients_id):
-        patients_esi = self._get_all_patient_measurments(patients_id)[1]
+        patients_esi = self._get_all_patient_measurements(patients_id)[1]
         return patients_esi
 
-    def _get_measurments_data(self, patient_measurements: Measurements):
+    def _get_measurements_data(self, patient_measurements: Measurements):
         measurements_values = {
             "value": patient_measurements.Result,
             # "Warnings": patient_measurements.Warnings,

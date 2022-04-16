@@ -1,4 +1,4 @@
-import {Button, Card, Form, Input, Space, Switch} from "antd";
+import {Alert, Button, Card, Form, Input, Space, Switch} from "antd";
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import Axios from "axios";
 
@@ -35,8 +35,14 @@ const LDAPAuthentication = () => {
         });
     }, []);
 
-    return <Form ref={form} name={"ldap"} title={''} onFinish={onFinish} onValuesChange={() => setError(false)}
+    return <Form ref={form} name={"ldap"} title={''} onFinish={onFinish} onValuesChange={() => {
+        setError(false)
+        setSuccess(false)
+    }}
                  initialValues={initialValue}>
+        {success && <Alert message={'ההגדרות נשמרו בהצלחה'} type={"success"} style={{marginBottom: 24}}/>}
+        {error && <Alert message={'לא ניתן לאמת את המשתמש עם ההגדרות הנוכחיות'} type={"error"} closable
+                         afterClose={() => setError(false)} style={{marginBottom: 24}}/>}
         <Form.Item name={"enabled"} label={"חיבור LDAP מאופשר"} valuePropName={"checked"}>
             <Switch/>
         </Form.Item>
@@ -91,11 +97,15 @@ const LDAPAuthentication = () => {
         <Form.Item name={"test_password"} label={"סיסמה לבדיקה"}>
             <Input placeholder={"סיסמה לבדיקה"} autoComplete={"off"}/>
         </Form.Item>
-        <Form.Item hasFeedback>
-            <Button danger={error} onClick={() => onTest()}>בדיקת חיבור</Button>
-        </Form.Item>
         <Form.Item>
-            <Button type={"primary"} htmlType={"submit"}>שמירה</Button>
+            <Space>
+                <Form.Item>
+                    <Button onClick={() => onTest()}>בדיקת חיבור</Button>
+                </Form.Item>
+                <Form.Item>
+                    <Button type={"primary"} htmlType={"submit"}>שמירה</Button>
+                </Form.Item>
+            </Space>
         </Form.Item>
     </Form>
 }

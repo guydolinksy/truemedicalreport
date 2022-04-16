@@ -29,7 +29,7 @@ class Patient(BaseModel):
     admission: Optional[Admission]
     warnings: Optional[List[dict]]
 
-    cameleon_id: Optional[str]  # Not currently in DAL
+    chameleon_id: Optional[str]  # Not currently in DAL
     unit: Optional[str]  # Not currently in DAL
 
     class Config:

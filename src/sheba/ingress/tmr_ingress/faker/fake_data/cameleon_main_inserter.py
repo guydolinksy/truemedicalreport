@@ -1,5 +1,5 @@
 from ..fake_data.data_inserter_base import DataInserterBase
-from ...models.cameleon_main import ChameleonMain
+from ...models.chameleon_main import ChameleonMain
 import random
 
 

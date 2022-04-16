@@ -1,7 +1,7 @@
 from faker import Faker
 from sqlalchemy.orm import Session
 from sqlalchemy import select, update
-from ...models.cameleon_main import ChameleonMain
+from ...models.chameleon_main import ChameleonMain
 
 
 class DataInserterBase:
