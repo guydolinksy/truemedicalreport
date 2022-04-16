@@ -4,11 +4,10 @@ from enum import Enum
 import logbook
 import requests
 from requests import HTTPError
-from sqlalchemy import select, create_engine
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from tmr_common.data_models.esi_score import ESIScore
-from tmr_common.data_models.measures import Measures, Temperature, Pulse, Systolic, Diastolic, BloodPressure
+from tmr_common.data_models.measures import Temperature, Pulse, Systolic, Diastolic
 from tmr_ingress.models.chameleon_main import ChameleonMain
 from tmr_ingress.models.measurements import Measurements
 
@@ -65,16 +64,16 @@ class SqlToDal(object):
                     match measurement.code:
                         case MeasurementsIds.Systolic.value:
                             patients.setdefault(measurement.id_num, {}).setdefault('blood_pressure', {}). \
-                                setdefault('systolic', Systolic(**measurement.dict()).dict())
+                                setdefault('systolic', Systolic(**measurement.to_dal()).dict())
                         case MeasurementsIds.Diastolic.value:
                             patients.setdefault(measurement.id_num, {}).setdefault('blood_pressure', {}). \
-                                setdefault('diastolic', Diastolic(**measurement.dict()).dict())
+                                setdefault('diastolic', Diastolic(**measurement.to_dal()).dict())
                         case MeasurementsIds.Temperature.value:
                             patients.setdefault(measurement.id_num, {}). \
-                                setdefault('temperature', Temperature(**measurement.dict()).dict())
+                                setdefault('temperature', Temperature(**measurement.to_dal()).dict())
                         case MeasurementsIds.Pulse.value:
                             patients.setdefault(measurement.id_num, {}). \
-                                setdefault('pulse', Pulse(**measurement.dict()).dict())
+                                setdefault('pulse', Pulse(**measurement.to_dal()).dict())
 
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/measurements',
                                 json={'measurements': patients})
