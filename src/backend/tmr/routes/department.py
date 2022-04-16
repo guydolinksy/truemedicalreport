@@ -3,7 +3,7 @@ from typing import List
 import requests
 from fastapi import APIRouter, Depends
 
-from tmr_common.data_models.wing.wing import WingOverview
+from tmr_common.data_models.wing import WingOverview
 from ..logics.auth import manager
 from ..routes.wing import wing_router
 

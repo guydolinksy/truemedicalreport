@@ -25,4 +25,6 @@ COPY sheba/ingress/tmr_ingress /opt/ingress/tmr_ingress
 
 COPY common /opt/common
 
+ENV DEBUG=1
+
 CMD python -m tmr_ingress

@@ -8,6 +8,7 @@ services:
     environment:
       - "CHAMELEON_CONNECTION_STRING=foo"
     volumes:
+      - "./common/tmr_common:/opt/common/tmr_common"
       - "./sheba/ingress/tmr_ingress:/opt/ingress/tmr_ingress"
     ports:
       - "8020:80"

@@ -23,7 +23,7 @@ export const patientDataContext = createContext({
 });
 
 const PatientData = patientDataContext.withData(
-    ({path, title, icon, size, editable, danger, loadingData, getData, updateData}) => {
+    ({path, title, icon, size, editable, style, danger, loadingData, getData, updateData}) => {
         const [editing, setEditing] = useState(false)
 
         const [value, setValue] = useState(getData(path))
@@ -37,19 +37,22 @@ const PatientData = patientDataContext.withData(
             setEditing(false)
         }, [path, value, updateData])
 
-        const content = <span style={{userSelect: "none", color: danger ? 'red' : undefined}}>
+        const content = <span
+            style={{userSelect: "none", color: danger ? 'red' : undefined, overflowX: "hidden", width: "100%"}}>
             <FontAwesomeIcon icon={icon}/>&nbsp;{value}
         </span>;
         return loadingData ? <Spin/> : <Tooltip overlay={title}>
-            {!editable ? content :
-                !editing ? <Button style={{padding: 0}} type={"text"} danger={danger} onClick={e => {
-                        setEditing(true);
-                        e.stopPropagation();
-                    }}>{content}</Button> :
-                    <Input.Group compact>
-                        <Input size={size} style={{width: 150}} onClick={e => e.stopPropagation()} defaultValue={value}
+            {!editable ? <div style={{padding: 0, maxWidth: 150}}>{content}</div> :
+                !editing ?
+                    <Button style={{paddingRight: 8, paddingLeft: 8, maxWidth: 150}} type={"text"} danger={danger}
+                            onClick={e => {
+                                setEditing(true);
+                                e.stopPropagation();
+                            }}>{content}</Button> :
+                    <Input.Group style={{paddingRight: 8, paddingLeft: 8, width: 150, display: "flex"}} compact>
+                        <Input size={size} onClick={e => e.stopPropagation()} defaultValue={value}
                                onChange={debounce(e => setValue(e.target.value), 300)} onPressEnter={onSave}
-                               onBlur={onSave}/>
+                               onBlur={onSave} style={{flex: 1}}/>
                         <Button type={"primary"} size={size} onClick={e => {
                             onSave();
                             e.stopPropagation();
@@ -117,7 +120,7 @@ export const PatientComplaint = ({patient, style}) => {
             userSelect: "none",
             padding: 20,
             backgroundColor: severityColor[getData(['severity', 'value'])],
-            cursor: patient ? "pointer": undefined,
+            cursor: patient ? "pointer" : undefined,
             textAlign: "center",
             ...style
         }}
@@ -140,7 +143,7 @@ export const PatientWarning = ({patient, warning, index, style}) => {
             userSelect: "none",
             padding: 20,
             backgroundColor: severityColor[warning.severity],
-            cursor: patient ? "pointer": undefined,
+            cursor: patient ? "pointer" : undefined,
             textAlign: "center",
             ...style
         }}
@@ -201,7 +204,7 @@ const PatientInner = ({patient, avatar, style}) => {
         ref.current.scrollIntoViewIfNeeded(true);
     return <HashMatch match={['highlight', patient]}>{({matched, match}) =>
         <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
-            marginRight: -4, animation: matched ? `highlight-${match[0]} 1s ease-out` : undefined
+            marginRight: -4, marginLeft: -4, animation: matched ? `highlight-${match[0]} 1s ease-out` : undefined
         }} title={<PatientHeader patient={patient} avatar={avatar}/>} actions={patientMeasures(patient)} style={{
             margin: 0, maxWidth: 400, minWidth: 300, borderColor: severityBorderColor[severity], ...style
         }} hoverable={patient} onClick={patient ? () => navigate(`#info#${patient}#basic`) : null}

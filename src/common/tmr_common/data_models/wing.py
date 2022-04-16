@@ -1,8 +1,8 @@
-from types import NoneType
+from typing import List
+from typing import Optional
 
 from pydantic import BaseModel
-from typing import Optional
-from typing import List
+
 from tmr_common.data_models.patient import Patient
 
 

@@ -3,9 +3,8 @@ from fastapi import APIRouter, Depends
 from pymongo import MongoClient
 
 from tmr_common.data_models.bed import Bed
-from tmr_common.data_models.patient import Patient
 
-from tmr_common.data_models.wing.wing import Wing, WingSummarize
+from tmr_common.data_models.wing import Wing, WingSummarize
 from ..dal.dal import MedicalDal
 
 logger = logbook.Logger(__name__)

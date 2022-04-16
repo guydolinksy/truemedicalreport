@@ -6,3 +6,4 @@ common
 pyodbc
 mssql
 faker
+fastapi-utils

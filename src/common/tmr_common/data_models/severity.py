@@ -4,7 +4,7 @@ from datetime import datetime
 
 class Severity(BaseModel):
     value: int
-    time: datetime
+    at: datetime
 
     class Config:
         orm_mode = True

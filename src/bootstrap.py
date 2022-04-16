@@ -18,29 +18,36 @@ def init_patients():
             'awaiting': 'פענוח סיטי',
             'flagged': False,
             'measures': {
-                "temperature": {"value": 37.2, "is_live": False, "min": 36.5, "max": 37.5,
-                                "time": datetime.now().isoformat()},
+                "temperature": {
+                    "value": 37.2,
+                    "minimum": 36.5,
+                    "maximum": 37.5,
+                    "at": datetime.now().isoformat()
+                },
                 "blood_pressure": {
                     "systolic": {
                         "value": 140,
-                        "min": 90,
-                        "max": 120,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 90,
+                        "maximum": 120,
+                        "at": datetime.now().isoformat(),
                     },
                     "diastolic": {
                         "value": 80,
-                        "min": 60,
-                        "max": 100,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 60,
+                        "maximum": 100,
+                        "at": datetime.now().isoformat(),
                     }
                 },
-                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 60, "max": 90}
+                "pulse": {
+                    "value": 80,
+                    "minimum": 60,
+                    "maximum": 90,
+                    "at": datetime.now().isoformat(),
+                },
             },
             'severity': {
                 "value": bed_number % 5 + 1,
-                "time": datetime.now().isoformat(),
+                "at": datetime.now().isoformat(),
             },
             'admission': {'department': 'er', 'wing': 'b1', 'bed': str(bed_number)},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if bed_number == 3 else []) +
@@ -54,29 +61,36 @@ def init_patients():
             'awaiting': 'פענוח סיטי',
             'flagged': False,
             'measures': {
-                "temperature": {"value": 37.2, "is_live": False, "min": 36.5, "max": 37.5,
-                                "time": datetime.now().isoformat()},
+                "temperature": {
+                    "value": 37.2,
+                    "minimum": 36.5,
+                    "maximum": 37.5,
+                    "at": datetime.now().isoformat()
+                },
                 "blood_pressure": {
                     "systolic": {
                         "value": 140,
-                        "min": 90,
-                        "max": 120,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 90,
+                        "maximum": 120,
+                        "at": datetime.now().isoformat(),
                     },
                     "diastolic": {
                         "value": 80,
-                        "min": 60,
-                        "max": 100,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 60,
+                        "maximum": 100,
+                        "at": datetime.now().isoformat(),
                     }
                 },
-                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 60, "max": 90}
+                "pulse": {
+                    "value": 80,
+                    "minimum": 60,
+                    "maximum": 90,
+                    "at": datetime.now().isoformat(),
+                },
             },
             'severity': {
                 "value": i % 5 + 1,
-                "time": datetime.now().isoformat(),
+                "at": datetime.now().isoformat(),
             },
             'admission': {'department': 'er', 'wing': 'b1', 'bed': None},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if i == 3 else []) +
@@ -92,29 +106,36 @@ def init_patients():
             'awaiting': 'פענוח סיטי',
             'flagged': False,
             'measures': {
-                "temperature": {"value": 37.5, "is_live": False, "min": 36.5, "max": 37.5,
-                                "time": datetime.now().isoformat()},
+                "temperature": {
+                    "value": 37.2,
+                    "minimum": 36.5,
+                    "maximum": 37.5,
+                    "at": datetime.now().isoformat()
+                },
                 "blood_pressure": {
                     "systolic": {
                         "value": 140,
-                        "min": 90,
-                        "max": 120,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 90,
+                        "maximum": 120,
+                        "at": datetime.now().isoformat(),
                     },
                     "diastolic": {
                         "value": 80,
-                        "min": 60,
-                        "max": 100,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 60,
+                        "maximum": 100,
+                        "at": datetime.now().isoformat(),
                     }
                 },
-                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 60, "max": 90}
+                "pulse": {
+                    "value": 80,
+                    "minimum": 60,
+                    "maximum": 90,
+                    "at": datetime.now().isoformat(),
+                },
             },
             'severity': {
                 "value": bed_number % 5 + 1,
-                "time": datetime.now().isoformat(),
+                "at": datetime.now().isoformat(),
             },
             'admission': {'department': 'er', 'wing': 'b2', 'bed': str(bed_number)},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if bed_number == 3 else []) +
@@ -128,29 +149,36 @@ def init_patients():
             'awaiting': 'פענוח סיטי',
             'flagged': False,
             'measures': {
-                "temperature": {"value": 37.2, "is_live": False, "min": 36.5, "max": 37.5,
-                                "time": datetime.now().isoformat()},
+                "temperature": {
+                    "value": 37.2,
+                    "minimum": 36.5,
+                    "maximum": 37.5,
+                    "at": datetime.now().isoformat()
+                },
                 "blood_pressure": {
                     "systolic": {
                         "value": 140,
-                        "min": 90,
-                        "max": 120,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 90,
+                        "maximum": 120,
+                        "at": datetime.now().isoformat(),
                     },
                     "diastolic": {
                         "value": 80,
-                        "min": 60,
-                        "max": 100,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 60,
+                        "maximum": 100,
+                        "at": datetime.now().isoformat(),
                     }
                 },
-                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 60, "max": 90}
+                "pulse": {
+                    "value": 80,
+                    "minimum": 60,
+                    "maximum": 90,
+                    "at": datetime.now().isoformat(),
+                },
             },
             'severity': {
                 "value": i % 5 + 1,
-                "time": datetime.now().isoformat(),
+                "at": datetime.now().isoformat(),
             },
             'admission': {'department': 'er', 'wing': 'b2', 'bed': None},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if i == 3 else []) +
@@ -166,29 +194,36 @@ def init_patients():
             'awaiting': 'פענוח סיטי',
             'flagged': False,
             'measures': {
-                "temperature": {"value": 37, "is_live": False, "min": 36.5, "max": 37.5,
-                                "time": datetime.now().isoformat()},
+                "temperature": {
+                    "value": 37.2,
+                    "minimum": 36.5,
+                    "maximum": 37.5,
+                    "at": datetime.now().isoformat()
+                },
                 "blood_pressure": {
                     "systolic": {
                         "value": 140,
-                        "min": 90,
-                        "max": 120,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 90,
+                        "maximum": 120,
+                        "at": datetime.now().isoformat(),
                     },
                     "diastolic": {
                         "value": 80,
-                        "min": 60,
-                        "max": 100,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 60,
+                        "maximum": 100,
+                        "at": datetime.now().isoformat(),
                     }
                 },
-                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 60, "max": 90}
+                "pulse": {
+                    "value": 80,
+                    "minimum": 60,
+                    "maximum": 90,
+                    "at": datetime.now().isoformat(),
+                },
             },
             'severity': {
                 "value": bed_number % 5 + 1,
-                "time": datetime.now().isoformat(),
+                "at": datetime.now().isoformat(),
             },
             'admission': {'department': 'er', 'wing': 'b3', 'bed': str(bed_number)},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if bed_number == 3 else []) +
@@ -202,29 +237,36 @@ def init_patients():
             'awaiting': 'פענוח סיטי',
             'flagged': False,
             'measures': {
-                "temperature": {"value": 37.1, "is_live": False, "min": 36.5, "max": 37.5,
-                                "time": datetime.now().isoformat()},
+                "temperature": {
+                    "value": 37.2,
+                    "minimum": 36.5,
+                    "maximum": 37.5,
+                    "at": datetime.now().isoformat()
+                },
                 "blood_pressure": {
                     "systolic": {
                         "value": 140,
-                        "min": 90,
-                        "max": 120,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 90,
+                        "maximum": 120,
+                        "at": datetime.now().isoformat(),
                     },
                     "diastolic": {
                         "value": 80,
-                        "min": 60,
-                        "max": 100,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 60,
+                        "maximum": 100,
+                        "at": datetime.now().isoformat(),
                     }
                 },
-                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 60, "max": 90}
+                "pulse": {
+                    "value": 80,
+                    "minimum": 60,
+                    "maximum": 90,
+                    "at": datetime.now().isoformat(),
+                },
             },
             'severity': {
                 "value": i % 5 + 1,
-                "time": datetime.now().isoformat(),
+                "at": datetime.now().isoformat(),
             },
             'admission': {'department': 'er', 'wing': 'b3', 'bed': None},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if i == 3 else []) +
@@ -239,29 +281,36 @@ def init_patients():
             'awaiting': 'פענוח סיטי',
             'flagged': False,
             'measures': {
-                "temperature": {"value": 36.9, "is_live": False, "min": 36.5, "max": 37.5,
-                                "time": datetime.now().isoformat()},
+                "temperature": {
+                    "value": 37.2,
+                    "minimum": 36.5,
+                    "maximum": 37.5,
+                    "at": datetime.now().isoformat()
+                },
                 "blood_pressure": {
                     "systolic": {
                         "value": 140,
-                        "min": 90,
-                        "max": 120,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 90,
+                        "maximum": 120,
+                        "at": datetime.now().isoformat(),
                     },
                     "diastolic": {
                         "value": 80,
-                        "min": 60,
-                        "max": 100,
-                        "time": datetime.now().isoformat(),
-                        "is_live": False
+                        "minimum": 60,
+                        "maximum": 100,
+                        "at": datetime.now().isoformat(),
                     }
                 },
-                "pulse": {"value": 80, "is_live": False, "time": datetime.now().isoformat(), "min": 60, "max": 90}
+                "pulse": {
+                    "value": 80,
+                    "minimum": 60,
+                    "maximum": 90,
+                    "at": datetime.now().isoformat(),
+                },
             },
             'severity': {
                 "value": i % 5 + 1,
-                "time": datetime.now().isoformat(),
+                "at": datetime.now().isoformat(),
             },
             'admission': {'department': 'er', 'wing': 'a', 'bed': None},
             'warnings': (([{'content': 'מחכה לך', 'severity': 2}] if i == 3 else []) +

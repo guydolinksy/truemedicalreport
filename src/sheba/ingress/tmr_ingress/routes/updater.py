@@ -1,40 +1,31 @@
-import asyncio
+import logbook
+from fastapi import APIRouter, Depends
+from fastapi_utils.tasks import repeat_every
 
-from fastapi import APIRouter, Body, Depends
-from ..updater.update_dal.sql_to_dal import SqlToDal
-from ..updater.data_query_booststrap.data_query import DataQuery
+from ..logics.sql_to_dal import SqlToDal, Departments
+from ..logics.utils import inject_dependencies
 
 updater_router = APIRouter()
 
 
 def dal_updater() -> SqlToDal:
-    return SqlToDal(DataQuery())
+    return SqlToDal()
 
 
-@updater_router.post("/{patient}/measurement", tags=["Patient"])
-def update_measurements(patient_id: str, dal: SqlToDal = Depends(dal_updater)):
-    """
-    update the measurements of a single patient.
-    query from sql insert to mongo
-    :param patient_id:
-    :return:
-    """
-    return dal.get_patient_measurements(patient_id)
+logger = logbook.Logger(__name__)
 
 
-@updater_router.post("/load_patients")
-def load_patients_in_wing(dal: SqlToDal = Depends(dal_updater)):
-    """
-    query all the patients in single wing from *Chameleon* and insert it to mongo
-    :param wing: wing identifier in Chameleon
-    :return:
-    """
-    return dal.get_all_patients()
+@updater_router.on_event('startup')
+@repeat_every(seconds=10, logger=logger)
+@inject_dependencies(department=Departments.er)
+@updater_router.post("/update_admissions")
+async def update_admissions(department: Departments, dal: SqlToDal = Depends(dal_updater)):
+    dal.update_admissions(department=department)
 
 
-@updater_router.post("/esi_score")
-def update_esi_score(patient_id, dal: SqlToDal = Depends(dal_updater)):
-    """
-    update the esi score of all the patients
-    """
-    return dal.get_patients_esi(patient_id)
+@updater_router.on_event('startup')
+@repeat_every(seconds=10, logger=logger)
+@inject_dependencies(department=Departments.er)
+@updater_router.post("/update_measurements")
+async def update_measurements(department: Departments, dal: SqlToDal = Depends(dal_updater)):
+    dal.update_measurements(department=department)

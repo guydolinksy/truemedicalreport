@@ -3,9 +3,8 @@ from typing import Optional, List
 from bson.objectid import ObjectId
 from pydantic import BaseModel, Field
 
+from .measures import Measures
 from .severity import Severity
-from .measures.measures import Measures
-from json import loads
 
 
 class Admission(BaseModel):
@@ -20,6 +19,7 @@ class Admission(BaseModel):
 class Patient(BaseModel):
     oid: Optional[str] = Field(default_factory=ObjectId)
     name: Optional[str]
+    identification: Optional[str]
     age: Optional[str]
     complaint: Optional[str]
     awaiting: Optional[str]
@@ -29,11 +29,5 @@ class Patient(BaseModel):
     admission: Optional[Admission]
     warnings: Optional[List[dict]]
 
-    chameleon_id: Optional[str]  # Not currently in DAL
-    unit: Optional[str]  # Not currently in DAL
-
     class Config:
         orm_mode = True
-        json_encoders = {
-            Measures: lambda measures: loads(measures.json(models_as_dict=False)),
-        }
