@@ -24,7 +24,7 @@ class MeasurementsIds(Enum):
 
 
 class Departments(Enum):
-    er = 10
+    er = '10'
 
 
 class SqlToDal(object):
@@ -43,7 +43,7 @@ class SqlToDal(object):
 
             patients = []
             with self.session() as session:
-                for patient in session.query(ChameleonMain).filter(ChameleonMain.unit == department.value):
+                for patient in session.query(ChameleonMain).filter(ChameleonMain.unit == int(department.value)):
                     patients.append(patient.to_dal().dict())
 
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/admissions',
@@ -60,7 +60,7 @@ class SqlToDal(object):
             with self.session() as session:
                 for measurement in session.query(Measurements). \
                         join(ChameleonMain, Measurements.id_num == ChameleonMain.patient_id). \
-                        filter(ChameleonMain.unit == department.value):
+                        filter(ChameleonMain.unit == int(department.value)):
                     match measurement.code:
                         case MeasurementsIds.Systolic.value:
                             patients.setdefault(measurement.id_num, {}).setdefault('blood_pressure', {}). \
