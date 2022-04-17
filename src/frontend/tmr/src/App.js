@@ -1,5 +1,5 @@
 import './App.css';
-import React from 'react-dom'
+import React from 'react'
 import {ConfigProvider, Layout} from 'antd';
 import {LoginProvider} from "./components/LoginContext";
 import {BrowserRouter as Router, generatePath, Route, Routes} from 'react-router-dom';
