@@ -8,5 +8,6 @@ COPY frontend/tmr/src /opt/frontend/tmr/src
 COPY frontend/tmr/public /opt/frontend/tmr/public
 
 ENV WDS_SOCKET_PORT=80
+ENV NODE_OPTIONS="--openssl-legacy-provider"
 
 CMD npm start
