@@ -11,14 +11,14 @@ class MeasurementsInserter(DataInserterBase):
 
     def generate_object(self, type_id, inner_patient_id):
         measurements_object = Measurements()
-        measurements_object.Id_Num = inner_patient_id
-        measurements_object.Parameter_Date = (datetime.now().utcnow()).strftime("%Y-%m-%d %H:%M:%S")
-        measurements_object.Parameter_ID = type_id
-        measurements_object.Parameter_Name = self.measurement_types[type_id]
-        measurements_object.Result = self.faker.pyfloat(min_value=10, max_value=160, right_digits=2)
-        measurements_object.Min_Value = self.faker.pyfloat(min_value=30, max_value=80, right_digits=2)
-        measurements_object.Max_Value = self.faker.pyfloat(min_value=80, max_value=150, right_digits=2)
-        measurements_object.Warnings = self.faker.sentence(nb_words=3)
+        measurements_object.id_num = inner_patient_id
+        measurements_object.at = (datetime.now().utcnow()).strftime("%Y-%m-%d %H:%M:%S")
+        measurements_object.code = type_id
+        measurements_object.name = self.measurement_types[type_id]
+        measurements_object.value = self.faker.pyfloat(min_value=10, max_value=160, right_digits=2)
+        measurements_object.min_limit = self.faker.pyfloat(min_value=30, max_value=80, right_digits=2)
+        measurements_object.max_limit = self.faker.pyfloat(min_value=80, max_value=150, right_digits=2)
+        measurements_object.warnings = self.faker.sentence(nb_words=3)
         self.faked_objects.append(measurements_object)
 
     def generate_all_measurements(self, inner_patient_id):

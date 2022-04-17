@@ -5,7 +5,7 @@ from ..faker.fake_data.fake_main import FakeMain
 faker_router = APIRouter()
 
 
-@faker_router.get("/ingress/faker/all", tags=["Patient"])
+@faker_router.get("/patient", tags=["Patient"])
 def update_measurements():
     """
     update the measurements of a single patient.

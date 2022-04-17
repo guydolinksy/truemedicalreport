@@ -6,7 +6,7 @@ services:
 
   ingress:
     environment:
-      - "CHAMELEON_CONNECTION_STRING='mssql+pyodbc://sa:Password123@chameleon:1433/chameleon_db?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes'"
+      - "CHAMELEON_CONNECTION_STRING=mssql+pyodbc://sa:Password123@chameleon:1433/chameleon_db?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"
       - "FAKER=1"
     depends_on:
       - chameleon

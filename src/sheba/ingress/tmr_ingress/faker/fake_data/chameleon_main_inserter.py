@@ -10,21 +10,21 @@ class ChameleonMainInserter(DataInserterBase):
 
     def generate_object(self):
         chameleon_main_object = ChameleonMain()
-        chameleon_main_object.Id_Num = self.faker.pystr_format('?#?###???#?#?#?###?')
+        chameleon_main_object.id_num = self.faker.pystr_format('?#?###???#?#?#?###?')
         chameleon_main_object.patient_id = self.faker.pyint(min_value=000000000, max_value=999999999)
         chameleon_main_object.patient_name = self.faker.name()
         chameleon_main_object.gender = 'M' if random.randint(0, 1) == 0 else 'F'
-        chameleon_main_object.Unit = self.faker.pyint(min_value=1, max_value=3)
-        chameleon_main_object.Unit_wing = self.faker.pyint(min_value=1, max_value=4)
-        chameleon_main_object.Main_cause = random.choice(
+        chameleon_main_object.unit = self.faker.pyint(min_value=1, max_value=3)
+        chameleon_main_object.unit_wing = self.faker.pyint(min_value=1, max_value=4)
+        chameleon_main_object.main_cause = random.choice(
             ['קשיי נשימה', 'כאבים בחזה', 'סחרחורות', 'פגיעה בראש', 'פציעה בעין', 'חתך ביד', 'הקאות', 'כאבי ראש',
              'כאבי בטן'])
-        chameleon_main_object.ESI = random.choice([1, 2, 3, 4])
+        chameleon_main_object.esi = random.choice([1, 2, 3, 4])
         chameleon_main_object.bed_num = self.faker.pyint(min_value=0, max_value=8)
         chameleon_main_object.warnings = self.faker.sentence(nb_words=3)
         chameleon_main_object.stage = "מאושפז"
         self.faked_objects.append(chameleon_main_object)
-        return chameleon_main_object.Id_Num
+        return chameleon_main_object.id_num
 
     def space_chek(self):
         pass
