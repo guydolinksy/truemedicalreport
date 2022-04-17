@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useState} from "react";
 import Axios from 'axios';
 import useWebSocket from "react-use-websocket";
+import debounce from "lodash/debounce";
 
 export const createContext = (defaultValue) => {
     const context = React.createContext(defaultValue);
@@ -10,7 +11,7 @@ export const createContext = (defaultValue) => {
         const [{loadingData, value}, setValue] = useState({loading: false, value: defaultValue});
         const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/sync/ws`, {queryParams: {key: socketURL || url}});
 
-        const flushData = useCallback((token) => {
+        const flushData = useCallback(debounce((token) => {
             Axios.get(url, {cancelToken: token}).then(response => {
                 setValue({loading: false, value: response.data});
             }).catch(error => {
@@ -20,7 +21,7 @@ export const createContext = (defaultValue) => {
                     onError(error);
                 console.error(error);
             })
-        }, [url, onError]);
+        }, 1000, {leading: true, trailing: true}), [url, onError]);
 
         useEffect(() => {
             const s = Axios.CancelToken.source()
