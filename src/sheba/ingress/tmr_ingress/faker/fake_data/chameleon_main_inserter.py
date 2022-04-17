@@ -17,8 +17,8 @@ class ChameleonMainInserter(DataInserterBase):
         chameleon_main_object.unit = self.faker.pyint(min_value=1, max_value=3)
         chameleon_main_object.unit_wing = self.faker.pyint(min_value=1, max_value=4)
         chameleon_main_object.main_cause = random.choice(
-            ['קשיי נשימה', 'כאבים בחזה', 'סחרחורות', 'פגיעה בראש', 'פציעה בעין', 'חתך ביד', 'הקאות', 'כאבי ראש',
-             'כאבי בטן'])
+            ['קוצר נשימה', 'כאבים בחזה', 'סחרחורות', 'חבלת ראש', 'חבלת פנים', 'חבלה בגפיים', 'בחילות ו/או הקאות', 'כאב ראש',
+             'כאב בטן', 'לאחר התעלפות'])
         chameleon_main_object.esi = random.choice([1, 2, 3, 4])
         chameleon_main_object.bed_num = self.faker.pyint(min_value=0, max_value=8)
         chameleon_main_object.warnings = self.faker.sentence(nb_words=3)
