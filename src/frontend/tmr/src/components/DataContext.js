@@ -1,29 +1,32 @@
 import React, {useCallback, useEffect, useState} from "react";
 import Axios from 'axios';
 import useWebSocket from "react-use-websocket";
-import {useNavigate} from "react-router";
 
 export const createContext = (defaultValue) => {
     const context = React.createContext(defaultValue);
 
-    const Provider = ({url, updateURL, socketURL, defaultValue = undefined, ...props}) => {
+    const Provider = ({url, updateURL, socketURL, defaultValue = undefined, onError, ...props}) => {
 
         const [{loadingData, value}, setValue] = useState({loading: false, value: defaultValue});
         const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/sync/ws`, {queryParams: {key: socketURL || url}});
-        const navigate = useNavigate();
 
-        useEffect(() => {
-            const s = Axios.CancelToken.source()
-            Axios.get(url, {cancelToken: s.token}).then(response => {
+        const flushData = useCallback((token) => {
+            Axios.get(url, {cancelToken: token}).then(response => {
                 setValue({loading: false, value: response.data});
             }).catch(error => {
                 if (Axios.isCancel(error))
                     return;
-                navigate('/');
-                console.error(error)
+                if (onError)
+                    onError(error);
+                console.error(error);
             })
+        }, [url, onError]);
+
+        useEffect(() => {
+            const s = Axios.CancelToken.source()
+            flushData(s.token)
             return () => s.cancel()
-        }, [url, lastMessage, navigate]);
+        }, [url, lastMessage]);
 
         const getData = useCallback((path, defaultValue) => path.reduce((data, name) => {
             if ([undefined, null].includes(data) || [undefined, null].includes(data[name]))
@@ -49,19 +52,26 @@ export const createContext = (defaultValue) => {
         }, [url, updateURL]);
 
         return <context.Provider
-            value={{getData: getData, updateData: updateData, loadingData: loadingData, lastMessage: lastMessage}}>
+            value={{
+                getData: getData,
+                updateData: updateData,
+                loadingData: loadingData,
+                flushData: flushData,
+                lastMessage: lastMessage
+            }}>
             {props.children({
                 getData: getData,
                 updateData: updateData,
                 loadingData: loadingData,
+                flushData: flushData,
                 lastMessage: lastMessage, ...props
             })}
         </context.Provider>
     }
 
     const withData = Component => ({...props}) => {
-        return <context.Consumer>{({getData, updateData, loadingData, lastMessage}) =>
-            <Component loadingData={loadingData} getData={getData} updateData={updateData}
+        return <context.Consumer>{({getData, updateData, loadingData, flushData, lastMessage}) =>
+            <Component loadingData={loadingData} getData={getData} updateData={updateData} flushData={flushData}
                        lastMessage={lastMessage} {...props}/>
         }</context.Consumer>
     };

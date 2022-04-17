@@ -5,10 +5,10 @@ import {Spin} from "antd";
 
 const bedContext = createContext(null);
 
-export const Bed = ({admission, style}) => {
+export const Bed = ({admission, style, onError}) => {
     const url = `/api/departments/${admission.department}/wings/${admission.wing}/beds/${admission.bed}`;
 
-    return <bedContext.Provider url={url} defaultValue={{}}>
+    return <bedContext.Provider url={url} defaultValue={{}} onError={onError}>
         {({loadingData, getData}) => {
             if (loadingData)
                 return <Spin/>

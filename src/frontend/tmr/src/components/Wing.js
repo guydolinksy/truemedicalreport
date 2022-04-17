@@ -90,23 +90,23 @@ const WingNotificationsInner = ({wingName}) => {
         </Menu>
     </div>
 };
-const WingNotifications = ({department, wing, wingName}) => {
+const WingNotifications = ({department, wing, wingName, onError}) => {
     const notificationsURI = `/api/departments/${department}/wings/${wing}/notifications`;
 
     return <notificationsDataContext.Provider url={notificationsURI}
                                               updateURL={notificationsURI}
                                               socketURL={notificationsURI}
-                                              defaultValue={[]}>
+                                              defaultValue={[]}
+                                              onError={onError}>
         {({loadingData}) => loadingData ? <Spin/> : <WingNotificationsInner wingName={wingName}/>}
     </notificationsDataContext.Provider>;
 }
 
-export const Wing = ({department, wing}) => {
+export const Wing = ({department, wing, onError}) => {
     const uri = `/api/departments/${department}/wings/${wing}`;
 
-    return <wingDataContext.Provider url={uri} updateURL={uri} socketURL={uri}
-                                     defaultValue={{patients: [], details: {}}}>
-        {({loadingData, getData}) => {
+    return <wingDataContext.Provider url={uri} defaultValue={{patients: [], details: {}}} onError={onError}>
+        {({loadingData, getData, flushData}) => {
             const assignedPatients = (getData(['patients']) || []).filter(({oid, admission}) => admission.bed)
             const title = <span>מטופלים במיטות: {assignedPatients.length}</span>
             const unassignedPatients = (getData(['patients']) || []).filter(({oid, admission}) => !admission.bed)
@@ -116,7 +116,7 @@ export const Wing = ({department, wing}) => {
 
             return <Layout>
                 <Sider breakpoint={"lg"} width={230}>
-                    <WingNotifications department={department} wing={wing} wingName={details.name}/>
+                    <WingNotifications department={department} wing={wing} wingName={details.name} onError={onError}/>
                 </Sider>
                 <Content style={{backgroundColor: "#000d17", overflowY: "scroll"}}>
                     <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
@@ -130,7 +130,7 @@ export const Wing = ({department, wing}) => {
                                                     department: department,
                                                     wing: wing,
                                                     bed: details.beds[i][j]
-                                                }}/>
+                                                }} onError={() => flushData()}/>
                                         )}
                                     </Row>
                                 )}

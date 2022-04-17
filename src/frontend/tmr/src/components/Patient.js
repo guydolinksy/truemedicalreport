@@ -22,45 +22,44 @@ export const patientDataContext = createContext({
     updateData: () => null
 });
 
-const PatientData = patientDataContext.withData(
-    ({path, title, icon, size, editable, style, danger, loadingData, getData, updateData}) => {
-        const [editing, setEditing] = useState(false)
+const PatientData = ({path, title, icon, size, editable, style, danger}) => {
+    const {loadingData, getData, updateData} = useContext(patientDataContext.context);
+    const [editing, setEditing] = useState(false)
 
-        const [value, setValue] = useState(getData(path))
-        useEffect(() => {
-            setValue(getData(path));
-            setEditing(false)
-        }, [path, getData])
+    const [value, setValue] = useState(getData(path))
+    useEffect(() => {
+        setValue(getData(path));
+        setEditing(false)
+    }, [path, getData])
 
-        const onSave = useCallback(() => {
-            updateData(path, value);
-            setEditing(false)
-        }, [path, value, updateData])
+    const onSave = useCallback(() => {
+        updateData(path, value);
+        setEditing(false)
+    }, [path, value, updateData])
 
-        const content = <span
-            style={{userSelect: "none", color: danger ? 'red' : undefined, overflowX: "hidden", width: "100%"}}>
+    const content = <span
+        style={{userSelect: "none", color: danger ? 'red' : undefined, overflowX: "hidden", width: "100%"}}>
             <FontAwesomeIcon icon={icon}/>&nbsp;{value}
         </span>;
-        return loadingData ? <Spin/> : <Tooltip overlay={title}>
-            {!editable ? <div style={{padding: 0, maxWidth: 150}}>{content}</div> :
-                !editing ?
-                    <Button style={{paddingRight: 8, paddingLeft: 8, maxWidth: 150}} type={"text"} danger={danger}
-                            onClick={e => {
-                                setEditing(true);
-                                e.stopPropagation();
-                            }}>{content}</Button> :
-                    <Input.Group style={{paddingRight: 8, paddingLeft: 8, width: 150, display: "flex"}} compact>
-                        <Input size={size} onClick={e => e.stopPropagation()} defaultValue={value}
-                               onChange={debounce(e => setValue(e.target.value), 300)} onPressEnter={onSave}
-                               onBlur={onSave} style={{flex: 1}}/>
-                        <Button type={"primary"} size={size} onClick={e => {
-                            onSave();
+    return loadingData ? <Spin/> : <Tooltip overlay={title}>
+        {!editable ? <div style={{padding: 0, maxWidth: 150}}>{content}</div> :
+            !editing ?
+                <Button style={{paddingRight: 8, paddingLeft: 8, maxWidth: 150}} type={"text"} danger={danger}
+                        onClick={e => {
+                            setEditing(true);
                             e.stopPropagation();
-                        }} icon={<CheckOutlined/>}/>
-                    </Input.Group>}
-        </Tooltip>
-    }
-);
+                        }}>{content}</Button> :
+                <Input.Group style={{paddingRight: 8, paddingLeft: 8, width: 150, display: "flex"}} compact>
+                    <Input size={size} onClick={e => e.stopPropagation()} defaultValue={value}
+                           onChange={debounce(e => setValue(e.target.value), 300)} onPressEnter={onSave}
+                           onBlur={onSave} style={{flex: 1}}/>
+                    <Button type={"primary"} size={size} onClick={e => {
+                        onSave();
+                        e.stopPropagation();
+                    }} icon={<CheckOutlined/>}/>
+                </Input.Group>}
+    </Tooltip>
+}
 
 const Measure = ({patient, measure, path, icon, title}) => {
     const navigate = useNavigate();
@@ -91,11 +90,11 @@ export const severityBorderColor = {
     [undefined]: "#d9d9d9",
 }
 export const severityColor = {
-    1: "#58181c",
-    2: "#593815",
-    3: "#595014",
-    4: "#3e4f13",
-    5: "#274916",
+    1: "#431418",
+    2: "#441d12",
+    3: "#443b11",
+    4: "#2e3c10",
+    5: "#1d3712",
     [undefined]: "#1a1a1a",
 }
 const PatientAge = ({patient}) => {
@@ -173,7 +172,7 @@ const PatientHeader = ({patient, avatar}) => {
     if (!patient)
         return <Button shape={"circle"} type={"text"}>{avatar}</Button>
     return <span>
-        {avatar}&nbsp;<Tooltip overlay={`ת.ז. ${getData(['id'], 'לא ידוע')}`}>
+        {avatar}&nbsp;<Tooltip overlay={`ת.ז. ${getData(['id_'], 'לא ידוע')}`}>
             {getData(['name'])}
         </Tooltip><PatientAge patient={patient}/>
     </span>
@@ -211,8 +210,8 @@ const PatientInner = ({patient, avatar, style}) => {
         </Card>
     }</HashMatch>
 }
-export const Patient = ({patient, avatar, style}) => {
-    return patient ? <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={{}}>
+export const Patient = ({patient, avatar, style, onError}) => {
+    return patient ? <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={{}} onError={onError}>
         {({loadingData}) => loadingData ? <Spin/> : <PatientInner patient={patient} avatar={avatar} style={style}/>}
     </patientDataContext.Provider> : <PatientInner avatar={avatar} style={style}/>
 };

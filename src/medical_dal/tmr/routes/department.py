@@ -3,13 +3,13 @@ from typing import List
 import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
-from starlette.responses import Response
 
 from tmr_common.data_models.measures import Measures
 from tmr_common.data_models.patient import Patient
 from tmr_common.data_models.wing import WingOverview
+from .patient import upsert_patient
 from .wing import wing_router
-from ..dal.dal import MedicalDal
+from ..dal.dal import MedicalDal, Action
 
 department_router = APIRouter()
 
@@ -33,12 +33,19 @@ def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> L
 
 
 @department_router.post("/{department}/admissions")
-def update_admissions(response: Response, department: str, body=Body(...), dal: MedicalDal = Depends(medical_dal)):
-    for patient in body['admissions']:
-        logger.debug(Patient(**patient))
+async def update_admissions(department: str, admissions=Body(..., embed=True), dal: MedicalDal = Depends(medical_dal)):
+    for wing in dal.get_department_wings(department):
+        patients = {patient.id_: patient for patient in dal.get_wing_patients(department, wing['key'])}
+        existing, queried = set(patients), set(admissions)
+        for patient in existing - queried:
+            await upsert_patient(patient=patients[patient], dal=dal, action=Action.remove)
+        for patient in queried - existing:
+            await upsert_patient(patient=admissions[patient], dal=dal, action=Action.insert)
+        for patient in queried & existing:
+            await upsert_patient(patient=admissions[patient], dal=dal, action=Action.update)
 
 
 @department_router.post("/{department}/measurements")
-def update_measurements(response: Response, department: str, body=Body(...), dal: MedicalDal = Depends(medical_dal)):
-    for patient in body['measurements']:
-        logger.debug(Measures(**body['measurements'][patient]))
+def update_measurements(department: str, measurements=Body(..., embed=True), dal: MedicalDal = Depends(medical_dal)):
+    for patient in measurements:
+        logger.debug(Measures(**measurements[patient]))

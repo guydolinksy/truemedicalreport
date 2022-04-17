@@ -61,7 +61,7 @@ export function Highlighter(id, tag) {
     this.apply = function (input) {
         this.remove();
         if (input) {
-            this.setRegex(input);
+            this.setRegex(input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
             this.highlightWords(targetNode);
         }
     };

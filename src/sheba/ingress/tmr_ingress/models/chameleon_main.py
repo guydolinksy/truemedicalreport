@@ -23,7 +23,7 @@ class ChameleonMain(Base):
 
     def to_dal(self) -> Patient:
         return Patient(
-            identification=self.patient_id,
+            id_=self.patient_id,
             name=self.patient_name,
             complaint=self.main_cause,
             admission=Admission(department=self.unit, wing=self.unit_wing, bed=self.bed_num),

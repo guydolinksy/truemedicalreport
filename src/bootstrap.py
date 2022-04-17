@@ -13,6 +13,7 @@ def init_patients():
             continue
         db.patients.insert_one({
             'name': 'ישראל ישראלי',
+            'id_': f'{random.randint(100000, 1000000000):09}',
             'age': '70.2',
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
@@ -56,6 +57,7 @@ def init_patients():
     for i in range(0, 5):
         db.patients.insert_one({
             'name': 'ישראל ישראלי',
+            'id_': f'{random.randint(100000, 1000000000):09}',
             'age': '70.2',
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
@@ -101,6 +103,7 @@ def init_patients():
             continue
         db.patients.insert_one({
             'name': 'ישראל ישראלי',
+            'id_': f'{random.randint(100000, 1000000000):09}',
             'age': '70.2',
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
@@ -144,6 +147,7 @@ def init_patients():
     for i in range(0, 6):
         db.patients.insert_one({
             'name': 'ישראל ישראלי',
+            'id_': f'{random.randint(100000, 1000000000):09}',
             'age': '70.2',
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
@@ -189,6 +193,7 @@ def init_patients():
             continue
         db.patients.insert_one({
             'name': 'ישראל ישראלי',
+            'id_': f'{random.randint(100000, 1000000000):09}',
             'age': '70.2',
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
@@ -232,6 +237,7 @@ def init_patients():
     for i in range(0, 10):
         db.patients.insert_one({
             'name': 'ישראל ישראלי',
+            'id_': f'{random.randint(100000, 1000000000):09}',
             'age': '70.2',
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',
@@ -276,6 +282,7 @@ def init_patients():
     for i in range(0, 25):
         db.patients.insert_one({
             'name': 'ישראל ישראלי',
+            'id_': f'{random.randint(100000, 1000000000):09}',
             'age': '70.2',
             'complaint': 'קוצר נשימה',
             'awaiting': 'פענוח סיטי',

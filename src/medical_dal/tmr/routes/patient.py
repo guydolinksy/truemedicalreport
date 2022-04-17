@@ -1,11 +1,12 @@
+import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
 from tmr_common.data_models.patient import Patient
-from .websocket import notify
-from ..dal.dal import MedicalDal
+from ..dal.dal import MedicalDal, Action
 
 patient_router = APIRouter()
+logger = logbook.Logger(__name__)
 
 
 # TODO remove duplicate use of medical_dal function
@@ -15,17 +16,19 @@ def medical_dal() -> MedicalDal:
 
 @patient_router.get("/{patient}", response_model=Patient)
 def get_patient_by_id(patient: str, dal: MedicalDal = Depends(medical_dal)) -> Patient:
-    patient_dal = dal.get_patient_by_id(patient)
-    return Patient(oid=str(patient_dal.pop("_id")), **patient_dal)
+    return dal.get_patient_by_id(patient)
 
 
 @patient_router.post("/{patient}")
 async def update_patient_by_id(patient: str, update_object: dict,
                                dal: MedicalDal = Depends(medical_dal)) -> bool:
-    res = dal.update_patient_by_id(patient, update_object)
+    return await dal.update_patient_by_id(patient, update_object)
 
-    await notify_patient(patient)
-    return res
+
+@patient_router.post("/{action}")
+async def upsert_patient(action: Action, patient: Patient = Body(..., embed=True),
+                         dal: MedicalDal = Depends(medical_dal)) -> bool:
+    return await dal.upsert_patient(patient, action)
 
 
 @patient_router.post("/{patient}/warning")
@@ -36,6 +39,3 @@ async def warn_patient_by_id(patient: str, warning=Body(...), dal: MedicalDal = 
 
     return True
 
-
-async def notify_patient(patient):
-    await notify('patient', patient)

@@ -52,7 +52,7 @@ export const PatientInfo = () => {
         {({matched, match}) => <Drawer title={title} placement={"left"} visible={matched}
                                        onClose={() => navigate('#')}>
             {matched &&
-                <patientDataContext.Provider url={`/api/patients/${match[0]}/info`} defaultValue={{}}>
+                <patientDataContext.Provider url={`/api/patients/${match[0]}/info`} defaultValue={{}} onError={() => navigate('#')}>
                     {() => <InternalPatientCard patient={match[0]} setTitle={setTitle}/>}
                 </patientDataContext.Provider>}
         </Drawer>}

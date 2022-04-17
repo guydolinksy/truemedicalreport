@@ -13,7 +13,7 @@ export const Department = ({department}) => {
     const uri = `/api/departments/${department}`;
     const navigate = useNavigate();
 
-    return <departmentDataContext.Provider url={uri} updateURL={uri} socketURL={uri} defaultValue={[]}>
+    return <departmentDataContext.Provider url={uri} defaultValue={[]}>
         {({loadingData, getData}) => <Row gutter={16}>
             {loadingData ? <Spin/> : (getData([]) || []).map((wing, i) => {
                 const actions = [

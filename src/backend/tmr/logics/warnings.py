@@ -8,7 +8,7 @@ from typing import Callable, Coroutine, List
 import fastapi
 import requests
 import websockets
-from tmr_common.data_models.patient import Patient
+from tmr_common.data_models.patient import Patient, Admission
 
 from tmr.routes.websocket import notify
 
@@ -55,7 +55,7 @@ subscriber_router, subscribe = websocket_subscriber(websocket_url="ws://medical-
 
 
 @subscribe(key="patient")
-async def patient_handler(patient):
+async def patient_handler(patient: str):
     logger.debug('ID TRIGGER: {}', patient)
 
     await notify(f"/api/patients/{patient}")
@@ -67,9 +67,14 @@ async def patient_handler(patient):
 
 
 @subscribe(key="admission")
-async def admission_handler(admission):
+async def admission_handler(admission: dict):
+    admission = Admission(**admission)
+    await notify(f"/api/departments/{admission.department}")
+    await notify(f"/api/departments/{admission.department}/wings/{admission.wing}")
+    await notify(f"/api/departments/{admission.department}/wings/{admission.wing}/notifications")
     await notify(f"/api/departments/{admission.department}/wings/{admission.wing}/beds/{admission.bed}")
 
 
-async def trigger_notification(patient):
-    await notify(f"/api/wings/{patient.admission.wing}/notifications", {'openKeys': [patient.oid]})
+async def trigger_notification(patient: Patient):
+    await notify(f"/api/departments/{patient.admission.department}/wings/{patient.admission.wing}/notifications",
+                 {'openKeys': [patient.oid]})
