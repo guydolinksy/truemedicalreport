@@ -173,12 +173,7 @@ const PatientHeader = ({patient, avatar}) => {
     if (!patient)
         return <Button shape={"circle"} type={"text"}>{avatar}</Button>
     return <span>
-        <Tooltip overlay={'סימון דגל'}>
-            <Button shape={"circle"} type={"text"} onClick={e => {
-                updateData(['flagged'], !getData(['flagged'], false));
-                e.stopPropagation();
-            }}>{avatar || <UserOutlined/>}</Button>
-        </Tooltip>&nbsp;<Tooltip overlay={`ת.ז. ${getData(['id'], 'לא ידוע')}`}>
+        {avatar}&nbsp;<Tooltip overlay={`ת.ז. ${getData(['id'], 'לא ידוע')}`}>
             {getData(['name'])}
         </Tooltip><PatientAge patient={patient}/>
     </span>
@@ -187,7 +182,7 @@ const PatientInner = ({patient, avatar, style}) => {
     const ref = useRef(null);
     const {hash} = useLocation();
     const navigate = useNavigate();
-    const {getData} = useContext(patientDataContext.context);
+    const {getData, updateData} = useContext(patientDataContext.context);
 
     const warnings = getData(['warnings'], []), severity = getData(['severity', 'value']);
 
@@ -196,10 +191,13 @@ const PatientInner = ({patient, avatar, style}) => {
         {warnings.map((warning, i) => <div key={i}>
             <PatientWarning patient={patient} warning={warning} index={i} style={{direction: "rtl"}}/>
         </div>)}</Carousel>
-    if (warnings.length)
-        content = <Badge.Ribbon text={warnings.length} color={"red"}>{content}</Badge.Ribbon>
-    else if (getData(['flagged'], false))
-        content = <Badge.Ribbon text={<FlagFilled/>}>{content}</Badge.Ribbon>
+    if (patient)
+        content = <Badge.Ribbon text={warnings.length || <Tooltip overlay={'סימון דגל'}>{<FlagFilled onClick={e => {
+            updateData(['flagged'], !getData(['flagged'], false));
+            e.stopPropagation();
+        }}/>}</Tooltip>} color={warnings.length ? "red" : getData(['flagged'], false) ? "blue" : "grey"}>
+            {content}
+        </Badge.Ribbon>
     if (hash.split('#').length > 2 && hash.split('#')[2] === patient && ref.current)
         ref.current.scrollIntoViewIfNeeded(true);
     return <HashMatch match={['highlight', patient]}>{({matched, match}) =>
