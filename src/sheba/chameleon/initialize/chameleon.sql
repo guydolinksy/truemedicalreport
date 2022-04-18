@@ -122,69 +122,49 @@ CREATE TABLE [dbo].[measurements](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'ASDFGR53GF', 123456789, N'אבי נוסבאום', 5, 4, N'כאבי בטן', 1, 1, NULL, N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'GJKB45BV3H', 637284537, N'נפטלי בנט', 5, 4, N'כאבי ראש', 1, 2, NULL, N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'GC34B5B4LD', 494651134, N'אלברט אינשטיין', 5, 3, N'הקאות', 2, 1, NULL, N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'PEND8SB4H6', 187356296, N'משה דיין', 5, 2, N'פציעה בעין', 3, 1, NULL, N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'n9h079rOJ4S8v7A737x', 268508599, N'Dustin Bryant', 2, 4, N'כאבי ראש', 2, 1, N'Democratic help.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'B1o453ldh1f1J3U438V', 923698996, N'Robert Powers', 1, 1, N'קשיי נשימה', 3, 0, N'Hard prove her.', N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'U7s198QAQ2M1S7H577H', 28517419, N'Keith Gould', 3, 2, N'כאבי בטן', 1, 5, N'Center role pattern.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'G0g447npX3T0P3B514m', 760186618, N'Mary Campos', 1, 2, N'קשיי נשימה', 4, 1, N'News matter be.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'p4Y592cQi1V1m6B382p', 701731386, N'Pamela Rodriguez', 1, 3, N'כאבים בחזה', 3, 6, N'That claim meeting building.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'k0i172WwI4D7A7n921o', 63634520, N'Charles Carrillo', 1, 4, N'כאבים בחזה', 1, 8, N'Themselves image anyone.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'u5h507NnO0X1y0T740X', 963176788, N'Dale Lee', 3, 3, N'הקאות', 2, 0, N'Can build.', N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'p8x446rLJ9I4b9W199I', 699800721, N'Benjamin Smith', 1, 4, N'הקאות', 1, 1, N'Decision same.', N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'B2u519uHR2o9z1S371i', 17690019, N'Michael Lane', 3, 2, N'כאבי בטן', 2, 3, N'Soon call them.', N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'u4q631EAR5D4S3k386V', 694522776, N'Keith Meyer', 1, 1, N'סחרחורות', 4, 3, N'Point probably.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'F5Q924VhF6K7B7b752y', 311051467, N'Bruce Lozano', 2, 4, N'כאבי ראש', 3, 5, N'Miss share.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'V4f744Avi1X7G0W592N', 816084545, N'Dustin Stevens', 2, 2, N'כאבים בחזה', 2, 3, N'Firm tonight.', N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'F8X111slx9m6p9w429u', 60890566, N'Katherine Miller', 2, 2, N'פגיעה בראש', 4, 0, N'Easy past.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'K7y751egy8k9m4D883r', 16288770, N'Eric Lynch', 2, 2, N'חתך ביד', 1, 0, N'Defense memory.', N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'y7R668dWb1Q3Y6n879I', 792886501, N'Brittany Rodriguez', 2, 3, N'פציעה בעין', 1, 2, N'Lot anyone main.', N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'u3R761Zcb5E7h1I498P', 388175846, N'Elizabeth Cruz', 2, 4, N'קשיי נשימה', 3, 8, N'Red serve move.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'G8j570cjA7B3d3y521J', 852381529, N'Mark King', 2, 1, N'כאבי ראש', 3, 0, N'Senior have.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N's2q802LmG1u6N9U485v', 305679167, N'Amanda Martin', 1, 2, N'כאבי ראש', 3, 4, N'Nearly.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'n5W701ubi4k8y7V186I', 672861438, N'Melissa Smith', 3, 4, N'סחרחורות', 2, 1, N'Record these contain.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'q5K435RzU4N0r1q348x', 571286413, N'Kimberly Perez', 2, 1, N'חתך ביד', 4, 4, N'Box today cost.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'X5k515WeD3K0h0x577b', 885444566, N'Elijah Brown', 3, 2, N'כאבי בטן', 2, 4, N'Ten whether.', N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'x1Q512dbw0l8q8v997M', 181804703, N'Jennifer Hall', 1, 3, N'פציעה בעין', 4, 2, N'Decade step walk.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'g1C375vkU2y1h9m465x', 524884687, N'Jennifer Brown', 2, 4, N'כאבי ראש', 4, 7, N'Third determine.', N'M', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'b5Z866fQl1r0m5Q830w', 881854670, N'Madison Morse', 3, 1, N'כאבי ראש', 3, 2, N'Impact administration large.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'a0y353yjo4X1o9e896G', 250329947, N'Jamie Flores', 2, 1, N'סחרחורות', 3, 5, N'Day local.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'd6e148VkB9O6K6Z112A', 227493299, N'Helen Tucker', 2, 3, N'הקאות', 1, 7, N'Painting leg.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'v3i537rIt2b4B9H458g', 552137216, N'Chad Moore', 2, 3, N'קשיי נשימה', 1, 6, N'Which avoid employee.', N'F', N'אושפז')
-GO
-INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES (N'B7x537PLy9Q1C1x871o', 871144155, N'George Franklin', 1, 1, N'פגיעה בראש', 3, 3, N'Behavior her.', N'F', N'אושפז')
+INSERT [dbo].[chameleon_main] ([id_num], [patient_id], [patient_name], [unit], [unit_wing], [main_cause], [esi], [bed_num], [warnings], [gender], [stage]) VALUES
+(N'ASDFGR53GF', 123456789, N'אבי נוסבאום', 5, 1, N'כאבי בטן', 1, 1, NULL, N'M', N'אושפז'),
+(N'GJKB45BV3H', 637284537, N'נפטלי בנט', 5, 1, N'כאבי ראש', 1, 2, NULL, N'M', N'אושפז'),
+(N'GC34B5B4LD', 494651134, N'אלברט אינשטיין', 5, 1, N'הקאות', 2, 3, NULL, N'M', N'אושפז'),
+(N'PEND8SB4H6', 187356296, N'משה דיין', 5, 1, N'פציעה בעין', 3, 4, NULL, N'M', N'אושפז'),
+(N'n9h079rOJ4S8v7A737x', 268508599, N'Dustin Bryant', 5, 1, N'כאבי ראש', 2, 5, N'Democratic help.', N'F', N'אושפז'),
+(N'B1o453ldh1f1J3U438V', 923698996, N'Robert Powers', 5, 1, N'קשיי נשימה', 3, 6, N'Hard prove her.', N'M', N'אושפז'),
+(N'U7s198QAQ2M1S7H577H', 28517419, N'Keith Gould', 5, 1, N'כאבי בטן', 1, 7, N'Center role pattern.', N'F', N'אושפז'),
+(N'G0g447npX3T0P3B514m', 760186618, N'Mary Campos', 5, 1, N'קשיי נשימה', 4, 8, N'News matter be.', N'F', N'אושפז'),
+(N'p4Y592cQi1V1m6B382p', 701731386, N'Pamela Rodriguez', 5, 1, N'כאבים בחזה', 3, 9, N'That claim meeting building.', N'F', N'אושפז'),
+(N'k0i172WwI4D7A7n921o', 63634520, N'Charles Carrillo', 5, 1, N'כאבים בחזה', 1, 10, N'Themselves image anyone.', N'F', N'אושפז'),
+(N'u5h507NnO0X1y0T740X', 963176788, N'Dale Lee', 5, 1, N'הקאות', 2, 11, N'Can build.', N'M', N'אושפז'),
+(N'p8x446rLJ9I4b9W199I', 699800721, N'Benjamin Smith', 5, 1, N'הקאות', 1, 12, N'Decision same.', N'M', N'אושפז'),
+(N'B2u519uHR2o9z1S371i', 17690019, N'Michael Lane', 5, 2, N'כאבי בטן', 2, 13, N'Soon call them.', N'M', N'אושפז'),
+(N'u4q631EAR5D4S3k386V', 694522776, N'Keith Meyer', 5, 2, N'סחרחורות', 4, 14, N'Point probably.', N'F', N'אושפז'),
+(N'F5Q924VhF6K7B7b752y', 311051467, N'Bruce Lozano', 5, 2, N'כאבי ראש', 3, 15, N'Miss share.', N'F', N'אושפז'),
+(N'V4f744Avi1X7G0W592N', 816084545, N'Dustin Stevens', 5, 2, N'כאבים בחזה', 2, 16, N'Firm tonight.', N'M', N'אושפז'),
+(N'F8X111slx9m6p9w429u', 60890566, N'Katherine Miller', 5, 2, N'פגיעה בראש', 4, 17, N'Easy past.', N'F', N'אושפז'),
+(N'K7y751egy8k9m4D883r', 16288770, N'Eric Lynch', 5, 2, N'חתך ביד', 1, 18 ,N'Defense memory.', N'M', N'אושפז'),
+(N'y7R668dWb1Q3Y6n879I', 792886501, N'Brittany Rodriguez', 5, 2, N'פציעה בעין', 1, 19, N'Lot anyone main.', N'M', N'אושפז'),
+(N'u3R761Zcb5E7h1I498P', 388175846, N'Elizabeth Cruz', 5, 2, N'קשיי נשימה', 3, 20, N'Red serve move.', N'F', N'אושפז'),
+(N'G8j570cjA7B3d3y521J', 852381529, N'Mark King', 5, 2, N'כאבי ראש', 3, 21, N'Senior have.', N'F', N'אושפז'),
+(N's2q802LmG1u6N9U485v', 305679167, N'Amanda Martin', 5, 2, N'כאבי ראש', 3, 22, N'Nearly.', N'F', N'אושפז'),
+(N'n5W701ubi4k8y7V186I', 672861438, N'Melissa Smith', 5, 2, N'סחרחורות', 2, 23, N'Record these contain.', N'F', N'אושפז'),
+(N'q5K435RzU4N0r1q348x', 571286413, N'Kimberly Perez', 5, 2, N'חתך ביד', 4, 24, N'Box today cost.', N'F', N'אושפז'),
+(N'X5k515WeD3K0h0x577b', 885444566, N'Elijah Brown', 5, 3, N'כאבי בטן', 2, 25, N'Ten whether.', N'M', N'אושפז'),
+(N'x1Q512dbw0l8q8v997M', 181804703, N'Jennifer Hall', 5, 3, N'פציעה בעין', 4, 26, N'Decade step walk.', N'F', N'אושפז'),
+(N'g1C375vkU2y1h9m465x', 524884687, N'Jennifer Brown', 5, 3, N'כאבי ראש', 4, 27, N'Third determine.', N'M', N'אושפז'),
+(N'b5Z866fQl1r0m5Q830w', 881854670, N'Madison Morse', 5, 3, N'כאבי ראש', 3, 28, N'Impact administration large.', N'F', N'אושפז'),
+(N'a0y353yjo4X1o9e896G', 250329947, N'Jamie Flores', 5, 3, N'סחרחורות', 3, 29, N'Day local.', N'F', N'אושפז'),
+(N'd6e148VkB9O6K6Z112A', 227493299, N'Helen Tucker', 5, 3, N'הקאות', 1, 30, N'Painting leg.', N'F', N'אושפז'),
+(N'v3i537rIt2b4B9H458g', 552137216, N'Chad Moore', 5, 3, N'קשיי נשימה', 1, 31, N'Which avoid employee.', N'F', N'אושפז'),
+(N'v3i592rIt2b4B9H458g', 552237216, N'צארלי וחצי', 5, 3, N'שבר ביד', 1, 32, N'Which avoid employee.', N'M', N'אושפז'),
+(N'v3i592gzt2b4B9H458g', 552233416, N'פלוני אלמוני', 5, 3, N'כאב בטן', 1, 33, N'Which avoid employee.', N'F', N'אושפז'),
+(N'v3i592rIV5b4B9H458g', 552967216, N'מיקה חביב', 5, 3, N'חבלה בגפיים', 1, 34, N'Which avoid employee.', N'F', N'אושפז'),
+(N'v3i592rIg6b4B9H458g', 552236914, N'שמואל צדוק', 5, 3, N'לא רואה בעין שמאל', 1, 35, N'Which avoid employee.', N'M', N'אושפז'),
+(N'v3i592rIt2h6t9H458g', 322237216, N'יהודה ישראלי', 5, 3, N'אין תחושה ביד', 1, 36, N'Which avoid employee.', N'M', N'אושפז'),
+(N'v3i592rIt9z6B9H458g', 303237216, N'מעיין עזיזה', 5, 3, N'איבוד הכרה', 1, 37, N'Which avoid employee.', N'F', N'אושפז'),
+(N'z9s592rIt2b4B9H458g', 558237216, N'אסתר בן דרור', 5, 3, N'התמוטטות', 1, 38, N'Which avoid employee.', N'F', N'אושפז'),
+(N'y3h592rIt2b4B9H458g', 060237216, N'יונית לוי', 5, 3, N'חבלה בגפיים', 1, 39, N'Which avoid employee.', N'F', N'אושפז'),
+(N'y3h592rBg2R4B9H458g', 060253616, N'עפרה חזה', 5, 3, N'חבלה בגולגולת', 1, NULL, N'Which avoid employee.', N'F', N'אושפז'),
+(N'y3h658NBg2R4B9H458g', 060258626, N'יהב חזה', 5, 4, N'חבלה בגפיים', 1, NULL, N'Which avoid employee.', N'F', N'אושפז'),
+(N'B7x537PLy9Q1C1x871o', 871144155, N'George Franklin', 5, 3, N'פגיעה בראש', 3, 40, N'Behavior her.', N'F', N'אושפז');
 GO
 SET IDENTITY_INSERT [dbo].[measurements] ON
 GO
