@@ -33,7 +33,9 @@ def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> L
 
 
 @department_router.post("/{department}/admissions")
-async def update_admissions(department: str, admissions=Body(..., embed=True), dal: MedicalDal = Depends(medical_dal)):
+async def update_admissions(department: str, admissions: List[Patient] = Body(..., embed=True),
+                            dal: MedicalDal = Depends(medical_dal)):
+    admissions = {patient.id_: patient for patient in admissions}
     for wing in dal.get_department_wings(department):
         patients = {patient.id_: patient for patient in dal.get_wing_patients(department, wing['key'])}
         existing, queried = set(patients), set(admissions)

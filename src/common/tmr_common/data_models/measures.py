@@ -1,11 +1,11 @@
-from datetime import datetime
+import datetime
 from typing import Optional
 
 from pydantic import BaseModel
 
 
 class Measurement(BaseModel):
-    at: datetime
+    at: str
     value: float
     minimum: float
     maximum: float
@@ -47,7 +47,7 @@ class BloodPressure(BaseModel):
 
     value: str
     is_valid: bool
-    at: datetime
+    at: str
 
     def __init__(self, **kwargs):
         if 'value' not in kwargs:
@@ -61,7 +61,7 @@ class BloodPressure(BaseModel):
         if 'at' not in kwargs:
             systolic = Systolic(**kwargs['systolic'])
             diastolic = Diastolic(**kwargs['diastolic'])
-            kwargs['at'] = min(systolic.at, diastolic.at)
+            kwargs['at'] = min(map(datetime.datetime.fromisoformat, [systolic.at, diastolic.at]))
         super(BloodPressure, self).__init__(**kwargs)
 
 

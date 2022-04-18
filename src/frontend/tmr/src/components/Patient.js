@@ -1,5 +1,5 @@
 import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
-import {Badge, Button, Card, Carousel, Input, Skeleton, Spin, Tooltip} from "antd";
+import {Badge, Button, Card, Carousel, Input, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faClock,
@@ -80,7 +80,6 @@ const Measure = ({patient, measure, path, icon, title}) => {
 };
 
 
-const {Meta} = Card;
 export const severityBorderColor = {
     1: "#d32029",
     2: "#d87a16",
@@ -168,7 +167,7 @@ const PatientAwaiting = ({patient}) => {
 }
 
 const PatientHeader = ({patient, avatar}) => {
-    const {getData, updateData} = useContext(patientDataContext.context);
+    const {getData} = useContext(patientDataContext.context);
     if (!patient)
         return <Button shape={"circle"} type={"text"}>{avatar}</Button>
     return <span>
@@ -202,10 +201,10 @@ const PatientInner = ({patient, avatar, style}) => {
     return <HashMatch match={['highlight', patient]}>{({matched, match}) =>
         <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
             marginRight: -4, marginLeft: -4, animation: matched ? `highlight-${match[0]} 1s ease-out` : undefined
-        }} title={<PatientHeader patient={patient} avatar={avatar}/>} actions={patientMeasures(patient)} style={{
+        }} title={<PatientHeader patient={patient} avatar={avatar || <UserOutlined/>}/>} style={{
             margin: 0, maxWidth: 400, minWidth: 300, borderColor: severityBorderColor[severity], ...style
         }} hoverable={patient} onClick={patient ? () => navigate(`#info#${patient}#basic`) : null}
-              extra={<PatientAwaiting patient={patient}/>}>
+              extra={<PatientAwaiting patient={patient}/>} actions={patientMeasures(patient)}>
             <div style={style}>{content}</div>
         </Card>
     }</HashMatch>

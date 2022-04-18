@@ -20,7 +20,7 @@ class Measurements(Base):
 
     def to_dal(self):
         return Measurement(
-            at=self.at,
+            at=self.at.isoformat(),
             value=self.value,
             minimum=self.min_limit,
             maximum=self.max_limit,

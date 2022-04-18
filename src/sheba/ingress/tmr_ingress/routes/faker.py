@@ -10,7 +10,7 @@ logger = logbook.Logger(__name__)
 
 
 @faker_router.on_event('startup')
-@repeat_every(seconds=60, logger=logger)
+@repeat_every(seconds=10, logger=logger)
 @faker_router.post("/patient", tags=["Patient"], status_code=201)
 def generate_fake_patient():
     """
@@ -18,5 +18,9 @@ def generate_fake_patient():
     with 50% success chances
     :return:
     """
+    logger.debug('Generating patient...')
+
     if randint(0, 1):
         FakeMain().insert_new_patient()
+
+    logger.debug('Done.')

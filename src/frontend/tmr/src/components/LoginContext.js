@@ -12,6 +12,7 @@ export const LoginProvider = ({...props}) => {
 
     const [{loading, user}, setUser] = useState({loading: false, user: null});
     const {pathname} = useLocation();
+
     const checkUser = useCallback((token = null) => {
         setUser(prevState => ({loading: true, user: prevState.user}));
         Axios.get('/api/auth/user', {cancelToken: token}).then(response => {
@@ -28,7 +29,7 @@ export const LoginProvider = ({...props}) => {
         const s = Axios.CancelToken.source()
         checkUser(s.token);
         return () => s.cancel()
-    }, [pathname]);
+    }, [pathname, checkUser]);
 
     return <loginContext.Provider value={{user: user, checkUser: checkUser, loadingUser: loading}}>
         {props.children({user: user, checkUser: checkUser, loadingUser: loading, ...props})}

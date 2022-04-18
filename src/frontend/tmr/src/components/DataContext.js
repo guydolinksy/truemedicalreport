@@ -27,7 +27,7 @@ export const createContext = (defaultValue) => {
             const s = Axios.CancelToken.source()
             flushData(s.token)
             return () => s.cancel()
-        }, [url, lastMessage]);
+        }, [url, lastMessage, flushData]);
 
         const getData = useCallback((path, defaultValue) => path.reduce((data, name) => {
             if ([undefined, null].includes(data) || [undefined, null].includes(data[name]))

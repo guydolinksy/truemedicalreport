@@ -3,7 +3,6 @@ import React, {useContext, useEffect, useState} from "react";
 import {useNavigate} from "react-router";
 import Moment from "react-moment";
 import moment from "moment";
-import {createContext} from "./DataContext";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import highchartsMore from 'highcharts/highcharts-more';
@@ -59,7 +58,7 @@ export const PatientInfo = () => {
     </HashMatch>
 }
 const InternalPatientCard = ({patient, setTitle}) => {
-    const {getData, updateData, loadingData} = useContext(patientDataContext.context);
+    const {getData, loadingData} = useContext(patientDataContext.context);
     useEffect(() => {
         if (loadingData)
             setTitle('')
@@ -124,7 +123,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                       </HashMatch>}/>
             </Panel>
             <Panel key={'visit'} header={'ביקורים קודמים'}>
-                {(getData(['visits']) || []).map((visit, i) => <p key={i}>{visit.title} at <a><Moment date={visit.at}/></a>
+                {(getData(['visits']) || []).map((visit, i) => <p key={i}>{visit.title} ב<a href={'/'}><Moment date={visit.at}/></a>
                 </p>)}
             </Panel>
             <Panel key={'important'} header={'עדכונים חשובים'}>

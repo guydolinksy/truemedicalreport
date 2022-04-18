@@ -18,13 +18,13 @@ class Admission(BaseModel):
 
 
 class Patient(BaseModel):
-    oid: Optional[str] = Field(default_factory=ObjectId)
+    oid: Optional[str]
 
     # Chameleon fields
     esi: Optional[int]
     name: Optional[str]
     age: Optional[str]
-    birthdate: Optional[datetime]
+    birthdate: Optional[str]
     complaint: Optional[str]
     admission: Optional[Admission]
     measures: Optional[Measures]
@@ -32,7 +32,7 @@ class Patient(BaseModel):
     # Internal fields
     awaiting: Optional[str]
     severity: Optional[Severity]
-    flagged: Optional[bool] = False
+    flagged: Optional[bool]
     warnings: Optional[List[dict]]
 
     id_: Optional[str]

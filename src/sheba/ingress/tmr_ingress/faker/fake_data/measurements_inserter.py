@@ -12,7 +12,7 @@ class MeasurementsInserter(DataInserterBase):
     def generate_object(self, type_id, inner_patient_id):
         measurements_object = Measurements()
         measurements_object.id_num = inner_patient_id
-        measurements_object.at = (datetime.now().utcnow()).strftime("%Y-%m-%d %H:%M:%S")
+        measurements_object.at = datetime.utcnow()
         measurements_object.code = type_id
         measurements_object.name = self.measurement_types[type_id]
         measurements_object.value = self.faker.pyfloat(min_value=10, max_value=160, right_digits=2)

@@ -23,7 +23,7 @@ function App() {
                                     <Route path={DEPARTMENT_URL} element={<DepartmentView/>}/>
                                     <Route path={SETTINGS_URL} element={<SettingsView/>}/>
                                     <Route path={'*'} element={<Navigate to={generatePath(
-                                        DEPARTMENT_URL, {department: user && user.department || "er"}
+                                        DEPARTMENT_URL, {department: (user && user.department) || "er"}
                                     )}/>}/>
                                 </Routes>
                             </Layout>

@@ -67,14 +67,16 @@ class MedicalDal:
 
                 self.db.patients.update_one({"id_": patient.id_}, {'$set': patient.chameleon_dict()}, upsert=True)
 
-                await self.notify_patient(patient=patient.oid)
-                await self.notify_admission(admission=patient.admission)
+                current = Patient(**(self.db.patients.find_one({"id_": patient.id_}) or {}))
+                await self.notify_admission(admission=current.admission)
+                await self.notify_patient(patient=current.oid)
 
             case Action.insert:
                 self.db.patients.update_one({"id_": patient.id_}, {'$set': patient.chameleon_dict()}, upsert=True)
 
-                await self.notify_patient(patient=patient.oid)
-                await self.notify_admission(admission=patient.admission)
+                current = Patient(**(self.db.patients.find_one({"id_": patient.id_}) or {}))
+                await self.notify_admission(admission=current.admission)
+                await self.notify_patient(patient=current.oid)
 
     def get_patient_measures(self, patient: str) -> dict:
         return json.loads(dumps(self.db.patients.find_one({"_id": ObjectId(patient)}, {"measures": 1})))
@@ -88,10 +90,10 @@ class MedicalDal:
 
     @staticmethod
     async def notify_admission(admission: Admission):
-
         if admission:
             await notify('admission', admission.dict())
 
     @staticmethod
     async def notify_patient(patient: str):
-        await notify('patient', patient)
+        if patient:
+            await notify('patient', patient)

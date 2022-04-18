@@ -1,4 +1,5 @@
 import contextlib
+import os
 from enum import Enum
 
 import logbook
@@ -8,7 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from tmr_common.data_models.measures import Temperature, Pulse, Systolic, Diastolic
-from tmr_ingress.models.chameleon_main import ChameleonMain
+from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
 from tmr_ingress.models.measurements import Measurements
 
 logger = logbook.Logger(__name__)
@@ -23,14 +24,10 @@ class MeasurementsIds(Enum):
     ESIScore = 13
 
 
-class Departments(Enum):
-    er = '10'
-
-
 class SqlToDal(object):
-    def __init__(self):
-        self._engine = create_engine('mssql+pyodbc://sa:Password123@chameleon:1433/chameleon_db?'
-                                     'driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes')
+    def __init__(self, connection_string=None):
+        connection_string = connection_string or os.getenv('CHAMELEON_CONNECTION_STRING')
+        self._engine = create_engine(connection_string)
 
     @contextlib.contextmanager
     def session(self):

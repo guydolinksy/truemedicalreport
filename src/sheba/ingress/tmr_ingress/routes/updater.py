@@ -2,8 +2,9 @@ import logbook
 from fastapi import APIRouter, Depends
 from fastapi_utils.tasks import repeat_every
 
-from ..logics.sql_to_dal import SqlToDal, Departments
+from ..logics.sql_to_dal import SqlToDal
 from ..logics.utils import inject_dependencies
+from ..models.chameleon_main import Departments
 
 updater_router = APIRouter()
 
@@ -16,7 +17,7 @@ logger = logbook.Logger(__name__)
 
 
 # TODO: uncomment to enable periodic updates
-# @updater_router.on_event('startup')
+@updater_router.on_event('startup')
 @repeat_every(seconds=10, logger=logger)
 @inject_dependencies(department=Departments.er)
 @updater_router.post("/update_admissions")
@@ -25,7 +26,7 @@ async def update_admissions(department: Departments, dal: SqlToDal = Depends(dal
 
 
 # TODO: uncomment to enable periodic updates
-# @updater_router.on_event('startup')
+@updater_router.on_event('startup')
 @repeat_every(seconds=10, logger=logger)
 @inject_dependencies(department=Departments.er)
 @updater_router.post("/update_measurements")

@@ -107,10 +107,10 @@ export const Wing = ({department, wing, onError}) => {
 
     return <wingDataContext.Provider url={uri} defaultValue={{patients: [], details: {}}} onError={onError}>
         {({loadingData, getData, flushData}) => {
-            const assignedPatients = (getData(['patients']) || []).filter(({oid, admission}) => admission.bed)
-            const title = <span>מטופלים במיטות: {assignedPatients.length}</span>
+            // const assignedPatients = (getData(['patients']) || []).filter(({oid, admission}) => admission.bed)
+            // const title = <span>מטופלים במיטות: {assignedPatients.length}</span>
             const unassignedPatients = (getData(['patients']) || []).filter(({oid, admission}) => !admission.bed)
-            const overflowTitle = <span>מטופלים ללא מיטה: {unassignedPatients.length}</span>
+            // const overflowTitle = <span>מטופלים ללא מיטה: {unassignedPatients.length}</span>
 
             const details = (getData(['details']) || []);
 
