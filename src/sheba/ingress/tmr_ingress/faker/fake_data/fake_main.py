@@ -24,6 +24,3 @@ class FakeMain(object):
     def update_measurements(self):
         self.measurements_inserter.update_measurement()
         self.measurements_inserter.add_rows()
-
-# main = FakeMain()
-# main.insert_new_patient()
