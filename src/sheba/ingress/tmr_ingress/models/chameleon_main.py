@@ -17,7 +17,7 @@ class Departments(Enum):
 class ChameleonMain(Base):
     __tablename__ = "chameleon_main"
 
-    id_num = Column("id_num", Integer(), primary_key=True)
+    chameleon_id = Column("id_num", Integer(), primary_key=True)
     patient_id = Column("patient_id", VARCHAR(200))
     patient_name = Column("patient_name", String(30))
     gender = Column("gender", VARCHAR(100))
@@ -31,6 +31,7 @@ class ChameleonMain(Base):
 
     def to_dal(self) -> Patient:
         return Patient(
+            chameleon_id=self.chameleon_id,
             id_=self.patient_id,
             name=self.patient_name,
             complaint=self.main_cause,

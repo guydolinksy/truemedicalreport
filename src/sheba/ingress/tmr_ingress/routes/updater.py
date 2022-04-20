@@ -17,8 +17,8 @@ logger = logbook.Logger(__name__)
 
 
 # TODO: uncomment to enable periodic updates
-# @updater_router.on_event('startup')
-@repeat_every(seconds=60, logger=logger)
+@updater_router.on_event('startup')
+@repeat_every(seconds=10, logger=logger)
 @inject_dependencies(department=Departments.er)
 @updater_router.post("/update_admissions")
 async def update_admissions(department: Departments, dal: SqlToDal = Depends(dal_updater)):
@@ -26,8 +26,8 @@ async def update_admissions(department: Departments, dal: SqlToDal = Depends(dal
 
 
 # TODO: uncomment to enable periodic updates
-# @updater_router.on_event('startup')
-@repeat_every(seconds=60, logger=logger)
+@updater_router.on_event('startup')
+@repeat_every(seconds=10, logger=logger)
 @inject_dependencies(department=Departments.er)
 @updater_router.post("/update_measurements")
 async def update_measurements(department: Departments, dal: SqlToDal = Depends(dal_updater)):

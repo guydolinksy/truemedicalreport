@@ -4,39 +4,40 @@ import logbook
 from random import randint
 from tmr_ingress.logics.faking import FakeMain
 from tmr_ingress.logics.utils import inject_dependencies
+from tmr_ingress.models.chameleon_main import Departments
 
 faker_router = APIRouter()
 
 logger = logbook.Logger(__name__)
 
 
-# @faker_router.on_event('startup')
-@repeat_every(seconds=60, logger=logger)
-@inject_dependencies()
+@faker_router.on_event('startup')
+@repeat_every(seconds=10, logger=logger)
+@inject_dependencies(department=Departments.er)
 @faker_router.post("/patients/admit", tags=["Patient"], status_code=201)
-async def admit_patient(dal: FakeMain = Depends(FakeMain)):
+async def admit_patient(department: Departments, dal: FakeMain = Depends(FakeMain)):
     """
     fake new patient and add it to sql
     with 50% success chances
     :return:
     """
     logger.debug('Admitting patient...')
-    await dal.admit_patients()
+    await dal.admit_patients(department)
     logger.debug('Done.')
 
 
-# @faker_router.on_event('startup')
-@repeat_every(seconds=60, logger=logger)
-@inject_dependencies()
+@faker_router.on_event('startup')
+@repeat_every(seconds=10, logger=logger)
+@inject_dependencies(department=Departments.er)
 @faker_router.post("/patients/discharge", tags=["Patient"], status_code=201)
-async def discharge_patient(dal: FakeMain = Depends(FakeMain)):
+async def discharge_patient(department: Departments, dal: FakeMain = Depends(FakeMain)):
     """
     fake new patient and add it to sql
     with 50% success chances
     :return:
     """
     logger.debug('Discharging patient...')
-    await dal.discharge_patient()
+    await dal.discharge_patient(department)
     logger.debug('Done.')
 
 

@@ -21,6 +21,8 @@ class Patient(BaseModel):
     oid: Optional[str]
 
     # Chameleon fields
+    chameleon_id: Optional[str]
+    id_: Optional[str]
     esi: Optional[int]
     name: Optional[str]
     age: Optional[str]
@@ -35,13 +37,17 @@ class Patient(BaseModel):
     flagged: Optional[bool]
     warnings: Optional[List[dict]]
 
-    id_: Optional[str]
-
     class Config:
         orm_mode = True
 
+    def __init__(self, **kwargs):
+        if '_id' in kwargs:
+            kwargs['oid'] = str(kwargs.pop('_id'))
+        super(Patient, self).__init__(**kwargs)
+
     def chameleon_dict(self):
         return {
+            "chameleon_id": self.chameleon_id,
             "id_": self.id_,
             "name": self.name,
             "age": self.age,

@@ -19,7 +19,7 @@ def create_app() -> FastAPI:
     app_.include_router(patient_router, prefix="/api/patients")
     app_.include_router(department_router, prefix="/api/departments")
     app_.include_router(websocket_router, prefix="/api/sync")
-    app_.include_router(subscriber_router)
+    app_.include_router(subscriber_router, prefix="/api/subscribe")
 
     return app_
 
