@@ -29,10 +29,34 @@ class FakeMain(object):
         'b3': {str(i) for i in range(25, 41)} | {None},
     }
     measurement_types = {
-        11: 'טמפ',
-        12: 'דופק',
-        101: 'לחץ דם סיסטולי',
-        102: 'לחץ דם דיאסטולי',
+        "temperature": {"min": 36.1,
+                        "max": 37.7,
+                        "min_fake": 35.6,
+                        "max_fake": 41,
+                        "description": 'טמפ',
+                        "decimal_digits": 1,
+                        "code": 11},
+        "pulse": {"min": 50,
+                  "max": 110,
+                  "min_fake": 35,
+                  "max_fake": 210,
+                  "description": 'דופק',
+                  "decimal_digits": 0,
+                  "code": 12},
+        "systolic": {"min": 90,
+                     "max": 120,
+                     "min_fake": 70,
+                     "max_fake": 200,
+                     "decimal_digits": 0,
+                     "description": 'לחץ דם סיסטולי',
+                     "code": 101},
+        "diastolic": {"min": 60,
+                      "max": 80,
+                      "min_fake": 50,
+                      "max_fake": 160,
+                      "decimal_digits": 0,
+                      "description": 'לחץ דם דיאסטולי',
+                      "code": 102}
     }
 
     def get_used_beds(self, wing):
@@ -65,18 +89,19 @@ class FakeMain(object):
             patients = {patient_id}
         else:
             with self.session() as session:
-                patients = {patient.patient_id for patient in session.query(ChameleonMain)}
-
+                patients = {patient.id_num for patient in session.query(ChameleonMain)}
         for patient in patients:
-            for type_id in self.measurement_types:
+            for measure_type in self.measurement_types:
                 o = Measurements()
                 o.id_num = patient
                 o.at = datetime.datetime.utcnow()
-                o.code = type_id
-                o.name = self.measurement_types[type_id]
-                o.value = self.faker.pyfloat(min_value=10, max_value=160, right_digits=2)
-                o.min_limit = self.faker.pyfloat(min_value=30, max_value=80, right_digits=2)
-                o.max_limit = self.faker.pyfloat(min_value=80, max_value=150, right_digits=2)
+                o.code = self.measurement_types[measure_type]["code"]
+                o.name = self.measurement_types[measure_type]["description"]
+                o.value = self.faker.pyfloat(min_value=self.measurement_types[measure_type]["min_fake"],
+                                             max_value=self.measurement_types[measure_type]["max_fake"],
+                                             right_digits=self.measurement_types[measure_type]["decimal_digits"])
+                o.min_limit = self.measurement_types[measure_type]["min"]
+                o.max_limit = self.measurement_types[measure_type]["max"]
                 o.warnings = self.faker.sentence(nb_words=3)
                 with self.session() as session:
                     session.add(o)
@@ -86,7 +111,7 @@ class FakeMain(object):
         for wing in self.wings:
             if random.randint(0, 1):
                 inner_patient_id, patient_id = self._generate_patient(wing)
-                self._generate_measurements(patient_id)
+                self._generate_measurements(inner_patient_id)
 
     async def discharge_patient(self):
         for wing in self.wings:

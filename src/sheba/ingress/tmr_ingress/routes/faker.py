@@ -38,3 +38,16 @@ async def discharge_patient(dal: FakeMain = Depends(FakeMain)):
     logger.debug('Discharging patient...')
     await dal.discharge_patient()
     logger.debug('Done.')
+
+
+@faker_router.on_event('startup')
+@repeat_every(seconds=30, logger=logger)
+@inject_dependencies()
+@faker_router.post("/measurements", tags=["Measurements"], status_code=201)
+async def generate_fake_measurements_for_all_patients(dal: FakeMain = Depends(FakeMain)):
+    """
+    generate fake measurements to all patients in SQL
+    """
+    logger.debug('Generating Fake Measurements for all patients...')
+    await dal.update_measurements()
+    logger.debug('Done.')
