@@ -9,7 +9,7 @@ from bson.objectid import ObjectId
 from pymongo.database import Database
 
 from tmr.routes.websocket import notify
-from tmr_common.data_models.patient import Patient, Admission
+from tmr_common.data_models.patient import Patient, Admission, Severity
 
 logger = logbook.Logger(__name__)
 
@@ -75,7 +75,7 @@ class MedicalDal:
 
             case Action.insert:
                 self.db.patients.update_one({"chameleon_id": patient.chameleon_id},
-                                            {'$set': patient.chameleon_dict()}, upsert=True)
+                                            {'$set': {**patient.chameleon_dict(),"severity": Severity(value=patient.esi.value, at=patient.esi.at).dict()}}, upsert=True)
 
                 current = Patient(**(self.db.patients.find_one({"chameleon_id": patient.chameleon_id}) or {}))
                 await self.notify_admission(admission=current.admission)

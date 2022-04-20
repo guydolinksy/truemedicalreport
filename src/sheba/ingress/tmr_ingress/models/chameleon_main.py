@@ -6,6 +6,7 @@ from sqlalchemy.orm import declarative_base
 
 from tmr_common.data_models.patient import Patient, Admission
 from tmr_common.data_models.severity import Severity
+from tmr_common.data_models.esi_score import ESIScore
 
 Base = declarative_base()
 
@@ -37,5 +38,5 @@ class ChameleonMain(Base):
             complaint=self.main_cause,
             admission=Admission(department=Departments(str(self.unit)).name, wing=self.unit_wing, bed=self.bed_num),
             warnings=[],
-            severity=Severity(value=self.esi, at=datetime.datetime.utcnow().isoformat())
+            esi=ESIScore(value=self.esi, at=datetime.datetime.utcnow().isoformat())
         )

@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 from .measures import Measures
 from .severity import Severity
+from .esi_score import ESIScore
 
 
 class Admission(BaseModel):
@@ -23,7 +24,7 @@ class Patient(BaseModel):
     # Chameleon fields
     chameleon_id: Optional[str]
     id_: Optional[str]
-    esi: Optional[int]
+    esi: Optional[ESIScore]
     name: Optional[str]
     age: Optional[str]
     birthdate: Optional[str]
@@ -54,5 +55,6 @@ class Patient(BaseModel):
             "birthdate": self.birthdate,
             "complaint": self.complaint,
             "admission": self.admission.dict(),
-            "esi": self.esi,
+            "esi": self.esi.dict(),
+
         }
