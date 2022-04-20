@@ -149,7 +149,7 @@ export const Wing = ({department, wing, onError}) => {
                                 </Card>)}
                     </Col>
                 </Content>
-                <PatientInfo/>
+                <PatientInfo onError={onError}/>
             </Layout>
         }}
     </wingDataContext.Provider>

@@ -3,11 +3,13 @@ import json
 from asyncio import CancelledError
 
 import logbook
-from typing import Callable, Coroutine, List
+from typing import Callable, Coroutine, List, Any
 
 import fastapi
 import requests
 import websockets
+from fastapi import Body
+
 from tmr_common.data_models.patient import Patient, Admission
 
 from tmr.routes.websocket import notify
@@ -20,21 +22,21 @@ def websocket_subscriber(websocket_url):
     router_ = fastapi.APIRouter()
     tasks = []
 
-    def subscribe_(key: str):
+    def subscribe_(key: str, mapper: Callable[[Any], Any] = json.loads):
         def decorator(func: Callable[[str], Coroutine]):
             async def wrapper():
                 try:
                     async for ws in websockets.connect(f"{websocket_url}?key={key}"):
                         async for message in ws:
                             try:
-                                await func(json.loads(message))
+                                await func(mapper(message))
                             except Exception:
                                 logger.exception('Error running handler for message: {}', message)
                 except CancelledError:
                     pass
 
             handlers.append(wrapper())
-            return wrapper
+            return func
 
         return decorator
 
@@ -55,6 +57,7 @@ subscriber_router, subscribe = websocket_subscriber(websocket_url="ws://medical-
 
 
 @subscribe(key="patient")
+@subscriber_router.post('/patients/{patient}')
 async def patient_handler(patient: str):
     logger.debug('ID TRIGGER: {}', patient)
 
@@ -66,9 +69,10 @@ async def patient_handler(patient: str):
     await trigger_notification(patient)
 
 
-@subscribe(key="admission")
-async def admission_handler(admission: dict):
-    admission = Admission(**admission)
+@subscribe(key="admission", mapper=lambda message: Admission(**json.loads(message)))
+@subscriber_router.post('/admissions')
+async def admission_handler(admission: Admission = Body(..., embed=True)):
+    logger.debug(admission)
     await notify(f"/api/departments/{admission.department}")
     await notify(f"/api/departments/{admission.department}/wings/{admission.wing}")
     await notify(f"/api/departments/{admission.department}/wings/{admission.wing}/notifications")

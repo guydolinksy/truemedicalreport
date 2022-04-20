@@ -3,12 +3,15 @@ import datetime
 import os
 import random
 
+import logbook
 from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
 from tmr_ingress.models.measurements import Measurements
+
+logger = logbook.Logger(__name__)
 
 
 class FakeMain(object):
@@ -61,15 +64,15 @@ class FakeMain(object):
 
     def get_used_beds(self, wing):
         with self.session() as session:
-            return {cm.bed_num for cm in (session.query(ChameleonMain).filter(
+            return {str(cm.bed_num) for cm in (session.query(ChameleonMain).filter(
                 (ChameleonMain.unit_wing == wing) & (ChameleonMain.bed_num != None)))}
 
-    def _generate_patient(self, wing):
+    def _admit_patient(self, department: Departments, wing):
         o = ChameleonMain()
         o.patient_id = f'{self.faker.pyint(min_value=000000000, max_value=999999999):09}'
         o.patient_name = self.faker.name()
         o.gender = 'M' if random.randint(0, 1) == 0 else 'F'
-        o.unit = int(Departments.er.value)
+        o.unit = int(department.value)
         o.unit_wing = wing
         o.bed_num = random.choice(list(self.wings[wing] - self.get_used_beds(wing)))
         o.main_cause = random.choice([
@@ -82,14 +85,27 @@ class FakeMain(object):
         with self.session() as session:
             session.add(o)
             session.commit()
-            return o.id_num, o.patient_id
+            return o.chameleon_id, o.patient_id
 
-    def _generate_measurements(self, patient_id=None):
-        if patient_id:
-            patients = {patient_id}
+    def _discharge_patient(self, chameleon_id):
+        with self.session() as session:
+            patient = session.query(ChameleonMain).where(ChameleonMain.chameleon_id == chameleon_id).first()
+            patient.unit = patient.unit_wing = patient.bed_num = None
+            session.commit()
+
+    def _get_patients(self, department: Departments, wing):
+        with self.session() as session:
+            return {patient.chameleon_id for patient in session.query(ChameleonMain).filter(
+                (ChameleonMain.unit == int(department.value)) & (ChameleonMain.unit_wing == wing)
+            )}
+
+    def _generate_measurements(self, chameleon_id=None, department=None, wing=None):
+        if chameleon_id:
+            patients = {chameleon_id}
+        elif department and wing:
+            patients = self._get_patients(department, wing)
         else:
-            with self.session() as session:
-                patients = {patient.id_num for patient in session.query(ChameleonMain)}
+            raise ValueError()
         for patient in patients:
             for measure_type in self.measurement_types:
                 o = Measurements()
@@ -107,15 +123,18 @@ class FakeMain(object):
                     session.add(o)
                     session.commit()
 
-    async def admit_patients(self):
+    async def admit_patients(self, department):
         for wing in self.wings:
             if random.randint(0, 1):
-                inner_patient_id, patient_id = self._generate_patient(wing)
-                self._generate_measurements(inner_patient_id)
+                chameleon_id, patient_id = self._admit_patient(department, wing)
+                self._generate_measurements(chameleon_id=chameleon_id)
 
-    async def discharge_patient(self):
+    async def discharge_patient(self, department):
         for wing in self.wings:
-            pass
+            for patient in self._get_patients(department, wing):
+                if not random.randint(0, 10):
+                    self._discharge_patient(patient)
 
-    async def update_measurements(self):
-        self._generate_measurements()
+    async def update_measurements(self, department):
+        for wing in self.wings:
+            self._generate_measurements(department=department, wing=wing)

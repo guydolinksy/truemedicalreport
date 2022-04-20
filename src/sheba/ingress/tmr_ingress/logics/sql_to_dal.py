@@ -60,16 +60,16 @@ class SqlToDal(object):
                         filter(ChameleonMain.unit == int(department.value)):
                     match measurement.code:
                         case MeasurementsIds.Systolic:
-                            patients.setdefault(measurement.id_num, {}).setdefault('blood_pressure', {}). \
+                            patients.setdefault(measurement.chameleon_id, {}).setdefault('blood_pressure', {}). \
                                 setdefault('systolic', Systolic(**measurement.to_dal()).dict())
                         case MeasurementsIds.Diastolic:
-                            patients.setdefault(measurement.id_num, {}).setdefault('blood_pressure', {}). \
+                            patients.setdefault(measurement.chameleon_id, {}).setdefault('blood_pressure', {}). \
                                 setdefault('diastolic', Diastolic(**measurement.to_dal()).dict())
                         case MeasurementsIds.Temperature:
-                            patients.setdefault(measurement.id_num, {}). \
+                            patients.setdefault(measurement.chameleon_id, {}). \
                                 setdefault('temperature', Temperature(**measurement.to_dal()).dict())
                         case MeasurementsIds.Pulse:
-                            patients.setdefault(measurement.id_num, {}). \
+                            patients.setdefault(measurement.chameleon_id, {}). \
                                 setdefault('pulse', Pulse(**measurement.to_dal()).dict())
 
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/measurements',

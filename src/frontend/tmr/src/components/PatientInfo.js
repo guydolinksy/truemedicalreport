@@ -43,7 +43,7 @@ const PatientSeverity = () => {
         }}>{i}</Radio.Button>)}
     </Radio.Group>
 }
-export const PatientInfo = () => {
+export const PatientInfo = ({onError}) => {
     const navigate = useNavigate();
 
     const [title, setTitle] = useState();
@@ -51,7 +51,7 @@ export const PatientInfo = () => {
         {({matched, match}) => <Drawer title={title} placement={"left"} visible={matched}
                                        onClose={() => navigate('#')}>
             {matched &&
-                <patientDataContext.Provider url={`/api/patients/${match[0]}/info`} defaultValue={{}} onError={() => navigate('#')}>
+                <patientDataContext.Provider url={`/api/patients/${match[0]}/info`} defaultValue={{}} onError={onError}>
                     {() => <InternalPatientCard patient={match[0]} setTitle={setTitle}/>}
                 </patientDataContext.Provider>}
         </Drawer>}
