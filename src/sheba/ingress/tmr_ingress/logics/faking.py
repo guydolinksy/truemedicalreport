@@ -127,7 +127,7 @@ class FakeMain(object):
         for wing in self.wings:
             if random.randint(0, 1):
                 chameleon_id, patient_id = self._admit_patient(department, wing)
-                self._generate_measurements(chameleon_id)
+                self._generate_measurements(chameleon_id=chameleon_id)
 
     async def discharge_patient(self, department):
         for wing in self.wings:
@@ -135,5 +135,6 @@ class FakeMain(object):
                 if not random.randint(0, 10):
                     self._discharge_patient(patient)
 
-    async def update_measurements(self):
-        self._generate_measurements()
+    async def update_measurements(self, department):
+        for wing in self.wings:
+            self._generate_measurements(department=department, wing=wing)
