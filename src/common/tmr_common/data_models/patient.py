@@ -56,5 +56,9 @@ class Patient(BaseModel):
             "complaint": self.complaint,
             "admission": self.admission.dict(),
             "esi": self.esi.dict(),
+        }
 
+    def internal_dict(self):
+        return {
+            "severity": Severity(value=self.severity.value, at=self.severity.at).dict(),
         }

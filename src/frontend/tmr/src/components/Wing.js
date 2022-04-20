@@ -130,7 +130,7 @@ export const Wing = ({department, wing, onError}) => {
                                                     department: department,
                                                     wing: wing,
                                                     bed: details.beds[i][j]
-                                                }} onError={() => flushData()}/>
+                                                }} onError={flushData}/>
                                         )}
                                     </Row>
                                 )}

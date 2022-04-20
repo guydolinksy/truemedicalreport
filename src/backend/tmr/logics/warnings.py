@@ -1,18 +1,16 @@
 import asyncio
 import json
 from asyncio import CancelledError
-
-import logbook
 from typing import Callable, Coroutine, List, Any
 
 import fastapi
+import logbook
 import requests
 import websockets
 from fastapi import Body
 
 from tmr_common.data_models.patient import Patient, Admission
-
-from tmr.routes.websocket import notify
+from ..routes.websocket import notify
 
 logger = logbook.Logger(__name__)
 
@@ -59,8 +57,6 @@ subscriber_router, subscribe = websocket_subscriber(websocket_url="ws://medical-
 @subscribe(key="patient")
 @subscriber_router.post('/patients/{patient}')
 async def patient_handler(patient: str):
-    logger.debug('ID TRIGGER: {}', patient)
-
     await notify(f"/api/patients/{patient}")
     await notify(f"/api/patients/{patient}/info")
 
@@ -72,7 +68,6 @@ async def patient_handler(patient: str):
 @subscribe(key="admission", mapper=lambda message: Admission(**json.loads(message)))
 @subscriber_router.post('/admissions')
 async def admission_handler(admission: Admission = Body(..., embed=True)):
-    logger.debug(admission)
     await notify(f"/api/departments/{admission.department}")
     await notify(f"/api/departments/{admission.department}/wings/{admission.wing}")
     await notify(f"/api/departments/{admission.department}/wings/{admission.wing}/notifications")

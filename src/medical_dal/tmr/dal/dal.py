@@ -8,8 +8,8 @@ from bson.json_util import dumps
 from bson.objectid import ObjectId
 from pymongo.database import Database
 
-from tmr.routes.websocket import notify
 from tmr_common.data_models.patient import Patient, Admission, Severity
+from ..routes.websocket import notify
 
 logger = logbook.Logger(__name__)
 
@@ -53,7 +53,6 @@ class MedicalDal:
         return update_result.modified_count
 
     async def upsert_patient(self, patient: Patient, action: Action):
-        logger.debug('{} {}', patient, action)
         match action:
             case Action.remove:
                 previous = Patient(**(self.db.patients.find_one({"chameleon_id": patient.chameleon_id}) or {}))
@@ -74,8 +73,11 @@ class MedicalDal:
                 await self.notify_patient(patient=current.oid)
 
             case Action.insert:
-                self.db.patients.update_one({"chameleon_id": patient.chameleon_id},
-                                            {'$set': {**patient.chameleon_dict(),"severity": Severity(value=patient.esi.value, at=patient.esi.at).dict()}}, upsert=True)
+                patient.severity = patient.esi
+                self.db.patients.update_one({"chameleon_id": patient.chameleon_id}, {'$set': {
+                    **patient.chameleon_dict(),
+                    **patient.internal_dict()}
+                }, upsert=True)
 
                 current = Patient(**(self.db.patients.find_one({"chameleon_id": patient.chameleon_id}) or {}))
                 await self.notify_admission(admission=current.admission)

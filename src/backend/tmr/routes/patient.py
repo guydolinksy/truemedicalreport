@@ -11,8 +11,8 @@ patient_router = APIRouter()
 
 @patient_router.get("/{patient}")
 def get_patient_by_id(patient: str) -> dict:
-    patient = Patient(**requests.get(f"http://medical-dal/medical-dal/patients/{patient}").json())
-    return loads(patient.json(models_as_dict=False))
+    res = requests.get(f"http://medical-dal/medical-dal/patients/{patient}").json()
+    return loads(Patient(**res).json(models_as_dict=False)) if res else None
 
 
 @patient_router.get("/{patient}/info")
