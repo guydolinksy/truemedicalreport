@@ -72,6 +72,8 @@ class FakeMain(object):
         o.patient_id = f'{self.faker.pyint(min_value=000000000, max_value=999999999):09}'
         o.patient_name = self.faker.name()
         o.gender = 'M' if random.randint(0, 1) == 0 else 'F'
+        o.age = f"{random.randint(0, 120)}.{random.randint(0, 12)}"
+        o.birthdate = self.faker.date_between(start_date='-60y', end_date='-1d')
         o.unit = int(department.value)
         o.unit_wing = wing
         o.bed_num = random.choice(list(self.wings[wing] - self.get_used_beds(wing)))
@@ -82,7 +84,9 @@ class FakeMain(object):
         o.esi = random.choice([1, 2, 3, 4])
         o.warnings = self.faker.sentence(nb_words=3)
         o.stage = "מאושפז"
+
         with self.session() as session:
+            print(o.age, o.birthdate)
             session.add(o)
             session.commit()
             return o.chameleon_id, o.patient_id

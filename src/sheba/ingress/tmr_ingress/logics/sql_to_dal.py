@@ -9,19 +9,17 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from tmr_common.data_models.measures import Temperature, Pulse, Systolic, Diastolic
-from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
-from tmr_ingress.models.measurements import Measurements
+from ..models.chameleon_main import ChameleonMain, Departments
+from ..models.measurements import Measurements
 
 logger = logbook.Logger(__name__)
 
 
 class MeasurementsIds(Enum):
-    BloodPressure = 10
-    Systolic = 101
-    Diastolic = 102
-    Temperature = 11
-    Pulse = 12
-    ESIScore = 13
+    systolic = 101
+    diastolic = 102
+    temperature = 11
+    pulse = 12
 
 
 class SqlToDal(object):
@@ -59,16 +57,16 @@ class SqlToDal(object):
                         join(ChameleonMain, Measurements.id_num == ChameleonMain.patient_id). \
                         filter(ChameleonMain.unit == int(department.value)):
                     match measurement.code:
-                        case MeasurementsIds.Systolic:
+                        case MeasurementsIds.systolic:
                             patients.setdefault(measurement.chameleon_id, {}).setdefault('blood_pressure', {}). \
                                 setdefault('systolic', Systolic(**measurement.to_dal()).dict())
-                        case MeasurementsIds.Diastolic:
+                        case MeasurementsIds.diastolic:
                             patients.setdefault(measurement.chameleon_id, {}).setdefault('blood_pressure', {}). \
                                 setdefault('diastolic', Diastolic(**measurement.to_dal()).dict())
-                        case MeasurementsIds.Temperature:
+                        case MeasurementsIds.temperature:
                             patients.setdefault(measurement.chameleon_id, {}). \
                                 setdefault('temperature', Temperature(**measurement.to_dal()).dict())
-                        case MeasurementsIds.Pulse:
+                        case MeasurementsIds.pulse:
                             patients.setdefault(measurement.chameleon_id, {}). \
                                 setdefault('pulse', Pulse(**measurement.to_dal()).dict())
 
