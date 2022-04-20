@@ -17,7 +17,7 @@ class Departments(Enum):
 class ChameleonMain(Base):
     __tablename__ = "chameleon_main"
 
-    id_num = Column("id_num", VARCHAR(200), primary_key=True, autoincrement=False)
+    id_num = Column("id_num", Integer(), primary_key=True)
     patient_id = Column("patient_id", VARCHAR(200))
     patient_name = Column("patient_name", String(30))
     gender = Column("gender", VARCHAR(100))

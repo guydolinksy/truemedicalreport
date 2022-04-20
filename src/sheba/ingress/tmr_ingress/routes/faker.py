@@ -1,27 +1,42 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi_utils.tasks import repeat_every
 import logbook
 from random import randint
-from ..faker.fake_data.fake_main import FakeMain
+from tmr_ingress.logics.faking import FakeMain
+from tmr_ingress.logics.utils import inject_dependencies
 
 faker_router = APIRouter()
 
 logger = logbook.Logger(__name__)
 
 
-@faker_router.on_event('startup')
+# @faker_router.on_event('startup')
 @repeat_every(seconds=60, logger=logger)
-@faker_router.post("/patient", tags=["Patient"], status_code=201)
-def generate_fake_patient():
+@inject_dependencies()
+@faker_router.post("/patients/admit", tags=["Patient"], status_code=201)
+async def admit_patient(dal: FakeMain = Depends(FakeMain)):
     """
     fake new patient and add it to sql
     with 50% success chances
+    :return:
     """
-    logger.debug('Generating patient...')
+    logger.debug('Admitting patient...')
+    await dal.admit_patients()
+    logger.debug('Done.')
 
-    if randint(0, 1):
-        FakeMain().insert_new_patient()
 
+# @faker_router.on_event('startup')
+@repeat_every(seconds=60, logger=logger)
+@inject_dependencies()
+@faker_router.post("/patients/discharge", tags=["Patient"], status_code=201)
+async def discharge_patient(dal: FakeMain = Depends(FakeMain)):
+    """
+    fake new patient and add it to sql
+    with 50% success chances
+    :return:
+    """
+    logger.debug('Discharging patient...')
+    await dal.discharge_patient()
     logger.debug('Done.')
 
 
