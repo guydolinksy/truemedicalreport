@@ -1,7 +1,7 @@
 import datetime
 from enum import Enum
 
-from sqlalchemy import Column, Integer, String, VARCHAR
+from sqlalchemy import Column, Integer, String, VARCHAR, DateTime
 from sqlalchemy.orm import declarative_base
 
 from tmr_common.data_models.patient import Patient, Admission
@@ -29,6 +29,8 @@ class ChameleonMain(Base):
     bed_num = Column("bed_num", Integer())
     warnings = Column("warnings", String())
     stage = Column("stage", VARCHAR(150))
+    age = Column("age", VARCHAR)
+    birthdate = Column("birthdate", DateTime())
 
     def to_dal(self) -> Patient:
         return Patient(
@@ -38,5 +40,8 @@ class ChameleonMain(Base):
             complaint=self.main_cause,
             admission=Admission(department=Departments(str(self.unit)).name, wing=self.unit_wing, bed=self.bed_num),
             warnings=[],
-            esi=ESIScore(value=self.esi, at=datetime.datetime.utcnow().isoformat())
+            esi=ESIScore(value=self.esi, at=datetime.datetime.utcnow().isoformat()),
+            gender=self.gender,
+            age=self.age,
+            birthdate=self.birthdate
         )
