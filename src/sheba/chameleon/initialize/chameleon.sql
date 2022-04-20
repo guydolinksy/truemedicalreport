@@ -88,7 +88,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[chameleon_main](
-	[id_num] [varchar](250) NULL,
+	[id_num] [int] IDENTITY(1,1) NOT NULL,
 	[patient_id] [varchar](250) NULL,
 	[patient_name] [varchar](200) NULL,
 	[unit] [int] NULL,
@@ -121,10 +121,6 @@ CREATE TABLE [dbo].[measurements](
 	[pk_measurement_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-GO
-SET IDENTITY_INSERT [dbo].[measurements] ON
-GO
-SET IDENTITY_INSERT [dbo].[measurements] OFF
 GO
 USE [master]
 GO

@@ -125,8 +125,8 @@ export const Wing = ({department, wing, onError}) => {
                                 {(details.rows || []).map((row, i) =>
                                     <Row key={i} style={row} wrap={false}>
                                         {(details.columns || []).map((column, j) =>
-                                            details.beds[i][j] === null ? <div key={j} style={column}/> :
-                                                <Bed key={j} style={column} admission={{
+                                            details.beds[i][j] === null ? <div key={`filler-${j}`} style={column}/> :
+                                                <Bed key={`bed-${details.beds[i][j]}`} style={column} admission={{
                                                     department: department,
                                                     wing: wing,
                                                     bed: details.beds[i][j]
@@ -144,6 +144,7 @@ export const Wing = ({department, wing, onError}) => {
                                         {unassignedPatients.map(patient =>
                                             <Patient key={patient.oid} patient={patient.oid}
                                                      style={{flex: '1', minWidth: 300}}/>)}
+                                        <Patient patient={null} avatar={null} style={{flex: '1', minWidth: 300}}/>
                                     </div>
                                 </Card>)}
                     </Col>
