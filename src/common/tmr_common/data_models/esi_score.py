@@ -1,12 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 
 class ESIScore(BaseModel):
-    value: int
-    time: datetime
-    min: int
-    max: int
-
-    class Config:
-        orm_mode = True
+    value: Optional[int]
+    at: Optional[str]
