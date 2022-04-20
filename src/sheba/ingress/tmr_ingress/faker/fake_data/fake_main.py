@@ -17,10 +17,9 @@ class FakeMain(object):
     def insert_new_patient(self):
         inner_patient_id = self.chameleon_inserter.generate_object()
         self.chameleon_inserter.add_rows()
-        self._session.commit()
-        self.measurements_inserter.generate_all_measurements(inner_patient_id)
+        self.measurements_inserter.generate_all_measurements_for_single_patient(inner_patient_id)
         self.measurements_inserter.add_rows()
 
-    def update_measurements(self):
-        self.measurements_inserter.update_measurement()
+    def insert_new_measurements(self):
+        self.measurements_inserter.insert_fake_measurements_for_all_patient()
         self.measurements_inserter.add_rows()

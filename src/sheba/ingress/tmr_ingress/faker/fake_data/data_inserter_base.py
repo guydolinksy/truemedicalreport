@@ -26,8 +26,7 @@ class DataInserterBase:
         query = update(table_name).where(column_name.c.id_num == id).values({table_name.column_name: new_value})
         self.session.commit()
 
-    def select_inner_patient_id(self):
-        query = select(ChameleonMain.Id_Num)
+    def get_patients_id(self):
+        query = select(ChameleonMain.id_num)
         result = self.session.execute(query).fetchall()
-        id_list = [item[0] for item in result]
-        return id_list
+        return [item[0] for item in result]
