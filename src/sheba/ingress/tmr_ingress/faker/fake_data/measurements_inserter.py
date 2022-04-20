@@ -29,7 +29,8 @@ class MeasurementsInserter(DataInserterBase):
                          "code": 101},
             "diastolic": {"min": 60,
                           "max": 80,
-                          "min_fake": 50, "max_fake": 160,
+                          "min_fake": 50,
+                          "max_fake": 160,
                           "description": 'לחץ דם דיאסטולי',
                           "code": 102}
         }
