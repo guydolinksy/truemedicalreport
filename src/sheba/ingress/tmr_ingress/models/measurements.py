@@ -9,7 +9,7 @@ class Measurements(Base):
     __tablename__ = "measurements"
 
     pk = Column("pk_measurement_id", Integer(), primary_key=True)
-    id_num = Column("id_num", VARCHAR(200))
+    chameleon_id = Column("id_num", VARCHAR(200))
     at = Column("Parameter_Date", DateTime())
     code = Column("Parameter_Id", Integer())
     name = Column("Parameter_Name", VARCHAR(100))

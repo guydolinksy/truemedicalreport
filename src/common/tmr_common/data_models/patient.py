@@ -26,7 +26,9 @@ class Patient(BaseModel):
     id_: Optional[str]
     esi: Optional[ESIScore]
     name: Optional[str]
+    arrival: Optional[str]
     age: Optional[str]
+    gender: Optional[str]
     birthdate: Optional[str]
     complaint: Optional[str]
     admission: Optional[Admission]
@@ -51,7 +53,9 @@ class Patient(BaseModel):
             "chameleon_id": self.chameleon_id,
             "id_": self.id_,
             "name": self.name,
+            "arrival": self.arrival,
             "age": self.age,
+            "gender": 'male' if self.gender == 'M' else 'female',
             "birthdate": self.birthdate,
             "complaint": self.complaint,
             "admission": self.admission.dict(),
@@ -61,4 +65,5 @@ class Patient(BaseModel):
     def internal_dict(self):
         return {
             "severity": Severity(value=self.severity.value, at=self.severity.at).dict(),
+            "awaiting": self.awaiting,
         }

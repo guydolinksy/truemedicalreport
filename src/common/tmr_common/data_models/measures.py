@@ -51,17 +51,13 @@ class BloodPressure(BaseModel):
 
     def __init__(self, **kwargs):
         if 'value' not in kwargs:
-            systolic = Systolic(**kwargs['systolic'])
-            diastolic = Diastolic(**kwargs['diastolic'])
-            kwargs['value'] = f"{int(systolic.value)}/{int(diastolic.value)}"
+            kwargs['value'] = f"{int(kwargs['systolic'].value)}/{int(kwargs['diastolic'].value)}"
         if 'is_valid' not in kwargs:
-            systolic = Systolic(**kwargs['systolic'])
-            diastolic = Diastolic(**kwargs['diastolic'])
-            kwargs['is_valid'] = systolic.is_valid and diastolic.is_valid
+            kwargs['is_valid'] = kwargs['systolic'].is_valid and kwargs['diastolic'].is_valid
         if 'at' not in kwargs:
-            systolic = Systolic(**kwargs['systolic'])
-            diastolic = Diastolic(**kwargs['diastolic'])
-            kwargs['at'] = min(map(datetime.datetime.fromisoformat, [systolic.at, diastolic.at]))
+            kwargs['at'] = min(
+                map(datetime.datetime.fromisoformat, [kwargs['systolic'].at, kwargs['diastolic'].at])
+            ).isoformat()
         super(BloodPressure, self).__init__(**kwargs)
 
 

@@ -100,6 +100,7 @@ create TABLE [dbo].[chameleon_main](
 	[gender] [varchar](2) NULL,
 	[age] [varchar](7) NULL,
 	[birthdate] [datetime] NULL,
+	[arrival] [datetime] NULL,
 	[stage] [varchar](150) NULL
 ) ON [PRIMARY]
 GO

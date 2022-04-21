@@ -75,5 +75,6 @@ async def admission_handler(admission: Admission = Body(..., embed=True)):
 
 
 async def trigger_notification(patient: Patient):
-    await notify(f"/api/departments/{patient.admission.department}/wings/{patient.admission.wing}/notifications",
-                 {'openKeys': [patient.oid]})
+    if patient.admission:
+        await notify(f"/api/departments/{patient.admission.department}/wings/{patient.admission.wing}/notifications",
+                     {'openKeys': [patient.oid]})

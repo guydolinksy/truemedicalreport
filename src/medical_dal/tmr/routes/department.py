@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 import logbook
 from fastapi import APIRouter, Depends, Body
@@ -48,6 +48,7 @@ async def update_admissions(department: str, admissions: List[Patient] = Body(..
 
 
 @department_router.post("/{department}/measurements")
-def update_measurements(department: str, measurements=Body(..., embed=True), dal: MedicalDal = Depends(medical_dal)):
+async def update_measurements(department: str, measurements: Dict[str, Measures] = Body(..., embed=True),
+                        dal: MedicalDal = Depends(medical_dal)):
     for patient in measurements:
-        logger.debug(Measures(**measurements[patient]))
+        await dal.upsert_measurements(patient, measurements[patient])

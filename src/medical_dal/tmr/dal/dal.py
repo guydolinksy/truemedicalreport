@@ -10,6 +10,7 @@ from pymongo.database import Database
 
 from tmr_common.data_models.patient import Patient, Admission, Severity
 from ..routes.websocket import notify
+from tmr_common.data_models.measures import Measures
 
 logger = logbook.Logger(__name__)
 
@@ -74,6 +75,7 @@ class MedicalDal:
 
             case Action.insert:
                 patient.severity = patient.esi
+                patient.awaiting = 'מחכה לך'
                 self.db.patients.update_one({"chameleon_id": patient.chameleon_id}, {'$set': {
                     **patient.chameleon_dict(),
                     **patient.internal_dict()}
@@ -92,6 +94,12 @@ class MedicalDal:
             {'$push': {"warnings": {ObjectId(), warning}}}
         )
         return update_result.modified_count
+
+    async def upsert_measurements(self, chameleon_id: str, measures_obj: Measures):
+        self.db.patients.update_one({"chameleon_id": chameleon_id},
+                                    {'$set': {"measures": measures_obj.dict()}}, upsert=True)
+        current = Patient(**(self.db.patients.find_one({"chameleon_id": chameleon_id}) or {}))
+        await self.notify_patient(patient=current.oid)
 
     @staticmethod
     async def notify_admission(admission: Admission):

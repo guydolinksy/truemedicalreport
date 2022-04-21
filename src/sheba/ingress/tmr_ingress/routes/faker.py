@@ -27,7 +27,7 @@ async def admit_patient(department: Departments, dal: FakeMain = Depends(FakeMai
 
 
 @faker_router.on_event('startup')
-@repeat_every(seconds=10, logger=logger)
+@repeat_every(seconds=30, logger=logger)
 @inject_dependencies(department=Departments.er)
 @faker_router.post("/patients/discharge", tags=["Patient"], status_code=201)
 async def discharge_patient(department: Departments, dal: FakeMain = Depends(FakeMain)):

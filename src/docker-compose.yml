@@ -4,12 +4,12 @@ services:
       target: dev
       context: ./
       dockerfile: backend/Dockerfile
-    ports:
-      - "8000:80"
     volumes:
       - "./config:/opt/config"
       - "./backend/tmr:/opt/backend/tmr"
       - "./common/tmr_common:/opt/common/tmr_common"
+    deploy:
+      replicas: 1
     depends_on:
       - medical-dal
       - broadcast-redis
@@ -19,11 +19,11 @@ services:
       target: dev
       context: ./
       dockerfile: medical_dal/Dockerfile
-    ports:
-      - "8010:80"
     volumes:
       - "./medical_dal/tmr:/opt/medical_dal/tmr"
       - "./common/tmr_common:/opt/common/tmr_common"
+    deploy:
+      replicas: 5
     depends_on:
       - medical-db
       - broadcast-redis
