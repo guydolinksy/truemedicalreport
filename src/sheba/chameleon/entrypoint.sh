@@ -1,2 +1,2 @@
 sh /opt/chameleon/initialize/run.sh &
-/opt/mssql/bin/sqlservr
+ /opt/mssql/bin/sqlservr

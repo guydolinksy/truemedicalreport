@@ -1,4 +1,4 @@
-from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime, ForeignKey
+from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime
 from sqlalchemy.orm import declarative_base
 from tmr_common.data_models.measures import Measurement
 
