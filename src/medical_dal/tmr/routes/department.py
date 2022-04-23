@@ -36,15 +36,14 @@ def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> L
 async def update_admissions(department: str, admissions: List[Patient] = Body(..., embed=True),
                             dal: MedicalDal = Depends(medical_dal)):
     admissions = {patient.chameleon_id: patient for patient in admissions}
-    for wing in dal.get_department_wings(department):
-        patients = {patient.chameleon_id: patient for patient in dal.get_wing_patients(department, wing['key'])}
-        existing, queried = set(patients), set(admissions)
-        for patient in existing - queried:
-            await upsert_patient(patient=patients[patient], dal=dal, action=Action.remove)
-        for patient in queried - existing:
-            await upsert_patient(patient=admissions[patient], dal=dal, action=Action.insert)
-        for patient in queried & existing:
-            await upsert_patient(patient=admissions[patient], dal=dal, action=Action.update)
+    patients = {patient.chameleon_id: patient for patient in dal.get_department_patients(department)}
+    existing, queried = set(patients), set(admissions)
+    for patient in existing - queried:
+        await upsert_patient(patient=patients[patient], dal=dal, action=Action.remove)
+    for patient in queried - existing:
+        await upsert_patient(patient=admissions[patient], dal=dal, action=Action.insert)
+    for patient in queried & existing:
+        await upsert_patient(patient=admissions[patient], dal=dal, action=Action.update)
 
 
 @department_router.post("/{department}/measurements")

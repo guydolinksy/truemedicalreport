@@ -37,7 +37,12 @@ class MedicalDal:
     def get_wing_patients(self, department: str, wing: str) -> List[Patient]:
         return [Patient(oid=str(patient.pop("_id")), **patient) for patient in
                 self.db.patients.find({"admission.department": department, "admission.wing": wing},
-                                      {"_id": 1, "admission": 1, "chameleon_id": 1})]
+                                      {"_id": 1, "admission": 1, "chameleon_id": 1, 'name': 1})]
+
+    def get_department_patients(self, department: str) -> List[Patient]:
+        return [Patient(oid=str(patient.pop("_id")), **patient) for patient in
+                self.db.patients.find({"admission.department": department},
+                                      {"_id": 1, "admission": 1, "chameleon_id": 1, 'name': 1})]
 
     def get_patient_by_id(self, patient: str) -> Patient:
         res = self.db.patients.find_one({"_id": ObjectId(patient)})
@@ -69,9 +74,11 @@ class MedicalDal:
                                             {'$set': patient.chameleon_dict()}, upsert=True)
 
                 current = Patient(**(self.db.patients.find_one({"chameleon_id": patient.chameleon_id}) or {}))
-                await self.notify_admission(admission=previous.admission)
-                await self.notify_admission(admission=current.admission)
-                await self.notify_patient(patient=current.oid)
+                if previous.admission != current.admission:
+                    await self.notify_admission(admission=previous.admission)
+                    await self.notify_admission(admission=current.admission)
+                if previous.chameleon_dict() != current.chameleon_dict():
+                    await self.notify_patient(patient=current.oid)
 
             case Action.insert:
                 patient.severity = patient.esi
@@ -96,10 +103,13 @@ class MedicalDal:
         return update_result.modified_count
 
     async def upsert_measurements(self, chameleon_id: str, measures_obj: Measures):
+        previous = Patient(**(self.db.patients.find_one({"chameleon_id": chameleon_id}) or {}))
+
         self.db.patients.update_one({"chameleon_id": chameleon_id},
                                     {'$set': {"measures": measures_obj.dict()}}, upsert=True)
         current = Patient(**(self.db.patients.find_one({"chameleon_id": chameleon_id}) or {}))
-        await self.notify_patient(patient=current.oid)
+        if previous.measures != current.measures:
+            await self.notify_patient(patient=current.oid)
 
     @staticmethod
     async def notify_admission(admission: Admission):

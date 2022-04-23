@@ -25,7 +25,7 @@ def get_wing_details(department: str, wing: str, dal: MedicalDal = Depends(medic
 @wing_router.get("/{wing}/notifications")
 def wing_notifications(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> list:
     return [{
-        'patient': {'name': 'ישראל ישראלי', 'oid': patient.oid},
+        'patient': {'name': patient.name, 'oid': patient.oid},
         'danger': not i % 15,
         'messages': [{'danger': not i % 15, 'content': 'התקבלה תוצאת מעבדה'}]
     } for (i, patient) in enumerate(dal.get_wing_patients(department, wing))]

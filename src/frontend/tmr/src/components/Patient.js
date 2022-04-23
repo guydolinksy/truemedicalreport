@@ -103,7 +103,7 @@ const PatientAge = ({patient}) => {
         female: 'בת',
     }
     return !patient || loadingData ? null : <span>
-        ,&nbsp;{genderedAge[getData(['gender'], 'male')]}&nbsp;
+        ,&nbsp;{genderedAge[getData(['gender'])]}&nbsp;
         <Tooltip overlay={<Moment date={getData(['birthdate'])} format={"DD/MM/YYYY"}/>}>
             {getData(['age'])}
         </Tooltip>
@@ -200,9 +200,10 @@ const PatientInner = ({patient, avatar, style}) => {
         ref.current.scrollIntoViewIfNeeded(true);
     return <HashMatch match={['highlight', patient]}>{({matched, match}) =>
         <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
-            marginRight: -4, marginLeft: -4, animation: matched ? `highlight-${match[0]} 1s ease-out` : undefined
+            paddingRight: -4, paddingLeft: -4, animation: matched ? `highlight-${match[0]} 1s ease-out` : undefined
         }} title={<PatientHeader patient={patient} avatar={avatar || <UserOutlined/>}/>} style={{
-            margin: 0, maxWidth: 400, minWidth: 300, borderColor: severityBorderColor[severity], ...style
+            margin: 0, maxWidth: 400, minWidth: 300, borderStyle: patient? "solid": "dotted",
+            borderColor: severityBorderColor[severity], ...style
         }} hoverable={patient} onClick={patient ? () => navigate(`#info#${patient}#basic`) : null}
               extra={<PatientAwaiting patient={patient}/>} actions={patientMeasures(patient)}>
             <div style={style}>{content}</div>

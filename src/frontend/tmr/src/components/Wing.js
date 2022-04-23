@@ -93,11 +93,7 @@ const WingNotificationsInner = ({wingName}) => {
 const WingNotifications = ({department, wing, wingName, onError}) => {
     const notificationsURI = `/api/departments/${department}/wings/${wing}/notifications`;
 
-    return <notificationsDataContext.Provider url={notificationsURI}
-                                              updateURL={notificationsURI}
-                                              socketURL={notificationsURI}
-                                              defaultValue={[]}
-                                              onError={onError}>
+    return <notificationsDataContext.Provider url={notificationsURI} defaultValue={[]} onError={onError}>
         {({loadingData}) => loadingData ? <Spin/> : <WingNotificationsInner wingName={wingName}/>}
     </notificationsDataContext.Provider>;
 }

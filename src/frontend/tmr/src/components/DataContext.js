@@ -2,14 +2,33 @@ import React, {useCallback, useEffect, useMemo, useState} from "react";
 import Axios from 'axios';
 import useWebSocket from "react-use-websocket";
 import debounce from "lodash/debounce";
+import {notification} from 'antd';
 
 export const createContext = (defaultValue) => {
     const context = React.createContext(defaultValue);
 
     const Provider = ({url, updateURL, socketURL, defaultValue = undefined, onError, ...props}) => {
-
+        console.log(url)
         const [{loadingData, value}, setValue] = useState({loading: false, value: defaultValue});
-        const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/sync/ws`, {queryParams: {key: socketURL || url}});
+        const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/sync/ws`,
+            {
+                queryParams: {key: socketURL || url},
+                retryOnError: true,
+                onReconnectStop: (e) => {
+                    console.log('reconnect', e)
+                    notification.error({
+                        message: 'שגיאה בעדכון נתונים',
+                        description: 'המידע המוצג אינו מתעדכן עקב שגיאת חיבור, יש לרענן את העמוד.'
+                    })
+                },
+                onError: (e) => {
+                    console.log('error', e)
+                    notification.error({
+                        message: 'שגיאה בעדכון נתונים',
+                        description: 'המידע המוצג אינו מתעדכן עקב שגיאת חיבור, יש לרענן את העמוד.'
+                    })
+                }
+            });
 
         const flushData = useMemo(() => debounce((token) => {
             Axios.get(url, {cancelToken: token}).then(response => {

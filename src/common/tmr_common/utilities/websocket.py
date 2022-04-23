@@ -43,14 +43,26 @@ def websocket_api(broadcast_backing, ws_uri='/ws'):
                     try:
                         read_websocket, _ = None, read_websocket.result()
                     except StopAsyncIteration:
-                        websocket_messages = None
+                        read_websocket, websocket_messages = None, None
                 if read_broadcast in done:
                     try:
                         read_broadcast, event = None, read_broadcast.result()
                     except StopAsyncIteration:
-                        broadcast_messages = None
+                        read_broadcast, broadcast_messages = None, None
+
+            if read_websocket and read_websocket.done():
+                try:
+                    read_websocket, _ = None, read_websocket.result()
+                except StopAsyncIteration:
+                    read_websocket, websocket_messages = None, None
+            if read_broadcast and read_broadcast.done():
+                try:
+                    read_broadcast, _ = None, read_broadcast.result()
+                except StopAsyncIteration:
+                    read_broadcast, broadcast_messages = None, None
 
     async def notify_(key, value=''):
+        logger.debug('NOTIFYING {} {}', key, value)
         await broadcast.publish(channel=key, message=json.dumps(value))
 
     return router_, notify_

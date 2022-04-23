@@ -88,7 +88,7 @@ class FakeMain(object):
         if chameleon_id:
             patients = {chameleon_id}
         elif department and wing:
-            patients = self._get_patients(department, wing)
+            patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 20)]
         else:
             raise ValueError()
         for patient in patients:

@@ -18,10 +18,10 @@ export const Department = ({department}) => {
             {loadingData ? <Spin/> : (getData([]) || []).map((wing, i) => {
                 const actions = [
                     <Tooltip overlay={"מטופלים המשוייכים לאגף"}><span style={{userSelect: "none"}}>
-                    <FontAwesomeIcon icon={faUser}/>&nbsp;{wing.patient_count.patient_count}
+                    <FontAwesomeIcon icon={faUser}/>&nbsp;{wing.patient_count}
                 </span></Tooltip>,
                     <Tooltip overlay={"מטופלים הממתינים לרופא.ה"}><span style={{userSelect: "none", color: "red"}}>
-                    <FontAwesomeIcon icon={faUserDoctor}/>&nbsp;{wing.waiting_patient.patient_count}
+                    <FontAwesomeIcon icon={faUserDoctor}/>&nbsp;{wing.waiting_patient}
                 </span></Tooltip>];
                 return <Col key={i} span={12}>
                     <Card title={wing.name} actions={actions} style={{marginBottom: 16}} hoverable onClick={() =>
