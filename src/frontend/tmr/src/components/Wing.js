@@ -139,7 +139,7 @@ export const Wing = ({department, wing, onError}) => {
                                     }}>
                                         {unassignedPatients.map(patient =>
                                             <Patient key={patient.oid} patient={patient.oid}
-                                                     style={{flex: '1', minWidth: 300}}/>)}
+                                                     style={{flex: '1', minWidth: 300}} onError={flushData}/>)}
                                         <Patient patient={null} avatar={null} style={{flex: '1', minWidth: 300}}/>
                                     </div>
                                 </Card>)}

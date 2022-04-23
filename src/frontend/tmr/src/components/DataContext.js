@@ -21,13 +21,6 @@ export const createContext = (defaultValue) => {
                         description: 'המידע המוצג אינו מתעדכן עקב שגיאת חיבור, יש לרענן את העמוד.'
                     })
                 },
-                onError: (e) => {
-                    console.log('error', e)
-                    notification.error({
-                        message: 'שגיאה בעדכון נתונים',
-                        description: 'המידע המוצג אינו מתעדכן עקב שגיאת חיבור, יש לרענן את העמוד.'
-                    })
-                }
             });
 
         const flushData = useMemo(() => debounce((token) => {
