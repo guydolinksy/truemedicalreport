@@ -23,7 +23,8 @@ def medical_dal() -> MedicalDal:
     return MedicalDal(MongoClient("medical-db").tmr)
 
 
-@department_router.get("/{department}", response_model=List[WingOverview], response_model_exclude_unset=True)
+@department_router.get("/{department}", tags=["Department"], response_model=List[WingOverview],
+                       response_model_exclude_unset=True)
 def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> List[WingOverview]:
     return [WingOverview(
         oid=wing["_id"]["$oid"], **wing,
@@ -32,7 +33,7 @@ def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> L
     ) for wing in dal.get_department_wings(department)]
 
 
-@department_router.post("/{department}/admissions")
+@department_router.post("/{department}/admissions", tags=["Department"])
 async def update_admissions(department: str, admissions: List[Patient] = Body(..., embed=True),
                             dal: MedicalDal = Depends(medical_dal)):
     admissions = {patient.chameleon_id: patient for patient in admissions}
@@ -46,8 +47,8 @@ async def update_admissions(department: str, admissions: List[Patient] = Body(..
         await upsert_patient(patient=admissions[patient], dal=dal, action=Action.update)
 
 
-@department_router.post("/{department}/measurements")
-async def update_measurements(department: str, measurements: Dict[str, Measures] = Body(..., embed=True),
-                        dal: MedicalDal = Depends(medical_dal)):
+@department_router.post("/{department}/measurements", tags=["Department"])
+async def update_measurements(measurements: Dict[str, Measures] = Body(..., embed=True),
+                              dal: MedicalDal = Depends(medical_dal)):
     for patient in measurements:
         await dal.upsert_measurements(patient, measurements[patient])

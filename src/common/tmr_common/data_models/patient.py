@@ -39,6 +39,7 @@ class Patient(BaseModel):
     severity: Optional[Severity]
     flagged: Optional[bool]
     warnings: Optional[List[dict]]
+    messages: Optional[List[dict]]
 
     class Config:
         orm_mode = True
@@ -66,4 +67,5 @@ class Patient(BaseModel):
         return {
             "severity": Severity(value=self.severity.value, at=self.severity.at).dict(),
             "awaiting": self.awaiting,
+            "messages": self.messages
         }

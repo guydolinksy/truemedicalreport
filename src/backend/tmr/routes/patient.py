@@ -33,3 +33,4 @@ async def update_patient_by_id(patient: str, path=Body(...), value=Body(...), da
 async def update_patient_info_by_id(patient: str, path=Body(...), value=Body(...), data=Body(...)) -> dict:
     update_object = prepare_update_object(path, value)
     return requests.post(f"http://medical-dal/medical-dal/patients/{patient}", json=dict(**update_object)).json()
+

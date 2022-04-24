@@ -37,7 +37,7 @@ class MedicalDal:
     def get_wing_patients(self, department: str, wing: str) -> List[Patient]:
         return [Patient(oid=str(patient.pop("_id")), **patient) for patient in
                 self.db.patients.find({"admission.department": department, "admission.wing": wing},
-                                      {"_id": 1, "admission": 1, "chameleon_id": 1, 'name': 1})]
+                                      {"_id": 1, "admission": 1, "chameleon_id": 1, 'name': 1,"messages":1})]
 
     def get_department_patients(self, department: str) -> List[Patient]:
         return [Patient(oid=str(patient.pop("_id")), **patient) for patient in

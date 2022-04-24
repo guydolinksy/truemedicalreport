@@ -40,8 +40,9 @@ class SqlToDal(object):
             patients = []
             with self.session() as session:
                 for patient in session.query(ChameleonMain).filter(ChameleonMain.unit == int(department.value)):
-                    patients.append(patient.to_dal().dict())
-
+                    patient = patient.to_dal()
+                    patient.messages = [{"danger": True, "content": "חזרו תוצאות מה-CT"}]
+                    patients.append(patient.dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/admissions',
                                 json={'admissions': patients})
             res.raise_for_status()
