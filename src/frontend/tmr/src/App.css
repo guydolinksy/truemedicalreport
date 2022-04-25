@@ -1,0 +1,20 @@
+/*
+ *  STYLE 2
+ */
+
+ #TMRscrollbar::-webkit-scrollbar-track
+ {
+     border-radius: 3px;
+     background-color: #F5F5F5;
+ }
+ 
+ #TMRscrollbar::-webkit-scrollbar
+ {
+     width: 10px;
+     background-color: #F5F5F5;
+ }
+ 
+ #TMRscrollbar::-webkit-scrollbar-thumb
+ {
+     border-radius: 3px;
+ }

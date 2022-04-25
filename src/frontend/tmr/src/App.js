@@ -9,7 +9,10 @@ import {LOGIN_URL, LoginView} from "./pages/LoginView";
 import {DEPARTMENT_URL, DepartmentView} from "./pages/DepartmentView";
 import {SETTINGS_URL, SettingsView} from "./pages/SettingsView";
 
+
+
 function App() {
+    
     return (
         <ConfigProvider direction={"rtl"}>
             <div className={"App"} style={{backgroundColor: "#dcdcdc"}} dir={"rtl"}>
