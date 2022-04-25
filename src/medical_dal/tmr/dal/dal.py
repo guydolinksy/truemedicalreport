@@ -7,8 +7,8 @@ import logbook
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from pymongo.database import Database
-
 from tmr_common.data_models.patient import Patient, Admission, Severity
+from tmr_common.data_models.notification import Notification
 from ..routes.websocket import notify
 from tmr_common.data_models.measures import Measures
 
@@ -37,7 +37,7 @@ class MedicalDal:
     def get_wing_patients(self, department: str, wing: str) -> List[Patient]:
         return [Patient(oid=str(patient.pop("_id")), **patient) for patient in
                 self.db.patients.find({"admission.department": department, "admission.wing": wing},
-                                      {"_id": 1, "admission": 1, "chameleon_id": 1, 'name': 1,"messages":1})]
+                                      {"_id": 1, "admission": 1, "chameleon_id": 1, 'name': 1, "messages": 1})]
 
     def get_department_patients(self, department: str) -> List[Patient]:
         return [Patient(oid=str(patient.pop("_id")), **patient) for patient in
@@ -62,14 +62,10 @@ class MedicalDal:
         match action:
             case Action.remove:
                 previous = Patient(**(self.db.patients.find_one({"chameleon_id": patient.chameleon_id}) or {}))
-
                 self.db.patients.delete_one({"chameleon_id": patient.chameleon_id})
-
                 await self.notify_admission(admission=previous.admission)
-
             case Action.update:
                 previous = Patient(**(self.db.patients.find_one({"chameleon_id": patient.chameleon_id}) or {}))
-
                 self.db.patients.update_one({"chameleon_id": patient.chameleon_id},
                                             {'$set': patient.chameleon_dict()}, upsert=True)
 
@@ -110,6 +106,14 @@ class MedicalDal:
         current = Patient(**(self.db.patients.find_one({"chameleon_id": chameleon_id}) or {}))
         if previous.measures != current.measures:
             await self.notify_patient(patient=current.oid)
+#TODO fix bug that insert the notification inside an array instead of insert obejct directly
+#TODO the function is not 100% hermetics. some time it not insert the data to mongo
+    async def upsert_notification(self, chameleon_id: str, notification: Notification):
+        self.db.patients.update_one({"chameleon_id": chameleon_id},
+                                    {"$push": {"notifications": json.loads(notification.json())}}, )
+
+        updated_patient = Patient(**(self.db.patients.find_one({"chameleon_id": chameleon_id}, {"_id": 1}) or {}))
+        await self.notify_patient(patient=updated_patient.oid)
 
     @staticmethod
     async def notify_admission(admission: Admission):

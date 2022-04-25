@@ -2,15 +2,15 @@ import contextlib
 import datetime
 import os
 import random
-
+import requests
 import logbook
 import pytz
 from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
 from tmr_ingress.models.measurements import Measurements
+from tmr_common.data_models.notification import Notification, NotificationLevel
 
 logger = logbook.Logger(__name__)
 
@@ -205,6 +205,22 @@ class FakeMain(object):
                 session.add(diastolic)
                 session.commit()
 
+    @staticmethod
+    def _generate_single_patient_notification():
+        notification = Notification(at=datetime.datetime.utcnow().isoformat())
+        notification.message = random.choice(
+            ["תוצאות בדיקת דם CBC", "תוצאות בדיקת גזים", "חזרו תוצאות בדיקה CT", "תוצאות בדיקת X-RAY",
+             "תוצאות לבדיקת תפקודי כליות", "תוצאות לבדיקת תפקודי כבד"])
+        prob = random.randint(1, 99)
+        if 1 <= prob <= 5:
+            notification.level = NotificationLevel.panic
+        elif 6 <= prob <= 20:
+            notification.level = NotificationLevel.abnormal
+        elif 21 <= prob <= 100:
+            notification.level = NotificationLevel.normal
+
+        return notification
+
     async def admit_patients(self, department):
         for wing in self.wings:
             if random.randint(0, 1):
@@ -220,3 +236,11 @@ class FakeMain(object):
     async def update_measurements(self, department):
         for wing in self.wings:
             self._generate_measurements(department=department, wing=wing)
+
+    async def generate_notification_for_all_patients(self, department):
+        for wing in self.wings:
+            for patient in self._get_patients(department, wing):
+                if random.randint(1, 4) > 3:
+                    notification = self._generate_single_patient_notification()
+                    requests.post(f'http://medical-dal/medical-dal/patients/{patient}/notification',
+                                  json={"notification": notification.json()})

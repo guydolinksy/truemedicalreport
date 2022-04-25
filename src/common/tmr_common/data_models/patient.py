@@ -1,12 +1,11 @@
-from datetime import datetime
 from typing import Optional, List
 
-from bson.objectid import ObjectId
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from .measures import Measures
 from .severity import Severity
 from .esi_score import ESIScore
+from .notification import Notification
 
 
 class Admission(BaseModel):
@@ -33,13 +32,13 @@ class Patient(BaseModel):
     complaint: Optional[str]
     admission: Optional[Admission]
     measures: Optional[Measures]
-
+    notifications: Optional[List[Notification]] = []
+    messages: Optional[List[dict]]
     # Internal fields
     awaiting: Optional[str]
     severity: Optional[Severity]
     flagged: Optional[bool]
     warnings: Optional[List[dict]]
-    messages: Optional[List[dict]]
 
     class Config:
         orm_mode = True
@@ -61,11 +60,12 @@ class Patient(BaseModel):
             "complaint": self.complaint,
             "admission": self.admission.dict(),
             "esi": self.esi.dict(),
+            "notifications": self.notifications
+
         }
 
     def internal_dict(self):
         return {
             "severity": Severity(value=self.severity.value, at=self.severity.at).dict(),
             "awaiting": self.awaiting,
-            "messages": self.messages
         }

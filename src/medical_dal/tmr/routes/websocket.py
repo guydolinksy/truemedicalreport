@@ -7,7 +7,7 @@ logger = Logger(__name__)
 websocket_router, notify = websocket_api("redis://broadcast-redis:6379/1")
 
 
-@websocket_router.get('/test_broadcast')
+@websocket_router.get('/test_broadcast', tags=["WebSockets"])
 async def test_broadcast_key(key, message):
     await notify(key, message)
 
