@@ -1,5 +1,6 @@
 import contextlib
 import os
+import random
 from enum import Enum
 
 import logbook
@@ -41,7 +42,12 @@ class SqlToDal(object):
             with self.session() as session:
                 for patient in session.query(ChameleonMain).filter(ChameleonMain.unit == int(department.value)):
                     patient = patient.to_dal()
-                    patient.messages = [{"danger": True, "content": "חזרו תוצאות מה-CT"}]
+                    if random.randint(0, 1):
+                        patient.messages = [{"danger": True, "content": "חזרו תוצאות מה-CT"},
+                                            {"danger": True, "content": "חזרו תוצאות של בדיקות גזים"}]
+                    else:
+                        patient.messages = [{"danger": False, "content": "חזרו תוצאות מה-CT"},
+                                            {"danger": False, "content": "חזרו תוצאות של בדיקות גזים"}]
                     patients.append(patient.dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/admissions',
                                 json={'admissions': patients})

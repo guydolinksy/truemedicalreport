@@ -24,19 +24,19 @@ def get_wing_details(department: str, wing: str, dal: MedicalDal = Depends(medic
 
 @wing_router.get("/{wing}/notifications")
 def wing_notifications(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> list:
-    # print([patient for patient in dal.get_wing_patients(department, wing)])
-    # logger.debug([{
-    #     'patient': {'name': patient.name, 'oid': patient.oid},
-    #     'danger': True,
-    #     'messages': patient.messages[0] #[{'danger': patient.messages[0]["danger"], 'content': patient.messages[0]["content"]}]
-    # } for (i, patient) in enumerate(dal.get_wing_patients(department, wing))])
     patients = []
     for patient in dal.get_wing_patients(department, wing):
-        notification_object = {patient: {'name': patient.name, "oid": patient.oid},
-                               'danger': bool(filter(lambda message: message.get("danger") == True,patient.messages if patient.messages else [])),
-                               'messages': patient.messages}
-        patients.append(notification_object)
-    return patients
+        notification_patient = {
+            "patient": {'name': patient.name, "oid": patient.oid},
+            "messages": patient.messages,
+        }
+        if patient.messages:
+            for message in patient.messages:
+                if message.get("danger"):
+                    notification_patient["danger"] = True
+                    patients.append(notification_patient)
+                    break
+    return sorted(patients, key=lambda patient_obj: patient_obj["patient"]["name"])
 
 
 @wing_router.get("/{wing}/details", response_model=Wing, response_model_exclude_unset=True)
