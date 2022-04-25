@@ -18,7 +18,7 @@ class LabTest(BaseModel):
     low: Optional[float]
     high: Optional[float]
     panic_high: Optional[float]
-    type: LabTestType
+    type: Optional[LabTestType]
 
     class Config:
         orm_mode = True
