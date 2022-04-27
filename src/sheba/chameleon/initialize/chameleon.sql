@@ -135,6 +135,7 @@ create TABLE [dbo].[imaging] (
 	[imaging_name] [varchar](60) NULL,
     [result_id] [int] NOT NULL,
 	[result_name] [varchar](60) NULL,
+	[link] [varchar](200) NULL,
 	[result_date] [datetime] NULL,
 
 )
