@@ -58,5 +58,6 @@ async def update_measurements(department: str, measurements: Dict[str, Measures]
 @department_router.post("/{department}/imaging")
 async def update_imaging(department: str, imaging: Dict[str, Imaging] = Body(..., embed=True),
                          dal: MedicalDal = Depends(medical_dal)):
+    print(imaging)
     for patient in imaging:
         await dal.upsert_imaging(patient, imaging[patient])

@@ -13,14 +13,14 @@ class ImagingIds(Enum):
     radiography = 3
 
 
-class ImagingResultsIds:
+class ImagingResultsIds(Enum):
     ordered = 1
     executed = 2
     deciphered = 3
     approved = 4
 
 
-class Imaging(Base):
+class ChameleonImaging(Base):
     __tablename__ = "imaging"
 
     patient_id = Column("patient_id", VARCHAR(250), primary_key=True)
@@ -29,12 +29,12 @@ class Imaging(Base):
     result_id = Column("result_id", VARCHAR(100))
     result = Column("result_name", VARCHAR(100))
     link = Column("link", VARCHAR(100))
-    date = Column("result_date", DateTime())
+    at = Column("result_date", DateTime())
 
     def to_dal(self):
         return Imaging(
             at=self.at.isoformat(),
-            name=self.imaging_name,
+            name=self.imaging,
             value=self.result,
             link=self.link,
         )

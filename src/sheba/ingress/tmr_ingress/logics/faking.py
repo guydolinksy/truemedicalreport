@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
-from tmr_ingress.models.imaging import Imaging, ImagingIds, ImagingResultsIds
+from tmr_ingress.models.chameleonimaging import ChameleonImaging, ImagingIds, ImagingResultsIds
 from tmr_ingress.models.measurements import Measurements
 
 logger = logbook.Logger(__name__)
@@ -214,8 +214,8 @@ class FakeMain(object):
         else:
             raise ValueError()
         for patient in patients:
-            im = Imaging()
-            im.patient_id = patient.chameleon_id
+            im = ChameleonImaging()
+            im.patient_id = patient
             im.at = datetime.datetime.utcnow()
             im.imaging_id = random.randint(1, 3)
             match im.imaging_id:

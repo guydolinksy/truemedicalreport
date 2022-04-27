@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 class Imaging(BaseModel):
     at: str
-    name: float
+    name: str
     value: str
     link: str
 
