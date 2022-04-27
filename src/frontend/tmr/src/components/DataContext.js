@@ -17,6 +17,7 @@ export const createContext = (defaultValue) => {
                 onReconnectStop: (e) => {
                     console.log('reconnect', e)
                     notification.error({
+                        duration: 0,
                         message: 'שגיאה בעדכון נתונים',
                         description: 'המידע המוצג אינו מתעדכן עקב שגיאת חיבור, יש לרענן את העמוד.'
                     })
