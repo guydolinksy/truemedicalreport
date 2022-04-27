@@ -11,6 +11,7 @@ from pymongo.database import Database
 from tmr_common.data_models.patient import Patient, Admission, Severity
 from ..routes.websocket import notify
 from tmr_common.data_models.measures import Measures
+from tmr_common.data_models.imaging import Imaging
 
 logger = logbook.Logger(__name__)
 
@@ -107,6 +108,15 @@ class MedicalDal:
 
         self.db.patients.update_one({"chameleon_id": chameleon_id},
                                     {'$set': {"measures": measures_obj.dict()}}, upsert=True)
+        current = Patient(**(self.db.patients.find_one({"chameleon_id": chameleon_id}) or {}))
+        if previous.measures != current.measures:
+            await self.notify_patient(patient=current.oid)
+
+    async def upsert_imaging(self, chameleon_id: str, imaging_obj: Imaging):
+        previous = Patient(**(self.db.patients.find_one({"chameleon_id": chameleon_id}) or {}))
+
+        self.db.patients.update_one({"chameleon_id": chameleon_id},
+                                    {'$set': {"imaging": imaging_obj.dict()}}, upsert=True)
         current = Patient(**(self.db.patients.find_one({"chameleon_id": chameleon_id}) or {}))
         if previous.measures != current.measures:
             await self.notify_patient(patient=current.oid)
