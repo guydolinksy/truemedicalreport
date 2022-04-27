@@ -8,6 +8,7 @@ class Imaging(Base):
     __tablename__ = "imaging"
 
     patient_id = Column("patient_id", VARCHAR(250), primary_key=True)
-    code = Column("parameter_id", Integer())
+    imaging_id = Column("imaging_id", Integer())
+    imaging_name = Column("imaging_name", VARCHAR(60))
     result = Column("result_name", VARCHAR(100))
     date = Column("result_date", DateTime())
