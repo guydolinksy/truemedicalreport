@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from tmr_common.data_models.measures import Temperature, Pulse, Systolic, Diastolic, Measures, BloodPressure, Saturation
 from ..models.chameleon_main import ChameleonMain, Departments
+from ..models.imaging import Imaging
 from ..models.measurements import Measurements, MeasurementsIds
 
 logger = logbook.Logger(__name__)
@@ -26,6 +27,21 @@ class SqlToDal(object):
     def session(self):
         with Session(self._engine) as session:
             yield session
+
+    def update_imaging(self,department:Departments):
+        try:
+            logger.debug('Getting imaging for `{}`...', department.name)
+            imaging=[]
+            with self.session() as session:
+                for image in session.query(Measurements). \
+                    join(ChameleonMain, Imaging.chameleon_id == ChameleonMain.chameleon_id). \
+                    where(ChameleonMain.unit == int(department.value)).order_by(Imaging.at.desc()):
+                    imaging.append(image.to_dal().dict())
+            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/imaging',
+                                json={'imaging': imaging})
+            res.raise_for_status()
+        except HTTPError:
+            logger.exception('Could not run admissions handler.')
 
     def update_admissions(self, department: Departments):
         try:
