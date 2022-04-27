@@ -131,9 +131,12 @@ alter database [chameleon_db] SET  READ_WRITE
 GO
 create TABLE [dbo].[imaging] (
 	[patient_id] [varchar](250) NULL,
+    [imaging_id] [int] NOT NULL,
+	[imaging_name] [varchar](60) NULL,
     [result_id] [int] NOT NULL,
-	[result_name] [varchar](200) NULL,
+	[result_name] [varchar](60) NULL,
 	[result_date] [datetime] NULL,
+
 )
 GO
 alter database [chameleon_db] SET  READ_WRITE
