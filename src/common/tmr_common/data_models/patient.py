@@ -4,6 +4,7 @@ from typing import Optional, List
 from bson.objectid import ObjectId
 from pydantic import BaseModel, Field
 
+from .imaging import Imaging
 from .measures import Measures
 from .severity import Severity
 from .esi_score import ESIScore
@@ -33,6 +34,7 @@ class Patient(BaseModel):
     complaint: Optional[str]
     admission: Optional[Admission]
     measures: Optional[Measures]
+    imaging : Optional[Imaging]
 
     # Internal fields
     awaiting: Optional[str]
