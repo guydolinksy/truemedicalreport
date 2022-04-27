@@ -10,17 +10,11 @@ from sqlalchemy.orm import Session
 
 from tmr_common.data_models.measures import Temperature, Pulse, Systolic, Diastolic, Measures, BloodPressure, Saturation
 from ..models.chameleon_main import ChameleonMain, Departments
-from ..models.measurements import Measurements
+from ..models.measurements import Measurements, MeasurementsIds
 
 logger = logbook.Logger(__name__)
 
 
-class MeasurementsIds(Enum):
-    systolic = 101
-    diastolic = 102
-    temperature = 11
-    pulse = 12
-    saturation = 13
 
 
 class SqlToDal(object):
