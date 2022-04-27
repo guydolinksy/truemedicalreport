@@ -34,3 +34,14 @@ async def update_measurements(department: Departments, dal: SqlToDal = Depends(d
     logger.info("Update measures...")
     dal.update_measurements(department=department)
     logger.info("Done.")
+
+# TODO: uncomment to enable periodic updates
+@updater_router.on_event('startup')
+@repeat_every(seconds=10, logger=logger)
+@inject_dependencies(department=Departments.er)
+@updater_router.post("/update_imagings", status_code=201)
+async def update_imagings(department: Departments, dal: SqlToDal = Depends(dal_updater)):
+    logger.info("Update imagings...")
+    dal.update_imaging(department=department)
+    logger.info("Done.")
+

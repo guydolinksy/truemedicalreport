@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
 from tmr_common.data_models.measures import Measures
+from tmr_common.data_models.imaging import Imaging
 from tmr_common.data_models.patient import Patient
 from tmr_common.data_models.wing import WingOverview
 from .patient import upsert_patient
@@ -52,3 +53,12 @@ async def update_measurements(measurements: Dict[str, Measures] = Body(..., embe
                               dal: MedicalDal = Depends(medical_dal)):
     for patient in measurements:
         await dal.upsert_measurements(patient, measurements[patient])
+
+
+# change all to imaging
+@department_router.post("/{department}/imaging")
+async def update_imaging(department: str, imaging: Dict[str, Imaging] = Body(..., embed=True),
+                         dal: MedicalDal = Depends(medical_dal)):
+    print(imaging)
+    for patient in imaging:
+        await dal.upsert_imaging(patient, imaging[patient])

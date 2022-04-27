@@ -9,6 +9,7 @@ from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
+from tmr_ingress.models.chameleonimaging import ChameleonImaging, ImagingIds, ImagingResultsIds
 from tmr_ingress.models.measurements import Measurements
 from tmr_common.data_models.notification import Notification, NotificationLevel
 
@@ -220,6 +221,40 @@ class FakeMain(object):
             notification.level = NotificationLevel.normal
         return notification
 
+    def _generate_imagings(self, chameleon_id=None, department=None, wing=None):
+        if chameleon_id:
+            patients = {chameleon_id}
+        elif department and wing:
+            patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 20)]
+        else:
+            raise ValueError()
+        for patient in patients:
+            im = ChameleonImaging()
+            im.patient_id = patient
+            im.at = datetime.datetime.utcnow()
+            im.imaging_id = random.randint(1, 3)
+            match im.imaging_id:
+                case ImagingIds.ct.value:
+                    im.imaging = ImagingIds.ct.name
+                case ImagingIds.ultrasound.value:
+                    im.imaging = ImagingIds.ultrasound.name
+                case ImagingIds.radiography.value:
+                    im.imaging = ImagingIds.radiography.name
+            im.result_id = random.randint(1, 4)
+            match im.result_id:
+                case ImagingResultsIds.ordered.value:
+                    im.result = ImagingResultsIds.ordered.name
+                case ImagingResultsIds.executed.value:
+                    im.result = ImagingResultsIds.executed.name
+                case ImagingResultsIds.deciphered.value:
+                    im.result = ImagingResultsIds.deciphered.name
+                case ImagingResultsIds.approved.value:
+                    im.result = ImagingResultsIds.approved.name
+            im.link = self.faker.url()
+            with self.session() as session:
+                session.add(im)
+                session.commit()
+
     async def admit_patients(self, department):
         for wing in self.wings:
             if random.randint(0, 1):
@@ -235,6 +270,10 @@ class FakeMain(object):
     async def update_measurements(self, department):
         for wing in self.wings:
             self._generate_measurements(department=department, wing=wing)
+
+    async def update_imagings(self, department):
+        for wing in self.wings:
+            self._generate_imagings(department=department, wing=wing)
 
     # TODO remove return values agter logic works
     async def generate_notification_for_all_patients(self, department):

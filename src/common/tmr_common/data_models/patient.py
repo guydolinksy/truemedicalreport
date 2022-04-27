@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel
 
+from .imaging import Imaging
 from .measures import Measures
 from .severity import Severity
 from .esi_score import ESIScore
@@ -32,8 +33,10 @@ class Patient(BaseModel):
     complaint: Optional[str]
     admission: Optional[Admission]
     measures: Optional[Measures]
+    imaging : Optional[Imaging]
     notifications: Optional[List[Notification]] = []
     messages: Optional[List[dict]]
+
     # Internal fields
     awaiting: Optional[str]
     severity: Optional[Severity]

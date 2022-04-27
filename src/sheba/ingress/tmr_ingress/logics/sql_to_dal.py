@@ -11,17 +11,10 @@ from sqlalchemy.orm import Session
 
 from tmr_common.data_models.measures import Temperature, Pulse, Systolic, Diastolic, Measures, BloodPressure, Saturation
 from ..models.chameleon_main import ChameleonMain, Departments
-from ..models.measurements import Measurements
+from ..models.chameleonimaging import ChameleonImaging
+from ..models.measurements import Measurements, MeasurementsIds
 
 logger = logbook.Logger(__name__)
-
-
-class MeasurementsIds(Enum):
-    systolic = 101
-    diastolic = 102
-    temperature = 11
-    pulse = 12
-    saturation = 13
 
 
 class SqlToDal(object):
@@ -33,6 +26,25 @@ class SqlToDal(object):
     def session(self):
         with Session(self._engine) as session:
             yield session
+
+    def update_imaging(self, department: Departments):
+        try:
+            logger.debug('Getting imaging for `{}`...', department.name)
+            imaging = {}
+            with self.session() as session:
+                for image in session.query(ChameleonImaging). \
+                        join(ChameleonMain, ChameleonImaging.patient_id == ChameleonMain.chameleon_id). \
+                        where(ChameleonMain.unit == int(department.value)).order_by(ChameleonImaging.at.desc()):
+                    # imaging.append(image.to_dal().dict())
+                    imaging[image.patient_id] = image.to_dal().dict()
+
+            print(imaging)
+            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/imaging',
+                                json={'imaging': imaging})
+            print(res.content)
+            res.raise_for_status()
+        except HTTPError:
+            logger.exception('Could not run admissions handler.')
 
     def update_admissions(self, department: Departments):
         try:
@@ -85,8 +97,10 @@ class SqlToDal(object):
                                   **patients[patient]).dict()
                 for patient in patients
             }
+            print(measures)
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/measurements',
                                 json={'measurements': measures})
             res.raise_for_status()
+            print(res.content)
         except HTTPError:
             logger.exception('Could not run measurements handler.')
