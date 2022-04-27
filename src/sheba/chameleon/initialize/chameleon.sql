@@ -125,10 +125,6 @@ create TABLE [dbo].[measurements](
 )with (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-USE [master]
-GO
-alter database [chameleon_db] SET  READ_WRITE
-GO
 create TABLE [dbo].[imaging] (
 	[patient_id] [varchar](250) NULL,
     [imaging_id] [int] NOT NULL,
@@ -136,8 +132,9 @@ create TABLE [dbo].[imaging] (
     [result_id] [int] NOT NULL,
 	[result_name] [varchar](60) NULL,
 	[link] [varchar](200) NULL,
-	[result_date] [datetime] NULL,
-
+	[result_date] [datetime] NULL
 )
 GO
 alter database [chameleon_db] SET  READ_WRITE
+USE [master]
+GO

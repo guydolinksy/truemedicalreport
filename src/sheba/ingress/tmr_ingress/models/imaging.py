@@ -1,3 +1,5 @@
+from enum import Enum
+
 from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime
 from sqlalchemy.orm import declarative_base
 from tmr_common.data_models.imaging import Imaging
@@ -5,12 +7,26 @@ from tmr_common.data_models.imaging import Imaging
 Base = declarative_base()
 
 
+class ImagingIds(Enum):
+    ct = 1
+    ultrasound = 2
+    radiography = 3
+
+
+class ImagingResultsIds:
+    ordered = 1
+    executed = 2
+    deciphered = 3
+    approved = 4
+
+
 class Imaging(Base):
     __tablename__ = "imaging"
 
     patient_id = Column("patient_id", VARCHAR(250), primary_key=True)
     imaging_id = Column("imaging_id", Integer())
-    imaging_name = Column("imaging_name", VARCHAR(60))
+    imaging = Column("imaging_name", VARCHAR(60))
+    result_id = Column("result_id", VARCHAR(100))
     result = Column("result_name", VARCHAR(100))
     link = Column("link", VARCHAR(100))
     date = Column("result_date", DateTime())
