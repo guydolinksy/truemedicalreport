@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 
 from tmr_common.data_models.patient import Patient
 from ..logics.auth import manager
+from ..logics.notifications import load_notification
 
 wing_router = APIRouter()
 
@@ -17,8 +18,7 @@ def get_wing_details(department: str, wing: str, _=Depends(manager)) -> dict:
 
 @wing_router.get("/{wing}/notifications")
 def wing_notifications(department: str, wing: str, _=Depends(manager)) -> dict:
-    res = requests.get(f"http://medical-dal/medical-dal/departments/{department}/wings/{wing}/notifications").json()
-    return res
+    return load_notification(department, wing)
 
 
 @wing_router.get("/{wing}/beds/{bed}")

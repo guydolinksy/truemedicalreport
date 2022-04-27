@@ -206,7 +206,7 @@ class FakeMain(object):
                 session.commit()
 
     @staticmethod
-    def _generate_single_patient_notification():
+    async def _generate_single_patient_notification():
         notification = Notification(at=datetime.datetime.utcnow().isoformat())
         notification.message = random.choice(
             ["תוצאות בדיקת דם CBC", "תוצאות בדיקת גזים", "חזרו תוצאות בדיקה CT", "תוצאות בדיקת X-RAY",
@@ -218,7 +218,6 @@ class FakeMain(object):
             notification.level = NotificationLevel.abnormal
         elif 21 <= prob <= 100:
             notification.level = NotificationLevel.normal
-
         return notification
 
     async def admit_patients(self, department):
@@ -237,10 +236,14 @@ class FakeMain(object):
         for wing in self.wings:
             self._generate_measurements(department=department, wing=wing)
 
+    # TODO remove return values agter logic works
     async def generate_notification_for_all_patients(self, department):
+        notifications = []
         for wing in self.wings:
             for patient in self._get_patients(department, wing):
                 if random.randint(1, 4) > 3:
-                    notification = self._generate_single_patient_notification()
+                    notification = await self._generate_single_patient_notification()
                     requests.post(f'http://medical-dal/medical-dal/patients/{patient}/notification',
                                   json={"notification": notification.json()})
+                    notifications.append({"patient": patient, "notification": notification})
+        return notifications

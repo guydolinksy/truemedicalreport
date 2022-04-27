@@ -1,9 +1,9 @@
 import logbook
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
-
+import json
 from tmr_common.data_models.bed import Bed
-
+from tmr_common.data_models.notification import PatientNotifications
 from tmr_common.data_models.wing import Wing, WingSummarize
 from ..dal.dal import MedicalDal
 
@@ -22,21 +22,24 @@ def get_wing_details(department: str, wing: str, dal: MedicalDal = Depends(medic
     return WingSummarize(patients=patients, details=details).dict(exclude_unset=True)
 
 
-@wing_router.get("/{wing}/notifications", tags=["Wing"])
-def wing_notifications(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> list:
-    patients = []
+# TODO move logic to backend service after it works
+@wing_router.get("/{wing}/notifications", tags=["Wing"], status_code=200)
+def wing_notifications(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> \
+        list[PatientNotifications]:
+    patients: list[PatientNotifications] = []
     for patient in dal.get_wing_patients(department, wing):
-        notification_patient = {
-            "patient": {'name': patient.name, "oid": patient.oid},
-            "messages": patient.messages,
-        }
-        if patient.messages:
-            for message in patient.messages:
-                if message.get("danger"):
-                    notification_patient["danger"] = True
-                    patients.append(notification_patient)
-                    break
-    return sorted(patients, key=lambda patient_obj: patient_obj["patient"]["name"])
+        if patient.notifications:
+            patient_notification = PatientNotifications(name=patient.name, oid=patient.oid)
+            patient_notification.notifications = patient.notifications
+            patient_notification.level = patient.notifications[0].level
+            patient_notification.at = patient.notifications[0].at
+            for notification in patient.notifications:
+                if notification.level.value < patient_notification.level.value:
+                    patient_notification.level = notification.level
+                if notification.at > patient_notification.at:
+                    patient_notification.at = notification.at
+            patients.append(json.loads(patient_notification.json()))
+    return sorted(patients, key=lambda obj: obj["at"])
 
 
 @wing_router.get("/{wing}/details", response_model=Wing, response_model_exclude_unset=True, tags=["Wing"])

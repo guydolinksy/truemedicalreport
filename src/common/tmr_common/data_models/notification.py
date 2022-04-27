@@ -16,3 +16,14 @@ class Notification(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class PatientNotifications(BaseModel):
+    oid: str
+    name: str
+    at: Optional[str]
+    notifications: Optional[list[Notification]]
+    level: Optional[NotificationLevel]
+
+    class Config:
+        orm_mode = True

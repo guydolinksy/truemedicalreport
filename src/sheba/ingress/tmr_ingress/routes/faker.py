@@ -54,6 +54,8 @@ async def generate_fake_measurements_for_all_patients(department: Departments, d
     logger.debug('Done.')
 
 
+@faker_router.on_event('startup')
+@repeat_every(seconds=30, logger=logger)
 @inject_dependencies(department=Departments.er)
 @faker_router.post("/new_notification", status_code=201)
 async def generate_notification(department: Departments, dal: FakeMain = Depends(FakeMain)):
