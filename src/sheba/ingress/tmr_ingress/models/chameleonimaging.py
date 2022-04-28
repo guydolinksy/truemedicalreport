@@ -2,7 +2,7 @@ from enum import Enum
 
 from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime
 from sqlalchemy.orm import declarative_base
-from tmr_common.data_models.imaging import Imaging
+from tmr_common.data_models.patient import Imaging
 
 Base = declarative_base()
 

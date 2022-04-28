@@ -61,21 +61,21 @@ const WingNotificationsInner = ({wingName}) => {
                 <Item key={'search'}>
                     <Search allowClear onChange={debounce(e => setSearch(e.target.value), 300)} placeholder={'חיפוש'}/>
                 </Item>
-                {getData([]).map((notification, i) =>
+                {getData([], []).map((notification, i) =>
                     <SubMenu key={notification.patient.oid} title={notification.patient.name}
                              icon={<UserOutlined/>}
                              style={notification.danger ? {color: '#ff4d4f'} : {}}
                              onTitleClick={() => {
                                  if (openKeys.includes(notification.patient.oid))
-                                     navigate(`#highlight#${notification.patient.oid}#close`)
+                                     navigate(`#highlight#${notification.oid}#close`)
                                  else
-                                     navigate(`#highlight#${notification.patient.oid}#open`)
+                                     navigate(`#highlight#${notification.oid}#open`)
                              }}>
-                        {notification.messages.map((message, j) =>
+                        {notification.notifications.map((message, j) =>
                             <Item key={`${notification.patient.oid}-${j}`} danger={message.danger}>
                                 <Link
-                                    to={`#info#${notification.patient.oid}#${message.section || 'labs'}#lab-${message.id || j}`}>
-                                    {message.content}
+                                    to={`#info#${notification.patient.oid}#${message.type || 'labs'}#lab-${message.id || j}`}>
+                                    {message.message}
                                 </Link>
                             </Item>
                         )}

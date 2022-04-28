@@ -1,3 +1,5 @@
+import datetime
+
 import logbook
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
@@ -26,20 +28,8 @@ def get_wing_details(department: str, wing: str, dal: MedicalDal = Depends(medic
 @wing_router.get("/{wing}/notifications", tags=["Wing"], status_code=200)
 def wing_notifications(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> \
         list[PatientNotifications]:
-    patients: list[PatientNotifications] = []
-    for patient in dal.get_wing_patients(department, wing):
-        if patient.notifications:
-            patient_notification = PatientNotifications(name=patient.name, oid=patient.oid)
-            patient_notification.notifications = patient.notifications
-            patient_notification.level = patient.notifications[0].level
-            patient_notification.at = patient.notifications[0].at
-            for notification in patient.notifications:
-                if notification.level.value < patient_notification.level.value:
-                    patient_notification.level = notification.level
-                if notification.at > patient_notification.at:
-                    patient_notification.at = notification.at
-            patients.append(json.loads(patient_notification.json()))
-    return sorted(patients, key=lambda obj: obj["at"])
+    patients = [PatientNotifications(patient=patient) for patient in dal.get_wing_patients(department, wing) if patient.notifications]
+    return sorted(patients, key=lambda obj: datetime.datetime.fromisoformat(obj.at))
 
 
 @wing_router.get("/{wing}/details", response_model=Wing, response_model_exclude_unset=True, tags=["Wing"])

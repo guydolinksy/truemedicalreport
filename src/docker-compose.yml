@@ -23,7 +23,7 @@ services:
       - "./medical_dal/tmr:/opt/medical_dal/tmr"
       - "./common/tmr_common:/opt/common/tmr_common"
     deploy:
-      replicas: 5
+      replicas: 1
     depends_on:
       - medical-db
       - broadcast-redis

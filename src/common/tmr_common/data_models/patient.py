@@ -1,12 +1,11 @@
+from enum import Enum
 from typing import Optional, List
 
 from pydantic import BaseModel
 
-from .imaging import Imaging
 from .measures import Measures
 from .severity import Severity
 from .esi_score import ESIScore
-from .notification import Notification
 
 
 class Admission(BaseModel):
@@ -16,6 +15,38 @@ class Admission(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class NotificationLevel(Enum):
+    panic = 1
+    abnormal = 2
+    normal = 3
+
+
+class NotificationType(Enum):
+    lab = 'labs'
+    imaging = 'imaging'
+    consult = 'consults'
+    general = 'general'
+
+
+class Notification(BaseModel):
+    message: Optional[str]
+    at: str
+    type: NotificationType
+    level: NotificationLevel
+
+    class Config:
+        orm_mode = True
+
+
+class Imaging(Notification):
+    class Config:
+        orm_mode = True
+
+    def __init__(self, **kwargs):
+        kwargs['type'] = NotificationType.imaging
+        super(Imaging, self).__init__(**kwargs)
 
 
 class Patient(BaseModel):
@@ -33,7 +64,6 @@ class Patient(BaseModel):
     complaint: Optional[str]
     admission: Optional[Admission]
     measures: Optional[Measures]
-    imaging : Optional[Imaging]
     notifications: Optional[List[Notification]] = []
     messages: Optional[List[dict]]
 
@@ -64,7 +94,6 @@ class Patient(BaseModel):
             "admission": self.admission.dict(),
             "esi": self.esi.dict(),
             "notifications": self.notifications
-
         }
 
     def internal_dict(self):

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
 from tmr_ingress.models.chameleonimaging import ChameleonImaging, ImagingIds, ImagingResultsIds
 from tmr_ingress.models.measurements import Measurements
-from tmr_common.data_models.notification import Notification, NotificationLevel
+from tmr_common.data_models.patient import NotificationLevel, Notification, NotificationType
 
 logger = logbook.Logger(__name__)
 
@@ -208,18 +208,28 @@ class FakeMain(object):
 
     @staticmethod
     async def _generate_single_patient_notification():
-        notification = Notification(at=datetime.datetime.utcnow().isoformat())
-        notification.message = random.choice(
-            ["תוצאות בדיקת דם CBC", "תוצאות בדיקת גזים", "חזרו תוצאות בדיקה CT", "תוצאות בדיקת X-RAY",
-             "תוצאות לבדיקת תפקודי כליות", "תוצאות לבדיקת תפקודי כבד"])
+        types = {
+            NotificationType.lab: ['התקבלה תוצאת פאנל CBC', 'התקבלה תוצאת פאנל גזים', 'התקבלה תוצאת פאנל קרישה'],
+            NotificationType.imaging: ['CT מוח פוענח', 'CT מוח אושרר', 'CT מוח בוצע'],
+            NotificationType.consult: ['ד"ר אורטופד הוסר'],
+            NotificationType.general: ['מידע כללי'],
+        }
+        type_ = random.choice(types)
         prob = random.randint(1, 99)
         if 1 <= prob <= 5:
-            notification.level = NotificationLevel.panic
+            level = NotificationLevel.panic
         elif 6 <= prob <= 20:
-            notification.level = NotificationLevel.abnormal
+            level = NotificationLevel.abnormal
         elif 21 <= prob <= 100:
-            notification.level = NotificationLevel.normal
-        return notification
+            level = NotificationLevel.normal
+        else:
+            level = None
+        return Notification(
+            at=datetime.datetime.utcnow().isoformat(),
+            message=random.choice(types[type_]),
+            level=level,
+            type_=type_,
+        )
 
     def _generate_imagings(self, chameleon_id=None, department=None, wing=None):
         if chameleon_id:

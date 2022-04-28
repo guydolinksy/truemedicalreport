@@ -5,8 +5,7 @@ from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
 from tmr_common.data_models.measures import Measures
-from tmr_common.data_models.imaging import Imaging
-from tmr_common.data_models.patient import Patient
+from tmr_common.data_models.patient import Patient, Imaging
 from tmr_common.data_models.wing import WingOverview
 from .patient import upsert_patient
 from .wing import wing_router

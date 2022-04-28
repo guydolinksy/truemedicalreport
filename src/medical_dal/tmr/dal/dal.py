@@ -9,11 +9,9 @@ from bson.objectid import ObjectId
 from pymongo.database import Database
 
 from tmr_common.data_models.measures import Measures
-from tmr_common.data_models.notification import Notification
-from tmr_common.data_models.patient import Patient, Admission
+from tmr_common.data_models.patient import Patient, Admission, Notification, Imaging
 from ..routes.websocket import notify
 from tmr_common.data_models.measures import Measures
-from tmr_common.data_models.imaging import Imaging
 
 logger = logbook.Logger(__name__)
 
