@@ -1,10 +1,9 @@
 from enum import Enum
 
 from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime
-from sqlalchemy.orm import declarative_base
 from tmr_common.data_models.measures import Measurement
+from .base import Base
 
-Base = declarative_base()
 
 class MeasurementsIds(Enum):
     systolic = 101
@@ -12,6 +11,7 @@ class MeasurementsIds(Enum):
     temperature = 11
     pulse = 12
     saturation = 13
+
 
 class Measurements(Base):
     __tablename__ = "measurements"

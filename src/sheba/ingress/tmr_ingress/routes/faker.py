@@ -53,29 +53,15 @@ async def generate_fake_measurements_for_all_patients(department: Departments, d
     await dal.update_measurements(department=department)
     logger.debug('Done.')
 
+
 @faker_router.on_event('startup')
 @repeat_every(seconds=30, logger=logger)
 @inject_dependencies(department=Departments.er)
 @faker_router.post("/imagings", tags=["Imagings"], status_code=201)
-async def generate_fake_measurements_for_all_patients(department: Departments, dal: FakeMain = Depends(FakeMain)):
+async def generate_imagings(department: Departments, dal: FakeMain = Depends(FakeMain)):
     """
-    generate fake measurements to all patients in SQL
+    generate fake imagings to all patients in SQL
     """
     logger.debug('Generating Fake Imagings for all patients...')
     await dal.update_imagings(department=department)
     logger.debug('Done.')
-
-
-
-@faker_router.on_event('startup')
-@repeat_every(seconds=30, logger=logger)
-@inject_dependencies(department=Departments.er)
-@faker_router.post("/new_notification", status_code=201)
-async def generate_notification(department: Departments, dal: FakeMain = Depends(FakeMain)):
-    """
-    generate fake notification and send it to medical_dal to update in patient
-    """
-    logger.debug("Generate Fake Notifications for all patients")
-    res = await dal.generate_notification_for_all_patients(department)
-    logger.debug("Done.")
-    return res

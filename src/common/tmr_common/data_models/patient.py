@@ -1,9 +1,11 @@
-from enum import Enum
+import datetime
 from typing import Optional, List
 
 from pydantic import BaseModel
 
+from .imaging import Imaging
 from .measures import Measures
+from .notification import Notification, NotificationLevel
 from .severity import Severity
 from .esi_score import ESIScore
 
@@ -15,38 +17,6 @@ class Admission(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-class NotificationLevel(Enum):
-    panic = 1
-    abnormal = 2
-    normal = 3
-
-
-class NotificationType(Enum):
-    lab = 'labs'
-    imaging = 'imaging'
-    consult = 'consults'
-    general = 'general'
-
-
-class Notification(BaseModel):
-    message: Optional[str]
-    at: str
-    type: NotificationType
-    level: NotificationLevel
-
-    class Config:
-        orm_mode = True
-
-
-class Imaging(Notification):
-    class Config:
-        orm_mode = True
-
-    def __init__(self, **kwargs):
-        kwargs['type'] = NotificationType.imaging
-        super(Imaging, self).__init__(**kwargs)
 
 
 class Patient(BaseModel):
@@ -64,6 +34,7 @@ class Patient(BaseModel):
     complaint: Optional[str]
     admission: Optional[Admission]
     measures: Optional[Measures]
+    imaging: Optional[List[Imaging]] = []
     notifications: Optional[List[Notification]] = []
     messages: Optional[List[dict]]
 
@@ -93,11 +64,37 @@ class Patient(BaseModel):
             "complaint": self.complaint,
             "admission": self.admission.dict(),
             "esi": self.esi.dict(),
+            "imaging": self.imaging,
             "notifications": self.notifications
         }
 
     def internal_dict(self):
         return {
-            "severity": Severity(value=self.severity.value, at=self.severity.at).dict(),
+            "severity": self.severity.dict(),
             "awaiting": self.awaiting,
         }
+
+
+class PatientNotifications(BaseModel):
+    patient: Patient
+
+    notifications: Optional[List[Notification]]
+
+    at: Optional[str]
+    level: Optional[NotificationLevel]
+
+    class Config:
+        orm_mode = True
+
+    def __init__(self, **kwargs):
+        if 'notifications' not in kwargs:
+            patient_: Patient = kwargs['patient']
+            kwargs['notifications'] = sorted(patient_.notifications,
+                                             key=lambda n: datetime.datetime.fromisoformat(n.at))
+        if 'at' not in kwargs and kwargs['notifications']:
+            notifications_: List[Notification] = kwargs['notifications']
+            kwargs['at'] = max(notifications_, key=lambda n: datetime.datetime.fromisoformat(n.at)).at
+        if 'level' not in kwargs and kwargs['notifications']:
+            notifications_: List[Notification] = kwargs['notifications']
+            kwargs['level'] = min(notifications_, key=lambda n: n.level.value).level
+        super(PatientNotifications, self).__init__(**kwargs)

@@ -5,10 +5,8 @@ from sqlalchemy import Column, Integer, String, VARCHAR, DateTime
 from sqlalchemy.orm import declarative_base
 
 from tmr_common.data_models.patient import Patient, Admission
-from tmr_common.data_models.severity import Severity
 from tmr_common.data_models.esi_score import ESIScore
-
-Base = declarative_base()
+from tmr_ingress.models.base import Base
 
 
 class Departments(Enum):

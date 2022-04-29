@@ -9,7 +9,10 @@ from bson.objectid import ObjectId
 from pymongo.database import Database
 
 from tmr_common.data_models.measures import Measures
-from tmr_common.data_models.patient import Patient, Admission, Notification, Imaging
+from tmr_common.data_models.patient import Patient, Admission
+from tmr_common.data_models.imaging import Imaging
+from tmr_common.data_models.notification import Notification
+from tmr_common.data_models.severity import Severity
 from ..routes.websocket import notify
 from tmr_common.data_models.measures import Measures
 
@@ -84,7 +87,7 @@ class MedicalDal:
                     await self.notify_patient(patient=current.oid)
 
             case Action.insert:
-                patient.severity = patient.esi
+                patient.severity = Severity(**patient.esi.dict())
                 patient.awaiting = 'מחכה לך'
                 self.db.patients.update_one({"chameleon_id": patient.chameleon_id}, {'$set': {
                     **patient.chameleon_dict(),

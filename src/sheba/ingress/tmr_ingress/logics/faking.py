@@ -9,9 +9,10 @@ from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
-from tmr_ingress.models.chameleonimaging import ChameleonImaging, ImagingIds, ImagingResultsIds
+from tmr_ingress.models.chameleonimaging import ChameleonImaging
+from tmr_common.data_models.imaging import ImagingTypes, ImagingStatus
 from tmr_ingress.models.measurements import Measurements
-from tmr_common.data_models.patient import NotificationLevel, Notification, NotificationType
+from tmr_common.data_models.notification import NotificationLevel, NotificationType, Notification
 
 logger = logbook.Logger(__name__)
 
@@ -206,31 +207,6 @@ class FakeMain(object):
                 session.add(diastolic)
                 session.commit()
 
-    @staticmethod
-    async def _generate_single_patient_notification():
-        types = {
-            NotificationType.lab: ['התקבלה תוצאת פאנל CBC', 'התקבלה תוצאת פאנל גזים', 'התקבלה תוצאת פאנל קרישה'],
-            NotificationType.imaging: ['CT מוח פוענח', 'CT מוח אושרר', 'CT מוח בוצע'],
-            NotificationType.consult: ['ד"ר אורטופד הוסר'],
-            NotificationType.general: ['מידע כללי'],
-        }
-        type_ = random.choice(types)
-        prob = random.randint(1, 99)
-        if 1 <= prob <= 5:
-            level = NotificationLevel.panic
-        elif 6 <= prob <= 20:
-            level = NotificationLevel.abnormal
-        elif 21 <= prob <= 100:
-            level = NotificationLevel.normal
-        else:
-            level = None
-        return Notification(
-            at=datetime.datetime.utcnow().isoformat(),
-            message=random.choice(types[type_]),
-            level=level,
-            type_=type_,
-        )
-
     def _generate_imagings(self, chameleon_id=None, department=None, wing=None):
         if chameleon_id:
             patients = {chameleon_id}
@@ -242,24 +218,9 @@ class FakeMain(object):
             im = ChameleonImaging()
             im.patient_id = patient
             im.at = datetime.datetime.utcnow()
-            im.imaging_id = random.randint(1, 3)
-            match im.imaging_id:
-                case ImagingIds.ct.value:
-                    im.imaging = ImagingIds.ct.name
-                case ImagingIds.ultrasound.value:
-                    im.imaging = ImagingIds.ultrasound.name
-                case ImagingIds.radiography.value:
-                    im.imaging = ImagingIds.radiography.name
-            im.result_id = random.randint(1, 4)
-            match im.result_id:
-                case ImagingResultsIds.ordered.value:
-                    im.result = ImagingResultsIds.ordered.name
-                case ImagingResultsIds.executed.value:
-                    im.result = ImagingResultsIds.executed.name
-                case ImagingResultsIds.deciphered.value:
-                    im.result = ImagingResultsIds.deciphered.name
-                case ImagingResultsIds.approved.value:
-                    im.result = ImagingResultsIds.approved.name
+            im.type_ = random.choice(list(ImagingTypes)).value
+            im.status = random.choice(list(ImagingStatus)).value
+            im.level = random.choice(list(NotificationLevel)).value
             im.link = self.faker.url()
             with self.session() as session:
                 session.add(im)
@@ -284,15 +245,3 @@ class FakeMain(object):
     async def update_imagings(self, department):
         for wing in self.wings:
             self._generate_imagings(department=department, wing=wing)
-
-    # TODO remove return values agter logic works
-    async def generate_notification_for_all_patients(self, department):
-        notifications = []
-        for wing in self.wings:
-            for patient in self._get_patients(department, wing):
-                if random.randint(1, 4) > 3:
-                    notification = await self._generate_single_patient_notification()
-                    requests.post(f'http://medical-dal/medical-dal/patients/{patient}/notification',
-                                  json={"notification": notification.json()})
-                    notifications.append({"patient": patient, "notification": notification})
-        return notifications

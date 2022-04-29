@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from pymongo import MongoClient
 import json
 from tmr_common.data_models.bed import Bed
-from tmr_common.data_models.notification import PatientNotifications
+from tmr_common.data_models.patient import PatientNotifications
 from tmr_common.data_models.wing import Wing, WingSummarize
 from ..dal.dal import MedicalDal
 

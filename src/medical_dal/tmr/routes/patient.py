@@ -2,7 +2,8 @@ import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 import json
-from tmr_common.data_models.patient import Patient, Notification
+from tmr_common.data_models.patient import Patient
+from tmr_common.data_models.notification import Notification
 
 from ..dal.dal import MedicalDal, Action
 

@@ -36,7 +36,7 @@ class SqlToDal(object):
                         join(ChameleonMain, ChameleonImaging.patient_id == ChameleonMain.chameleon_id). \
                         where(ChameleonMain.unit == int(department.value)).order_by(ChameleonImaging.at.desc()):
                     # imaging.append(image.to_dal().dict())
-                    imaging[image.patient_id] = image.to_dal().dict()
+                    imaging.setdefault(image.patient_id, []).append(image.to_dal().dict())
 
             print(imaging)
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/imaging',

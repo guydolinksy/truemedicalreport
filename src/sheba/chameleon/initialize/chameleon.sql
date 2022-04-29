@@ -126,13 +126,13 @@ create TABLE [dbo].[measurements](
 ) ON [PRIMARY]
 GO
 create TABLE [dbo].[imaging] (
-	[patient_id] [varchar](250) NULL,
-    [imaging_id] [int] NOT NULL,
-	[imaging_name] [varchar](60) NULL,
-    [result_id] [int] NOT NULL,
-	[result_name] [varchar](60) NULL,
-	[link] [varchar](200) NULL,
-	[result_date] [datetime] NULL
+    [imaging_id] [int] IDENTITY(1,1) NOT NULL,
+	[patient_id] [varchar](250) NOT NULL,
+	[type] [varchar](60) NOT NULL,
+	[status] [varchar](60) NOT NULL,
+    [level] [int] NOT NULL,
+	[link] [varchar](200) NOT NULL,
+	[result_date] [datetime] NOT NULL
 )
 GO
 alter database [chameleon_db] SET  READ_WRITE
