@@ -117,11 +117,11 @@ class MedicalDal:
         if previous.measures != current.measures:
             await self.notify_patient(patient=current.oid)
 
-    async def upsert_imaging(self, chameleon_id: str, imaging_obj: Imaging):
+    # TODO fix bug of encodeing imaginf_obj
+    async def upsert_imaging(self, chameleon_id, imaging_obj: list[Imaging]):
         previous = Patient(**(self.db.patients.find_one({"chameleon_id": chameleon_id}) or {}))
-
         self.db.patients.update_one({"chameleon_id": chameleon_id},
-                                    {'$set': {"imaging": imaging_obj.dict()}}, upsert=True)
+                                    {'$set': {"imaging": imaging_obj}}, upsert=True)
         current = Patient(**(self.db.patients.find_one({"chameleon_id": chameleon_id}) or {}))
         if previous.measures != current.measures:
             await self.notify_patient(patient=current.oid)

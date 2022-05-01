@@ -37,9 +37,9 @@ class SqlToDal(object):
                 for image in session.query(ChameleonImaging). \
                         join(ChameleonMain, ChameleonImaging.patient_id == ChameleonMain.chameleon_id). \
                         where(ChameleonMain.unit == int(department.value)).order_by(ChameleonImaging.at.desc()):
-                    imaging.setdefault(image.patient_id, []).append(json.loads(image.to_dal().json()))
+                    imaging.setdefault(image.patient_id, []).append(image.to_dal().dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/imaging',
-                                json={'imaging': imaging})
+                                json=imaging)
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run admissions handler.')

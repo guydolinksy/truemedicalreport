@@ -28,4 +28,5 @@ class Imaging(BaseModel):
     at: str
 
     class Config:
-        orm_mode = True
+        # TODO add the flag to all classes that using enum
+        use_enum_values = True
