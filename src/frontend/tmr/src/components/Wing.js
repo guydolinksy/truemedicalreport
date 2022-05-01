@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {Card, Col, Input, Layout, Menu, Row, Spin} from 'antd';
+import {Avatar, Badge, Card, Col, Input, Layout, Menu, Row, Spin} from 'antd';
 import {Patient} from "./Patient";
 import {createContext} from "./DataContext";
 import {Link} from "react-router-dom";

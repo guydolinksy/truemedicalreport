@@ -112,27 +112,27 @@ const PatientAge = ({patient}) => {
 export const PatientComplaint = ({patient, style}) => {
     const navigate = useNavigate();
     const {getData} = useContext(patientDataContext.context);
-
-    return <div
-        style={{
+    const innerStyle = {
             userSelect: "none",
             padding: 20,
             backgroundColor: severityColor[getData(['severity', 'value'])],
             cursor: patient ? "pointer" : undefined,
             textAlign: "center",
             ...style
-        }}
-        onClick={patient ? e => {
+        }
+    return patient ? <div
+        style={innerStyle}
+        onClick={e => {
             navigate(`#info#${patient}#basic#complaint`);
             e.stopPropagation();
-        } : null}>
-        {patient && <Tooltip overlay={'תלונה עיקרית'}>{getData(['complaint'])}</Tooltip>}
+        }}>
+        <Tooltip overlay={'תלונה עיקרית'}>{getData(['complaint'])}</Tooltip>
         &nbsp;-&nbsp;
-        {patient && <Tooltip overlay={'זמן מקבלה'}>
+        <Tooltip overlay={'זמן מקבלה'}>
             <Moment durationFromNow format={'h:mm'}
-                    date={getData(['arrival'], '2022-04-12T09:00:00Z')}/>
-        </Tooltip>}
-    </div>
+                    date={getData(['arrival'])}/>
+        </Tooltip>
+    </div> : <div style={innerStyle}>מיטה ריקה</div>
 }
 export const PatientWarning = ({patient, warning, index, style}) => {
     const navigate = useNavigate();
