@@ -23,13 +23,13 @@ class Notification(BaseModel):
     at: str
     type: NotificationType
     level: NotificationLevel
+    link: Optional[str]
 
     @classmethod
     def get_id(cls, **kwargs):
         raise NotImplementedError()
 
     class Config:
-        orm_mode = True
         use_enum_values = True
 
 
@@ -38,9 +38,6 @@ class ImagingNotification(Notification):
     @classmethod
     def get_id(cls, **kwargs):
         return {'imaging_id': kwargs.pop('imaging_id')}
-
-    class Config:
-        orm_mode = True
 
     def __init__(self, **kwargs):
         kwargs['type'] = NotificationType.imaging

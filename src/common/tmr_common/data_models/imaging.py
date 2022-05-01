@@ -38,6 +38,7 @@ class Imaging(BaseModel):
             imaging_id=self.chameleon_id,
             patient_id=self.patient_id,
             at=self.at,
-            message=f'{self.type_} - {self.status}\n{self.link}',
+            message=f'{self.type_} - {self.status}',
+            link=self.link,
             level=self.level,
         )
