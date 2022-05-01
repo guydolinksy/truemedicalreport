@@ -1,4 +1,5 @@
 import contextlib
+import json
 import os
 import random
 from enum import Enum
@@ -27,6 +28,7 @@ class SqlToDal(object):
         with Session(self._engine) as session:
             yield session
 
+    # TODO validate the data inside json parameter can be accepted succecfully on dal
     def update_imaging(self, department: Departments):
         try:
             logger.debug('Getting imaging for `{}`...', department.name)
@@ -35,13 +37,9 @@ class SqlToDal(object):
                 for image in session.query(ChameleonImaging). \
                         join(ChameleonMain, ChameleonImaging.patient_id == ChameleonMain.chameleon_id). \
                         where(ChameleonMain.unit == int(department.value)).order_by(ChameleonImaging.at.desc()):
-                    # imaging.append(image.to_dal().dict())
-                    imaging.setdefault(image.patient_id, []).append(image.to_dal().dict())
-
-            print(imaging)
+                    imaging.setdefault(image.patient_id, []).append(json.loads(image.to_dal().json()))
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/imaging',
                                 json={'imaging': imaging})
-            print(res.content)
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run admissions handler.')
@@ -97,10 +95,8 @@ class SqlToDal(object):
                                   **patients[patient]).dict()
                 for patient in patients
             }
-            print(measures)
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/measurements',
                                 json={'measurements': measures})
             res.raise_for_status()
-            print(res.content)
         except HTTPError:
             logger.exception('Could not run measurements handler.')

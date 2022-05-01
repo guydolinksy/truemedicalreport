@@ -24,7 +24,6 @@ def get_patient_by_id(patient: str, dal: MedicalDal = Depends(medical_dal)) -> P
 @patient_router.post("/{patient}", tags=["Patient"])
 async def update_patient_by_id(patient: str, update_object: dict,
                                dal: MedicalDal = Depends(medical_dal)) -> bool:
-    print(patient, update_object)
     return await dal.update_patient_by_id(patient, update_object)
 
 
