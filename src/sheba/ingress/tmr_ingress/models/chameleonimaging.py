@@ -1,6 +1,6 @@
 from sqlalchemy import VARCHAR, Integer, Column, DateTime
 from tmr_common.data_models.imaging import Imaging, ImagingTypes, ImagingStatus
-from tmr_common.data_models.notification import ImagingNotification, NotificationLevel
+from tmr_common.data_models.notification import NotificationLevel
 from .base import Base
 
 
@@ -17,6 +17,7 @@ class ChameleonImaging(Base):
 
     def to_dal(self):
         return Imaging(
+            patient_id=self.patient_id,
             chameleon_id=self.imaging_id,
             at=self.at.isoformat(),
             type_=ImagingTypes(self.type_),
@@ -24,11 +25,3 @@ class ChameleonImaging(Base):
             link=self.link,
             level=NotificationLevel(self.level),
         )
-
-    def to_notification(self):
-        return ImagingNotification(
-            at=self.at.isoformat(),
-            message=f'{self.type_} - {self.status}\n{self.link}',
-            level=NotificationLevel(self.level),
-        )
-

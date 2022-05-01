@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Any, Dict
 from pydantic import BaseModel
 
 
@@ -17,21 +17,33 @@ class NotificationType(Enum):
 
 
 class Notification(BaseModel):
+    patient_id: str
+    notification_id: Dict
     message: Optional[str]
     at: str
     type: NotificationType
     level: NotificationLevel
 
+    @classmethod
+    def get_id(cls, **kwargs):
+        raise NotImplementedError()
+
     class Config:
         orm_mode = True
+        use_enum_values = True
 
 
 class ImagingNotification(Notification):
+
+    @classmethod
+    def get_id(cls, **kwargs):
+        return {'imaging_id': kwargs.pop('imaging_id')}
+
     class Config:
         orm_mode = True
 
     def __init__(self, **kwargs):
         kwargs['type'] = NotificationType.imaging
+        if 'notification_id' not in kwargs:
+            kwargs['notification_id'] = self.get_id(**kwargs)
         super(ImagingNotification, self).__init__(**kwargs)
-
-

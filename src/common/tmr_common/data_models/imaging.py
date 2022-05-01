@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from tmr_common.data_models.notification import NotificationLevel
+from tmr_common.data_models.notification import NotificationLevel, ImagingNotification
 
 
 class ImagingTypes(Enum):
@@ -21,6 +21,7 @@ class ImagingStatus(Enum):
 
 class Imaging(BaseModel):
     chameleon_id: int
+    patient_id: str
     type_: ImagingTypes
     status: ImagingStatus
     link: str
@@ -28,5 +29,15 @@ class Imaging(BaseModel):
     at: str
 
     class Config:
-        # TODO add the flag to all classes that using enum
+        orm_mode = True
         use_enum_values = True
+        # TODO add the flag to all classes that using enum
+
+    def to_notification(self):
+        return ImagingNotification(
+            imaging_id=self.chameleon_id,
+            patient_id=self.patient_id,
+            at=self.at,
+            message=f'{self.type_} - {self.status}\n{self.link}',
+            level=self.level,
+        )

@@ -34,8 +34,6 @@ class Patient(BaseModel):
     complaint: Optional[str]
     admission: Optional[Admission]
     measures: Optional[Measures]
-    imaging: Optional[List[Imaging]] = []
-    notifications: Optional[List[Notification]] = []
     messages: Optional[List[dict]]
 
     # Internal fields
@@ -64,8 +62,6 @@ class Patient(BaseModel):
             "complaint": self.complaint,
             "admission": self.admission.dict(),
             "esi": self.esi.dict(),
-            "imaging": self.imaging,
-            "notifications": self.notifications
         }
 
     def internal_dict(self):
@@ -78,23 +74,20 @@ class Patient(BaseModel):
 class PatientNotifications(BaseModel):
     patient: Patient
 
-    notifications: Optional[List[Notification]]
+    notifications: List[Notification]
 
-    at: Optional[str]
-    level: Optional[NotificationLevel]
+    at: str
+    level: NotificationLevel
 
     class Config:
         orm_mode = True
+        use_enum_values = True
 
     def __init__(self, **kwargs):
-        if 'notifications' not in kwargs:
-            patient_: Patient = kwargs['patient']
-            kwargs['notifications'] = sorted(patient_.notifications,
-                                             key=lambda n: datetime.datetime.fromisoformat(n.at))
         if 'at' not in kwargs and kwargs['notifications']:
             notifications_: List[Notification] = kwargs['notifications']
             kwargs['at'] = max(notifications_, key=lambda n: datetime.datetime.fromisoformat(n.at)).at
         if 'level' not in kwargs and kwargs['notifications']:
             notifications_: List[Notification] = kwargs['notifications']
-            kwargs['level'] = min(notifications_, key=lambda n: n.level.value).level
+            kwargs['level'] = NotificationLevel(min(notifications_, key=lambda n: n.level).level)
         super(PatientNotifications, self).__init__(**kwargs)

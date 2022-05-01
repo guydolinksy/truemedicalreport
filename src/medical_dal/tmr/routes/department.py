@@ -8,7 +8,7 @@ from tmr_common.data_models.measures import Measures
 from tmr_common.data_models.patient import Patient
 from tmr_common.data_models.imaging import Imaging
 from tmr_common.data_models.wing import WingOverview
-from .patient import upsert_patient
+from .patient import upsert_patient, upsert_image
 from .wing import wing_router
 from ..dal.dal import MedicalDal, Action
 
@@ -37,15 +37,14 @@ def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> L
 @department_router.post("/{department}/admissions", tags=["Department"])
 async def update_admissions(department: str, admissions: List[Patient] = Body(..., embed=True),
                             dal: MedicalDal = Depends(medical_dal)):
-    admissions = {patient.chameleon_id: patient for patient in admissions}
-    patients = {patient.chameleon_id: patient for patient in dal.get_department_patients(department)}
-    existing, queried = set(patients), set(admissions)
-    for patient in existing - queried:
-        await upsert_patient(patient=patients[patient], dal=dal, action=Action.remove)
-    for patient in queried - existing:
-        await upsert_patient(patient=admissions[patient], dal=dal, action=Action.insert)
-    for patient in queried & existing:
-        await upsert_patient(patient=admissions[patient], dal=dal, action=Action.update)
+    updated = {patient.chameleon_id: patient for patient in admissions}
+    existing = {patient.chameleon_id: patient for patient in dal.get_department_patients(department)}
+    for patient in set(existing) - set(updated):
+        await upsert_patient(patient=existing[patient], dal=dal, action=Action.remove)
+    for patient in set(updated) - set(existing):
+        await upsert_patient(patient=updated[patient], dal=dal, action=Action.insert)
+    for patient in set(updated) & set(existing):
+        await upsert_patient(patient=updated[patient], dal=dal, action=Action.update)
 
 
 @department_router.post("/{department}/measurements", tags=["Department"])
@@ -55,9 +54,15 @@ async def update_measurements(measurements: Dict[str, Measures] = Body(..., embe
         await dal.upsert_measurements(patient, measurements[patient])
 
 
-# change all to imaging
 @department_router.post("/{department}/imaging")
-async def update_imaging(department: str, imaging: dict[str, list[Imaging]] = Body(...),
+async def update_imaging(department: str, images: Dict[str, List[Imaging]] = Body(..., embed=True),
                          dal: MedicalDal = Depends(medical_dal)):
-    for chameleon_id in imaging:
-        await dal.upsert_imaging(chameleon_id, imaging[chameleon_id])
+    for patient in {patient.chameleon_id for patient in dal.get_department_patients(department)} | set(images):
+        updated = {image.chameleon_id: image for image in images.get(patient,[])}
+        existing = {image.chameleon_id: image for image in dal.get_patient_images(patient)}
+        for image in set(existing) - set(updated):
+            await upsert_image(image=existing[image], dal=dal, action=Action.remove)
+        for image in set(updated) - set(existing):
+            await upsert_image(image=updated[image], dal=dal, action=Action.insert)
+        for image in set(updated) & set(existing):
+            await upsert_image(image=updated[image], dal=dal, action=Action.update)

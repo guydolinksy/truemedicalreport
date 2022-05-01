@@ -1,4 +1,5 @@
 import datetime
+from typing import List
 
 import logbook
 from fastapi import APIRouter, Depends
@@ -27,9 +28,8 @@ def get_wing_details(department: str, wing: str, dal: MedicalDal = Depends(medic
 # TODO move logic to backend service after it works
 @wing_router.get("/{wing}/notifications", tags=["Wing"], status_code=200)
 def wing_notifications(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> \
-        list[PatientNotifications]:
-    patients = [PatientNotifications(patient=patient) for patient in dal.get_wing_patients(department, wing) if patient.notifications]
-    return sorted(patients, key=lambda obj: datetime.datetime.fromisoformat(obj.at))
+        List[PatientNotifications]:
+    return dal.get_wing_notifications(department, wing)
 
 
 @wing_router.get("/{wing}/details", response_model=Wing, response_model_exclude_unset=True, tags=["Wing"])

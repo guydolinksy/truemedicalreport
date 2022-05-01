@@ -2,6 +2,8 @@ import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 import json
+
+from tmr_common.data_models.imaging import Imaging
 from tmr_common.data_models.patient import Patient
 from tmr_common.data_models.notification import Notification
 
@@ -33,6 +35,12 @@ async def upsert_patient(action: Action, patient: Patient = Body(..., embed=True
     return await dal.upsert_patient(patient, action)
 
 
+@patient_router.post("/image/{action}", tags=["Patient"])
+async def upsert_image(action: Action, image: Imaging = Body(..., embed=True),
+                       dal: MedicalDal = Depends(medical_dal)) -> bool:
+    return await dal.upsert_imaging(image, action)
+
+
 @patient_router.post("/{patient}/warning", tags=["Patient"])
 async def warn_patient_by_id(patient: str, warning=Body(...), dal: MedicalDal = Depends(medical_dal)) -> bool:
     update_result = dal.append_warning_to_patient_by_id(patient, warning)
@@ -43,7 +51,6 @@ async def warn_patient_by_id(patient: str, warning=Body(...), dal: MedicalDal = 
 
 
 @patient_router.post("/{patient}/notification", tags=["Patient"], status_code=201)
-async def add_notification_to_patient(patient: str, notification=Body(...),
+async def add_notification_to_patient(patient: str, notification: Notification = Body(..., embed=True),
                                       dal: MedicalDal = Depends(medical_dal)):
-    notification = Notification(**json.loads(notification["notification"]))
-    await dal.upsert_notification(chameleon_id=patient, notification=notification)
+    await dal.upsert_notification(patient_id=patient, notification=notification, action=Action.insert)
