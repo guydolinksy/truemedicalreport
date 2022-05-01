@@ -11,6 +11,7 @@ import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
+import {PatientNotification} from "./PatientNotification";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -62,9 +63,8 @@ const WingNotificationsInner = ({wingName}) => {
                     <Search allowClear onChange={debounce(e => setSearch(e.target.value), 300)} placeholder={'חיפוש'}/>
                 </Item>
                 {getData([], []).map((notification, i) =>
-                    <SubMenu key={notification.patient.oid} title={notification.patient.name}
-                             icon={<UserOutlined/>}
-                             style={notification.danger ? {color: '#ff4d4f'} : {}}
+                    <SubMenu key={notification.patient.oid} title={<PatientNotification notification={notification}/>}
+                             icon={<UserOutlined/>} style={notification.danger ? {color: '#ff4d4f'} : {}}
                              onTitleClick={() => {
                                  if (openKeys.includes(notification.patient.oid))
                                      navigate(`#highlight#${notification.oid}#close`)
