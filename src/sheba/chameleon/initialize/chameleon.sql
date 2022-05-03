@@ -129,6 +129,7 @@ create TABLE [dbo].[imaging] (
     [imaging_id] [int] IDENTITY(1,1) NOT NULL,
 	[patient_id] [varchar](250) NOT NULL,
 	[type] [varchar](60) NOT NULL,
+	[description] [varchar](100) NOT NULL,
 	[status] [varchar](60) NOT NULL,
     [level] [int] NOT NULL,
 	[link] [varchar](200) NOT NULL,

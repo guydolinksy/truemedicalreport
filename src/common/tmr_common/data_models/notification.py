@@ -19,7 +19,7 @@ class NotificationType(Enum):
 class Notification(BaseModel):
     patient_id: str
     notification_id: Dict
-    message: Optional[str]
+    message: str
     at: str
     type: NotificationType
     level: NotificationLevel

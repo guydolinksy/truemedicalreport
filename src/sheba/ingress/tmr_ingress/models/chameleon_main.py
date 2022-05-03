@@ -4,7 +4,8 @@ from enum import Enum
 from sqlalchemy import Column, Integer, String, VARCHAR, DateTime
 from sqlalchemy.orm import declarative_base
 
-from tmr_common.data_models.patient import Patient, Admission
+from tmr_common.data_models.measures import Measures
+from tmr_common.data_models.patient import Patient, Admission, ExternalPatient
 from tmr_common.data_models.esi_score import ESIScore
 from tmr_ingress.models.base import Base
 
@@ -35,9 +36,9 @@ class ChameleonMain(Base):
     stage = Column("stage", VARCHAR(150))
     warnings = Column("warnings", String())
 
-    def to_dal(self) -> Patient:
-        return Patient(
-            chameleon_id=self.chameleon_id,
+    def to_dal(self) -> ExternalPatient:
+        return ExternalPatient(
+            external_id=self.chameleon_id,
             id_=self.patient_id,
             name=self.patient_name,
             arrival=self.arrival.isoformat() if self.arrival else None,
@@ -48,4 +49,5 @@ class ChameleonMain(Base):
             gender=self.gender,
             age=self.age,
             birthdate=self.birthdate.isoformat() if self.birthdate else None,
+            measures=Measures(),
         )

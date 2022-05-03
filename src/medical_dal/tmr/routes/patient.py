@@ -4,7 +4,7 @@ from pymongo import MongoClient
 import json
 
 from tmr_common.data_models.imaging import Imaging
-from tmr_common.data_models.patient import Patient
+from tmr_common.data_models.patient import Patient, ExternalPatient, PatientInfo
 from tmr_common.data_models.notification import Notification
 
 from ..dal.dal import MedicalDal, Action
@@ -23,22 +23,15 @@ def get_patient_by_id(patient: str, dal: MedicalDal = Depends(medical_dal)) -> P
     return dal.get_patient_by_id(patient)
 
 
+@patient_router.get("/{patient}/info", response_model=PatientInfo, tags=["PatientInfo"])
+def get_patient_by_id(patient: str, dal: MedicalDal = Depends(medical_dal)) -> PatientInfo:
+    return dal.get_patient_info_by_id(patient)
+
+
 @patient_router.post("/{patient}", tags=["Patient"])
 async def update_patient_by_id(patient: str, update_object: dict,
                                dal: MedicalDal = Depends(medical_dal)) -> bool:
     return await dal.update_patient_by_id(patient, update_object)
-
-
-@patient_router.post("/{action}", tags=["Patient"])
-async def upsert_patient(action: Action, patient: Patient = Body(..., embed=True),
-                         dal: MedicalDal = Depends(medical_dal)) -> bool:
-    return await dal.upsert_patient(patient, action)
-
-
-@patient_router.post("/image/{action}", tags=["Patient"])
-async def upsert_image(action: Action, image: Imaging = Body(..., embed=True),
-                       dal: MedicalDal = Depends(medical_dal)) -> bool:
-    return await dal.upsert_imaging(image, action)
 
 
 @patient_router.post("/{patient}/warning", tags=["Patient"])

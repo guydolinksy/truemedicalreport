@@ -219,6 +219,13 @@ class FakeMain(object):
             im.patient_id = patient
             im.at = datetime.datetime.utcnow()
             im.type_ = random.choice(list(ImagingTypes)).value
+            type_name = {
+                ImagingTypes.ct.value: 'CT',
+                ImagingTypes.ultrasound.value: 'אולטרהסאונד',
+                ImagingTypes.xray.value: 'צילום'
+            }
+            location = random.choice(['ראש', 'אגן', 'חזה', 'בטן'])
+            im.description = f'{type_name[im.type_]} {location}'
             im.status = random.choice(list(ImagingStatus)).value
             im.level = random.choice(list(NotificationLevel)).value
             im.link = self.faker.url()

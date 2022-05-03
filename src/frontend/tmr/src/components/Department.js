@@ -14,8 +14,8 @@ export const Department = ({department}) => {
     const navigate = useNavigate();
 
     return <departmentDataContext.Provider url={uri} defaultValue={[]}>
-        {({loadingData, getData}) => <Row gutter={16}>
-            {loadingData ? <Spin/> : (getData([]) || []).map((wing, i) => {
+        {({loading, value}) => <Row gutter={16}>
+            {loading ? <Spin/> : value.map((wing, i) => {
                 const actions = [
                     <Tooltip overlay={"מטופלים המשוייכים לאגף"}><span style={{userSelect: "none"}}>
                     <FontAwesomeIcon icon={faUser}/>&nbsp;{wing.patient_count}

@@ -8,8 +8,7 @@ export const createContext = (defaultValue) => {
     const context = React.createContext(defaultValue);
 
     const Provider = ({url, updateURL, socketURL, defaultValue = undefined, onError, ...props}) => {
-        console.log(url)
-        const [{loadingData, value}, setValue] = useState({loading: false, value: defaultValue});
+        const [{loading, value}, setValue] = useState({loading: true, value: defaultValue});
         const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/sync/ws`,
             {
                 queryParams: {key: socketURL || url},
@@ -24,7 +23,7 @@ export const createContext = (defaultValue) => {
                 },
             });
 
-        const flushData = useMemo(() => debounce((token) => {
+        const flush = useMemo(() => debounce((token) => {
             Axios.get(url, {cancelToken: token}).then(response => {
                 setValue({loading: false, value: response.data});
             }).catch(error => {
@@ -37,23 +36,18 @@ export const createContext = (defaultValue) => {
         }, 1000, {leading: true, trailing: true}), [url, onError]);
 
         useEffect(() => {
-            return () => flushData.cancel();
+            return () => flush.cancel();
         }, []);
 
         useEffect(() => {
             const s = Axios.CancelToken.source()
-            flushData(s.token)
+            flush(s.token)
             return () => s.cancel()
-        }, [url, lastMessage, flushData]);
+        }, [url, lastMessage, flush]);
 
-        const getData = useCallback((path, defaultValue) => path.reduce((data, name) => {
-            if ([undefined, null].includes(data) || [undefined, null].includes(data[name]))
-                return defaultValue;
-            return data[name];
-        }, value), [value]);
-
-        const updateData = useCallback((path, newValue) => {
+        const update = useCallback((path, newValue) => {
             const deepReplace = (path, data, value) => {
+                console.log(path, data, value)
                 if (!path.length) {
                     return value
                 }
@@ -71,25 +65,25 @@ export const createContext = (defaultValue) => {
 
         return <context.Provider
             value={{
-                getData: getData,
-                updateData: updateData,
-                loadingData: loadingData,
-                flushData: flushData,
+                value: value,
+                update: update,
+                loading: loading,
+                flush: flush,
                 lastMessage: lastMessage
             }}>
             {props.children({
-                getData: getData,
-                updateData: updateData,
-                loadingData: loadingData,
-                flushData: flushData,
+                value: value,
+                update: update,
+                loading: loading,
+                flush: flush,
                 lastMessage: lastMessage, ...props
             })}
         </context.Provider>
     }
 
     const withData = Component => ({...props}) => {
-        return <context.Consumer>{({getData, updateData, loadingData, flushData, lastMessage}) =>
-            <Component loadingData={loadingData} getData={getData} updateData={updateData} flushData={flushData}
+        return <context.Consumer>{({value, update, loading, flush, lastMessage}) =>
+            <Component loading={loading} value={value} update={update} flush={flush}
                        lastMessage={lastMessage} {...props}/>
         }</context.Consumer>
     };

@@ -2,8 +2,9 @@ from json import loads
 
 import requests
 from fastapi import APIRouter, Body
+from werkzeug.exceptions import NotFound
 
-from tmr_common.data_models.patient import Patient
+from tmr_common.data_models.patient import Patient, PatientInfo
 from ..utils import prepare_update_object
 
 patient_router = APIRouter()
@@ -17,10 +18,10 @@ def get_patient_by_id(patient: str) -> dict:
 
 @patient_router.get("/{patient}/info")
 def get_patient_info_by_id(patient: str) -> dict:
-    patient = Patient(**requests.get(f"http://medical-dal/medical-dal/patients/{patient}").json())
-    res = loads(patient.json(models_as_dict=False))
-    res.pop('measures')
-    return res
+    res = requests.get(f"http://medical-dal/medical-dal/patients/{patient}/info").json()
+    if not res:
+        raise NotFound()
+    return PatientInfo(**res).dict()
 
 
 @patient_router.post("/{patient}")

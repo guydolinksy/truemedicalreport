@@ -42,7 +42,7 @@ class SqlToDal(object):
                                 json={'images': imaging})
             res.raise_for_status()
         except HTTPError:
-            logger.exception('Could not run admissions handler.')
+            logger.exception('Could not run imaging handler.')
 
     def update_admissions(self, department: Departments):
         try:
@@ -51,14 +51,7 @@ class SqlToDal(object):
             patients = []
             with self.session() as session:
                 for patient in session.query(ChameleonMain).filter(ChameleonMain.unit == int(department.value)):
-                    patient = patient.to_dal()
-                    if random.randint(0, 1):
-                        patient.messages = [{"danger": True, "content": "חזרו תוצאות מה-CT"},
-                                            {"danger": True, "content": "חזרו תוצאות של בדיקות גזים"}]
-                    else:
-                        patient.messages = [{"danger": False, "content": "חזרו תוצאות מה-CT"},
-                                            {"danger": False, "content": "חזרו תוצאות של בדיקות גזים"}]
-                    patients.append(patient.dict())
+                    patients.append(patient.to_dal().dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/admissions',
                                 json={'admissions': patients})
             res.raise_for_status()
@@ -73,7 +66,7 @@ class SqlToDal(object):
             with self.session() as session:
                 for measurement in session.query(Measurements). \
                         join(ChameleonMain, Measurements.chameleon_id == ChameleonMain.chameleon_id). \
-                        where(ChameleonMain.unit == int(department.value)).order_by(Measurements.at.desc()):
+                        where(ChameleonMain.unit == int(department.value)).order_by(Measurements.at.asc()):
                     match measurement.code:
                         case MeasurementsIds.systolic.value:
                             patients.setdefault(measurement.chameleon_id, {}).setdefault('blood_pressure', {}). \

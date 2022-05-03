@@ -20,9 +20,10 @@ class ImagingStatus(Enum):
 
 
 class Imaging(BaseModel):
-    chameleon_id: int
+    external_id: int
     patient_id: str
     type_: ImagingTypes
+    description: str
     status: ImagingStatus
     link: str
     level: NotificationLevel
@@ -34,11 +35,17 @@ class Imaging(BaseModel):
         # TODO add the flag to all classes that using enum
 
     def to_notification(self):
+        status = {
+            ImagingStatus.ordered.value: 'הוזמן',
+            ImagingStatus.performed.value: 'בוצע',
+            ImagingStatus.analyzed.value: 'פוענח',
+            ImagingStatus.verified.value: 'אושרר',
+        }
         return ImagingNotification(
-            imaging_id=self.chameleon_id,
+            imaging_id=self.external_id,
             patient_id=self.patient_id,
             at=self.at,
-            message=f'{self.type_} - {self.status}',
+            message=f'{self.description} - {status[self.status]}',
             link=self.link,
             level=self.level,
         )

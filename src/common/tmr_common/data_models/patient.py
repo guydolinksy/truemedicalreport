@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from pydantic import BaseModel
 
@@ -19,11 +19,13 @@ class Admission(BaseModel):
         orm_mode = True
 
 
-class Patient(BaseModel):
-    oid: Optional[str]
+class Warning(BaseModel):
+    class Config:
+        orm_mode = True
 
-    # Chameleon fields
-    chameleon_id: Optional[str]
+
+class ExternalPatient(BaseModel):
+    external_id: str
     id_: Optional[str]
     esi: Optional[ESIScore]
     name: Optional[str]
@@ -33,42 +35,63 @@ class Patient(BaseModel):
     birthdate: Optional[str]
     complaint: Optional[str]
     admission: Optional[Admission]
-    measures: Optional[Measures]
-    messages: Optional[List[dict]]
+    measures: Measures
 
-    # Internal fields
+    def __init__(self, **kwargs):
+        if 'gender' in kwargs and kwargs['gender'] in ['M', 'F']:
+            kwargs['gender'] = 'male' if kwargs['gender'] == 'M' else 'female'
+        super(ExternalPatient, self).__init__(**kwargs)
+
+
+class InternalPatient(BaseModel):
     awaiting: Optional[str]
-    severity: Optional[Severity]
-    flagged: Optional[bool]
-    warnings: Optional[List[dict]]
+    severity: Severity
+    flagged: bool
+    warnings: List[Warning]
 
     class Config:
         orm_mode = True
 
+    @classmethod
+    def from_external_patient(cls, patient: ExternalPatient):
+        return cls(severity=Severity(**patient.esi.dict()), awaiting='מחכה לך', flagged=False, warnings=[])
+
+
+class Patient(BaseModel):
+    oid: str
+    external_data: ExternalPatient
+    internal_data: InternalPatient
+
     def __init__(self, **kwargs):
         if '_id' in kwargs:
             kwargs['oid'] = str(kwargs.pop('_id'))
+        if 'external_data' not in kwargs:
+            kwargs['external_data'] = ExternalPatient(**kwargs)
+        if 'internal_data' not in kwargs:
+            kwargs['internal_data'] = InternalPatient(**kwargs)
         super(Patient, self).__init__(**kwargs)
 
-    def chameleon_dict(self):
-        return {
-            "chameleon_id": self.chameleon_id,
-            "id_": self.id_,
-            "name": self.name,
-            "arrival": self.arrival,
-            "age": self.age,
-            "gender": 'male' if self.gender == 'M' else 'female',
-            "birthdate": self.birthdate,
-            "complaint": self.complaint,
-            "admission": self.admission.dict(),
-            "esi": self.esi.dict(),
-        }
 
-    def internal_dict(self):
-        return {
-            "severity": self.severity.dict(),
-            "awaiting": self.awaiting,
-        }
+class ExtendedPatient(BaseModel):
+    imaging: List[Imaging] = []
+    full_measures: List[Any] = []
+    labs: List[Any] = []
+    referrals: List[Any] = []
+    notifications: List[Any] = []
+    visits: List[Any] = []
+    events: List[Any] = []
+
+    class Config:
+        orm_mode = True
+
+
+class PatientInfo(Patient):
+    extended_data: ExtendedPatient
+
+    def __init__(self, **kwargs):
+        if 'extended_data' not in kwargs:
+            kwargs['extended_data'] = ExtendedPatient(**kwargs)
+        super(PatientInfo, self).__init__(**kwargs)
 
 
 class PatientNotifications(BaseModel):
@@ -76,8 +99,9 @@ class PatientNotifications(BaseModel):
 
     notifications: List[Notification]
 
-    at: str
-    level: NotificationLevel
+    at: Optional[str]
+    preview: Optional[str]
+    level: NotificationLevel = NotificationLevel.normal
 
     class Config:
         orm_mode = True
@@ -90,4 +114,7 @@ class PatientNotifications(BaseModel):
         if 'level' not in kwargs and kwargs['notifications']:
             notifications_: List[Notification] = kwargs['notifications']
             kwargs['level'] = NotificationLevel(min(notifications_, key=lambda n: n.level).level)
+        if 'preview' not in kwargs and kwargs['notifications']:
+            notifications_: List[Notification] = kwargs['notifications']
+            kwargs['preview'] = ', '.join([n.message for n in notifications_])
         super(PatientNotifications, self).__init__(**kwargs)
