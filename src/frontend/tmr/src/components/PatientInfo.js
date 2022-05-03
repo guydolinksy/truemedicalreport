@@ -136,12 +136,18 @@ const InternalPatientCard = ({patient, setTitle}) => {
                     <HashMatch key={i} match={['info', patient, 'labs', `lab-${i}`]}>{({matched}) =>
                         <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
                             {lab}
-                        </p>}
-                    </HashMatch>
+                        </p>
+                    }</HashMatch>
                 )}
             </Panel>
             <Panel key={'imaging'} header={'הדמיות'}>
-                {value.extended_data.imaging.map((image, i) => <p key={i}>{image}</p>)}
+                {value.extended_data.imaging.map((image, i) =>
+                    <HashMatch key={i} match={['info', patient, 'imaging', `${image.external_id}`]}>{({matched}) =>
+                        <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
+                            {image.description} - {image.status_text}
+                        </p>
+                    }</HashMatch>
+                )}
             </Panel>
             <Panel key={'referrals'} header={'ייעוץ'}>
                 {value.extended_data.referrals.map((referral, i) => <p key={i}>{referral}</p>)}

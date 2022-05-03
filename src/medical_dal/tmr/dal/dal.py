@@ -77,7 +77,11 @@ class MedicalDal:
 
     def get_patient_info_by_id(self, patient: str) -> PatientInfo:
         res = self.db.patients.find_one({"_id": ObjectId(patient)})
-        return PatientInfo(**res) if res else None
+        if not res:
+            raise ValueError('Patient not found.')
+        patient = Patient(**res)
+        imaging = [Imaging(**res) for res in self.db.imaging.find({"patient_id": patient.external_data.external_id})]
+        return PatientInfo(imaging=imaging, **patient.dict()) if res else None
 
     def get_patient_by_bed(self, department: str, wing: str, bed: str) -> str:
         res = self.db.patients.find_one(

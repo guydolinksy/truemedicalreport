@@ -19,6 +19,7 @@ class NotificationType(Enum):
 class Notification(BaseModel):
     patient_id: str
     notification_id: Dict
+    static_id: str
     message: str
     at: str
     type: NotificationType
@@ -37,7 +38,7 @@ class ImagingNotification(Notification):
 
     @classmethod
     def get_id(cls, **kwargs):
-        return {'imaging_id': kwargs.pop('imaging_id')}
+        return {kwargs['type'].value: kwargs['static_id']}
 
     def __init__(self, **kwargs):
         kwargs['type'] = NotificationType.imaging

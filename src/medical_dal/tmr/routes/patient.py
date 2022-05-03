@@ -24,7 +24,7 @@ def get_patient_by_id(patient: str, dal: MedicalDal = Depends(medical_dal)) -> P
 
 
 @patient_router.get("/{patient}/info", response_model=PatientInfo, tags=["PatientInfo"])
-def get_patient_by_id(patient: str, dal: MedicalDal = Depends(medical_dal)) -> PatientInfo:
+def get_patient_info_by_id(patient: str, dal: MedicalDal = Depends(medical_dal)) -> PatientInfo:
     return dal.get_patient_info_by_id(patient)
 
 

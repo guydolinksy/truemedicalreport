@@ -49,7 +49,7 @@ export const PatientNotification = ({notification, onTitleClick, ...props}) => {
                     title={title} {...props}>
         {notification.notifications.map((message, j) =>
             <Item key={`${notification.patient.oid}-${j}`} danger={message.danger}>
-                <Link to={`#info#${notification.patient.oid}#${message.type}#${message.id}`}>
+                <Link to={`#info#${notification.patient.oid}#${message.type}#${message.static_id}`}>
                     {message.message}
                 </Link>
             </Item>

@@ -25,6 +25,7 @@ class Imaging(BaseModel):
     type_: ImagingTypes
     description: str
     status: ImagingStatus
+    status_text: str
     link: str
     level: NotificationLevel
     at: str
@@ -34,18 +35,23 @@ class Imaging(BaseModel):
         use_enum_values = True
         # TODO add the flag to all classes that using enum
 
+    def __init__(self, **kwargs):
+        if 'status_text' not in kwargs:
+            kwargs['status_text'] = {
+                ImagingStatus.ordered: 'הוזמן',
+                ImagingStatus.performed: 'בוצע',
+                ImagingStatus.analyzed: 'פוענח',
+                ImagingStatus.verified: 'אושרר',
+            }[kwargs['status']]
+
+        super(Imaging, self).__init__(**kwargs)
+
     def to_notification(self):
-        status = {
-            ImagingStatus.ordered.value: 'הוזמן',
-            ImagingStatus.performed.value: 'בוצע',
-            ImagingStatus.analyzed.value: 'פוענח',
-            ImagingStatus.verified.value: 'אושרר',
-        }
         return ImagingNotification(
-            imaging_id=self.external_id,
+            static_id=self.external_id,
             patient_id=self.patient_id,
             at=self.at,
-            message=f'{self.description} - {status[self.status]}',
+            message=f'{self.description} - {self.status_text}',
             link=self.link,
             level=self.level,
         )
