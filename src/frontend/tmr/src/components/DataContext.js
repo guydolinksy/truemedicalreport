@@ -8,6 +8,7 @@ export const createContext = (defaultValue) => {
     const context = React.createContext(defaultValue);
 
     const Provider = ({url, updateURL, socketURL, defaultValue = undefined, onError, ...props}) => {
+        const [counter, setCounter] = useState(0);
         const [{loading, value}, setValue] = useState({loading: true, value: defaultValue});
         const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/sync/ws`,
             {
@@ -23,8 +24,9 @@ export const createContext = (defaultValue) => {
                 },
             });
 
-        const flush = useMemo(() => debounce((token) => {
+        const flush = useMemo(() => debounce((force = false, token = null) => {
             Axios.get(url, {cancelToken: token}).then(response => {
+                if (force) setCounter(p => p + 1)
                 setValue({loading: false, value: response.data});
             }).catch(error => {
                 if (Axios.isCancel(error))
@@ -41,7 +43,7 @@ export const createContext = (defaultValue) => {
 
         useEffect(() => {
             const s = Axios.CancelToken.source()
-            flush(s.token)
+            flush(false, s.token)
             return () => s.cancel()
         }, [url, lastMessage, flush]);
 
@@ -63,14 +65,13 @@ export const createContext = (defaultValue) => {
             });
         }, [url, updateURL]);
 
-        return <context.Provider
-            value={{
-                value: value,
-                update: update,
-                loading: loading,
-                flush: flush,
-                lastMessage: lastMessage
-            }}>
+        return <context.Provider key={counter} value={{
+            value: value,
+            update: update,
+            loading: loading,
+            flush: flush,
+            lastMessage: lastMessage
+        }}>
             {props.children({
                 value: value,
                 update: update,

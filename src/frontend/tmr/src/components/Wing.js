@@ -92,7 +92,7 @@ export const WingInner = ({department, wing, onError}) => {
     const {value, flush} = useContext(wingDataContext.context);
 
     const onInfoError = useCallback(() => {
-        flush()
+        flush(true)
         navigate('#')
     }, [navigate, flush]);
 
