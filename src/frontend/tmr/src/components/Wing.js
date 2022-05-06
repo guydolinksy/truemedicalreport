@@ -12,6 +12,7 @@ import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
 import {PatientNotification} from "./PatientNotification";
 import {SettingOutlined} from "@ant-design/icons";
+import {useViewport} from "./UseViewPort";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -57,13 +58,14 @@ const WingNotificationsInner = ({wingName}) => {
             flex: 1,
             overflowY: "hidden",
         }}>
-            <Menu selectable={false} theme={"dark"} mode={"inline"} style={{userSelect: "none", overflowY: "scroll"}}
-                  expandIcon={null && <SettingOutlined/>}>
+            <Menu selectable={false} theme={"dark"} mode={"inline"} style={{userSelect: "none", overflowY: "auto"}}
+                  expandIcon={<SettingOutlined
+                      style={{left: 16, right: "unset", marginLeft: "auto", marginRight: 10}}/>}>
                 <SubMenu key={'wing'} icon={<FontAwesomeIcon icon={faBuilding}/>} title={wingName}>
                 </SubMenu>
             </Menu>
             <Menu selectable={false} theme={"dark"} mode={"inline"}
-                  style={{userSelect: "none", overflowY: "scroll"}}
+                  style={{userSelect: "none", overflowY: "auto"}}
                   openKeys={openKeys} onOpenChange={setOpenKeys}>
                 <Item key={'search'}>
                     <Search allowClear onChange={debounce(e => setSearch(e.target.value), 300)} placeholder={'חיפוש'}/>
@@ -87,7 +89,34 @@ const WingNotifications = ({department, wing, wingName, onError}) => {
         {({loading}) => loading ? <Spin/> : <WingNotificationsInner wingName={wingName}/>}
     </notificationsDataContext.Provider>;
 }
-export const WingInner = ({department, wing, onError}) => {
+const WingLayout = ({department, wing, details, onError}) => {
+    return <Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
+        {(details.rows || []).map((row, i) => <Row key={i} style={row} wrap={false}>
+            {(details.columns || []).map((column, j) =>
+                details.beds[i][j] === null ? <div key={`filler-${j}`} style={column}/> :
+                    <Bed key={`bed-${details.beds[i][j]}`} style={column} admission={{
+                        department: department,
+                        wing: wing,
+                        bed: details.beds[i][j]
+                    }} onError={onError}/>
+            )}
+        </Row>)}
+    </Card>
+}
+const Patients = ({patients, onError}) => {
+    return <Card key={'overflow'} style={{width: '100%', flex: '1'}}>
+        <div style={{
+            display: "grid",
+            gridGap: 16,
+            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))"
+        }}>
+            {patients.map(patient => <Patient key={patient.oid} patient={patient.oid}
+                                              style={{flex: '1', minWidth: 300}} onError={onError}/>)}
+            <Patient patient={null} avatar={null} style={{flex: '1', minWidth: 300}}/>
+        </div>
+    </Card>
+}
+const WingInner = ({department, wing, onError}) => {
     const navigate = useNavigate();
     const {value, flush} = useContext(wingDataContext.context);
 
@@ -96,40 +125,34 @@ export const WingInner = ({department, wing, onError}) => {
         navigate('#')
     }, [navigate, flush]);
 
-    const unassignedPatients = value.patients.filter(({oid, external_data}) => !external_data.admission.bed);
+    const siderWidth = 350, totalWidth = useViewport();
 
+    const forceTabletMode = useCallback(() => {
+        const buffer = 100;
+        if (!value || !value.details || !value.details.columns)
+            return true
+        return totalWidth - siderWidth - value.details.columns.reduce((s, c) => s + c.minWidth, 0) < buffer;
+    }, [totalWidth, value, siderWidth]);
+
+    const [tabletMode, setTabletMode] = useState({forced: forceTabletMode(), value: false})
+
+    useEffect(() => {
+        setTabletMode(({value}) => ({forced: forceTabletMode(), value: value}))
+    }, [forceTabletMode, totalWidth, value, siderWidth]);
+
+    const unassignedPatients = value.patients.filter(({oid, external_data}) => !external_data.admission.bed);
     return <Layout>
-        <Sider breakpoint={"lg"} width={350}>
+        <Sider breakpoint={"lg"} width={siderWidth}>
             <WingNotifications department={department} wing={wing} wingName={value.details.name} onError={onError}/>
         </Sider>
-        <Content style={{backgroundColor: "#000d17", overflowY: "scroll"}}>
+        <Content style={{backgroundColor: "#000d17", overflowY: "auto"}}>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
-                {(value.details.beds ? [<Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
-                    {(value.details.rows || []).map((row, i) =>
-                        <Row key={i} style={row} wrap={false}>
-                            {(value.details.columns || []).map((column, j) =>
-                                value.details.beds[i][j] === null ? <div key={`filler-${j}`} style={column}/> :
-                                    <Bed key={`bed-${value.details.beds[i][j]}`} style={column} admission={{
-                                        department: department,
-                                        wing: wing,
-                                        bed: value.details.beds[i][j]
-                                    }} onError={flush}/>
-                            )}
-                        </Row>
-                    )}
-                </Card>] : []).concat(
-                    <Card key={'overflow'} style={{width: '100%', flex: '1'}}>
-                        <div style={{
-                            display: "grid",
-                            gridGap: 16,
-                            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))"
-                        }}>
-                            {unassignedPatients.map(patient =>
-                                <Patient key={patient.oid} patient={patient.oid}
-                                         style={{flex: '1', minWidth: 300}} onError={flush}/>)}
-                            <Patient patient={null} avatar={null} style={{flex: '1', minWidth: 300}}/>
-                        </div>
-                    </Card>)}
+                {tabletMode.forced || tabletMode.value ?
+                    <Patients key={'patients'} patients={value.patients} onError={flush}/> : [
+                        <WingLayout key={'wing'} department={department} wing={wing} details={value.details}
+                                    onError={flush}/>,
+                        <Patients key={'patients'} patients={unassignedPatients} onError={flush}/>
+                    ]}
             </Col>
         </Content>
         <PatientInfo onError={onInfoError}/>

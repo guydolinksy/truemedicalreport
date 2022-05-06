@@ -19,7 +19,7 @@ import Moment from "react-moment";
 import {value} from "lodash/seq";
 
 export const patientDataContext = createContext({
-    data: null,
+    data: {internal_data: {}, external_data: {}, extended_data: {}},
     update: () => null,
     loading: true,
 });
@@ -194,7 +194,7 @@ const PatientInner = ({patient, avatar, style}) => {
             margin: 0, maxWidth: 400, minWidth: 300, borderStyle: patient ? "solid" : "dotted",
             borderColor: severityBorderColor[value.internal_data.severity.value], ...style
         }} hoverable onClick={() => navigate(`#info#${patient}#basic`)}
-              extra={<PatientAwaiting/>} actions={patientMeasures(patient, value.measures)}>
+              extra={<PatientAwaiting/>} actions={patientMeasures(patient, value.external_data.measures)}>
             <div style={style}>
                 <Badge.Ribbon text={text}
                               color={value.internal_data.warnings.length ? "red" : value.internal_data.flagged ? "blue" : "grey"}>
@@ -231,7 +231,14 @@ export const Patient = ({patient, avatar, style, onError}) => {
                 </div>
             </div>
         </Card>
-    return <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={{}} onError={onError}>
+    return <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={
+        {
+            internal_data: {warnings: [], awaiting: null, severity: {value: 0, at: null}, flagged: null},
+            external_data: {
+                id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
+                complaint: null, admission: {}, measures: {}
+            }
+        }} onError={onError}>
         {({loading}) => loading ? <Spin/> : <PatientInner patient={patient} avatar={avatar} style={style}/>}
     </patientDataContext.Provider>
 };
