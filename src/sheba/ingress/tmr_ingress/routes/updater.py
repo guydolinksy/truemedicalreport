@@ -45,3 +45,12 @@ async def update_imagings(department: Departments, dal: SqlToDal = Depends(dal_u
     dal.update_imaging(department=department)
     logger.info("Done.")
 
+@updater_router.on_event('startup')
+@repeat_every(seconds=10, logger=logger)
+@inject_dependencies(department=Departments.er)
+@updater_router.post("/update_labs", status_code=201)
+async def update_labs(department: Departments, dal: SqlToDal = Depends(dal_updater)):
+    logger.info("Update labs...")
+    dal.update_labs(department=department)
+    logger.info("Done.")
+

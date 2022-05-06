@@ -13,7 +13,9 @@ from sqlalchemy.orm import Session
 from tmr_common.data_models.measures import Temperature, Pulse, Systolic, Diastolic, Measures, BloodPressure, Saturation
 from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleonimaging import ChameleonImaging
+from ..models.labs import ChameleonLabs
 from ..models.measurements import Measurements, MeasurementsIds
+from tmr_common.data_models.labs import SingleLabTest
 
 logger = logbook.Logger(__name__)
 
@@ -93,3 +95,28 @@ class SqlToDal(object):
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run measurements handler.')
+
+    #TODO: must be tested
+    def update_labs(self, department: Departments):
+        try:
+            logger.debug('Getting labs for `{}`...', department.name)
+            labs = {}
+            with self.session() as session:
+                for lab_data in session.query(ChameleonLabs). \
+                        join(ChameleonMain, ChameleonLabs.patient_id == ChameleonMain.chameleon_id). \
+                        where(ChameleonMain.unit == int(department.value)).order_by(ChameleonLabs.patient_id):
+                    single_lab_test = SingleLabTest(
+                        test_type_id=lab_data.test_type_id,
+                        test_type_name=lab_data.test_type_name,
+                        result=lab_data.result)
+                    labs.setdefault(lab_data.patient_id, {})
+                    if labs.category_id not in labs[lab_data.patient_id].keys():
+                        labs[lab_data.patient_id][
+                            labs.category_id] = labs.to_dal().dict()
+                    labs[lab_data.patient_id][labs.category_id][labs.full_result].append(single_lab_test)
+
+            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/labs',
+                                json={'labs': labs})
+            res.raise_for_status()
+        except Exception:
+            pass

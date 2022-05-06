@@ -8,9 +8,12 @@ import pytz
 from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+
+from tmr_common.data_models.labs import LabsCategories, LabTestType, CategoriesInHebrew
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
 from tmr_ingress.models.chameleonimaging import ChameleonImaging
 from tmr_common.data_models.imaging import ImagingTypes, ImagingStatus
+from tmr_ingress.models.labs import ChameleonLabs
 from tmr_ingress.models.measurements import Measurements
 from tmr_common.data_models.notification import NotificationLevel, NotificationType, Notification
 
@@ -82,9 +85,10 @@ class FakeMain(object):
 
     def _get_patients(self, department: Departments, wing):
         with self.session() as session:
-            return {patient.chameleon_id for patient in session.query(ChameleonMain).filter(
+            result = {patient.chameleon_id for patient in session.query(ChameleonMain).filter(
                 (ChameleonMain.unit == int(department.value)) & (ChameleonMain.unit_wing == wing)
             )}
+            return result
 
     def _generate_measurements(self, chameleon_id=None, department=None, wing=None):
         if chameleon_id:
@@ -233,6 +237,39 @@ class FakeMain(object):
                 session.add(im)
                 session.commit()
 
+    def _generate_labs(self, chameleon_id=None, department=None, wing=None):
+        if chameleon_id:
+            patients = {chameleon_id}
+        elif department and wing:
+            patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 20)]
+        else:
+            raise ValueError()
+        for patient in patients:
+            labs = ChameleonLabs()
+            labs.patient_id = patient
+            category = random.choice(list(LabsCategories))
+            labs.category_id = category.value
+            labs.category_name = CategoriesInHebrew[category]
+            test_types = LabTestType[category]
+            for test_type_id, test_type_name in enumerate(test_types):
+                labs.test_type_id = test_type_id
+
+                labs.test_type_name = test_type_name
+
+                labs.result = random.choice([self.faker.pyfloat(min_value=0.1, max_value=100.0), None])
+                labs.min_warn_bar = self.faker.pyfloat(min_value=20.0,
+                                                       max_value=40.0)
+                labs.panic_min_warn_bar = self.faker.pyfloat(min_value=0.0,
+                                                             max_value=39.9)
+                labs.max_warn_bar = self.faker.pyfloat(min_value=80.0,
+                                                       max_value=100.0)
+                labs.at = datetime.datetime.utcnow()
+                labs.row_id = f"{labs.patient_id}-{labs.category_id}-{labs.test_type_id}"
+                with self.session() as session:
+                    session.add(labs)
+                    session.commit()
+
+
     async def admit_patients(self, department):
         for wing in self.wings:
             if random.randint(0, 1):
@@ -252,3 +289,7 @@ class FakeMain(object):
     async def update_imagings(self, department):
         for wing in self.wings:
             self._generate_imagings(department=department, wing=wing)
+
+    async def update_labs(self, department):
+        for wing in self.wings:
+            self._generate_labs(department=department, wing=wing)
