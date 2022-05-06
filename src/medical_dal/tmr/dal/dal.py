@@ -61,9 +61,9 @@ class MedicalDal:
             ) for patient, notifications in notifications.items() if
             notifications or patients[patient].internal_data.flagged
         ], key=lambda pn: (
-            not pn.patient.internal_data.flagged,
+            bool(pn.patient.internal_data.flagged),
             datetime.datetime.fromisoformat(pn.at) if pn.at else datetime.datetime.min
-        ))
+        ), reverse=True)
 
     def get_department_patients(self, department: str) -> List[Patient]:
         return [Patient(**p) for p in self.db.patients.find({"external_data.admission.department": department})]

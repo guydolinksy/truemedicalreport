@@ -9,8 +9,15 @@ async def init_wings():
         'key': 'b1',
         'name': 'אגף א׳',
         'department': 'er',
-        'columns': [{'flex': "4 1 0px"}, {'flex': 1}, {'flex': "4 1 0px"}, {'width': 16}, {'flex': "4 1 0px"},
-                    {'flex': 1}, {'flex': "4 1 0px"}],
+        'columns': [
+            {'flex': "4 1 300px", 'minWidth': 300},
+            {'flex': 1, 'minWidth': 32},
+            {'flex': "4 1 300px", 'minWidth': 300},
+            {'width': 16, 'minWidth': 16},
+            {'flex': "4 1 300px", 'minWidth': 300},
+            {'flex': 1, 'minWidth': 32},
+            {'flex': "4 1 300px", 'minWidth': 300}
+        ],
         'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}],
         'beds': [
             ["1", None, "4", None, "7", None, "10"],
@@ -24,8 +31,15 @@ async def init_wings():
         'key': 'b2',
         'name': 'אגף ב׳',
         'department': 'er',
-        'columns': [{'flex': "4 1 0px"}, {'flex': 1}, {'flex': "4 1 0px"}, {'width': 16}, {'flex': "4 1 0px"},
-                    {'flex': 1}, {'flex': "4 1 0px"}],
+        'columns': [
+            {'flex': "4 1 300px", 'minWidth': 300},
+            {'flex': 1, 'minWidth': 32},
+            {'flex': "4 1 300px", 'minWidth': 300},
+            {'width': 16, 'minWidth': 16},
+            {'flex': "4 1 300px", 'minWidth': 300},
+            {'flex': 1, 'minWidth': 32},
+            {'flex': "4 1 300px", 'minWidth': 300}
+        ],
         'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}],
         'beds': [
             ["13", None, "16", None, "19", None, "22"],
@@ -39,8 +53,15 @@ async def init_wings():
         'key': 'b3',
         'name': 'אגף ג׳',
         'department': 'er',
-        'columns': [{'flex': "4 1 0px"}, {'flex': 1}, {'flex': "4 1 0px"}, {'width': 16}, {'flex': "4 1 0px"},
-                    {'flex': 1}, {'flex': "4 1 0px"}],
+        'columns': [
+            {'flex': "4 1 300px", 'minWidth': 300},
+            {'flex': 1, 'minWidth': 32},
+            {'flex': "4 1 300px", 'minWidth': 300},
+            {'width': 16, 'minWidth': 16},
+            {'flex': "4 1 300px", 'minWidth': 300},
+            {'flex': 1, 'minWidth': 32},
+            {'flex': "4 1 300px", 'minWidth': 300}
+        ],
         'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16},
                  {'flex': '0 1'}],
         'beds': [
