@@ -267,7 +267,9 @@ class FakeMain(object):
                 labs.row_id = f"{labs.patient_id}-{labs.category_id}-{labs.test_type_id}"
                 with self.session() as session:
                     session.add(labs)
-                    session.commit()
+                    #session.commit()
+            with self.session() as session:
+                session.commit()
 
 
     async def admit_patients(self, department):
