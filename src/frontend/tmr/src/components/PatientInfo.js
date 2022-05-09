@@ -32,13 +32,13 @@ const MeasureGraph = ({measure}) => {
 }
 const PatientSeverity = () => {
     const {value, update} = useContext(patientDataContext.context);
-    return <Radio.Group value={value.internal_data.severity.value} size={"small"} buttonStyle={"solid"}
+    return <Radio.Group value={value.severity.value} size={"small"} buttonStyle={"solid"}
                         style={{flex: 1, display: "inline-flex", textAlign: "center"}}
-                        onChange={e => update(['internal_data', 'severity', 'value'], e.target.value)}>
+                        onChange={e => update(['severity', 'value'], e.target.value)}>
         {[1, 2, 3, 4, 5].map(i => <Radio.Button key={i} value={i} style={{
             flex: 1,
-            color: value.internal_data.severity.value === i ? undefined : severityBorderColor[i],
-            backgroundColor: value.internal_data.severity.value === i ? severityColor[i] : undefined,
+            color: value.severity.value === i ? undefined : severityBorderColor[i],
+            backgroundColor: value.severity.value === i ? severityColor[i] : undefined,
         }}>{i}</Radio.Button>)}
     </Radio.Group>
 }
@@ -62,7 +62,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
         if (loading)
             setTitle('')
         else {
-            setTitle(`${value.external_data.name} (${value.external_data.age})`);
+            setTitle(`${value.name} (${value.age})`);
         }
     }, [value, loading, setTitle]);
     if (loading)
@@ -70,7 +70,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
     return <HashMatch match={['info', patient]}>
         {({match}) => <Collapse defaultActiveKey={['basic'].concat(...match.slice(0, 1))}>
             <Panel key={'basic'} showArrow={false} collapsible={"disabled"} header={'מידע בסיסי'}>
-                {value.internal_data.warnings.map((warning, i) =>
+                {value.warnings.map((warning, i) =>
                     <HashMatch key={i} match={['info', patient, 'basic', `warning-${i}`]}>{({matched}) =>
                         <PatientWarning patient={patient} warning={warning} index={i} style={{
                             animation: matched ? 'highlight 2s ease-out' : undefined, marginBottom: 18
@@ -89,17 +89,17 @@ const InternalPatientCard = ({patient, setTitle}) => {
 
                 <HashMatch match={['info', patient, 'basic', 'secondary-complaint']}>{({matched}) =>
                     <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
-                        תלונה משנית: {value.extended_data.secondary_complaint}
+                        תלונה משנית: {value.secondary_complaint}
                     </p>}
                 </HashMatch>
                 <HashMatch match={['info', patient, 'basic', 'nurse-summary']}>{({matched}) =>
                     <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
-                        תיאור צוות סיעודי: {value.extended_data.nurse_summary}
+                        תיאור צוות סיעודי: {value.nurse_summary}
                     </p>}
                 </HashMatch>
             </Panel>
             <Panel key={'measures'} header={'מדדים'}>
-                <List dataSource={value.extended_data.full_measures || dummyMeasures}
+                <List dataSource={value.full_measures || dummyMeasures}
                       renderItem={(measure, i) => <HashMatch match={['info', patient, 'measures', measure.id]}>
                           {({matched}) => <List.Item style={{
                               padding: 5,
@@ -123,16 +123,16 @@ const InternalPatientCard = ({patient, setTitle}) => {
                       </HashMatch>}/>
             </Panel>
             <Panel key={'visit'} header={'ביקורים קודמים'}>
-                {value.extended_data.visits.map((visit, i) => <p key={i}>{visit.title} ב<a href={'/'}><Moment
+                {value.visits.map((visit, i) => <p key={i}>{visit.title} ב<a href={'/'}><Moment
                     date={visit.at}/></a>
                 </p>)}
             </Panel>
             <Panel key={'important'} header={'עדכונים חשובים'}>
-                {value.extended_data.notifications.map((notification, i) => <p
+                {value.notifications.map((notification, i) => <p
                     key={i}>{notification}</p>)}
             </Panel>
             <Panel key={'labs'} header={'מעבדה'}>
-                {value.extended_data.labs.map((lab, i) =>
+                {value.labs.map((lab, i) =>
                     <HashMatch key={i} match={['info', patient, 'labs', `lab-${i}`]}>{({matched}) =>
                         <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
                             {lab}
@@ -141,7 +141,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 )}
             </Panel>
             <Panel key={'imaging'} header={'הדמיות'}>
-                {value.extended_data.imaging.map((image, i) =>
+                {value.imaging.map((image, i) =>
                     <HashMatch key={i} match={['info', patient, 'imaging', `${image.external_id}`]}>{({matched}) =>
                         <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
                             {image.description} - {image.status_text}
@@ -150,10 +150,10 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 )}
             </Panel>
             <Panel key={'referrals'} header={'ייעוץ'}>
-                {value.extended_data.referrals.map((referral, i) => <p key={i}>{referral}</p>)}
+                {value.referrals.map((referral, i) => <p key={i}>{referral}</p>)}
             </Panel>
             <Panel key={'story'} header={'סיפור מטופל'}>
-                <Timeline reverse>{value.extended_data.events.map(event =>
+                <Timeline reverse>{value.events.map(event =>
                     <Timeline.Item key={event.key} label={<Moment date={event.at}/>}>{event.content}</Timeline.Item>
                 )}</Timeline>
             </Panel>

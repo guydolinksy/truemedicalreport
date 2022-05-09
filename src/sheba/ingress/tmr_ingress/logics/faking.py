@@ -99,7 +99,7 @@ class FakeMain(object):
             raise ValueError()
         for patient in patients:
             pulse = Measurements()
-            pulse.chameleon_id = patient
+            pulse.patient_id = patient
             pulse.at = datetime.datetime.utcnow()
             pulse.code = 12
             pulse.name = 'דופק'
@@ -122,7 +122,7 @@ class FakeMain(object):
                 session.commit()
 
             saturation = Measurements()
-            saturation.chameleon_id = patient
+            saturation.patient_id = patient
             saturation.at = datetime.datetime.utcnow()
             saturation.code = 13
             saturation.name = 'סטורציה'
@@ -141,7 +141,7 @@ class FakeMain(object):
                 session.commit()
 
             temperature = Measurements()
-            temperature.chameleon_id = patient
+            temperature.patient_id = patient
             temperature.at = datetime.datetime.utcnow()
             temperature.code = 11
             temperature.name = 'טמפ'
@@ -164,7 +164,7 @@ class FakeMain(object):
                 session.add(temperature)
                 session.commit()
             systolic, diastolic = Measurements(), Measurements()
-            systolic.chameleon_id = diastolic.chameleon_id = patient
+            systolic.patient_id = diastolic.patient_id = patient
             systolic.at = diastolic.at = datetime.datetime.utcnow()
             systolic.code, diastolic.code = 101, 102
             systolic.name, diastolic.name = 'לחץ דם סיסטולי', 'לחץ דם דיאסטולי'

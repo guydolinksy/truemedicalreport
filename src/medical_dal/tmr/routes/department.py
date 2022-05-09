@@ -4,7 +4,7 @@ import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
-from tmr_common.data_models.measures import Measures
+from tmr_common.data_models.measures import Measures, Measure
 from tmr_common.data_models.patient import Patient, ExternalPatient
 from tmr_common.data_models.imaging import Imaging
 from tmr_common.data_models.wing import WingOverview
@@ -37,17 +37,17 @@ def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> L
 async def update_admissions(department: str, admissions: List[ExternalPatient] = Body(..., embed=True),
                             dal: MedicalDal = Depends(medical_dal)):
     updated = {patient.external_id: patient for patient in admissions}
-    existing = {patient.external_data.external_id: patient for patient in dal.get_department_patients(department)}
+    existing = {patient.external_id: patient for patient in dal.get_department_patients(department)}
     for patient in set(updated) | set(existing):
         await dal.upsert_patient(previous=existing.get(patient), patient=updated.get(patient))
 
 
 @department_router.post("/{department}/measurements", tags=["Department"])
-async def update_measurements(measurements: Dict[str, Measures] = Body(..., embed=True),
+async def update_measurements(measurements: Dict[str, List[Measure]] = Body(..., embed=True),
                               dal: MedicalDal = Depends(medical_dal)):
     for patient in measurements:
         try:
-            await dal.upsert_measurements(patient, measurements[patient])
+            await dal.upsert_measurements(patient_id=patient, measures=measurements[patient])
         except ValueError:
             logger.exception('Cannot update measurements')
 
@@ -55,7 +55,7 @@ async def update_measurements(measurements: Dict[str, Measures] = Body(..., embe
 @department_router.post("/{department}/imaging")
 async def update_imaging(department: str, images: Dict[str, List[Imaging]] = Body(..., embed=True),
                          dal: MedicalDal = Depends(medical_dal)):
-    for patient in {patient.external_data.external_id for patient in dal.get_department_patients(department)} | set(
+    for patient in {patient.external_id for patient in dal.get_department_patients(department)} | set(
             images):
         updated = {image.external_id: image for image in images.get(patient, [])}
         existing = {image.external_id: image for image in dal.get_patient_images(patient)}

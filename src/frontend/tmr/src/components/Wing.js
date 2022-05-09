@@ -140,7 +140,7 @@ const WingInner = ({department, wing, onError}) => {
         setTabletMode(({value}) => ({forced: forceTabletMode(), value: value}))
     }, [forceTabletMode, totalWidth, value, siderWidth]);
 
-    const unassignedPatients = value.patients.filter(({oid, external_data}) => !external_data.admission.bed);
+    const unassignedPatients = value.patients.filter(({oid, admission}) => !admission.bed);
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
             <WingNotifications department={department} wing={wing} wingName={value.details.name} onError={onError}/>

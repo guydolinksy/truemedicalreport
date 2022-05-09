@@ -10,7 +10,7 @@ from requests import HTTPError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from tmr_common.data_models.measures import Temperature, Pulse, Systolic, Diastolic, Measures, BloodPressure, Saturation
+from tmr_common.data_models.measures import Temperature, Pulse, Systolic, Diastolic, Measures, Saturation
 from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleonimaging import ChameleonImaging
 from ..models.labs import ChameleonLabs
@@ -64,32 +64,13 @@ class SqlToDal(object):
         try:
             logger.debug('Getting measurements for `{}`...', department.name)
 
-            patients = {}
+            measures = {}
             with self.session() as session:
                 for measurement in session.query(Measurements). \
-                        join(ChameleonMain, Measurements.chameleon_id == ChameleonMain.chameleon_id). \
+                        join(ChameleonMain, Measurements.patient_id == ChameleonMain.chameleon_id). \
                         where(ChameleonMain.unit == int(department.value)).order_by(Measurements.at.asc()):
-                    match measurement.code:
-                        case MeasurementsIds.systolic.value:
-                            patients.setdefault(measurement.chameleon_id, {}).setdefault('blood_pressure', {}). \
-                                setdefault('systolic', Systolic(**measurement.to_dal().dict()))
-                        case MeasurementsIds.diastolic.value:
-                            patients.setdefault(measurement.chameleon_id, {}).setdefault('blood_pressure', {}). \
-                                setdefault('diastolic', Diastolic(**measurement.to_dal().dict()))
-                        case MeasurementsIds.temperature.value:
-                            patients.setdefault(measurement.chameleon_id, {}). \
-                                setdefault('temperature', Temperature(**measurement.to_dal().dict()))
-                        case MeasurementsIds.pulse.value:
-                            patients.setdefault(measurement.chameleon_id, {}). \
-                                setdefault('pulse', Pulse(**measurement.to_dal().dict()))
-                        case MeasurementsIds.saturation.value:
-                            patients.setdefault(measurement.chameleon_id, {}). \
-                                setdefault('saturation', Saturation(**measurement.to_dal().dict()))
-            measures = {
-                patient: Measures(blood_pressure=BloodPressure(**patients[patient].pop('blood_pressure')),
-                                  **patients[patient]).dict()
-                for patient in patients
-            }
+                    measures.setdefault(measurement.patient_id, []).append(measurement.to_dal().dict())
+
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/measurements',
                                 json={'measurements': measures})
             res.raise_for_status()

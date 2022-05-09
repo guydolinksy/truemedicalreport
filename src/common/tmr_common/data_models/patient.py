@@ -4,7 +4,7 @@ from typing import Optional, List, Any
 from pydantic import BaseModel
 
 from .imaging import Imaging
-from .measures import Measures
+from .measures import Measures, Pressure, Systolic
 from .notification import Notification, NotificationLevel
 from .severity import Severity
 from .esi_score import ESIScore
@@ -35,7 +35,7 @@ class ExternalPatient(BaseModel):
     birthdate: Optional[str]
     complaint: Optional[str]
     admission: Optional[Admission]
-    measures: Measures
+    measures: Optional[Measures]
 
     def __init__(self, **kwargs):
         if 'gender' in kwargs and kwargs['gender'] in ['M', 'F']:
@@ -57,18 +57,18 @@ class InternalPatient(BaseModel):
         return cls(severity=Severity(**patient.esi.dict()), awaiting='מחכה לך', flagged=False, warnings=[])
 
 
-class Patient(BaseModel):
+class Patient(ExternalPatient, InternalPatient):
     oid: str
-    external_data: ExternalPatient
-    internal_data: InternalPatient
+    pressure: Optional[Pressure]
 
     def __init__(self, **kwargs):
         if '_id' in kwargs:
             kwargs['oid'] = str(kwargs.pop('_id'))
-        if 'external_data' not in kwargs:
-            kwargs['external_data'] = ExternalPatient(**kwargs)
-        if 'internal_data' not in kwargs:
-            kwargs['internal_data'] = InternalPatient(**kwargs)
+        if 'pressure' not in kwargs and 'measures' in kwargs:
+            systolic = Systolic(**kwargs['measures'].get('systolic')) if kwargs['measures'].get('systolic') else None
+            diastolic = Systolic(**kwargs['measures'].get('diastolic')) if kwargs['measures'].get('diastolic') else None
+            if systolic or diastolic:
+                kwargs['pressure'] = Pressure(systolic=systolic, diastolic=diastolic)
         super(Patient, self).__init__(**kwargs)
 
 
@@ -85,12 +85,9 @@ class ExtendedPatient(BaseModel):
         orm_mode = True
 
 
-class PatientInfo(Patient):
-    extended_data: ExtendedPatient
+class PatientInfo(Patient, ExtendedPatient):
 
     def __init__(self, **kwargs):
-        if 'extended_data' not in kwargs:
-            kwargs['extended_data'] = ExtendedPatient(**kwargs)
         super(PatientInfo, self).__init__(**kwargs)
 
 

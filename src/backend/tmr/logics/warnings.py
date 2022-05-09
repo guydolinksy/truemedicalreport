@@ -84,8 +84,8 @@ async def notification_handler(patient: str):
 
 
 async def trigger_notification(patient: Patient, should_open=False):
-    if patient.external_data.admission:
+    if patient.admission:
         await notify(
-            f"/api/departments/{patient.external_data.admission.department}"
-            f"/wings/{patient.external_data.admission.wing}/notifications",
+            f"/api/departments/{patient.admission.department}"
+            f"/wings/{patient.admission.wing}/notifications",
             {'openKeys': [patient.oid] if should_open else []})
