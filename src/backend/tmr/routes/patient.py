@@ -16,7 +16,7 @@ patient_router = APIRouter()
 def get_patient_by_id(patient: str) -> dict:
     res = requests.get(f"http://medical-dal/medical-dal/patients/{patient}").json()
     requested_patient = Patient(**res)
-    if requested_patient.measures.pulse is not None and int(requested_patient.measures.pulse.value) < 60:
+    if requested_patient.measures.pulse is not None and int(requested_patient.measures.pulse.value) < 50:
         severity = Severity(value=2, at=datetime.datetime.utcnow().isoformat())
         requested_patient.warnings.append(Warning(content="דופק נמוך", severity=severity))
 
