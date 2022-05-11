@@ -44,10 +44,8 @@ class ChameleonMain(Base):
             arrival=self.arrival.isoformat() if self.arrival else None,
             complaint=self.main_cause,
             admission=Admission(department=Departments(str(self.unit)).name, wing=self.unit_wing, bed=self.bed_num),
-            warnings=[],
             esi=ESIScore(value=self.esi, at=datetime.datetime.utcnow().isoformat()),
             gender=self.gender,
             age=self.age,
             birthdate=self.birthdate.isoformat() if self.birthdate else None,
-            measures=Measures(),
         )

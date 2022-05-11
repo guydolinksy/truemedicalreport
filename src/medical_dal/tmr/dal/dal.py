@@ -8,10 +8,10 @@ import logbook
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from pymongo.database import Database
+from werkzeug.exceptions import NotFound
 
 from tmr_common.data_models.imaging import Imaging
-from tmr_common.data_models.measures import Measure, MeasureTypes, Pulse, Temperature, Saturation, Systolic, \
-    Diastolic, FullMeasures, Latest
+from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures, Latest
 from tmr_common.data_models.measures import Measures
 from tmr_common.data_models.notification import Notification
 from tmr_common.data_models.patient import Patient, Admission, PatientNotifications, ExternalPatient, InternalPatient, \
@@ -38,8 +38,7 @@ class MedicalDal:
         return json.loads(dumps(self.db.wings.find_one({"department": department, "key": wing})))
 
     def get_wing_patient_count(self, department: str, wing: str) -> int:
-        return self.db.patients.count_documents(
-            {"admission.department": department, "admission.wing": wing})
+        return self.db.patients.count_documents({"admission.department": department, "admission.wing": wing})
 
     def get_wing_patients(self, department: str, wing: str) -> List[Patient]:
         patients = [Patient(oid=str(patient.pop("_id")), **patient) for patient in
@@ -72,12 +71,14 @@ class MedicalDal:
 
     def get_patient_by_id(self, patient: str) -> Patient:
         res = self.db.patients.find_one({"_id": ObjectId(patient)})
-        return Patient(**res) if res else None
+        if not res:
+            raise NotFound()
+        return Patient(**res)
 
     def get_patient_info_by_id(self, patient: str) -> PatientInfo:
         res = self.db.patients.find_one({"_id": ObjectId(patient)})
         if not res:
-            raise ValueError('Patient not found.')
+            raise NotFound()
         patient = Patient(**res)
         imaging = [Imaging(**res) for res in self.db.imaging.find({"patient_id": patient.external_id})]
         measures = FullMeasures(
@@ -140,7 +141,7 @@ class MedicalDal:
         if not res:
             raise ValueError(f'Patient {patient_id} not found.')
         previous = Patient(**res)
-        current = Measures(**previous.measures.dict())
+        current = previous.measures.copy()
 
         for measure in measures:
             match measure.type:

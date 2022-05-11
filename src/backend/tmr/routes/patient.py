@@ -1,15 +1,14 @@
-import datetime
-from json import loads
-
+import logbook
 import requests
 from fastapi import APIRouter, Body
 from werkzeug.exceptions import NotFound
 
-from tmr_common.data_models.patient import Patient, PatientInfo, Warning
-from tmr_common.data_models.severity import Severity
+from tmr_common.data_models.patient import Patient, PatientInfo
 from ..utils import prepare_update_object
 
 patient_router = APIRouter()
+
+logger = logbook.Logger(__name__)
 
 
 @patient_router.get("/{patient}")
@@ -18,8 +17,6 @@ def get_patient_by_id(patient: str) -> dict:
     if not res:
         raise NotFound()
     return Patient(**res).dict()
-
-    return requested_patient.dict() if res else None
 
 
 @patient_router.get("/{patient}/info")

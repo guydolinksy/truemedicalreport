@@ -1,12 +1,9 @@
 import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
-import json
 
-from tmr_common.data_models.imaging import Imaging
-from tmr_common.data_models.patient import Patient, ExternalPatient, PatientInfo
 from tmr_common.data_models.notification import Notification
-
+from tmr_common.data_models.patient import Patient, PatientInfo
 from ..dal.dal import MedicalDal, Action
 
 patient_router = APIRouter(tags=["Patient"])
