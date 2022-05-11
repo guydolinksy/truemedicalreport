@@ -4,7 +4,7 @@ import {Patient} from "./Patient";
 import {createContext} from "./DataContext";
 import {Link} from "react-router-dom";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBuilding, faRightFromBracket,} from "@fortawesome/free-solid-svg-icons";
+import {faBuilding, faRightFromBracket, faTemperatureHalf,} from "@fortawesome/free-solid-svg-icons";
 import {useNavigate} from "react-router";
 import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
@@ -14,6 +14,8 @@ import {PatientNotification} from "./PatientNotification";
 import {SettingOutlined} from "@ant-design/icons";
 import {useViewport} from "./UseViewPort";
 import moment from 'moment';
+import Highcharts from "highcharts";
+import HighchartsReact from "highcharts-react-official";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;

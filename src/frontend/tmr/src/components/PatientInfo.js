@@ -1,8 +1,7 @@
-import {Collapse, Drawer, List, Radio, Spin, Timeline} from "antd";
+import {Collapse, Drawer, Empty, List, Radio, Spin, Timeline} from "antd";
 import React, {useContext, useEffect, useState} from "react";
 import {useNavigate} from "react-router";
 import Moment from "react-moment";
-import moment from "moment";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import highchartsMore from 'highcharts/highcharts-more';
@@ -20,12 +19,12 @@ const fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Ox
 const MeasureGraph = ({data, title, graphProps}) => {
     return <HighchartsReact highcharts={Highcharts} options={{
         title: null,
-        xAxis: {type: "datetime", reversed: true, useHTML: true},
+        xAxis: {type: "datetime", useHTML: true},
         yAxis: {opposite: true, title: {enabled: false}},
         chart: {height: 80, width: 200, spacingBottom: 5, style: {fontFamily: fontFamily}},
         legend: {enabled: false},
         credits: {enabled: false},
-        tooltip: {outside: false},
+        tooltip: {outside: true},
         plotOptions: {series: {marker: {radius: 3}, lineWidth: 1}},
         series: [{data: data, name: title, ...graphProps}]
     }}/>
@@ -98,7 +97,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
         if (loading)
             setTitle('')
         else {
-            setTitle(`${value.name} (${value.age})`);
+            setTitle(`${value.name} (${value.age || 'גיל לא ידוע'})`);
         }
     }, [value, loading, setTitle]);
     if (loading)
@@ -137,125 +136,59 @@ const InternalPatientCard = ({patient, setTitle}) => {
             <Panel key={'measures'} header={'מדדים'}>
                 <FullMeasure key={'temperature'} patient={patient} measure={'temperature'} icon={faTemperatureHalf}
                              latest={value.measures.temperature} title={'חום'} graphProps={{type: 'line'}}
-                             data={value.full_measures.temperature.data}/>
+                             data={value.full_measures.temperature}/>
                 <FullMeasure key={'blood_pressure'} patient={patient} measure={'blood_pressure'} icon={faHeart}
                              latest={value.measures.blood_pressure} title={'לחץ דם'} graphProps={{
                     type: 'arearange', tooltip: {
                         pointFormat: '<span style="color:{series.color}">●' +
                             '</span> {series.name}: <b>{point.low}/{point.high}</b><br/>'
                     }
-                }} data={value.full_measures.blood_pressure.data}/>
+                }} data={value.full_measures.blood_pressure}/>
                 <FullMeasure key={'pulse'} patient={patient} measure={'pulse'} icon={faHeartPulse}
                              latest={value.measures.pulse} title={'דופק'} graphProps={{type: 'line'}}
-                             data={value.full_measures.pulse.data}/>
+                             data={value.full_measures.pulse}/>
                 <FullMeasure key={'saturation'} patient={patient} measure={'saturation'} icon={faPercent}
                              latest={value.measures.saturation} title={'סטורציה'}
-                             graphProps={{type: 'line'}} data={value.full_measures.saturation.data}/>
+                             graphProps={{type: 'line'}} data={value.full_measures.saturation}/>
             </Panel>
-            <Panel key={'visit'} header={'ביקורים קודמים'}>
+            {value.visits.length > 0 && <Panel key={'visit'} header={'ביקורים קודמים'}>
                 {value.visits.map((visit, i) => <p key={i}>{visit.title} ב<a href={'/'}><Moment
                     date={visit.at}/></a>
                 </p>)}
-            </Panel>
-            <Panel key={'important'} header={'עדכונים חשובים'}>
+            </Panel>}
+            {value.notifications.length > 0 && <Panel key={'important'} header={'עדכונים חשובים'}>
                 {value.notifications.map((notification, i) => <p
                     key={i}>{notification}</p>)}
-            </Panel>
+            </Panel>}
             <Panel key={'labs'} header={'מעבדה'}>
-                {value.labs.map((lab, i) =>
+                {value.labs.length ? value.labs.map((lab, i) =>
                     <HashMatch key={i} match={['info', patient, 'labs', `lab-${i}`]}>{({matched}) =>
                         <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
                             {lab}
                         </p>
                     }</HashMatch>
-                )}
+                ) : <Empty/>}
             </Panel>
             <Panel key={'imaging'} header={'הדמיות'}>
-                {value.imaging.map((image, i) =>
+                {value.imaging.length ? value.imaging.map((image, i) =>
                     <HashMatch key={i} match={['info', patient, 'imaging', `${image.external_id}`]}>{({matched}) =>
                         <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
                             {image.description} - {image.status_text}
                         </p>
                     }</HashMatch>
-                )}
+                ) : <Empty/>}
             </Panel>
             <Panel key={'referrals'} header={'ייעוץ'}>
-                {value.referrals.map((referral, i) => <p key={i}>{referral}</p>)}
+                {value.referrals.length ? value.referrals.map((referral, i) => <p key={i}>{referral}</p>) :
+                    <Empty/>}
             </Panel>
             <Panel key={'story'} header={'סיפור מטופל'}>
-                <Timeline reverse>{value.events.map(event =>
-                    <Timeline.Item key={event.key} label={<Moment date={event.at}/>}>{event.content}</Timeline.Item>
+                <Timeline reverse mode={"left"}>{value.events.map(event =>
+                    <Timeline.Item key={event.key} label={<Moment date={event.at} format={'hh:mm DD-MM-YYYY'}/>}>
+                        {event.content}
+                    </Timeline.Item>
                 )}</Timeline>
             </Panel>
         </Collapse>}
     </HashMatch>
 }
-const dummyMeasures = [{
-    id: 'blood_pressure',
-    icon: faHeart,
-    latest: '130/50',
-    isLatestValid: false,
-    data: {
-        type: 'arearange',
-        name: 'לחץ דם',
-        data: [
-            [moment().subtract(5, "hour").startOf('second').valueOf(), 120, 80],
-            [moment().subtract(4, "hour").startOf('second').valueOf(), 123, 81],
-            [moment().subtract(3, "hour").startOf('second').valueOf(), 120, 79],
-            [moment().subtract(2, "hour").startOf('second').valueOf(), 120, 77],
-            [moment().subtract(1, "hour").startOf('second').valueOf(), 100, 70],
-        ],
-        tooltip: {
-            pointFormat: '<span style="color:{series.color}">●</span> {series.name}: <b>{point.low}/{point.high}</b><br/>'
-        },
-    }
-}, {
-    id: 'saturation',
-    icon: faPercent,
-    latest: '98',
-    isLatestValid: true,
-    data: {
-
-        type: 'line',
-        name: 'סטורציה',
-        data: [
-            [moment().subtract(5, "hour").startOf('second').valueOf(), 98],
-            [moment().subtract(4, "hour").startOf('second').valueOf(), 87],
-            [moment().subtract(3, "hour").startOf('second').valueOf(), 96],
-            [moment().subtract(2, "hour").startOf('second').valueOf(), 92],
-            [moment().subtract(1, "hour").startOf('second').valueOf(), 94],
-        ]
-    }
-}, {
-    id: 'pulse',
-    icon: faHeartPulse,
-    latest: '66',
-    isLatestValid: true,
-    data: {
-        type: 'line',
-        name: 'דופק',
-        data: [
-            [moment().subtract(5, "hour").startOf('second').valueOf(), 65],
-            [moment().subtract(4, "hour").startOf('second').valueOf(), 70],
-            [moment().subtract(3, "hour").startOf('second').valueOf(), 79],
-            [moment().subtract(2, "hour").startOf('second').valueOf(), 69],
-            [moment().subtract(1, "hour").startOf('second').valueOf(), 68],
-        ],
-    }
-}, {
-    id: 'temperature',
-    icon: faTemperatureHalf,
-    latest: '37.2',
-    isLatestValid: true,
-    data: {
-        type: 'line',
-        name: 'חום',
-        data: [
-            [moment().subtract(5, "hour").startOf('second').valueOf(), 37.7],
-            [moment().subtract(4, "hour").startOf('second').valueOf(), null],
-            [moment().subtract(3, "hour").startOf('second').valueOf(), null],
-            [moment().subtract(2, "hour").startOf('second').valueOf(), null],
-            [moment().subtract(1, "hour").startOf('second').valueOf(), null],
-        ]
-    }
-}]
