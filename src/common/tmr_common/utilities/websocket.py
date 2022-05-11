@@ -62,7 +62,7 @@ def websocket_api(broadcast_backing, ws_uri='/ws'):
                     read_broadcast, broadcast_messages = None, None
 
     async def notify_(key, value=''):
-        logger.debug('NOTIFYING {} {}', key, value)
+        # logger.debug('NOTIFYING {} {}', key, value)
         await broadcast.publish(channel=key, message=json.dumps(value))
 
     return router_, notify_

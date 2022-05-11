@@ -135,18 +135,45 @@ class Measures(BaseModel):
 
 class FullMeasures(BaseModel):
     blood_pressure: List[List[float]]
-    systolic: List[List[float]]
-    diastolic: List[List[float]]
     pulse: List[List[float]]
     temperature: List[List[float]]
     saturation: List[List[float]]
 
-    def __init__(self, **kwargs):
-        super(FullMeasures, self).__init__(
-            blood_pressure=[],
-            systolic=[],
-            diastolic=[],
-            pulse=[],
-            temperature=[],
-            saturation=[],
-        )
+    class Config:
+        orm_mode = True
+
+    def __init__(self, measures=None, **kwargs):
+        res = {}
+        for measure in measures or []:
+            match measure.type:
+                case MeasureTypes.pulse.value:
+                    res.setdefault(MeasureTypes.pulse.value, []).append([measure.at_.timestamp(), int(measure.value)])
+                case MeasureTypes.temperature.value:
+                    res.setdefault(MeasureTypes.temperature.value, []).append([measure.at_.timestamp(), measure.value])
+                case MeasureTypes.saturation.value:
+                    res.setdefault(MeasureTypes.saturation.value, []).append(
+                        [measure.at_.timestamp(), int(measure.value)])
+                case MeasureTypes.systolic.value:
+                    res.setdefault(MeasureTypes.systolic.value, {}).__setitem__(measure.at_.timestamp(),
+                                                                                int(measure.value))
+                case MeasureTypes.diastolic.value:
+                    res.setdefault(MeasureTypes.diastolic.value, {}).__setitem__(measure.at_.timestamp(),
+                                                                                 int(measure.value))
+        if 'blood_pressure' not in kwargs:
+            systolic, diastolic = res.get(MeasureTypes.systolic.value, {}), res.get(MeasureTypes.diastolic.value, {})
+            diastolic_keys = iter(sorted(diastolic))
+            diastolic_at = next(diastolic_keys, None)
+            for t in sorted(systolic):
+                while diastolic_at and diastolic_at <= t:
+                    res.setdefault(MeasureTypes.blood_pressure.value, []).append(
+                        [diastolic_at, systolic[t], diastolic[diastolic_at]]
+                    )
+                    diastolic_at = next(diastolic_keys, None)
+            kwargs['blood_pressure'] = res.get(MeasureTypes.blood_pressure.value, [])
+        if 'pulse' not in kwargs:
+            kwargs['pulse'] = res.get(MeasureTypes.pulse.value, [])
+        if 'temperature' not in kwargs:
+            kwargs['temperature'] = res.get(MeasureTypes.temperature.value, [])
+        if 'saturation' not in kwargs:
+            kwargs['saturation'] = res.get(MeasureTypes.saturation.value, [])
+        super(FullMeasures, self).__init__(**kwargs)

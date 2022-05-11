@@ -15,7 +15,7 @@ from tmr_common.data_models.measures import Measure, MeasureTypes, Pulse, Temper
 from tmr_common.data_models.measures import Measures
 from tmr_common.data_models.notification import Notification
 from tmr_common.data_models.patient import Patient, Admission, PatientNotifications, ExternalPatient, InternalPatient, \
-    PatientInfo
+    PatientInfo, Event
 from ..routes.websocket import notify
 
 logger = logbook.Logger(__name__)
@@ -80,8 +80,16 @@ class MedicalDal:
             raise ValueError('Patient not found.')
         patient = Patient(**res)
         imaging = [Imaging(**res) for res in self.db.imaging.find({"patient_id": patient.external_id})]
-        measures = FullMeasures(measures=self.db.measures.find({"patient_id": patient.external_id}))
-        return PatientInfo(imaging=imaging, full_measures=measures, **patient.dict()) if res else None
+        measures = FullMeasures(
+            measures=[Measure(**d) for d in self.db.measures.find({"patient_id": patient.external_id})]
+        )
+        events = [Event(content='קבלה למחלקה', at=patient.arrival, key='arrival')]
+        return PatientInfo(
+            imaging=imaging,
+            full_measures=measures,
+            events=events,
+            **patient.dict()
+        ) if res else None
 
     def get_patient_by_bed(self, department: str, wing: str, bed: str) -> str:
         res = self.db.patients.find_one({"admission": {"department": department, "wing": wing, "bed": bed}})

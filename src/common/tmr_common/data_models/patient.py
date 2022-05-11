@@ -63,6 +63,12 @@ class Patient(ExternalPatient, InternalPatient):
         super(Patient, self).__init__(**kwargs)
 
 
+class Event(BaseModel):
+    key: str
+    content: str
+    at: str
+
+
 class ExtendedPatient(BaseModel):
     full_measures: FullMeasures
     imaging: List[Imaging] = []
@@ -70,7 +76,7 @@ class ExtendedPatient(BaseModel):
     referrals: List[Any] = []
     notifications: List[Any] = []
     visits: List[Any] = []
-    events: List[Any] = []
+    events: List[Event] = []
 
     class Config:
         orm_mode = True

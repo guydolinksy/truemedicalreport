@@ -15,10 +15,9 @@ patient_router = APIRouter()
 @patient_router.get("/{patient}")
 def get_patient_by_id(patient: str) -> dict:
     res = requests.get(f"http://medical-dal/medical-dal/patients/{patient}").json()
-    requested_patient = Patient(**res)
-    if requested_patient.measures.pulse is not None and int(requested_patient.measures.pulse.value) < 50:
-        severity = Severity(value=2, at=datetime.datetime.utcnow().isoformat())
-        requested_patient.warnings.append(Warning(content="דופק נמוך", severity=severity))
+    if not res:
+        raise NotFound()
+    return Patient(**res).dict()
 
     return requested_patient.dict() if res else None
 
