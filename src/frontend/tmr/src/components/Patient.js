@@ -99,7 +99,7 @@ export const PatientWarning = ({patient, warning, index, style}) => {
         style={{
             userSelect: "none",
             padding: 20,
-            backgroundColor: severityColor[warning.severity],
+            backgroundColor: severityColor[warning.severity.value],
             cursor: patient ? "pointer" : undefined,
             textAlign: "center",
             ...style

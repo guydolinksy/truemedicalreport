@@ -17,7 +17,8 @@ class Admission(BaseModel):
 
 
 class Warning(BaseModel):
-    pass
+    content: str
+    severity: Severity
 
 
 class ExternalPatient(BaseModel):
