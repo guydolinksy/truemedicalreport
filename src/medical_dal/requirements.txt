@@ -11,3 +11,4 @@ asyncio_redis
 logbook
 websockets
 fastapi-login
+werkzeug

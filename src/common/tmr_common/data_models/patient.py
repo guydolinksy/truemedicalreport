@@ -32,7 +32,6 @@ class ExternalPatient(BaseModel):
     birthdate: Optional[str]
     complaint: Optional[str]
     admission: Optional[Admission]
-    measures: Optional[Measures]
 
     def __init__(self, **kwargs):
         if 'gender' in kwargs and kwargs['gender'] in ['M', 'F']:
@@ -45,13 +44,20 @@ class InternalPatient(BaseModel):
     severity: Severity
     flagged: bool
     warnings: List[Warning]
+    measures: Measures
 
     class Config:
         orm_mode = True
 
     @classmethod
     def from_external_patient(cls, patient: ExternalPatient):
-        return cls(severity=Severity(**patient.esi.dict()), awaiting='מחכה לך', flagged=False, warnings=[])
+        return cls(
+            severity=Severity(**patient.esi.dict()),
+            awaiting='מחכה לך',
+            flagged=False,
+            warnings=[],
+            measures=Measures(),
+        )
 
 
 class Patient(ExternalPatient, InternalPatient):

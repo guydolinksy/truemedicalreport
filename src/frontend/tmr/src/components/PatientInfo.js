@@ -167,7 +167,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                             {lab}
                         </p>
                     }</HashMatch>
-                ) : <Empty/>}
+                ) : <Empty description={'לא הוזמנו בדיקות מעבדה'}/>}
             </Panel>
             <Panel key={'imaging'} header={'הדמיות'}>
                 {value.imaging.length ? value.imaging.map((image, i) =>
@@ -176,11 +176,11 @@ const InternalPatientCard = ({patient, setTitle}) => {
                             {image.description} - {image.status_text}
                         </p>
                     }</HashMatch>
-                ) : <Empty/>}
+                ) : <Empty description={'לא הוזמנו הדמיות'}/>}
             </Panel>
             <Panel key={'referrals'} header={'ייעוץ'}>
                 {value.referrals.length ? value.referrals.map((referral, i) => <p key={i}>{referral}</p>) :
-                    <Empty/>}
+                    <Empty description={'לא נרשמו הפניות'}/>}
             </Panel>
             <Panel key={'story'} header={'סיפור מטופל'}>
                 <Timeline reverse mode={"left"}>{value.events.map(event =>
