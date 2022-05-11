@@ -36,12 +36,16 @@ class LabTest(BaseModel):
     category_id: Optional[str]
     category_name: Optional[str]
     test_type_name: Optional[str]
+    test_tube_id: Optional[str]
     result: Optional[str]
     min_warn_bar: Optional[float]
     panic_min_warn_bar: Optional[float]
     max_warn_bar: Optional[float]
     panic_max_warn_bar: Optional[float]
     at: Optional[str]
+
+    class Config:
+        orm_mode = True
 
 
 class Labs(BaseModel):
