@@ -141,9 +141,6 @@ class FullMeasures(BaseModel):
     temperature: List[List[float]]
     saturation: List[List[float]]
 
-    class Config:
-        orm_mode = True
-
     def __init__(self, **kwargs):
         super(FullMeasures, self).__init__(
             blood_pressure=[],

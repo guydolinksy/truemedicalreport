@@ -15,13 +15,9 @@ class Admission(BaseModel):
     wing: Optional[str]
     bed: Optional[str]
 
-    class Config:
-        orm_mode = True
-
 
 class Warning(BaseModel):
-    class Config:
-        orm_mode = True
+    pass
 
 
 class ExternalPatient(BaseModel):
