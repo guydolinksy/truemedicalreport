@@ -15,7 +15,7 @@ from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleonimaging import ChameleonImaging
 from ..models.labs import ChameleonLabs
 from ..models.measurements import Measurements, MeasurementsIds
-from tmr_common.data_models.labs import SingleLabTest
+from tmr_common.data_models.labs import LabTest
 
 logger = logbook.Logger(__name__)
 
@@ -77,7 +77,6 @@ class SqlToDal(object):
         except HTTPError:
             logger.exception('Could not run measurements handler.')
 
-    #TODO: must be tested
     def update_labs(self, department: Departments):
         try:
             logger.debug('Getting labs for `{}`...', department.name)
@@ -86,7 +85,7 @@ class SqlToDal(object):
                 for lab_data in session.query(ChameleonLabs). \
                         join(ChameleonMain, ChameleonLabs.patient_id == ChameleonMain.chameleon_id). \
                         where(ChameleonMain.unit == int(department.value)).order_by(ChameleonLabs.patient_id):
-                    single_lab_test = SingleLabTest(
+                    single_lab_test = LabTest(
                         test_type_id=lab_data.test_type_id,
                         test_type_name=lab_data.test_type_name,
                         result=lab_data.result)

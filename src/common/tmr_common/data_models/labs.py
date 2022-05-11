@@ -32,28 +32,21 @@ LabTestType = {
 }
 
 
-class SingleLabTest(BaseModel):
-    test_type_id: Optional[str]
+class LabTest(BaseModel):
+    category_id: Optional[str]
+    category_name: Optional[str]
     test_type_name: Optional[str]
-    result: Optional[float]
-
-    class Config:
-        orm_mode = True
+    result: Optional[str]
+    min_warn_bar: Optional[float]
+    panic_min_warn_bar: Optional[float]
+    max_warn_bar: Optional[float]
+    panic_max_warn_bar: Optional[float]
+    at: Optional[str]
 
 
 class Labs(BaseModel):
     patient_id: Optional[str]
-    test_tube_id: Optional[str]
-    category_id: Optional[str]
-    category_name: Optional[str]
-    min_warn_bar: Optional[float]
-    panic_min_warn_bar: Optional[float]
-    max_warn_bar: Optional[float]
-    full_result : Optional[list[SingleLabTest]]
-    at: Optional[datetime]
-
-    class Config:
-        orm_mode = True
+    results: list[LabTest]
 
     # def __init__(self, **kwargs):
 

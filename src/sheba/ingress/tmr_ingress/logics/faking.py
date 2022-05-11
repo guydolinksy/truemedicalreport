@@ -245,32 +245,31 @@ class FakeMain(object):
         else:
             raise ValueError()
         for patient in patients:
-            labs = ChameleonLabs()
-            labs.patient_id = patient
+            lab_result = ChameleonLabs()
+            lab_result.patient_id = patient
             category = random.choice(list(LabsCategories))
-            labs.category_id = category.value
-            labs.category_name = CategoriesInHebrew[category]
+            lab_result.category_id = category.value
+            lab_result.category_name = CategoriesInHebrew[category]
             test_types = LabTestType[category]
+            lab_result.test_tube_id = random.randint(1, 3)
             for test_type_id, test_type_name in enumerate(test_types):
-                labs.test_type_id = test_type_id
-
-                labs.test_type_name = test_type_name
-
-                labs.result = random.choice([self.faker.pyfloat(min_value=0.1, max_value=100.0), None])
-                labs.min_warn_bar = self.faker.pyfloat(min_value=20.0,
-                                                       max_value=40.0)
-                labs.panic_min_warn_bar = self.faker.pyfloat(min_value=0.0,
-                                                             max_value=39.9)
-                labs.max_warn_bar = self.faker.pyfloat(min_value=80.0,
-                                                       max_value=100.0)
-                labs.at = datetime.datetime.utcnow()
-                labs.row_id = f"{labs.patient_id}-{labs.category_id}-{labs.test_type_id}"
-                with self.session() as session:
-                    session.add(labs)
-                    #session.commit()
+                lab_result.test_type_id = test_type_id
+                lab_result.test_type_name = test_type_name
+                lab_result.result = random.choice(
+                    [self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2), None])
+                lab_result.min_warn_bar = self.faker.pyfloat(min_value=20.0,
+                                                             max_value=40.0, right_digits=2)
+                lab_result.panic_min_warn_bar = self.faker.pyfloat(min_value=0.0,
+                                                                   max_value=39.9, right_digits=2)
+                lab_result.max_warn_bar = self.faker.pyfloat(min_value=80.0,
+                                                             max_value=100.0, right_digits=2)
+                lab_result.panic_max_warn_bar = self.faker.pyfloat(min_value=100.0,
+                                                                   max_value=130.0, right_digits=2)
+                lab_result.at = datetime.datetime.utcnow()
+                lab_result.row_id = f"{lab_result.patient_id}-{lab_result.category_id}-{lab_result.test_type_id}"
             with self.session() as session:
+                session.add(lab_result)
                 session.commit()
-
 
     async def admit_patients(self, department):
         for wing in self.wings:

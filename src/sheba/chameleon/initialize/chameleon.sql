@@ -136,17 +136,19 @@ create TABLE [dbo].[imaging] (
 	[result_date] [datetime] NOT NULL
 )
 GO
-CREATE TABLE [dbo].[labs] (
+create TABLE [dbo].[labs] (
 	[row_id] [varchar](250) NULL,
 	[patient_id] [varchar](250) NULL,
     [category_id] [varchar](60) NULL,
 	[category_name] [varchar](60) NULL,
 	[test_type_id] [int] NOT NULL,
 	[test_type_name] [varchar](60) NULL,
+	[test_tube_id] [varchar](60) NULL,
 	[result] [varchar](60) NULL,
-	[min_warn_bar] [int] NULL,
-	[panic_min_warn_bar] [int] NULL,
-	[max_warn_bar] [int] NULL,
+	[min_warn_bar] [float] NULL,
+	[panic_min_warn_bar] [float] NULL,
+	[max_warn_bar] [float] NULL,
+	[panic_max_warn_bar] [float] NULL,
 	[result_date] [datetime] NOT NULL
 )
 GO
