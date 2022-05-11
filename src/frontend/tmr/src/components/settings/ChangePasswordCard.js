@@ -6,6 +6,7 @@ import {EyeInvisibleOutlined, UserOutlined} from "@ant-design/icons";
 export const ChangePasswordCard = () => {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
+    const [canSubmit, setCanSubmit] = useState(false);
 
     const onFinish = useCallback((values) => {
         Axios.post('/api/auth/change-password', values).then(() => setSuccess(true)).catch(error => {
@@ -16,10 +17,16 @@ export const ChangePasswordCard = () => {
 
     }, []);
 
+    const onChange = useCallback((changedValues, allValues) => {
+        setError(false);
+        setCanSubmit(allValues.previous && allValues.password && allValues.confirm);
+    }, [setError, setCanSubmit]);
+
     return <Card title={'הגדרות משתמש'}>
-        {success ? <Alert message={'הסיסמה הוחלפה בהצלחה'} type={"success"}/> :
+        {success ? <Alert message={'הסיסמה הוחלפה בהצלחה'} type={"success"} closable
+                         afterClose={() => setSuccess(false)}/> :
             <Form name={"change-password"} title={'החלפת סיסמה'} onFinish={onFinish}
-                  onValuesChange={() => setError(false)}>
+                  onValuesChange={onChange}>
                 <Form.Item name={"username"} hidden>
                     <Input prefix={<UserOutlined/>} autoComplete={"username"}
                            placeholder={"שם משתמש"}/>
@@ -37,7 +44,17 @@ export const ChangePasswordCard = () => {
                     <Input prefix={<EyeInvisibleOutlined/>} type={"password"} autoComplete={"current-password"}
                            placeholder={"סיסמה נוכחית"}/>
                 </Form.Item>
-                <Form.Item name={"password"} label={"סיסמה חדשה"} rules={[{required: true, message: 'נדרשת סיסמה חדשה'}]}>
+                <Form.Item name={"password"} label={"סיסמה חדשה"} rules={[
+                    {required: true, message: 'נדרשת סיסמה חדשה'},
+                    ({getFieldValue}) => ({
+                        validator(_, value) {
+                            if (!value || getFieldValue('previous') !== value) {
+                                return Promise.resolve();
+                            }
+                            return Promise.reject(new Error('הסיסמה החדשה לא יכולה להיות זהה לסיסמה הישנה!'));
+                        },
+                    }),
+                ]}>
                     <Input prefix={<EyeInvisibleOutlined/>} type={"password"} autoComplete={"new-password"}
                            placeholder={"סיסמה חדשה"}/>
                 </Form.Item>
@@ -56,7 +73,7 @@ export const ChangePasswordCard = () => {
                            placeholder={"וידוא סיסמה"}/>
                 </Form.Item>
                 <Form.Item>
-                    <Button type={"primary"} htmlType={"submit"}>שלח</Button>
+                    <Button disabled={!canSubmit} type={"primary"} htmlType={"submit"}>שלח</Button>
                 </Form.Item>
             </Form>}
     </Card>

@@ -2,22 +2,21 @@ import datetime
 import json
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Dict
+from typing import List
 
 import logbook
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from pymongo.database import Database
 
-from tmr_common.data_models.measures import Measures, Measure, MeasureTypes, Pulse, Temperature, Saturation, Systolic, \
-    Diastolic
+from tmr_common.data_models.imaging import Imaging
+from tmr_common.data_models.measures import Measure, MeasureTypes, Pulse, Temperature, Saturation, Systolic, \
+    Diastolic, FullMeasures, Latest
+from tmr_common.data_models.measures import Measures
+from tmr_common.data_models.notification import Notification
 from tmr_common.data_models.patient import Patient, Admission, PatientNotifications, ExternalPatient, InternalPatient, \
     PatientInfo
-from tmr_common.data_models.imaging import Imaging
-from tmr_common.data_models.notification import Notification
-from tmr_common.data_models.severity import Severity
 from ..routes.websocket import notify
-from tmr_common.data_models.measures import Measures
 
 logger = logbook.Logger(__name__)
 
@@ -81,7 +80,7 @@ class MedicalDal:
             raise ValueError('Patient not found.')
         patient = Patient(**res)
         imaging = [Imaging(**res) for res in self.db.imaging.find({"patient_id": patient.external_id})]
-        measures = [Measure(**res) for res in self.db.measures.find({"patient_id": patient.external_id})]
+        measures = FullMeasures(measures=self.db.measures.find({"patient_id": patient.external_id}))
         return PatientInfo(imaging=imaging, full_measures=measures, **patient.dict()) if res else None
 
     def get_patient_by_bed(self, department: str, wing: str, bed: str) -> str:
@@ -138,29 +137,24 @@ class MedicalDal:
         for measure in measures:
             match measure.type:
                 case MeasureTypes.pulse.value:
-                    pulse = Pulse(**measure.dict())
-                    if not current.pulse or pulse.at_ > current.pulse.at_:
-                        current.pulse = pulse
+                    if not current.pulse or measure.at_ > current.pulse.at_:
+                        current.pulse = Latest(value=int(measure.value), at=measure.at, is_valid=measure.is_valid)
                 case MeasureTypes.temperature.value:
-                    temperature = Temperature(**measure.dict())
-                    if not current.temperature or temperature.at_ > current.temperature.at_:
-                        current.temperature = temperature
+                    if not current.temperature or measure.at_ > current.temperature.at_:
+                        current.temperature = Latest(value=measure.value, at=measure.at, is_valid=measure.is_valid)
                 case MeasureTypes.saturation.value:
-                    saturation = Saturation(**measure.dict())
-                    if not current.saturation or saturation.at_ > current.saturation.at_:
-                        current.saturation = saturation
+                    if not current.saturation or measure.at_ > current.saturation.at_:
+                        current.saturation = Latest(value=int(measure.value), at=measure.at, is_valid=measure.is_valid)
                 case MeasureTypes.systolic.value:
-                    systolic = Systolic(**measure.dict())
-                    if not current.systolic or systolic.at_ > current.systolic.at_:
-                        current.systolic = systolic
+                    if not current.systolic or measure.at_ > current.systolic.at_:
+                        current.systolic = Latest(value=int(measure.value), at=measure.at, is_valid=measure.is_valid)
                 case MeasureTypes.diastolic.value:
-                    diastolic = Diastolic(**measure.dict())
-                    if not current.diastolic or diastolic.at_ > current.diastolic.at_:
-                        current.diastolic = diastolic
+                    if not current.diastolic or measure.at_ > current.diastolic.at_:
+                        current.diastolic = Latest(value=int(measure.value), at=measure.at, is_valid=measure.is_valid)
             self.db.measures.update_one({"external_id": measure.external_id},
                                         {'$set': dict(patient_id=patient_id, **measure.dict())}, upsert=True)
         self.db.patients.update_one({"external_id": patient_id},
-                                    {'$set': {"measures": current.dict()}}, upsert=True)
+                                    {'$set': {"measures": Measures(**current.dict()).dict()}}, upsert=True)
         if previous.measures != current:
             await self.notify_patient(patient=previous.oid)
 
