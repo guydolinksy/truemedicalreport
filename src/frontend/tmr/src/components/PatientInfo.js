@@ -86,7 +86,7 @@ const FullMeasure = ({patient, measure, icon, latest, data, title, graphProps}) 
                 fontSize: 14,
                 color: latest && !latest.is_valid ? 'red' : undefined
             }}>
-                {latest && latest.value || '-'}
+                {(latest && latest.value) || '-'}
             </div>
         </div>
         <MeasureGraph data={data} title={title} graphProps={graphProps}/>
