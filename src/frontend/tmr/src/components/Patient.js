@@ -166,9 +166,9 @@ const PatientAwaiting = () => {
 const PatientHeader = ({patient, avatar}) => {
     const {value} = useContext(patientDataContext.context);
     if (!patient)
-        return <Button shape={"circle"} type={"text"}>{avatar}</Button>
+        return <Button shape={"circle"} type={"text"}>{avatar || <UserOutlined/>}</Button>
     return <span>
-        {avatar}&nbsp;<Tooltip overlay={`ת.ז. ${value.id_ || 'לא ידוע'}`}>
+        {avatar || value.admission.bed || <UserOutlined/>}&nbsp;<Tooltip overlay={`ת.ז. ${value.id_ || 'לא ידוע'}`}>
             {value.name}
         </Tooltip><PatientAge patient={patient}/>
     </span>
@@ -190,7 +190,7 @@ const PatientInner = ({patient, avatar, style}) => {
     return loading ? <Spin/> : <HashMatch match={['highlight', patient]}>{({matched, match}) =>
         <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
             paddingRight: -4, paddingLeft: -4, animation: matched ? `highlight-${match[0]} 1s ease-out` : undefined
-        }} title={<PatientHeader patient={patient} avatar={avatar || <UserOutlined/>}/>} style={{
+        }} title={<PatientHeader patient={patient} avatar={avatar}/>} style={{
             margin: 0, maxWidth: 400, minWidth: 300, borderStyle: patient ? "solid" : "dotted",
             borderColor: severityBorderColor[value.severity.value], ...style
         }} hoverable onClick={() => navigate(`#info#${patient}#basic`)}
@@ -209,34 +209,33 @@ const PatientInner = ({patient, avatar, style}) => {
         </Card>
     }</HashMatch>
 }
-export const Patient = ({patient, avatar, style, onError}) => {
-    if (!patient)
-        return <Card type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
-            paddingRight: -4, paddingLeft: -4
-        }} title={<PatientHeader avatar={avatar || <UserOutlined/>}/>} style={{
-            margin: 0,
-            maxWidth: 400,
-            minWidth: 300,
-            borderStyle: patient ? "solid" : "dotted",
-            borderColor: "#d9d9d9", ...style
-        }} actions={patientMeasures()}>
-            <div style={style}>
-                <div style={{
-                    userSelect: "none",
-                    padding: 20,
-                    backgroundColor: '#1a1a1a',
-                    textAlign: "center", ...style
-                }}>
-                    מיטה ריקה
-                </div>
+export const Patient = ({patient, loading, avatar, style, onError}) => {
+    const placeholder = (content) => <Card type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
+        paddingRight: -4, paddingLeft: -4
+    }} title={<PatientHeader avatar={avatar || <UserOutlined/>}/>} style={{
+        margin: 0,
+        maxWidth: 400,
+        minWidth: 300,
+        borderStyle: patient ? "solid" : "dotted",
+        borderColor: "#d9d9d9", ...style
+    }} actions={patientMeasures()}>
+        <div style={style}>
+            <div style={{
+                userSelect: "none",
+                padding: 20,
+                backgroundColor: '#1a1a1a',
+                textAlign: "center", ...style
+            }}>
+                {content}
             </div>
-        </Card>
-    return <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={
-        {
-            warnings: [], awaiting: null, severity: {value: 0, at: null}, flagged: null,
-            id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
-            complaint: null, admission: {}, measures: {}
-        }} onError={onError}>
-        {({loading}) => loading ? <Spin/> : <PatientInner patient={patient} avatar={avatar} style={style}/>}
-    </patientDataContext.Provider>
+        </div>
+    </Card>
+    return patient ? <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={{
+        warnings: [], awaiting: null, severity: {value: 0, at: null}, flagged: null,
+        id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
+        complaint: null, admission: {bed: null}, measures: {}
+    }} onError={onError}>
+        {data => data.loading || loading ? placeholder(<Spin size={"small"}/>) :
+            <PatientInner patient={patient} avatar={avatar} style={style}/>}
+    </patientDataContext.Provider> : placeholder('מיטה ריקה')
 };

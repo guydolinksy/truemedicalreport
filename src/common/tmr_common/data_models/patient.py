@@ -4,7 +4,7 @@ from typing import Optional, List, Any
 from pydantic import BaseModel
 
 from .imaging import Imaging
-from .measures import Measures, Pressure, Systolic
+from .measures import Measures, Pressure, Systolic, FullMeasures
 from .notification import Notification, NotificationLevel
 from .severity import Severity
 from .esi_score import ESIScore
@@ -59,22 +59,16 @@ class InternalPatient(BaseModel):
 
 class Patient(ExternalPatient, InternalPatient):
     oid: str
-    pressure: Optional[Pressure]
 
     def __init__(self, **kwargs):
         if '_id' in kwargs:
             kwargs['oid'] = str(kwargs.pop('_id'))
-        if 'pressure' not in kwargs and 'measures' in kwargs:
-            systolic = Systolic(**kwargs['measures'].get('systolic')) if kwargs['measures'].get('systolic') else None
-            diastolic = Systolic(**kwargs['measures'].get('diastolic')) if kwargs['measures'].get('diastolic') else None
-            if systolic or diastolic:
-                kwargs['pressure'] = Pressure(systolic=systolic, diastolic=diastolic)
         super(Patient, self).__init__(**kwargs)
 
 
 class ExtendedPatient(BaseModel):
+    full_measures: FullMeasures
     imaging: List[Imaging] = []
-    full_measures: List[Any] = []
     labs: List[Any] = []
     referrals: List[Any] = []
     notifications: List[Any] = []
@@ -86,9 +80,7 @@ class ExtendedPatient(BaseModel):
 
 
 class PatientInfo(Patient, ExtendedPatient):
-
-    def __init__(self, **kwargs):
-        super(PatientInfo, self).__init__(**kwargs)
+    pass
 
 
 class PatientNotifications(BaseModel):

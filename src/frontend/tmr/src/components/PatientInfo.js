@@ -17,7 +17,7 @@ highchartsMore(Highcharts);
 
 const {Panel} = Collapse;
 const fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;";
-const MeasureGraph = ({measure}) => {
+const MeasureGraph = ({data, title, graphProps}) => {
     return <HighchartsReact highcharts={Highcharts} options={{
         title: null,
         xAxis: {type: "datetime", reversed: true, useHTML: true},
@@ -27,7 +27,7 @@ const MeasureGraph = ({measure}) => {
         credits: {enabled: false},
         tooltip: {outside: false},
         plotOptions: {series: {marker: {radius: 3}, lineWidth: 1}},
-        series: [measure]
+        series: [{data: data, name: title, ...graphProps}]
     }}/>
 }
 const PatientSeverity = () => {
@@ -50,11 +50,47 @@ export const PatientInfo = ({onError}) => {
         {({matched, match}) => <Drawer title={title} placement={"left"} visible={matched}
                                        onClose={() => navigate('#')}>
             {matched &&
-                <patientDataContext.Provider url={`/api/patients/${match[0]}/info`} defaultValue={{}} onError={onError}>
+                <patientDataContext.Provider url={`/api/patients/${match[0]}/info`} defaultValue={{
+                    warnings: [], awaiting: null, severity: {value: 0, at: null}, flagged: null,
+                    id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
+                    complaint: null, admission: {}, measures: {
+                        temperature: null,
+                        blood_pressure: null,
+                        saturation: null,
+                        pulse: null
+                    }, secondary_complaint: null, nurse_summary: null,
+                    full_measures: {
+                        temperature: [],
+                        blood_pressure: [],
+                        saturation: [],
+                        pulse: []
+                    }, visits: [],
+                    notifications: [], labs: [], imaging: [], referrals: []
+                }} onError={onError}>
                     {() => <InternalPatientCard patient={match[0]} setTitle={setTitle}/>}
                 </patientDataContext.Provider>}
         </Drawer>}
     </HashMatch>
+}
+
+const FullMeasure = ({patient, measure, icon, latest, data, title, graphProps}) => {
+    return <HashMatch match={['info', patient, 'measures', measure]}>{({matched}) => <List.Item style={{
+        padding: 5,
+        display: "flex",
+        animation: matched ? 'highlight 2s ease-out' : undefined
+    }}>
+        <div style={{textAlign: "center", flex: 1}}>
+            <div style={{fontSize: 12}}>{title}&nbsp;<FontAwesomeIcon icon={icon}/></div>
+            <div style={{
+                userSelect: "none",
+                fontSize: 14,
+                color: latest && !latest.is_valid ? 'red' : undefined
+            }}>
+                {latest && latest.value || '-'}
+            </div>
+        </div>
+        <MeasureGraph data={data} title={title} graphProps={graphProps}/>
+    </List.Item>}</HashMatch>
 }
 const InternalPatientCard = ({patient, setTitle}) => {
     const {value, loading} = useContext(patientDataContext.context);
@@ -99,28 +135,22 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 </HashMatch>
             </Panel>
             <Panel key={'measures'} header={'מדדים'}>
-                <List dataSource={value.full_measures || dummyMeasures}
-                      renderItem={(measure, i) => <HashMatch match={['info', patient, 'measures', measure.id]}>
-                          {({matched}) => <List.Item style={{
-                              padding: 5,
-                              display: "flex",
-                              animation: matched ? 'highlight 2s ease-out' : undefined
-                          }}>
-                              <div style={{textAlign: "center", flex: 1}}>
-                                  <div style={{fontSize: 12}}>{measure.data.name}&nbsp;<FontAwesomeIcon
-                                      icon={measure.icon}/>
-                                  </div>
-                                  <div style={{
-                                      userSelect: "none",
-                                      fontSize: 14,
-                                      color: !measure.isLatestValid ? 'red' : undefined
-                                  }}>
-                                      {measure.latest}
-                                  </div>
-                              </div>
-                              <MeasureGraph key={i} measure={measure.data}/>
-                          </List.Item>}
-                      </HashMatch>}/>
+                <FullMeasure key={'temperature'} patient={patient} measure={'temperature'} icon={faTemperatureHalf}
+                             latest={value.measures.temperature} title={'חום'} graphProps={{type: 'line'}}
+                             data={value.full_measures.temperature.data}/>
+                <FullMeasure key={'blood_pressure'} patient={patient} measure={'blood_pressure'} icon={faHeart}
+                             latest={value.measures.blood_pressure} title={'לחץ דם'} graphProps={{
+                    type: 'arearange', tooltip: {
+                        pointFormat: '<span style="color:{series.color}">●' +
+                            '</span> {series.name}: <b>{point.low}/{point.high}</b><br/>'
+                    }
+                }} data={value.full_measures.blood_pressure.data}/>
+                <FullMeasure key={'pulse'} patient={patient} measure={'pulse'} icon={faHeartPulse}
+                             latest={value.measures.pulse} title={'דופק'} graphProps={{type: 'line'}}
+                             data={value.full_measures.pulse.data}/>
+                <FullMeasure key={'saturation'} patient={patient} measure={'saturation'} icon={faPercent}
+                             latest={value.measures.saturation} title={'סטורציה'}
+                             graphProps={{type: 'line'}} data={value.full_measures.saturation.data}/>
             </Panel>
             <Panel key={'visit'} header={'ביקורים קודמים'}>
                 {value.visits.map((visit, i) => <p key={i}>{visit.title} ב<a href={'/'}><Moment

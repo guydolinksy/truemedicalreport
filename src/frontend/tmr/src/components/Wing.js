@@ -13,6 +13,7 @@ import {Bed} from "./Bed";
 import {PatientNotification} from "./PatientNotification";
 import {SettingOutlined} from "@ant-design/icons";
 import {useViewport} from "./UseViewPort";
+import moment from 'moment';
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -140,7 +141,8 @@ const WingInner = ({department, wing, onError}) => {
         setTabletMode(({value}) => ({forced: forceTabletMode(), value: value}))
     }, [forceTabletMode, totalWidth, value, siderWidth]);
 
-    const unassignedPatients = value.patients.filter(({oid, admission}) => !admission.bed);
+    const allPatients = value.patients.sort((i, j) => moment(i.arrival).isAfter(j.arrival) ? 1 : -1);
+    const unassignedPatients = allPatients.filter(({oid, admission}) => !admission.bed);
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
             <WingNotifications department={department} wing={wing} wingName={value.details.name} onError={onError}/>
@@ -148,7 +150,7 @@ const WingInner = ({department, wing, onError}) => {
         <Content style={{backgroundColor: "#000d17", overflowY: "auto"}}>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                 {tabletMode.forced || tabletMode.value ?
-                    <Patients key={'patients'} patients={value.patients} onError={flush}/> : [
+                    <Patients key={'patients'} patients={allPatients} onError={flush}/> : [
                         <WingLayout key={'wing'} department={department} wing={wing} details={value.details}
                                     onError={flush}/>,
                         <Patients key={'patients'} patients={unassignedPatients} onError={flush}/>
