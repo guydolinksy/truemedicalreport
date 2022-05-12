@@ -35,6 +35,6 @@ class ChameleonLabs(Base):
             min_warn_bar=self.min_warn_bar,
             panic_min_warn_bar=self.panic_min_warn_bar,
             max_warn_bar=self.max_warn_bar,
-            at=self.at,
+            at=str(self.at),
         )
 

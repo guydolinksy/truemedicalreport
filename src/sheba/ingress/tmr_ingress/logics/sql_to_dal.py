@@ -15,7 +15,7 @@ from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleonimaging import ChameleonImaging
 from ..models.labs import ChameleonLabs
 from ..models.measurements import Measurements, MeasurementsIds
-from tmr_common.data_models.labs import LabTest, LabsResultsInCategory,LabsResultsOfPatient
+from tmr_common.data_models.labs import LabTest, LabsResultsInCategory, LabsResultsOfPatient
 
 logger = logbook.Logger(__name__)
 
@@ -77,6 +77,7 @@ class SqlToDal(object):
         except HTTPError:
             logger.exception('Could not run measurements handler.')
 
+    # TODO: request fails on 422, needs a fix
     def update_labs(self, department: Departments):
         try:
             logger.debug('Getting labs for `{}`...', department.name)
@@ -99,12 +100,11 @@ class SqlToDal(object):
                 for category_id in labs[patient_id].keys():
                     labs_results_in_cat = LabsResultsInCategory(category_id=category_id, category_results=[])
                     for lab_result in labs[patient_id][category_id]:
-                        labs_results_in_cat.category_results.append(lab_result)
-                    labs_results_of_patient.lab_results.append(labs_results_in_cat)
-                    final_result[patient_id].append(labs_results_of_patient)
-            print(final_result[patient_id])
+                        labs_results_in_cat.category_results.append(lab_result.dict())
+                    labs_results_of_patient.lab_results.append(labs_results_in_cat.dict())
+                    final_result[patient_id].append(labs_results_of_patient.dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/labs',
-                                json={'labs': labs})
+                                json={"labs": final_result})
             print(res.content)
             res.raise_for_status()
         except HTTPError as e:

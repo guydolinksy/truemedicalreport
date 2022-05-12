@@ -45,10 +45,11 @@ class LabTest(BaseModel):
     panic_min_warn_bar: Optional[float]
     max_warn_bar: Optional[float]
     panic_max_warn_bar: Optional[float]
-    at: Optional[datetime]
+    at: Optional[str]
 
     class Config:
         orm_mode = True
+        use_enum_values = True
 
 
 class LabsResultsInCategory(BaseModel):
@@ -57,6 +58,7 @@ class LabsResultsInCategory(BaseModel):
 
     class Config:
         orm_mode = True
+        use_enum_values = True
 
 
 class LabsResultsOfPatient(BaseModel):
@@ -66,6 +68,7 @@ class LabsResultsOfPatient(BaseModel):
 
     class Config:
         orm_mode = True
+        use_enum_values = True
 
     # TODO: Plan wanted notification
     def to_notification(self):
