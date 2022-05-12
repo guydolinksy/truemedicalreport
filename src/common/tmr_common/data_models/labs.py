@@ -45,7 +45,7 @@ class LabTest(BaseModel):
     panic_min_warn_bar: Optional[float]
     max_warn_bar: Optional[float]
     panic_max_warn_bar: Optional[float]
-    at: Optional[str]
+    at: Optional[datetime]
 
     class Config:
         orm_mode = True

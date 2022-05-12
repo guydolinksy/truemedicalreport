@@ -82,9 +82,10 @@ class SqlToDal(object):
             logger.debug('Getting labs for `{}`...', department.name)
             labs = {}
             with self.session() as session:
-                for lab_data in session.query(ChameleonLabs). \
-                        join(ChameleonMain, ChameleonLabs.patient_id == ChameleonMain.chameleon_id). \
-                        where(ChameleonMain.unit == int(department.value)).order_by(ChameleonLabs.patient_id):
+                labs_table_data = session.query(ChameleonLabs). \
+                    join(ChameleonMain, ChameleonLabs.patient_id == ChameleonMain.chameleon_id). \
+                    where(ChameleonMain.unit == int(department.value)).order_by(ChameleonLabs.patient_id)
+                for lab_data in labs_table_data:
                     single_lab_test = lab_data.to_initial_dal()
                     labs.setdefault(lab_data.patient_id, {})
                     if lab_data.category_id not in labs[lab_data.patient_id].keys():
@@ -104,6 +105,7 @@ class SqlToDal(object):
             print(final_result[patient_id])
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/labs',
                                 json={'labs': labs})
+            print(res.content)
             res.raise_for_status()
-        except Exception:
-            pass
+        except HTTPError as e:
+            logger.exception(f'Could not run labs handler. {e}')
