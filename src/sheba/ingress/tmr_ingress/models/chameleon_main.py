@@ -15,39 +15,22 @@ class Departments(Enum):
 
 
 class ChameleonMain(Base):
-    __tablename__ = "chameleon_main"
+    __tablename__ = "Emergency_visits"
 
-    chameleon_id = Column("id_num", Integer(), primary_key=True)
-
+    chameleon_id = Column("id", Integer(), primary_key=True)
     patient_id = Column("patient_id", VARCHAR(200))
-    patient_name = Column("patient_name", String(30))
-    gender = Column("gender", VARCHAR(100))
-    age = Column("age", VARCHAR)
-    birthdate = Column("birthdate", DateTime())
-
-    unit = Column("unit", Integer())
-    unit_wing = Column("unit_wing", String())
-    bed_num = Column("bed_num", Integer())
-    arrival = Column("arrival", DateTime())
-
-    main_cause = Column("main_cause", String())
+    unit = Column("DepartmentName", Integer())
+    unit_wing = Column("DepartmentWing", String())
+    arrival = Column("DepartmentAdmission", DateTime())
+    main_cause = Column("MainCause", String())
     esi = Column("esi", Integer())
 
-    stage = Column("stage", VARCHAR(150))
-    warnings = Column("warnings", String())
-
-    def to_dal(self) -> ExternalPatient:
-        return ExternalPatient(
-            external_id=self.chameleon_id,
-            id_=self.patient_id,
-            name=self.patient_name,
-            arrival=self.arrival.isoformat() if self.arrival else None,
-            complaint=self.main_cause,
-            admission=Admission(department=Departments(str(self.unit)).name, wing=self.unit_wing, bed=self.bed_num),
-            warnings=[],
-            esi=ESIScore(value=self.esi, at=datetime.datetime.utcnow().isoformat()),
-            gender=self.gender,
-            age=self.age,
-            birthdate=self.birthdate.isoformat() if self.birthdate else None,
-            measures=Measures(),
-        )
+    def to_dal(self, patient=ExternalPatient(external_id=self.chameleon_id,
+                                             id_=self.patient_id,
+                                             arrival=self.arrival.isoformat() if self.arrival else None,
+                                             complaint=self.main_cause,
+                                             admission=Admission(department=Departments(str(self.unit)).name,
+                                                                 wing=self.unit_wing),
+                                             esi=ESIScore(value=self.esi, at=datetime.datetime.utcnow().isoformat()),
+                                             measures=Measures())) -> ExternalPatient:
+        return patient

@@ -9,31 +9,31 @@ Base = declarative_base()
 
 
 class ChameleonLabs(Base):
-    __tablename__ = "labs"
+    __tablename__ = "lab_results"
 
-    row_id = Column("row_id", VARCHAR(200),primary_key=True)
-    patient_id = Column("patient_id", VARCHAR(100))
-    category_id = Column("category_id",  VARCHAR(100))
-    category_name = Column("category_name", VARCHAR(100))
-    test_type_id = Column("test_type_id", Integer())
-    test_type_name = Column("test_type_name", VARCHAR(100))
+    patient_id = Column("id", int(), primary_key=True)
+    category_id = Column("TestCode", Integer(), primary_key=True)
+    test_type_name = Column("TestName", VARCHAR(100))
     result = Column("result", VARCHAR(100))
-    min_warn_bar = Column("min_warn_bar", Integer())
-    panic_min_warn_bar = Column("panic_min_warn_bar", Integer())
-    max_warn_bar = Column("max_warn_bar", Integer())
-    at = Column("result_date", DateTime())
+    min_warn_bar = Column("NormMinimum", float())
+    max_warn_bar = Column("NormMaximum", float())
+    at = Column("OrderDate", DateTime(), primary_key=True)
+    collection_date = Column("ResultTime", DateTime())
+    result_time = Column("ResultTime", DateTime())
 
     def to_initial_dal(self):
         return Labs(
             patient_id=self.patient_id,
             test_tube_id=self.test_tube_id,
-            category_id=self.category_id,
-            category_name=self.category_name,
-            test_type_id=self.test_type_id,
+            category_id=str(self.category_id)[0:4],
+            category_name=None,
             test_type_name=self.test_type_name,
-            full_result=[],
+            full_result=self.result,
             min_warn_bar=self.min_warn_bar,
-            panic_min_warn_bar=self.panic_min_warn_bar,
+            panic_min_warn_bar=None,
             max_warn_bar=self.max_warn_bar,
             at=self.at,
+            status="הוזמן" if self.collection_date is None else
+            "בעבודה" if self.result_time is None else
+            "תוצאות"
         )

@@ -5,26 +5,23 @@ from .base import Base
 
 
 class ChameleonImaging(Base):
-    __tablename__ = "imaging"
+    __tablename__ = "Imaging"
 
-    imaging_id = Column("imaging_id", Integer(), primary_key=True)
-    patient_id = Column("patient_id", VARCHAR(250))
-    type_ = Column("type", VARCHAR(60))
-    description = Column("description", VARCHAR(100))
-    status = Column("status", VARCHAR(100))
-    level = Column("level", Integer())
-    link = Column("link", VARCHAR(100))
-    at = Column("result_date", DateTime())
+    imaging_id = Column("sps_key", Integer(), primary_key=True)
+    patient_id = Column("ID", int())
+    description = Column("OrderedProcedureType", VARCHAR(100))
+    status = Column("ProcedureStatus", VARCHAR(100))
+    Interpretation = Column("Interpretation", VARCHAR(400))
+    order_date = Column("OrderDate", DateTime())
+
 
     def to_dal(self):
 
         return Imaging(
             patient_id=self.patient_id,
             external_id=self.imaging_id,
-            at=self.at.isoformat(),
-            type_=ImagingTypes(self.type_),
+            at=self.order_date.isoformat(),
             description=self.description,
             status=ImagingStatus(self.status),
-            link=self.link,
-            level=NotificationLevel(self.level),
+            link='https://localhost/'
         )

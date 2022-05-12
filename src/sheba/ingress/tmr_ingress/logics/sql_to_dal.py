@@ -37,7 +37,7 @@ class SqlToDal(object):
             imaging = {}
             with self.session() as session:
                 for image in session.query(ChameleonImaging). \
-                        join(ChameleonMain, ChameleonImaging.patient_id == ChameleonMain.chameleon_id). \
+                        join(ChameleonMain, ChameleonImaging.patient_id == ChameleonMain.patient_id). \
                         where(ChameleonMain.unit == int(department.value)).order_by(ChameleonImaging.at.desc()):
                     imaging.setdefault(image.patient_id, []).append(image.to_dal().dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/imaging',
@@ -67,7 +67,7 @@ class SqlToDal(object):
             patients = {}
             with self.session() as session:
                 for measurement in session.query(Measurements). \
-                        join(ChameleonMain, Measurements.chameleon_id == ChameleonMain.chameleon_id). \
+                        join(ChameleonMain, Measurements.chameleon_id == ChameleonMain.patient_id). \
                         where(ChameleonMain.unit == int(department.value)).order_by(Measurements.at.asc()):
                     match measurement.code:
                         case MeasurementsIds.systolic.value:
@@ -103,7 +103,7 @@ class SqlToDal(object):
             labs = {}
             with self.session() as session:
                 for lab_data in session.query(ChameleonLabs). \
-                        join(ChameleonMain, ChameleonLabs.patient_id == ChameleonMain.chameleon_id). \
+                        join(ChameleonMain, ChameleonLabs.patient_id == ChameleonMain.patient_id). \
                         where(ChameleonMain.unit == int(department.value)).order_by(ChameleonLabs.patient_id):
                     single_lab_test = SingleLabTest(
                         test_type_id=lab_data.test_type_id,

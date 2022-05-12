@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from tmr_common.data_models.labs import LabsCategories, LabTestType, CategoriesInHebrew
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
+from tmr_ingress.models.chameleon_main import ArcPatient
 from tmr_ingress.models.chameleonimaging import ChameleonImaging
 from tmr_common.data_models.imaging import ImagingTypes, ImagingStatus
 from tmr_ingress.models.labs import ChameleonLabs
@@ -44,7 +45,7 @@ class FakeMain(object):
                 (ChameleonMain.unit_wing == wing) & (ChameleonMain.bed_num != None)))}
 
     def _admit_patient(self, department: Departments, wing):
-        o = ChameleonMain()
+        o = ArcPatient()
         o.patient_id = f'{self.faker.pyint(min_value=000000000, max_value=999999999):09}'
         o.gender = 'M' if random.randint(0, 1) else 'F'
         if o.gender == 'M':

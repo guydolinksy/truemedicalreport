@@ -125,29 +125,30 @@ create TABLE [dbo].[measurements](
 )with (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-create TABLE [dbo].[imaging] (
-    [imaging_id] [int] IDENTITY(1,1) NOT NULL,
-	[patient_id] [varchar](250) NOT NULL,
-	[type] [varchar](60) NOT NULL,
-	[description] [varchar](100) NOT NULL,
-	[status] [varchar](60) NOT NULL,
+create TABLE [dbo].[EMG_Images] (
+    [row_id] [int] IDENTITY(1,1) NOT NULL,
+	[id] [varchar](250) NOT NULL,
+	[MODALITY_CODE] [varchar](60) NOT NULL,
+	[OrderedProcedure] [varchar](100) NOT NULL,
+	[ProcedureStatus] [varchar](100) NOT NULL,
     [level] [int] NOT NULL,
 	[link] [varchar](200) NOT NULL,
-	[result_date] [datetime] NOT NULL
+	[Interpretation] [varchar](100) NOT NULL,
+	[InterpretationApprovedDate] [datetime] NOT NULL,
+	[OrderDate] [datetime] NOT NULL,
+	[ProcedureStartDate] [varchar](200) NOT NULL
 )
 GO
 CREATE TABLE [dbo].[labs] (
-	[row_id] [varchar](250) NULL,
-	[patient_id] [varchar](250) NULL,
-    [category_id] [varchar](60) NULL,
-	[category_name] [varchar](60) NULL,
-	[test_type_id] [int] NOT NULL,
-	[test_type_name] [varchar](60) NULL,
+	[id] int NULL,
+    [TestCode] [int] NULL,
+	[TestName] [varchar](150) NULL,
 	[result] [varchar](60) NULL,
-	[min_warn_bar] [int] NULL,
-	[panic_min_warn_bar] [int] NULL,
-	[max_warn_bar] [int] NULL,
-	[result_date] [datetime] NOT NULL
+	[NormMinimum] [float] NULL,
+	[NormMaximum] [float] NULL,
+	[result_date] [datetime] NOT NULL,
+	[ResultTime] [datetime] NOT NULL,
+	[ResultTime] [datetime] NOT NULL
 )
 GO
 alter database [chameleon_db] SET  READ_WRITE
