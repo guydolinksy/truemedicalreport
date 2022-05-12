@@ -36,27 +36,33 @@ class LabTest(BaseModel):
     category_id: Optional[str]
     category_name: Optional[str]
     test_type_name: Optional[str]
-    test_tube_id: Optional[str]
-    result: Optional[str]
+    test_type_id: Optional[int]
+    test_tube_id: Optional[int]
+    result: Optional[float]
     min_warn_bar: Optional[float]
     panic_min_warn_bar: Optional[float]
     max_warn_bar: Optional[float]
     panic_max_warn_bar: Optional[float]
-    at: Optional[str]
+    at: Optional[datetime]
 
     class Config:
         orm_mode = True
 
 
-class Labs(BaseModel):
-    patient_id: Optional[str]
-    results: list[LabTest]
+class LabsResultsInCategory(BaseModel):
+    category_id: str
+    category_results: list[LabTest]
+    class Config:
+        orm_mode = True
 
-    # def __init__(self, **kwargs):
+class LabsResultsOfPatient(BaseModel):
+    patient_id: Optional[int]
+    external_id: Optional[int]
+    lab_results: Optional[list[LabsResultsInCategory]]
 
-# class Lab(BaseModel):
-#     at: Optional[datetime]
-#     tests: Optional[List[LabTest]]
-#
-#     class Config:
-#         orm_mode = True
+    class Config:
+        orm_mode = True
+
+    #TODO: implement!
+    def to_notification(self):
+        pass
