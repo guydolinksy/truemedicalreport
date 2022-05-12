@@ -49,7 +49,6 @@ export const createContext = (defaultValue) => {
 
         const update = useCallback((path, newValue) => {
             const deepReplace = (path, data, value) => {
-                console.log(path, data, value)
                 if (!path.length) {
                     return value
                 }

@@ -25,12 +25,27 @@ class ChameleonMain(Base):
     main_cause = Column("MainCause", String())
     esi = Column("esi", Integer())
 
-    def to_dal(self, patient=ExternalPatient(external_id=self.chameleon_id,
-                                             id_=self.patient_id,
-                                             arrival=self.arrival.isoformat() if self.arrival else None,
-                                             complaint=self.main_cause,
-                                             admission=Admission(department=Departments(str(self.unit)).name,
-                                                                 wing=self.unit_wing),
-                                             esi=ESIScore(value=self.esi, at=datetime.datetime.utcnow().isoformat()),
-                                             measures=Measures())) -> ExternalPatient:
-        return patient
+    def to_dal(self) -> ExternalPatient:
+        return ExternalPatient(
+            external_id=self.chameleon_id,
+            id_=self.patient_id,
+            arrival=self.arrival.isoformat() if self.arrival else None,
+            complaint=self.main_cause,
+            admission=Admission(department=Departments(str(self.unit)).name, wing=self.unit_wing),
+            esi=ESIScore(value=self.esi, at=datetime.datetime.utcnow().isoformat()),
+            measures=Measures()
+        )
+
+    # def to_dal(self) -> ExternalPatient:
+    #     return ExternalPatient(
+    #         external_id=self.chameleon_id,
+    #         id_=self.patient_id,
+    #         name=self.patient_name,
+    #         arrival=self.arrival.isoformat() if self.arrival else None,
+    #         complaint=self.main_cause,
+    #         admission=Admission(department=Departments(str(self.unit)).name, wing=self.unit_wing, bed=self.bed_num),
+    #         esi=ESIScore(value=self.esi, at=datetime.datetime.utcnow().isoformat()),
+    #         gender=self.gender,
+    #         age=self.age,
+    #         birthdate=self.birthdate.isoformat() if self.birthdate else None,
+    #     )

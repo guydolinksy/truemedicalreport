@@ -66,6 +66,7 @@ async def generate_imagings(department: Departments, dal: FakeMain = Depends(Fak
     await dal.update_imagings(department=department)
     logger.debug('Done.')
 
+
 @faker_router.on_event('startup')
 @repeat_every(seconds=60, logger=logger)
 @inject_dependencies(department=Departments.er)
@@ -77,4 +78,3 @@ async def generate_labs(department: Departments, dal: FakeMain = Depends(FakeMai
     logger.debug('Generating Fake Labs for all patients...')
     await dal.update_labs(department=department)
     logger.debug('Done.')
-

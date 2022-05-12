@@ -32,3 +32,43 @@ code {
 .ant-menu-item .ant-input-wrapper .anticon {
     margin-left: 0;
 }
+
+.marquee {
+    margin: 0 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    box-sizing: border-box;
+    display: inline-flex;
+}
+
+.marquee span {
+    display: flex;
+    flex-basis: 100%;
+    animation: marquee-reset;
+    animation-play-state: paused;
+}
+
+.marquee:hover> span {
+    animation: marquee 8s linear infinite;
+    animation-play-state: running;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translate(0%, 0);
+    }
+    50% {
+        transform: translate(100%, 0);
+    }
+    50.001% {
+        transform: translate(-100%, 0);
+    }
+    100% {
+        transform: translate(0%, 0);
+    }
+}
+@keyframes marquee-reset {
+    0% {
+        transform: translate(0%, 0);
+    }
+}
