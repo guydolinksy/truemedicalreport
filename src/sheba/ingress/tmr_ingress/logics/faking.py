@@ -1,4 +1,5 @@
 import contextlib
+import copy
 import datetime
 import os
 import random
@@ -267,9 +268,10 @@ class FakeMain(object):
                                                                    max_value=130.0, right_digits=2)
                 lab_result.at = datetime.datetime.utcnow()
                 lab_result.row_id = f"{lab_result.patient_id}-{lab_result.category_id}-{lab_result.test_type_id}"
-            with self.session() as session:
-                session.add(lab_result)
-                session.commit()
+                with self.session() as session:
+                    session.add(copy.deepcopy(lab_result))
+                    session.commit()
+
 
     async def admit_patients(self, department):
         for wing in self.wings:
