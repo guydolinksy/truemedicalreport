@@ -2,92 +2,84 @@ from enum import Enum
 
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from tmr_common.data_models.notification import LabsNotification
 
 
-class LabsCategories(Enum):
-    completeBloodCount = 'cbc'
-    gases = "gases"
-    biochemistry = "biochemistry"
-    coagulation = "coagulation"
+class LabCategories(Enum):
+    completeBloodCount = 1001
+    gases = 1020
+    biochemistry = 1050
+    coagulation = 1080
 
 
-class StatusOfPatientTest(Enum):
-    working = "working"
-    finished = "finished"
+class LabStatus(Enum):
+    ordered = 1
+    collected = 2
+    analyzed = 3
 
 
 CategoriesInHebrew = {
-    LabsCategories.completeBloodCount: "ספירת דם מלאה",
-    LabsCategories.gases: "גזים",
-    LabsCategories.biochemistry: "ביוכימיה",
-    LabsCategories.coagulation: "תפקודי קרישה",
+    LabCategories.completeBloodCount.value: "ספירת תאים",
+    LabCategories.gases.value: "בדיקת גזים",
+    LabCategories.biochemistry.value: "ביוכימיה",
+    LabCategories.coagulation.value: "תפקודי קרישה",
+}
+
+StatusInHebrew = {
+    LabStatus.ordered.value: "הוזמן",
+    LabStatus.collected.value: "שויכו דגימות",
+    LabStatus.analyzed.value: "תוצאות",
 }
 
 LabTestType = {
-    LabsCategories.completeBloodCount: ["wbc", "rbc", "leukocytes", "neutrophils"],
-    LabsCategories.gases: ["pCO2", "pO2"],
-    LabsCategories.biochemistry: ["troponin", "pH"],
-    LabsCategories.coagulation: ["pt", "ptt", "d-dimer"],
+    LabCategories.completeBloodCount: ["wbc", "rbc", "leukocytes", "neutrophils"],
+    LabCategories.gases: ["pCO2", "pO2"],
+    LabCategories.biochemistry: ["troponin", "pH"],
+    LabCategories.coagulation: ["pt", "ptt", "d-dimer"],
 }
 
 
 class LabTest(BaseModel):
-    category_id: Optional[str]
-    category_name: Optional[str]
-    test_type_name: Optional[str]
-    test_type_id: Optional[int]
+    external_id: str
+    at: str
+    test_type_id: int
+    test_type_name: str
+    category_id: int
+    category_name: str
     test_tube_id: Optional[int]
-    result: Optional[float]
-    min_warn_bar: Optional[float]
     panic_min_warn_bar: Optional[float]
+    min_warn_bar: Optional[float]
     max_warn_bar: Optional[float]
     panic_max_warn_bar: Optional[float]
-    at: Optional[str]
+    result: Optional[float]
+    status: LabStatus
+
+    @property
+    def category_key(self):
+        return self.at, self.category_id
 
     class Config:
         orm_mode = True
         use_enum_values = True
 
 
-class LabsResultsInCategory(BaseModel):
+class LabCategory(BaseModel):
+    at: str
     category_id: str
-    category_results: list[LabTest]
+    category: str
+    status: str = StatusInHebrew[LabStatus.ordered.value]
+    results: Dict[str, LabTest] = {}
+
+    @property
+    def key(self):
+        return self.at, self.category_id
+
+    @property
+    def query_key(self):
+        return {'at': self.at, 'category_id': self.category_id}
 
     class Config:
         orm_mode = True
         use_enum_values = True
-
-
-class LabsResultsOfPatient(BaseModel):
-    patient_id: Optional[int]
-    external_id: Optional[int]
-    lab_results: Optional[list[LabsResultsInCategory]]
-
-    class Config:
-        orm_mode = True
-        use_enum_values = True
-
-    # TODO: Plan wanted notification
-    def to_notification(self):
-        return LabsNotification(
-            static_id=self.external_id,
-            patient_id=self.patient_id,
-            at=datetime.now(),
-            message = self.get_notification_message()
-        )
-
-    def _get_categories_name(self) -> []:
-        categories_names = []
-        for category_data in self.lab_results:
-            categories_names.append(CategoriesInHebrew[LabsCategories[category_data.category_id]])
-        return categories_names
-
-    def get_notification_message(self)->str:
-        categories_names = self._get_categories_name()
-        message = "התקבלו תוצאות מעבדה חדשות ב-"
-        for category in categories_names:
-            message += f" {category},"
-        return message

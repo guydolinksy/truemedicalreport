@@ -4,6 +4,7 @@ from typing import Optional, List, Any
 from pydantic import BaseModel
 
 from .imaging import Imaging
+from .labs import LabCategory
 from .measures import Measures, Pressure, Systolic, FullMeasures
 from .notification import Notification, NotificationLevel
 from .severity import Severity
@@ -77,11 +78,11 @@ class Event(BaseModel):
 
 class ExtendedPatient(BaseModel):
     full_measures: FullMeasures
-    imaging: List[Imaging] = []
-    labs: List[Any] = []
-    referrals: List[Any] = []
-    notifications: List[Any] = []
     visits: List[Any] = []
+    notifications: List[Any] = []
+    imaging: List[Imaging] = []
+    labs: List[LabCategory] = []
+    referrals: List[Any] = []
     events: List[Event] = []
 
     class Config:

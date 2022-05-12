@@ -27,6 +27,7 @@ class ARCPatient(Base):
         age = (datetime.now() - self.birthdate) if self.birthdate else None
         return dict(
             external_id=self.patient_id,
+            id_=self.patient_id,
             name=' '.join([self.first_name, self.last_name]),
             gender=self.gender,
             age=f'{int(age.days / 365)}.{int((age.days % 365) / 30)}' if age else None,

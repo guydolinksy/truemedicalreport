@@ -1,4 +1,4 @@
-import {Collapse, Drawer, Empty, List, Radio, Spin, Timeline} from "antd";
+import {Badge, Collapse, Drawer, Empty, List, Radio, Spin, Timeline} from "antd";
 import React, {useContext, useEffect, useState} from "react";
 import {useNavigate} from "react-router";
 import Moment from "react-moment";
@@ -160,16 +160,26 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 {value.notifications.map((notification, i) => <p
                     key={i}>{notification}</p>)}
             </Panel>}
-            <Panel key={'labs'} header={'מעבדה'}>
+            <Panel key={'labs'} header={
+                <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
+                    <span>מעבדה</span>
+                    <div><Badge style={{backgroundColor: '#1890ff'}} count={value.labs.length} size={"small"}/></div>
+                </div>
+            }>
                 {value.labs.length ? value.labs.map((lab, i) =>
                     <HashMatch key={i} match={['info', patient, 'labs', `lab-${i}`]}>{({matched}) =>
                         <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
-                            {lab}
+                            {lab.category} - {lab.status} - <Moment date={lab.at} format={'hh:mm DD/MM'}/>
                         </p>
                     }</HashMatch>
                 ) : <Empty description={'לא הוזמנו בדיקות מעבדה'}/>}
             </Panel>
-            <Panel key={'imaging'} header={'הדמיות'}>
+            <Panel key={'imaging'} header={
+                <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
+                    <span>הדמיות</span>
+                    <div><Badge style={{backgroundColor: '#1890ff'}} count={value.imaging.length} size={"small"}/></div>
+                </div>
+            }>
                 {value.imaging.length ? value.imaging.map((image, i) =>
                     <HashMatch key={i} match={['info', patient, 'imaging', `${image.external_id}`]}>{({matched}) =>
                         <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>

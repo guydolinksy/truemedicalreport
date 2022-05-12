@@ -3,21 +3,21 @@ import copy
 import datetime
 import os
 import random
-import requests
+
 import logbook
 import pytz
 from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from tmr_common.data_models.labs import LabsCategories, LabTestType, CategoriesInHebrew
-from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
+from tmr_common.data_models.imaging import ImagingTypes, ImagingStatus
+from tmr_common.data_models.labs import LabCategories, LabTestType
+from tmr_common.data_models.notification import NotificationLevel
 from tmr_ingress.models.arc_patient import ARCPatient
 from tmr_ingress.models.chameleon_imaging import ChameleonImaging
-from tmr_common.data_models.imaging import ImagingTypes, ImagingStatus
 from tmr_ingress.models.chameleon_labs import ChameleonLabs
+from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
 from tmr_ingress.models.chameleon_measurements import Measurements
-from tmr_common.data_models.notification import NotificationLevel, NotificationType, Notification
 
 logger = logbook.Logger(__name__)
 
@@ -244,18 +244,21 @@ class FakeMain(object):
         if chameleon_id:
             patients = {chameleon_id}
         elif department and wing:
-            patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 20)]
+            patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 5)]
         else:
             raise ValueError()
         for patient in patients:
-            step = random.randint(0, 4)
-            if not step:
+            step = random.randint(0, 100)
+            if step < 10:
                 continue
-            for test_type_id, test_type_name in enumerate(random.choice(list(LabTestType.values()))):
+            category = random.choice(list(LabCategories))
+            order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC)
+            collection_date = self.faker.date_time_between_dates('-10m', '-8m').astimezone(pytz.UTC)
+            for test_type_id, test_type_name in enumerate(LabTestType[category]):
                 lab_result = ChameleonLabs()
                 lab_result.patient_id = patient
-                lab_result.order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC)
-                lab_result.test_type_id = test_type_id
+                lab_result.order_date = order_date
+                lab_result.test_type_id = f'{category.value}{test_type_id:04}'
                 # lab_result.test_tube_id = random.randint(1, 3)
                 lab_result.test_type_name = test_type_name
                 lab_result.min_warn_bar = self.faker.pyfloat(min_value=20.0,
@@ -267,9 +270,9 @@ class FakeMain(object):
                 lab_result.panic_max_warn_bar = self.faker.pyfloat(min_value=100.0,
                                                                    max_value=130.0, right_digits=2)
 
-                if step > 1:
-                    lab_result.collection_date = self.faker.date_time_between_dates('-10m', '-8m').astimezone(pytz.UTC)
-                    if step > 2:
+                if step > 30:
+                    lab_result.collection_date = collection_date
+                    if step > 65:
                         if random.randint(0, 1):
                             lab_result.result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC)
                             lab_result.result = self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2)

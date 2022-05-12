@@ -1,8 +1,7 @@
-from enum import Enum
-
 from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime
 from sqlalchemy.orm import declarative_base
-from tmr_common.data_models.labs import Labs
+
+from tmr_common.data_models.labs import LabTest, LabStatus, CategoriesInHebrew
 
 Base = declarative_base()
 
@@ -21,17 +20,19 @@ class ChameleonLabs(Base):
     result_time = Column("ResultTime", DateTime())
 
     def to_initial_dal(self):
-        return Labs(
-            patient_id=self.patient_id,
-            test_tube_id=self.test_tube_id,
-            category_id=str(self.category_id)[0:4],
-            category_name=None,
+        return LabTest(
+            external_id=f'{self.patient_id}#{self.order_date.isoformat()}#{self.test_type_id}',
+            at=self.order_date.isoformat(),
+            test_type_id=self.test_type_id,
             test_type_name=self.test_type_name,
-            min_warn_bar=self.min_warn_bar,
+            category_id=int(str(self.test_type_id)[0:4]),
+            category_name=CategoriesInHebrew[int(str(self.test_type_id)[0:4])],
+            test_tube_id=9,
             panic_min_warn_bar=None,
+            min_warn_bar=self.min_warn_bar,
             max_warn_bar=self.max_warn_bar,
-            at=self.at,
-            status="הוזמן" if self.collection_date is None else
-            "בעבודה" if self.result_time is None else
-            "תוצאות"
+            panic_max_warn_bar=None,
+            status=(LabStatus.ordered if self.collection_date is None else
+                    LabStatus.collected if self.result_time is None else
+                    LabStatus.analyzed)
         )
