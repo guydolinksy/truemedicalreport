@@ -45,3 +45,16 @@ class ImagingNotification(Notification):
         if 'notification_id' not in kwargs:
             kwargs['notification_id'] = self.get_id(**kwargs)
         super(ImagingNotification, self).__init__(**kwargs)
+
+
+class LabsNotification(Notification):
+
+    @classmethod
+    def get_id(cls, **kwargs):
+        return {kwargs['type'].value: kwargs['static_id']}
+
+    def __init__(self, **kwargs):
+        kwargs['type'] = NotificationType.lab
+        if 'notification_id' not in kwargs:
+            kwargs['notification_id'] = self.get_id(**kwargs)
+        super(LabsNotification, self).__init__(**kwargs)

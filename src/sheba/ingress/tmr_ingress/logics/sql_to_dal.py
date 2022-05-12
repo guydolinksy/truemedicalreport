@@ -7,12 +7,13 @@ from requests import HTTPError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from tmr_common.data_models.labs import LabTest
+from tmr_common.data_models.labs import LabTest, LabsResultsInCategory, LabsResultsOfPatient
 from ..models.arc_patient import ARCPatient
 from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
 from ..models.chameleon_measurements import Measurements
+from tmr_common.data_models.measures import Temperature, Pulse, Systolic, Diastolic, Measures, Saturation
 
 logger = logbook.Logger(__name__)
 
@@ -76,6 +77,7 @@ class SqlToDal(object):
         except HTTPError:
             logger.exception('Could not run measurements handler.')
 
+    # TODO: request fails on 422, needs a fix
     def update_labs(self, department: Departments):
         try:
             logger.debug('Getting labs for `{}`...', department.name)
@@ -84,18 +86,25 @@ class SqlToDal(object):
                 for lab_data in session.query(ChameleonLabs). \
                         join(ChameleonMain, ChameleonLabs.patient_id == ChameleonMain.patient_id). \
                         where(ChameleonMain.unit == department.name).order_by(ChameleonLabs.patient_id):
-                    single_lab_test = LabTest(
-                        test_type_id=lab_data.test_type_id,
-                        test_type_name=lab_data.test_type_name,
-                        result=lab_data.result)
+                    single_lab_test = lab_data.to_initial_dal()
                     labs.setdefault(lab_data.patient_id, {})
-                    if labs.category_id not in labs[lab_data.patient_id].keys():
+                    if lab_data.category_id not in labs[lab_data.patient_id].keys():
                         labs[lab_data.patient_id][
-                            labs.category_id] = labs.to_dal().dict()
-                    labs[lab_data.patient_id][labs.category_id][labs.full_result].append(single_lab_test)
-
+                            lab_data.category_id] = []
+                    labs[lab_data.patient_id][lab_data.category_id].append(single_lab_test)
+            final_result = {}
+            for patient_id in labs:
+                final_result[patient_id] = []
+                labs_results_of_patient = LabsResultsOfPatient(patient_id=patient_id, lab_results=[])
+                for category_id in labs[patient_id].keys():
+                    labs_results_in_cat = LabsResultsInCategory(category_id=category_id, category_results=[])
+                    for lab_result in labs[patient_id][category_id]:
+                        labs_results_in_cat.category_results.append(lab_result.dict())
+                    labs_results_of_patient.lab_results.append(labs_results_in_cat.dict())
+                    final_result[patient_id].append(labs_results_of_patient.dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/labs',
-                                json={'labs': labs})
+                                json={"labs": final_result})
+            print(res.content)
             res.raise_for_status()
-        except Exception:
-            pass
+        except HTTPError as e:
+            logger.exception(f'Could not run labs handler. {e}')
