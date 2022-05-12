@@ -14,22 +14,21 @@ class Departments(Enum):
     er = '5'
 
 
-class ArcPatient(Base):
+class ARCPatient(Base):
     __tablename__ = "patients"
 
-    chameleon_id = Column("id", Integer(), primary_key=True)
-    patient_id = Column("id", VARCHAR(200))
-    patient_first_name = Column("first_name", String(30))
-    patient_last_name = Column("last_name", String(30))
+    patient_id = Column("id", Integer(), primary_key=True)
+    first_name = Column("first_name", String(30))
+    last_name = Column("last_name", String(30))
     gender = Column("gender", VARCHAR(100))
     birthdate = Column("birth_date", DateTime())
 
-    def to_dal(self) -> ExternalPatient:
-        return ExternalPatient(
-            external_id=self.chameleon_id,
-            id_=self.patient_id,
-            name=self.patient_fist_name+' '+self.patient_last_name,
+    def to_dal(self):
+        age = (datetime.now() - self.birthdate) if self.birthdate else None
+        return dict(
+            external_id=self.patient_id,
+            name=' '.join([self.first_name, self.last_name]),
             gender=self.gender,
-            age=datetime.now()-self.birthdate,
+            age=f'{int(age.days / 365)}.{int((age.days % 365) / 30)}' if age else None,
             birthdate=self.birthdate.isoformat() if self.birthdate else None,
         )

@@ -12,7 +12,7 @@ logger = logbook.Logger(__name__)
 
 # TODO remove duplicate use of medical_dal function
 def medical_dal() -> MedicalDal:
-    return MedicalDal(MongoClient("medical-db").tmr)
+    return MedicalDal(MongoClient("mongo").medical)
 
 
 @patient_router.get("/{patient}", response_model=Patient)
@@ -38,9 +38,3 @@ async def warn_patient_by_id(patient: str, warning=Body(...), dal: MedicalDal = 
         return update_result
 
     return True
-
-
-@patient_router.post("/{patient}/notification", status_code=201)
-async def add_notification_to_patient(patient: str, notification: Notification = Body(..., embed=True),
-                                      dal: MedicalDal = Depends(medical_dal)):
-    await dal.upsert_notification(patient_id=patient, notification=notification, action=Action.insert)

@@ -139,7 +139,8 @@ class MedicalDal:
     async def upsert_measurements(self, patient_id: str, measures: List[Measure]):
         res = self.db.patients.find_one({"external_id": patient_id})
         if not res:
-            raise ValueError(f'Patient {patient_id} not found.')
+            logger.error(f'Measurement Patient {patient_id} Not Fount')
+            return
         previous = Patient(**res)
         current = previous.measures.copy()
 
@@ -170,7 +171,8 @@ class MedicalDal:
     async def upsert_imaging(self, imaging_obj: Imaging, action: Action):
         res = self.db.patients.find_one({"external_id": imaging_obj.patient_id})
         if not res:
-            raise ValueError(f'Patient {imaging_obj.patient_id} not found.')
+            logger.error(f'Imaging Patient {imaging_obj.patient_id} Not Fount')
+            return
         patient = Patient(**res)
         match action:
             case Action.remove:
@@ -191,20 +193,6 @@ class MedicalDal:
                                                  {'$set': notification.dict()}, upsert=True)
                 await self.notify_patient(patient=patient.oid)
                 await self.notify_notification(patient=patient.oid)
-
-    async def upsert_notification(self, patient_id: str, notification: Notification, action: Action):
-        patient = Patient(**(self.db.patients.find_one({"external_id": patient_id}) or {}))
-        match action:
-            case Action.remove:
-                self.db.notifications.delete_one({"notification_id": notification.notification_id})
-
-            case Action.insert:
-                self.db.notifications.update_one({"notification_id": notification.notification_id},
-                                                 {"$set": notification.dict()}, upsert=True)
-            case Action.update:
-                self.db.notifications.update_one({"notification_id": notification.notification_id},
-                                                 {"$set": notification.dict()}, upsert=True)
-        await self.notify_notification(patient=patient.oid)
 
     @staticmethod
     async def notify_admission(admission: Admission):

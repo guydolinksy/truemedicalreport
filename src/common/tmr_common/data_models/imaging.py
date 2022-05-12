@@ -22,8 +22,7 @@ class ImagingStatus(Enum):
 class Imaging(BaseModel):
     external_id: int
     patient_id: str
-    type_: ImagingTypes
-    description: str
+    title: str
     status: ImagingStatus
     status_text: str
     link: str
@@ -51,7 +50,7 @@ class Imaging(BaseModel):
             static_id=self.external_id,
             patient_id=self.patient_id,
             at=self.at,
-            message=f'{self.description} - {self.status_text}',
+            message=f'{self.title} - {self.status_text}',
             link=self.link,
             level=self.level,
         )

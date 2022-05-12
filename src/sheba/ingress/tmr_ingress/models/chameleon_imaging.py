@@ -8,20 +8,20 @@ class ChameleonImaging(Base):
     __tablename__ = "Imaging"
 
     imaging_id = Column("sps_key", Integer(), primary_key=True)
-    patient_id = Column("ID", int())
+    patient_id = Column("ID", Integer())
+    order_date = Column("OrderDate", DateTime())
     description = Column("OrderedProcedureType", VARCHAR(100))
     status = Column("ProcedureStatus", VARCHAR(100))
-    Interpretation = Column("Interpretation", VARCHAR(400))
-    order_date = Column("OrderDate", DateTime())
-
+    interpretation = Column("Interpretation", VARCHAR(400))
 
     def to_dal(self):
-
         return Imaging(
-            patient_id=self.patient_id,
             external_id=self.imaging_id,
+            patient_id=self.patient_id,
             at=self.order_date.isoformat(),
-            description=self.description,
+            title=self.description,
             status=ImagingStatus(self.status),
-            link='https://localhost/'
+            interpretation=self.interpretation,
+            level=NotificationLevel.normal,
+            link='https://localhost/',
         )

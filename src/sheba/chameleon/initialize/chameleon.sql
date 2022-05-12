@@ -2,19 +2,19 @@ USE [master]
 GO
 /****** Object:  Database [chameleon_db]    Script Date: 13/04/2022 0:44:08 ******/
 create DATABASE [chameleon_db]
- CONTAINMENT = NONE
- ON  PRIMARY
-( NAME = N'chameleon_db', FILENAME = N'/var/opt/mssql/data/chameleon_db.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
- LOG ON
-( NAME = N'chameleon_db_log', FILENAME = N'/var/opt/mssql/data/chameleon_db_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
- COLLATE Hebrew_CI_AS
+    CONTAINMENT = NONE
+    ON PRIMARY
+    ( NAME = N'chameleon_db', FILENAME = N'/var/opt/mssql/data/chameleon_db.mdf' , SIZE = 8192 KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536 KB )
+    LOG ON
+    ( NAME = N'chameleon_db_log', FILENAME = N'/var/opt/mssql/data/chameleon_db_log.ldf' , SIZE = 8192 KB , MAXSIZE = 2048 GB , FILEGROWTH = 65536 KB )
+    COLLATE Hebrew_CI_AS
 GO
 alter database [chameleon_db] SET COMPATIBILITY_LEVEL = 150
 GO
 IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
-begin
-EXEC [chameleon_db].[dbo].[sp_fulltext_database] @action = 'enable'
-end
+    begin
+        EXEC [chameleon_db].[dbo].[sp_fulltext_database] @action = 'enable'
+    end
 GO
 ALTER DATABASE [chameleon_db] SET ANSI_NULL_DEFAULT OFF
 GO
@@ -34,7 +34,7 @@ alter database [chameleon_db] SET AUTO_UPDATE_STATISTICS ON
 GO
 alter database [chameleon_db] SET CURSOR_CLOSE_ON_COMMIT OFF
 GO
-alter database [chameleon_db] SET CURSOR_DEFAULT  GLOBAL
+alter database [chameleon_db] SET CURSOR_DEFAULT GLOBAL
 GO
 alter database [chameleon_db] SET CONCAT_NULL_YIELDS_NULL OFF
 GO
@@ -44,7 +44,7 @@ alter database [chameleon_db] SET QUOTED_IDENTIFIER OFF
 GO
 alter database [chameleon_db] SET RECURSIVE_TRIGGERS OFF
 GO
-alter database [chameleon_db] SET  DISABLE_BROKER
+alter database [chameleon_db] SET DISABLE_BROKER
 GO
 alter database [chameleon_db] SET AUTO_UPDATE_STATISTICS_ASYNC OFF
 GO
@@ -62,13 +62,13 @@ alter database [chameleon_db] SET HONOR_BROKER_PRIORITY OFF
 GO
 alter database [chameleon_db] SET RECOVERY FULL
 GO
-alter database [chameleon_db] SET  MULTI_USER
+alter database [chameleon_db] SET MULTI_USER
 GO
 alter database [chameleon_db] SET PAGE_VERIFY CHECKSUM
 GO
 alter database [chameleon_db] SET DB_CHAINING OFF
 GO
-alter database [chameleon_db] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF )
+alter database [chameleon_db] SET FILESTREAM ( NON_TRANSACTED_ACCESS = OFF )
 GO
 alter database [chameleon_db] SET TARGET_RECOVERY_TIME = 60 SECONDS
 GO
@@ -82,26 +82,33 @@ alter database [chameleon_db] SET QUERY_STORE = OFF
 GO
 USE [chameleon_db]
 GO
-/****** Object:  Table [dbo].[chameleon_main]    Script Date: 13/04/2022 0:44:08 ******/
+/****** Object:  Table [dbo].[patients]    Script Date: 13/04/2022 0:44:08 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-create TABLE [dbo].[chameleon_main](
-	[id_num] [int] IDENTITY(1,1) NOT NULL,
-	[patient_id] [varchar](250) NULL,
-	[patient_name] [varchar](200) NULL,
-	[unit] [int] NULL,
-	[unit_wing] [varchar](200) NULL,
-	[main_cause] [varchar](250) NULL,
-	[esi] [int] NULL,
-	[bed_num] [int] NULL,
-	[warnings] [varchar](150) NULL,
-	[gender] [varchar](2) NULL,
-	[age] [varchar](7) NULL,
-	[birthdate] [datetime] NULL,
-	[arrival] [datetime] NULL,
-	[stage] [varchar](150) NULL
+create TABLE [dbo].[patients]
+(
+    [id]         [int] IDENTITY (1,1) NOT NULL,
+    [first_name] [varchar](200)       NULL,
+    [last_name]  [varchar](200)       NULL,
+    [gender]     [varchar](2)         NULL,
+    [birth_date] [datetime]           NULL,
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Emergency_visits]    Script Date: 13/04/2022 0:44:08 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create TABLE [dbo].[Emergency_visits]
+(
+    [id]                  [int] IDENTITY (1,1) NOT NULL,
+    [DepartmentName]      [varchar](200)       NULL,
+    [DepartmentWing]      [varchar](200)       NULL,
+    [DepartmentAdmission] [datetime]           NULL,
+    [MainCause]           [varchar](200)       NULL,
+    [esi]                 [int]                NULL,
 ) ON [PRIMARY]
 GO
 /****** Object:  Table [dbo].[measurements]    Script Date: 13/04/2022 0:44:08 ******/
@@ -109,48 +116,40 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-create TABLE [dbo].[measurements](
-	[pk_measurement_id] [int] IDENTITY(1,1) NOT NULL,
-	[id_num] [varchar](250) NOT NULL,
-	[Parameter_Date] [datetime] NULL,
-	[Parameter_Id] [int] NOT NULL,
-	[Parameter_Name] [varchar](200) NULL,
-	[Result] [float] NULL,
-	[Min_Value] [float] NULL,
-	[Max_Value] [float] NULL,
-	[Warnings] [varchar](50) NULL,
- CONSTRAINT [PK_M] PRIMARY KEY CLUSTERED
+create TABLE [dbo].[measurements]
 (
-	[pk_measurement_id] ASC
-)with (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+    [id]             [varchar](250) NOT NULL,
+    [entry_time]     [datetime]     NULL,
+    [ParameterCode]  [int]          NOT NULL,
+    [Parameter_Name] [varchar](200) NULL,
+    [Result]         [float]        NULL,
+    [Min_Value]      [float]        NULL,
+    [Max_Value]      [float]        NULL,
 ) ON [PRIMARY]
 GO
-create TABLE [dbo].[EMG_Images] (
-    [row_id] [int] IDENTITY(1,1) NOT NULL,
-	[id] [varchar](250) NOT NULL,
-	[MODALITY_CODE] [varchar](60) NOT NULL,
-	[OrderedProcedure] [varchar](100) NOT NULL,
-	[ProcedureStatus] [varchar](100) NOT NULL,
-    [level] [int] NOT NULL,
-	[link] [varchar](200) NOT NULL,
-	[Interpretation] [varchar](100) NOT NULL,
-	[InterpretationApprovedDate] [datetime] NOT NULL,
-	[OrderDate] [datetime] NOT NULL,
-	[ProcedureStartDate] [varchar](200) NOT NULL
+create TABLE [dbo].[Imaging]
+(
+    [sps_key]              [int] IDENTITY (1,1) NOT NULL,
+    [id]                   [int]                NOT NULL,
+    [OrderDate]            [datetime]           NOT NULL,
+    [OrderedProcedureType] [varchar](100)       NOT NULL,
+    [ProcedureStatus]      [varchar](100)       NOT NULL,
+    [Interpretation]       [varchar](300)       NULL,
 )
 GO
-CREATE TABLE [dbo].[labs] (
-	[id] int NULL,
-    [TestCode] [int] NULL,
-	[TestName] [varchar](150) NULL,
-	[result] [varchar](60) NULL,
-	[NormMinimum] [float] NULL,
-	[NormMaximum] [float] NULL,
-	[result_date] [datetime] NOT NULL,
-	[ResultTime] [datetime] NOT NULL,
-	[ResultTime] [datetime] NOT NULL
+CREATE TABLE [dbo].[lab_results]
+(
+    [id]             int            NOT NULL,
+    [TestCode]       [int]          NOT NULL,
+    [TestName]       [varchar](150) NULL,
+    [result]         [varchar](60)  NULL,
+    [NormMinimum]    [float]        NULL,
+    [NormMaximum]    [float]        NULL,
+    [OrderDate]      [datetime]     NOT NULL,
+    [collectiondate] [datetime]     NULL,
+    [ResultTime]     [datetime]     NULL,
 )
 GO
-alter database [chameleon_db] SET  READ_WRITE
+alter database [chameleon_db] SET READ_WRITE
 USE [master]
 GO

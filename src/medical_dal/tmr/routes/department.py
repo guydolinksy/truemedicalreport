@@ -20,7 +20,7 @@ logger = logbook.Logger(__name__)
 
 # TODO remove duplicate use of medical_dal function
 def medical_dal() -> MedicalDal:
-    return MedicalDal(MongoClient("medical-db").tmr)
+    return MedicalDal(MongoClient("mongo").medical)
 
 
 @department_router.get("/{department}", tags=["Department"], response_model=List[WingOverview],

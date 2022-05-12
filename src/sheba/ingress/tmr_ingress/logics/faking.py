@@ -12,11 +12,11 @@ from sqlalchemy.orm import Session
 
 from tmr_common.data_models.labs import LabsCategories, LabTestType, CategoriesInHebrew
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
-from tmr_ingress.models.chameleon_main import ArcPatient
-from tmr_ingress.models.chameleonimaging import ChameleonImaging
+from tmr_ingress.models.arc_patient import ARCPatient
+from tmr_ingress.models.chameleon_imaging import ChameleonImaging
 from tmr_common.data_models.imaging import ImagingTypes, ImagingStatus
-from tmr_ingress.models.labs import ChameleonLabs
-from tmr_ingress.models.measurements import Measurements
+from tmr_ingress.models.chameleon_labs import ChameleonLabs
+from tmr_ingress.models.chameleon_measurements import Measurements
 from tmr_common.data_models.notification import NotificationLevel, NotificationType, Notification
 
 logger = logbook.Logger(__name__)
@@ -40,30 +40,32 @@ class FakeMain(object):
         'b3': {str(i) for i in range(25, 41)} | {None},
     }
 
-    def get_used_beds(self, wing):
-        with self.session() as session:
-            return {str(cm.bed_num) for cm in (session.query(ChameleonMain).filter(
-                (ChameleonMain.unit_wing == wing) & (ChameleonMain.bed_num != None)))}
+    # def get_used_beds(self, wing):
+    #     with self.session() as session:
+    #         return {str(cm.bed_num) for cm in (session.query(ChameleonMain).filter(
+    #             (ChameleonMain.unit_wing == wing) & (ChameleonMain.bed_num != None)))}
 
     def _admit_patient(self, department: Departments, wing):
-        o = ArcPatient()
-        o.patient_id = f'{self.faker.pyint(min_value=000000000, max_value=999999999):09}'
-        o.gender = 'M' if random.randint(0, 1) else 'F'
-        if o.gender == 'M':
-            o.patient_name = self.faker.name_male()
-        elif o.gender == 'F':
-            o.patient_name = self.faker.name_female()
-
-        dob = datetime.datetime.combine(self.faker.date_of_birth(), datetime.time()).astimezone(pytz.UTC)
+        patient_id = f'{self.faker.pyint(min_value=000000000, max_value=999999999):09}'
+        p = ARCPatient()
+        p.patient_id = patient_id
+        p.gender = 'M' if random.randint(0, 1) else 'F'
+        if p.gender == 'M':
+            p.first_name, p.last_name = self.faker.last_name_male(), self.faker.first_name_male()
+        elif p.gender == 'F':
+            p.first_name, p.last_name = self.faker.last_name_female(), self.faker.first_name_female()
         if random.randint(0, 100) > 5:
-            now = datetime.datetime.utcnow().astimezone(pytz.UTC)
-            o.age = f"{int((now - dob).days / 365)}.{int(((now - dob).days % 365) / 30)}"
-            if random.randint(0, 100) > 5:
-                o.birthdate = dob
+            p.birthdate = datetime.datetime.combine(self.faker.date_of_birth(), datetime.time()).astimezone(pytz.UTC)
 
-        o.unit = int(department.value)
+        with self.session() as session:
+            session.add(p)
+            session.commit()
+
+        o = ChameleonMain()
+        o.patient_id = patient_id
+        o.unit = department.name
         o.unit_wing = wing
-        o.bed_num = random.choice(list(self.wings[wing] - self.get_used_beds(wing)))
+        # o.bed_num = random.choice(list(self.wings[wing] - self.get_used_beds(wing)))
         o.arrival = self.faker.past_datetime('-30m').astimezone(pytz.UTC)
 
         o.main_cause = random.choice([
@@ -71,24 +73,23 @@ class FakeMain(object):
             'בחילות ו/או הקאות', 'כאב ראש', 'כאב בטן', 'לאחר התעלפות'
         ])
         o.esi = random.choice([1, 2, 3, 4])
-        o.warnings = self.faker.sentence(nb_words=3)
-        o.stage = "מאושפז"
 
         with self.session() as session:
             session.add(o)
             session.commit()
-            return o.chameleon_id, o.patient_id
+
+        return patient_id
 
     def _discharge_patient(self, chameleon_id):
         with self.session() as session:
-            patient = session.query(ChameleonMain).where(ChameleonMain.chameleon_id == chameleon_id).first()
+            patient = session.query(ChameleonMain).where(ChameleonMain.patient_id == chameleon_id).first()
             patient.unit = patient.unit_wing = patient.bed_num = None
             session.commit()
 
     def _get_patients(self, department: Departments, wing):
         with self.session() as session:
-            result = {patient.chameleon_id for patient in session.query(ChameleonMain).filter(
-                (ChameleonMain.unit == int(department.value)) & (ChameleonMain.unit_wing == wing)
+            result = {patient.patient_id for patient in session.query(ChameleonMain).filter(
+                (ChameleonMain.unit == department.name) & (ChameleonMain.unit_wing == wing)
             )}
             return result
 
@@ -223,7 +224,7 @@ class FakeMain(object):
         for patient in patients:
             im = ChameleonImaging()
             im.patient_id = patient
-            im.at = datetime.datetime.utcnow()
+            im.order_date = datetime.datetime.utcnow()
             im.type_ = random.choice(list(ImagingTypes)).value
             type_name = {
                 ImagingTypes.ct.value: 'CT',
@@ -247,18 +248,16 @@ class FakeMain(object):
         else:
             raise ValueError()
         for patient in patients:
-            lab_result = ChameleonLabs()
-            lab_result.patient_id = patient
-            category = random.choice(list(LabsCategories))
-            lab_result.category_id = category.value
-            lab_result.category_name = CategoriesInHebrew[category]
-            test_types = LabTestType[category]
-            lab_result.test_tube_id = random.randint(1, 3)
-            for test_type_id, test_type_name in enumerate(test_types):
+            step = random.randint(0, 4)
+            if not step:
+                continue
+            for test_type_id, test_type_name in enumerate(random.choice(list(LabTestType.values()))):
+                lab_result = ChameleonLabs()
+                lab_result.patient_id = patient
+                lab_result.order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC)
                 lab_result.test_type_id = test_type_id
+                # lab_result.test_tube_id = random.randint(1, 3)
                 lab_result.test_type_name = test_type_name
-                lab_result.result = random.choice(
-                    [self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2), None])
                 lab_result.min_warn_bar = self.faker.pyfloat(min_value=20.0,
                                                              max_value=40.0, right_digits=2)
                 lab_result.panic_min_warn_bar = self.faker.pyfloat(min_value=0.0,
@@ -267,17 +266,21 @@ class FakeMain(object):
                                                              max_value=100.0, right_digits=2)
                 lab_result.panic_max_warn_bar = self.faker.pyfloat(min_value=100.0,
                                                                    max_value=130.0, right_digits=2)
-                lab_result.at = datetime.datetime.utcnow()
-                lab_result.row_id = f"{lab_result.patient_id}-{lab_result.category_id}-{lab_result.test_type_id}"
+
+                if step > 1:
+                    lab_result.collection_date = self.faker.date_time_between_dates('-10m', '-8m').astimezone(pytz.UTC)
+                    if step > 2:
+                        if random.randint(0, 1):
+                            lab_result.result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC)
+                            lab_result.result = self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2)
                 with self.session() as session:
                     session.add(copy.deepcopy(lab_result))
                     session.commit()
 
-
     async def admit_patients(self, department):
         for wing in self.wings:
             if random.randint(0, 1):
-                chameleon_id, patient_id = self._admit_patient(department, wing)
+                chameleon_id = self._admit_patient(department, wing)
                 self._generate_measurements(chameleon_id=chameleon_id)
 
     async def discharge_patient(self, department):

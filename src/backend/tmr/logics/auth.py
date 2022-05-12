@@ -1,37 +1,43 @@
-import shelve
+import os
 
 import interruptingcow
+import ldap
 import logbook
-from contextlib import asynccontextmanager
 from fastapi import Depends, APIRouter, Body
 from fastapi_login import LoginManager
 from fastapi_login.exceptions import InvalidCredentialsException
 from starlette.responses import Response
-import ldap
-
-from tmr.logics.settings import settings
+from .settings import Settings, settings, current_settings, LDAP
 
 logger = logbook.Logger(__name__)
 auth_router = APIRouter()
 
-manager = LoginManager(settings.secret, token_url='/auth/token', use_cookie=True)
+
+def init_manager():
+    if not hasattr(current_settings.general, 'secret'):
+        current_settings.general.secret = os.urandom(256).hex()
+    res = LoginManager(current_settings.general.secret, token_url='/auth/token', use_cookie=True)
+
+    @res.user_loader()
+    async def load_user(sub: str):
+        user_type, username = sub.split('#')
+        return {'username': username, 'source': user_type}
+
+    return res
 
 
-@manager.user_loader()
-async def load_user(sub: str):
-    user_type, username = sub.split('#')
-    return {'username': username, 'source': user_type}
+manager = init_manager()
+
+
+@auth_router.on_event('startup')
+def init_auths():
+    if not current_settings.users['admin']:
+        current_settings.users['admin'] = 'admin'
 
 
 @auth_router.post('/token')
-async def login(response: Response, username=Body(...), password=Body(...)):
-    if local_connect(username, password):
-        user_type = 'local'
-    elif ldap_connect(username, password):
-        user_type = 'ldap'
-    else:
-        raise InvalidCredentialsException
-
+async def login(response: Response, s: Settings = Depends(settings), username=Body(...), password=Body(...)):
+    user_type = s.auth.connect(username, password)
     access_token = manager.create_access_token(
         data=dict(sub='#'.join([user_type, username]))
     )
@@ -40,42 +46,23 @@ async def login(response: Response, username=Body(...), password=Body(...)):
 
 
 @auth_router.post('/change-password')
-async def change_password(user=Depends(manager), previous=Body(...), password=Body(...), confirm=Body(...)):
-    username = user['username']
-    users = {user: password for user, password in (settings.users or {}).items()}
-    if username not in users or users[username] != previous or password != confirm:
+async def change_password(user=Depends(manager), s: Settings = Depends(settings), previous=Body(...),
+                          password=Body(...), confirm=Body(...)):
+    if password != confirm or (user['username'], previous) not in s.users:
         raise InvalidCredentialsException
 
-    users[username] = password
-    settings.users = users
+    s.users[user['username']] = password
     return True
 
 
 @auth_router.get('/ldap')
-async def get_ldap_settings(_=Depends(manager)):
-    return settings.ldap
-
-
-def ldap_connect(username, password):
-    ldap_settings = settings.ldap or {}
-    logger.debug(ldap_settings)
-    if not ldap_settings.get('enabled'):
-        return False
-
-    with interruptingcow.timeout(seconds=5, exception=TimeoutError):
-        connection = ldap.initialize(ldap_settings['connection'])
-        return connection.bind_s(ldap_settings.get('user_dn', '{}').format(username), password)
-
-
-def local_connect(username, password):
-    users = settings.users or {}
-    if username in users:
-        return users[username] == password
+async def get_ldap_settings(_=Depends(manager), s: Settings = Depends(settings)) -> LDAP:
+    return s.ldap.settings
 
 
 @auth_router.post('/ldap')
-async def update_ldap_settings(_=Depends(manager), values=Body(...)):
-    settings.ldap = values
+async def update_ldap_settings(_=Depends(manager), s: Settings = Depends(settings), values=Body(...)):
+    s.ldap.settings = values
 
 
 @auth_router.post('/ldap/test')

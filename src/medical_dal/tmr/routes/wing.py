@@ -15,7 +15,7 @@ wing_router = APIRouter()
 
 
 def medical_dal() -> MedicalDal:
-    return MedicalDal(MongoClient("medical-db").tmr)
+    return MedicalDal(MongoClient("mongo").medical)
 
 
 @wing_router.get("/{wing}", response_model=WingSummarize, response_model_exclude_unset=True, tags=["Wing"])

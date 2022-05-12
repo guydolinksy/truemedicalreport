@@ -8,10 +8,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from tmr_common.data_models.labs import LabTest
+from ..models.arc_patient import ARCPatient
 from ..models.chameleon_main import ChameleonMain, Departments
-from ..models.chameleonimaging import ChameleonImaging
-from ..models.labs import ChameleonLabs
-from ..models.measurements import Measurements
+from ..models.chameleon_imaging import ChameleonImaging
+from ..models.chameleon_labs import ChameleonLabs
+from ..models.chameleon_measurements import Measurements
 
 logger = logbook.Logger(__name__)
 
@@ -34,7 +35,7 @@ class SqlToDal(object):
             with self.session() as session:
                 for image in session.query(ChameleonImaging). \
                         join(ChameleonMain, ChameleonImaging.patient_id == ChameleonMain.patient_id). \
-                        where(ChameleonMain.unit == int(department.value)).order_by(ChameleonImaging.at.desc()):
+                        where(ChameleonMain.unit == department.name).order_by(ChameleonImaging.order_date.desc()):
                     imaging.setdefault(image.patient_id, []).append(image.to_dal().dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/imaging',
                                 json={'images': imaging})
@@ -48,8 +49,10 @@ class SqlToDal(object):
 
             patients = []
             with self.session() as session:
-                for patient in session.query(ChameleonMain).filter(ChameleonMain.unit == int(department.value)):
-                    patients.append(patient.to_dal().dict())
+                for patient in session.query(ChameleonMain).filter(ChameleonMain.unit == department.name):
+                    data = session.query(ARCPatient).filter(ARCPatient.patient_id == patient.patient_id).first()
+                    patients.append(dict(**data.to_dal(), **patient.to_dal()))
+
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/admissions',
                                 json={'admissions': patients})
             res.raise_for_status()
@@ -64,7 +67,7 @@ class SqlToDal(object):
             with self.session() as session:
                 for measurement in session.query(Measurements). \
                         join(ChameleonMain, Measurements.patient_id == ChameleonMain.patient_id). \
-                        where(ChameleonMain.unit == int(department.value)).order_by(Measurements.at.asc()):
+                        where(ChameleonMain.unit == department.name).order_by(Measurements.at.asc()):
                     measures.setdefault(measurement.patient_id, []).append(measurement.to_dal().dict())
 
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/measurements',
@@ -80,7 +83,7 @@ class SqlToDal(object):
             with self.session() as session:
                 for lab_data in session.query(ChameleonLabs). \
                         join(ChameleonMain, ChameleonLabs.patient_id == ChameleonMain.patient_id). \
-                        where(ChameleonMain.unit == int(department.value)).order_by(ChameleonLabs.patient_id):
+                        where(ChameleonMain.unit == department.name).order_by(ChameleonLabs.patient_id):
                     single_lab_test = LabTest(
                         test_type_id=lab_data.test_type_id,
                         test_type_name=lab_data.test_type_name,

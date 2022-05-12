@@ -2,7 +2,7 @@ from pymongo import MongoClient
 
 
 async def init_wings():
-    db = MongoClient(host='medical-db', port=27017).tmr
+    db = MongoClient(host='mongo').medical
 
     db.wings.delete_many({})
     db.wings.insert_one({

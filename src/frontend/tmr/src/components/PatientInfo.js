@@ -173,7 +173,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 {value.imaging.length ? value.imaging.map((image, i) =>
                     <HashMatch key={i} match={['info', patient, 'imaging', `${image.external_id}`]}>{({matched}) =>
                         <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
-                            {image.description} - {image.status_text}
+                            {image.title} - {image.status_text}
                         </p>
                     }</HashMatch>
                 ) : <Empty description={'לא הוזמנו הדמיות'}/>}

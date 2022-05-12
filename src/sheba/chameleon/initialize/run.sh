@@ -6,6 +6,6 @@ do
     then
         break
     else
-        sleep 1
+        sleep 5
     fi
 done

@@ -16,15 +16,13 @@ class MeasurementsIds(Enum):
 class Measurements(Base):
     __tablename__ = "measurements"
 
-    # pk = Column("row_id", Integer(), primary_key=True)
     patient_id = Column("id", VARCHAR(200), primary_key=True)
     at = Column("entry_time", DateTime(), primary_key=True)
-    code = Column("ParameterCode", Integer())
+    code = Column("ParameterCode", Integer(), primary_key=True)
     name = Column("Parameter_Name", VARCHAR(100))
     value = Column("Result", Float())
     min_limit = Column("Min_Value", Float())
     max_limit = Column("Max_Value", Float())
-    warnings = Column("Warnings", VARCHAR(100))
 
     def to_dal(self):
         return Measure(
@@ -33,5 +31,5 @@ class Measurements(Base):
             maximum=self.max_limit,
             at=self.at.isoformat(),
             type=MeasureTypes(MeasurementsIds(self.code).name),
-            external_id=self.pk,
+            external_id=f'{self.patient_id}#{self.at.isoformat()}#{self.code}',
         )

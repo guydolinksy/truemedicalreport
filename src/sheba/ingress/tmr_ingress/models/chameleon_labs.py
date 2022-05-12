@@ -2,7 +2,6 @@ from enum import Enum
 
 from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime
 from sqlalchemy.orm import declarative_base
-from tmr_common.data_models.imaging import Imaging
 from tmr_common.data_models.labs import Labs
 
 Base = declarative_base()
@@ -11,13 +10,13 @@ Base = declarative_base()
 class ChameleonLabs(Base):
     __tablename__ = "lab_results"
 
-    patient_id = Column("id", int(), primary_key=True)
-    category_id = Column("TestCode", Integer(), primary_key=True)
+    patient_id = Column("id", Integer(), primary_key=True)
+    order_date = Column("OrderDate", DateTime(), primary_key=True)
+    test_type_id = Column("TestCode", Integer(), primary_key=True)
     test_type_name = Column("TestName", VARCHAR(100))
     result = Column("result", VARCHAR(100))
-    min_warn_bar = Column("NormMinimum", float())
-    max_warn_bar = Column("NormMaximum", float())
-    at = Column("OrderDate", DateTime(), primary_key=True)
+    min_warn_bar = Column("NormMinimum", Float())
+    max_warn_bar = Column("NormMaximum", Float())
     collection_date = Column("collectiondate", DateTime())
     result_time = Column("ResultTime", DateTime())
 
