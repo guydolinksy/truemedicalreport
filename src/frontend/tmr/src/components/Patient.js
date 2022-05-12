@@ -19,7 +19,7 @@ import Moment from "react-moment";
 import {value} from "lodash/seq";
 
 export const patientDataContext = createContext({
-    data: null,
+    data: {},
     update: () => null,
     loading: true,
 });
@@ -62,9 +62,9 @@ const PatientAge = ({patient}) => {
         female: 'בת',
     }
     return !patient || loading ? null : <span>
-        ,&nbsp;{genderedAge[value.external_data.gender]}&nbsp;
-        <Tooltip overlay={<Moment date={value.external_data.birthdate} format={"DD/MM/YYYY"}/>}>
-            {value.external_data.age}
+        ,&nbsp;{genderedAge[value.gender]}&nbsp;
+        <Tooltip overlay={<Moment date={value.birthdate} format={"DD/MM/YYYY"}/>}>
+            {value.age}
         </Tooltip>
     </span>
 }
@@ -74,7 +74,7 @@ export const PatientComplaint = ({patient, style}) => {
     const innerStyle = {
         userSelect: "none",
         padding: 20,
-        backgroundColor: severityColor[value.internal_data.severity.value],
+        backgroundColor: severityColor[value.severity.value],
         cursor: "pointer",
         textAlign: "center",
         ...style
@@ -86,10 +86,10 @@ export const PatientComplaint = ({patient, style}) => {
             navigate(`#info#${patient}#basic#complaint`);
             e.stopPropagation();
         }}>
-        <Tooltip overlay={'תלונה עיקרית'}>{value.external_data.complaint}</Tooltip>
+        <Tooltip overlay={'תלונה עיקרית'}>{value.complaint}</Tooltip>
         &nbsp;-&nbsp;
         <Tooltip overlay={'זמן מקבלה'}>
-            <Moment durationFromNow format={'h:mm'} date={value.external_data.arrival}/>
+            <Moment durationFromNow format={'h:mm'} date={value.arrival}/>
         </Tooltip>
     </div>
 }
@@ -99,7 +99,7 @@ export const PatientWarning = ({patient, warning, index, style}) => {
         style={{
             userSelect: "none",
             padding: 20,
-            backgroundColor: severityColor[warning.severity],
+            backgroundColor: severityColor[warning.severity.value],
             cursor: patient ? "pointer" : undefined,
             textAlign: "center",
             ...style
@@ -129,15 +129,15 @@ const PatientAwaiting = () => {
     const {loading, value, update} = useContext(patientDataContext.context);
     const [editing, setEditing] = useState(false)
 
-    const [currentValue, setCurrentValue] = useState(value.internal_data.awaiting)
+    const [currentValue, setCurrentValue] = useState(value.awaiting)
 
     useEffect(() => {
-        setCurrentValue(value.internal_data.awaiting);
+        setCurrentValue(value.awaiting);
         setEditing(false)
     }, [value])
 
     const onSave = useCallback(() => {
-        update(['internal_data', 'awaiting'], currentValue);
+        update(['awaiting'], currentValue);
         setEditing(false)
     }, [currentValue, update])
 
@@ -166,10 +166,10 @@ const PatientAwaiting = () => {
 const PatientHeader = ({patient, avatar}) => {
     const {value} = useContext(patientDataContext.context);
     if (!patient)
-        return <Button shape={"circle"} type={"text"}>{avatar}</Button>
+        return <Button shape={"circle"} type={"text"}>{avatar || <UserOutlined/>}</Button>
     return <span>
-        {avatar}&nbsp;<Tooltip overlay={`ת.ז. ${value.external_data.id_ || 'לא ידוע'}`}>
-            {value.external_data.name}
+        {avatar || value.admission.bed || <UserOutlined/>}&nbsp;<Tooltip overlay={`ת.ז. ${value.id_ || 'לא ידוע'}`}>
+            {value.name}
         </Tooltip><PatientAge patient={patient}/>
     </span>
 }
@@ -179,9 +179,9 @@ const PatientInner = ({patient, avatar, style}) => {
     const navigate = useNavigate();
     const {value, update, loading} = useContext(patientDataContext.context);
 
-    let text = value.internal_data.warnings.length || <Tooltip overlay={'סימון דגל'}>
+    let text = value.warnings.length || <Tooltip overlay={'סימון דגל'}>
         {<FlagFilled onClick={e => {
-            update(['internal_data', 'flagged'], !value.internal_data.flagged);
+            update(['flagged'], !value.flagged);
             e.stopPropagation();
         }}/>}
     </Tooltip>
@@ -190,17 +190,17 @@ const PatientInner = ({patient, avatar, style}) => {
     return loading ? <Spin/> : <HashMatch match={['highlight', patient]}>{({matched, match}) =>
         <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
             paddingRight: -4, paddingLeft: -4, animation: matched ? `highlight-${match[0]} 1s ease-out` : undefined
-        }} title={<PatientHeader patient={patient} avatar={avatar || <UserOutlined/>}/>} style={{
+        }} title={<PatientHeader patient={patient} avatar={avatar}/>} style={{
             margin: 0, maxWidth: 400, minWidth: 300, borderStyle: patient ? "solid" : "dotted",
-            borderColor: severityBorderColor[value.internal_data.severity.value], ...style
+            borderColor: severityBorderColor[value.severity.value], ...style
         }} hoverable onClick={() => navigate(`#info#${patient}#basic`)}
               extra={<PatientAwaiting/>} actions={patientMeasures(patient, value.measures)}>
             <div style={style}>
                 <Badge.Ribbon text={text}
-                              color={value.internal_data.warnings.length ? "red" : value.internal_data.flagged ? "blue" : "grey"}>
+                              color={value.warnings.length ? "red" : value.flagged ? "blue" : "grey"}>
                     <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
                         <div><PatientComplaint patient={patient} style={{direction: "rtl"}}/></div>
-                        {value.internal_data.warnings.map((warning, i) => <div key={i}>
+                        {value.warnings.map((warning, i) => <div key={i}>
                             <PatientWarning patient={patient} warning={warning} index={i} style={{direction: "rtl"}}/>
                         </div>)}
                     </Carousel>
@@ -209,29 +209,33 @@ const PatientInner = ({patient, avatar, style}) => {
         </Card>
     }</HashMatch>
 }
-export const Patient = ({patient, avatar, style, onError}) => {
-    if (!patient)
-        return <Card type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
-            paddingRight: -4, paddingLeft: -4
-        }} title={<PatientHeader avatar={avatar || <UserOutlined/>}/>} style={{
-            margin: 0,
-            maxWidth: 400,
-            minWidth: 300,
-            borderStyle: patient ? "solid" : "dotted",
-            borderColor: "#d9d9d9", ...style
-        }} actions={patientMeasures()}>
-            <div style={style}>
-                <div style={{
-                    userSelect: "none",
-                    padding: 20,
-                    backgroundColor: '#1a1a1a',
-                    textAlign: "center", ...style
-                }}>
-                    מיטה ריקה
-                </div>
+export const Patient = ({patient, loading, avatar, style, onError}) => {
+    const placeholder = (content) => <Card type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
+        paddingRight: -4, paddingLeft: -4
+    }} title={<PatientHeader avatar={avatar || <UserOutlined/>}/>} style={{
+        margin: 0,
+        maxWidth: 400,
+        minWidth: 300,
+        borderStyle: patient ? "solid" : "dotted",
+        borderColor: "#d9d9d9", ...style
+    }} actions={patientMeasures()}>
+        <div style={style}>
+            <div style={{
+                userSelect: "none",
+                padding: 20,
+                backgroundColor: '#1a1a1a',
+                textAlign: "center", ...style
+            }}>
+                {content}
             </div>
-        </Card>
-    return <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={{}} onError={onError}>
-        {({loading}) => loading ? <Spin/> : <PatientInner patient={patient} avatar={avatar} style={style}/>}
-    </patientDataContext.Provider>
+        </div>
+    </Card>
+    return patient ? <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={{
+        warnings: [], awaiting: null, severity: {value: 0, at: null}, flagged: null,
+        id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
+        complaint: null, admission: {bed: null}, measures: {}
+    }} onError={onError}>
+        {data => data.loading || loading ? placeholder(<Spin size={"small"}/>) :
+            <PatientInner patient={patient} avatar={avatar} style={style}/>}
+    </patientDataContext.Provider> : placeholder('מיטה ריקה')
 };

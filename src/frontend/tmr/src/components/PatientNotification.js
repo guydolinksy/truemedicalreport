@@ -25,7 +25,7 @@ export const PatientNotification = ({notification, onTitleClick, ...props}) => {
             lineHeight: '20px',
             minWidth: "0px"
         }}>
-            <div><UserOutlined/>{notification.patient.external_data.name}</div>
+            <div><UserOutlined/>{notification.patient.name}</div>
             <div style={{textOverflow: "ellipsis", fontSize: "10px"}}>{notification.preview}</div>
         </div>
         <div style={{
@@ -35,9 +35,9 @@ export const PatientNotification = ({notification, onTitleClick, ...props}) => {
             lineHeight: '20px',
             minWidth: "0px"
         }}>
-            <Moment style={{display: "block"}} date={notification.at || notification.patient.external_data.arrival} format={'hh:mm'}/>
+            <Moment style={{display: "block"}} date={notification.at || notification.patient.arrival} format={'hh:mm'}/>
             <Space>
-                {notification.patient.internal_data.flagged && <PushpinOutlined style={{marginLeft: 0}}/>}
+                {notification.patient.flagged && <PushpinOutlined style={{marginLeft: 0}}/>}
                 {notification.notifications.length > 0 && <Badge style={{backgroundColor: colors[notification.level]}}
                                                                  count={notification.notifications.length}
                                                                  size={"small"}/>}

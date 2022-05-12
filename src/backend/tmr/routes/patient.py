@@ -1,5 +1,4 @@
-from json import loads
-
+import logbook
 import requests
 from fastapi import APIRouter, Body
 from werkzeug.exceptions import NotFound
@@ -9,11 +8,15 @@ from ..utils import prepare_update_object
 
 patient_router = APIRouter()
 
+logger = logbook.Logger(__name__)
+
 
 @patient_router.get("/{patient}")
 def get_patient_by_id(patient: str) -> dict:
     res = requests.get(f"http://medical-dal/medical-dal/patients/{patient}").json()
-    return loads(Patient(**res).json(models_as_dict=False)) if res else None
+    if not res:
+        raise NotFound()
+    return Patient(**res).dict()
 
 
 @patient_router.get("/{patient}/info")
@@ -34,4 +37,3 @@ async def update_patient_by_id(patient: str, path=Body(...), value=Body(...), da
 async def update_patient_info_by_id(patient: str, path=Body(...), value=Body(...), data=Body(...)) -> dict:
     update_object = prepare_update_object(path, value)
     return requests.post(f"http://medical-dal/medical-dal/patients/{patient}", json=dict(**update_object)).json()
-

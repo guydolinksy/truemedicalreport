@@ -28,7 +28,6 @@ class ChameleonLabs(Base):
             category_id=str(self.category_id)[0:4],
             category_name=None,
             test_type_name=self.test_type_name,
-            full_result=self.result,
             min_warn_bar=self.min_warn_bar,
             panic_min_warn_bar=None,
             max_warn_bar=self.max_warn_bar,
