@@ -4,6 +4,8 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
 
+from tmr_common.data_models.notification import LabsNotification
+
 
 class LabsCategories(Enum):
     completeBloodCount = 'cbc'
@@ -43,7 +45,7 @@ class LabTest(BaseModel):
     panic_min_warn_bar: Optional[float]
     max_warn_bar: Optional[float]
     panic_max_warn_bar: Optional[float]
-    at: Optional[datetime]
+    at: Optional[str]
 
     class Config:
         orm_mode = True
@@ -63,6 +65,9 @@ class LabsResultsOfPatient(BaseModel):
     class Config:
         orm_mode = True
 
-    #TODO: implement!
+    #TODO: Plan wanted notification
     def to_notification(self):
-        pass
+        return LabsNotification(
+            static_id=self.external_id,
+            patient_id=self.patient_id,
+        )

@@ -70,10 +70,10 @@ class MedicalDal:
     def get_patient_images(self, patient: str) -> List[Imaging]:
         return [Imaging(oid=str(image.pop("_id")), **image) for image in self.db.images.find({"patient_id": patient})]
 
-    #TODO: Need to be tested
-    def get_patient_labs(self, patient:str) -> List[LabsResultsOfPatient]:
-        return [LabsResultsOfPatient(oid=str(labs.pop("_id")), **labs) for labs in self.db.labs.find({"patient_id": patient})]
-
+    # TODO: Need to be tested
+    def get_patient_labs(self, patient: str) -> List[LabsResultsOfPatient]:
+        return [LabsResultsOfPatient(oid=str(labs.pop("_id")), **labs) for labs in
+                self.db.labs.find({"patient_id": patient})]
 
     def get_patient_by_id(self, patient: str) -> Patient:
         res = self.db.patients.find_one({"_id": ObjectId(patient)})
@@ -198,7 +198,7 @@ class MedicalDal:
                 await self.notify_patient(patient=patient.oid)
                 await self.notify_notification(patient=patient.oid)
 
-    #TODO: Need to be tested
+    # TODO: Need to be tested
     async def upsert_labs(self, labs_results: LabsResultsOfPatient, action: Action):
         res = self.db.patients.find_one({"external_id": labs_results.patient_id})
         if not res:
