@@ -2,7 +2,7 @@ import datetime
 import json
 from dataclasses import dataclass
 from enum import Enum
-from typing import List
+from typing import List, Dict
 
 import logbook
 from bson.json_util import dumps
@@ -11,6 +11,7 @@ from pymongo.database import Database
 from werkzeug.exceptions import NotFound
 
 from tmr_common.data_models.imaging import Imaging
+from tmr_common.data_models.labs import LabTest, LabsResultsInCategory, LabsResultsOfPatient
 from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures, Latest
 from tmr_common.data_models.measures import Measures
 from tmr_common.data_models.notification import Notification
@@ -68,6 +69,11 @@ class MedicalDal:
 
     def get_patient_images(self, patient: str) -> List[Imaging]:
         return [Imaging(oid=str(image.pop("_id")), **image) for image in self.db.images.find({"patient_id": patient})]
+
+    #TODO: Need to be tested
+    def get_patient_labs(self, patient:str) -> List[LabsResultsOfPatient]:
+        return [LabsResultsOfPatient(oid=str(labs.pop("_id")), **labs) for labs in self.db.labs.find({"patient_id": patient})]
+
 
     def get_patient_by_id(self, patient: str) -> Patient:
         res = self.db.patients.find_one({"_id": ObjectId(patient)})
@@ -187,6 +193,34 @@ class MedicalDal:
                 self.db.imaging.update_one({"external_id": imaging_obj.external_id},
                                            {'$set': imaging_obj.dict()}, upsert=True)
                 notification = imaging_obj.to_notification()
+                self.db.notifications.update_one({"notification_id": notification.notification_id},
+                                                 {'$set': notification.dict()}, upsert=True)
+                await self.notify_patient(patient=patient.oid)
+                await self.notify_notification(patient=patient.oid)
+
+    #TODO: Need to be tested
+    async def upsert_labs(self, labs_results: LabsResultsOfPatient, action: Action):
+        res = self.db.patients.find_one({"external_id": labs_results.patient_id})
+        if not res:
+            raise ValueError(f'Patient {labs_results.patient_id} not found.')
+        patient = Patient(**res)
+        match action:
+            case Action.remove:
+                pass
+            case Action.insert:
+                self.db.labs.update_one({"external_id": labs_results.external_id},
+                                        {'$set': json.loads(json.dumps(labs_results, default=lambda o: o.__dict__))},
+                                        upsert=True)
+                notification = labs_results.to_notification()
+                self.db.notifications.update_one({"notification_id": notification.notification_id},
+                                                 {'$set': notification.dict()}, upsert=True)
+                await self.notify_patient(patient=patient.oid)
+                await self.notify_notification(patient=patient.oid)
+            case Action.update:
+                self.db.imaging.update_one({"external_id": labs_results.external_id},
+                                           {'$set': json.loads(json.dumps(labs_results, default=lambda o: o.__dict__))},
+                                           upsert=True)
+                notification = labs_results.to_notification()
                 self.db.notifications.update_one({"notification_id": notification.notification_id},
                                                  {'$set': notification.dict()}, upsert=True)
                 await self.notify_patient(patient=patient.oid)
