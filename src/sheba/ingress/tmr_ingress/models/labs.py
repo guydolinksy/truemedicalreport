@@ -18,7 +18,7 @@ class ChameleonLabs(Base):
     min_warn_bar = Column("NormMinimum", float())
     max_warn_bar = Column("NormMaximum", float())
     at = Column("OrderDate", DateTime(), primary_key=True)
-    collection_date = Column("ResultTime", DateTime())
+    collection_date = Column("collectiondate", DateTime())
     result_time = Column("ResultTime", DateTime())
 
     def to_initial_dal(self):
