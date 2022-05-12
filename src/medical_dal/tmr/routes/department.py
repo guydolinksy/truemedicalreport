@@ -79,6 +79,6 @@ async def update_labs(department: str, labs: Dict[str, LabsResultsOfPatient] = B
         for lab_result in set(existing) - set(updated):
             await dal.upsert_labs(labs_results=existing[lab_result], action=Action.remove)
         for lab_result in set(updated) - set(existing):
-            await dal.upsert_imaging(imaging_obj=updated[lab_result], action=Action.insert)
+            await dal.upsert_labs(labs_results=existing[lab_result], action=Action.insert)
         for lab_result in set(updated) & set(existing):
-            await dal.upsert_imaging(imaging_obj=updated[lab_result], action=Action.update)
+            await dal.upsert_labs(labs_results=existing[lab_result], action=Action.update)
