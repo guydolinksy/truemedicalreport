@@ -218,10 +218,9 @@ class MedicalDal:
                                     {'$set': dict(patient_id=patient_id, **category.dict())}, upsert=True)
 
     async def upsert_councils(self, councils_obj: Councils, action: Action):
-        res = self.db.patients.find_one({"external_id": councils_obj.patient_id})
-        print(res)
+        res = self.db.patients.find_one({"external_id": str(councils_obj.patient_id)})
         if not res:
-            logger.error(f'Councils for Patient {councils_obj.patient_id} Not Fount')
+            logger.error(f'Councils, Patient {councils_obj.patient_id} Not Fount')
             return
         patient = Patient(**res)
         match action:
