@@ -57,3 +57,13 @@ async def update_labs(department: Departments, dal: SqlToDal = Depends(dal_updat
     logger.info("Update labs...")
     dal.update_labs(department=department)
     logger.info("Done.")
+
+
+@updater_router.on_event('startup')
+@repeat_every(seconds=30, logger=logger)
+@inject_dependencies(department=Departments.er)
+@updater_router.post("/update_councils", status_code=201)
+async def update_councils(department: Departments, dal: SqlToDal = Depends(dal_updater)):
+    logger.info("Update councils...")
+    dal.update_councils(department=department)
+    logger.info("Done.")

@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from ..models.arc_patient import ARCPatient
+from ..models.chameleon_councils import ChameleonCouncils
 from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
@@ -89,3 +90,18 @@ class SqlToDal(object):
             res.raise_for_status()
         except HTTPError as e:
             logger.exception(f'Could not run labs handler. {e}')
+
+    def update_councils(self, department: Departments):
+        try:
+            logger.debug('Getting councils for `{}`...', department.name)
+            councils = {}
+            with self.session() as session:
+                for council in session.query(ChameleonCouncils). \
+                        join(ChameleonMain, ChameleonCouncils.patient_id == ChameleonMain.patient_id). \
+                        where(ChameleonMain.unit == department.name).order_by(ChameleonCouncils.order_date.desc()):
+                    councils.setdefault(council.patient_id, []).append(council.to_dal().dict())
+            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/councils',
+                                json={'councils': councils})
+            res.raise_for_status()
+        except HTTPError:
+            logger.exception('Could not run councils handler.')

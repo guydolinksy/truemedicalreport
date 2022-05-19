@@ -4,6 +4,7 @@ import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
+from tmr_common.data_models.councils import Councils
 from tmr_common.data_models.imaging import Imaging
 from tmr_common.data_models.labs import LabTest
 from tmr_common.data_models.measures import Measure
@@ -76,3 +77,17 @@ async def update_labs(labs: Dict[str, List[LabTest]] = Body(..., embed=True),
             await dal.upsert_labs(patient_id=patient, new_labs=labs[patient])
         except ValueError:
             logger.exception('Cannot update labs')
+
+
+@department_router.post("/{department}/councils")
+async def update_councils(department: str, councils: Dict[str, List[Councils]] = Body(..., embed=True),
+                          dal: MedicalDal = Depends(medical_dal)):
+    for patient in {patient.external_id for patient in dal.get_department_patients(department)} | set(councils):
+        updated = {council.external_id: council for council in councils.get(patient, [])}
+        existing = {council.external_id: council for council in dal.get_patient_councils(patient)}
+        for council in set(existing) - set(updated):
+            await dal.upsert_councils(councils_obj=existing[council], action=Action.remove)
+        for council in set(updated) - set(existing):
+            await dal.upsert_councils(councils_obj=updated[council], action=Action.insert)
+        for council in set(updated) & set(existing):
+            await dal.upsert_councils(councils_obj=updated[council], action=Action.update)

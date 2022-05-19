@@ -14,6 +14,7 @@ from tmr_common.data_models.imaging import ImagingTypes, ImagingStatus
 from tmr_common.data_models.labs import LabCategories, LabTestType
 from tmr_common.data_models.notification import NotificationLevel
 from tmr_ingress.models.arc_patient import ARCPatient
+from tmr_ingress.models.chameleon_councils import ChameleonCouncils
 from tmr_ingress.models.chameleon_imaging import ChameleonImaging
 from tmr_ingress.models.chameleon_labs import ChameleonLabs
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
@@ -280,6 +281,28 @@ class FakeMain(object):
                     session.add(copy.deepcopy(lab_result))
                     session.commit()
 
+    def _generate_councils_dates(self, chameleon_id=None, department=None, wing=None):
+        if chameleon_id:
+            patients = {chameleon_id}
+        elif department and wing:
+            patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 5)]
+        else:
+            raise ValueError()
+        for patient in patients:
+            order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC)
+            council_date = self.faker.date_time_between_dates('+8000m', '+10000m').astimezone(pytz.UTC)
+            chameleon_councils = ChameleonCouncils()
+            chameleon_councils.council_name = random.choice(['אא"ג', 'מוח', 'אונקולוגיה'])
+            chameleon_councils.patient_id = patient
+            chameleon_councils.doctor_id = random.randint(0,2)
+            chameleon_councils.doctor_name = ["רמדאן אבו עקלין", "ניבה לוי", "פבל ליידרמן"][
+                chameleon_councils.doctor_id]
+            chameleon_councils.order_date = order_date
+            chameleon_councils.council_date = council_date
+            with self.session() as session:
+                session.add(chameleon_councils)
+                session.commit()
+
     async def admit_patients(self, department):
         for wing in self.wings:
             if random.randint(0, 1):
@@ -303,3 +326,8 @@ class FakeMain(object):
     async def update_labs(self, department):
         for wing in self.wings:
             self._generate_labs(department=department, wing=wing)
+
+    async def update_councils(self, department):
+        for wing in self.wings:
+            self._generate_councils_dates(department=department, wing=wing)
+

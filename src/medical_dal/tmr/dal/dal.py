@@ -10,6 +10,7 @@ from bson.objectid import ObjectId
 from pymongo.database import Database
 from werkzeug.exceptions import NotFound
 
+from tmr_common.data_models.councils import Councils
 from tmr_common.data_models.imaging import Imaging
 from tmr_common.data_models.labs import LabTest, LabCategory, LabStatus, StatusInHebrew
 from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures, Latest
@@ -69,6 +70,9 @@ class MedicalDal:
 
     def get_patient_images(self, patient: str) -> List[Imaging]:
         return [Imaging(oid=str(image.pop("_id")), **image) for image in self.db.images.find({"patient_id": patient})]
+
+    def get_patient_councils(self, patient: str) -> List[Councils]:
+        return [Councils(oid=str(council.pop("_id")), **council) for council in self.db.councils.find({"patient_id": patient})]
 
     def get_patient_labs(self, patient: str) -> List[LabTest]:
         return [LabTest(oid=str(labs.pop("_id")), **labs) for labs in self.db.labs.find({"patient_id": patient})]
@@ -212,6 +216,27 @@ class MedicalDal:
             logger.debug(category.dict())
             self.db.labs.update_one({"patient_id": patient_id, **category.query_key},
                                     {'$set': dict(patient_id=patient_id, **category.dict())}, upsert=True)
+
+    async def upsert_councils(self, councils_obj: Councils, action: Action):
+        res = self.db.patients.find_one({"external_id": councils_obj.patient_id})
+        print(res)
+        if not res:
+            logger.error(f'Councils for Patient {councils_obj.patient_id} Not Fount')
+            return
+        patient = Patient(**res)
+        match action:
+            case Action.remove:
+                pass
+            case Action.insert:
+                self.db.councils.update_one({"external_id": councils_obj.external_id},
+                                           {'$set': councils_obj.dict()}, upsert=True)
+                await self.notify_patient(patient=patient.oid)
+                await self.notify_notification(patient=patient.oid)
+            case Action.update:
+                self.db.councils.update_one({"external_id": councils_obj.external_id},
+                                           {'$set': councils_obj.dict()}, upsert=True)
+                await self.notify_patient(patient=patient.oid)
+                await self.notify_notification(patient=patient.oid)
 
     @staticmethod
     async def notify_admission(admission: Admission):
