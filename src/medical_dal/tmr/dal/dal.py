@@ -10,6 +10,7 @@ from bson.objectid import ObjectId
 from pymongo.database import Database
 from werkzeug.exceptions import NotFound
 
+from tmr_common.data_models.aggregate.medical_sum import WaitForDoctor, MedicalSum
 from tmr_common.data_models.councils import Councils
 from tmr_common.data_models.imaging import Imaging
 from tmr_common.data_models.labs import LabTest, LabCategory, LabStatus, StatusInHebrew
@@ -72,7 +73,8 @@ class MedicalDal:
         return [Imaging(oid=str(image.pop("_id")), **image) for image in self.db.images.find({"patient_id": patient})]
 
     def get_patient_councils(self, patient: str) -> List[Councils]:
-        return [Councils(oid=str(council.pop("_id")), **council) for council in self.db.councils.find({"patient_id": patient})]
+        return [Councils(oid=str(council.pop("_id")), **council) for council in
+                self.db.councils.find({"patient_id": patient})]
 
     def get_patient_labs(self, patient: str) -> List[LabTest]:
         return [LabTest(oid=str(labs.pop("_id")), **labs) for labs in self.db.labs.find({"patient_id": patient})]
@@ -228,14 +230,31 @@ class MedicalDal:
                 pass
             case Action.insert:
                 self.db.councils.update_one({"external_id": councils_obj.external_id},
-                                           {'$set': councils_obj.dict()}, upsert=True)
+                                            {'$set': councils_obj.dict()}, upsert=True)
                 await self.notify_patient(patient=patient.oid)
                 await self.notify_notification(patient=patient.oid)
             case Action.update:
                 self.db.councils.update_one({"external_id": councils_obj.external_id},
-                                           {'$set': councils_obj.dict()}, upsert=True)
+                                            {'$set': councils_obj.dict()}, upsert=True)
                 await self.notify_patient(patient=patient.oid)
                 await self.notify_notification(patient=patient.oid)
+
+    def get_waiting_for_doctor_list(self) -> [WaitForDoctor]:
+        patient_waiting_for_doctor = self.db.councils. \
+            aggregate([{"$match": {"arrived": None}}, {
+            "$group": {
+                "_id": "$doctor_name",
+                "sum": {"$sum": 1}
+            }
+        }])
+        waiting_for_doctor_list = [WaitForDoctor(oid=str(data.pop("_id")), **data) for data in
+                                   patient_waiting_for_doctor]
+        return waiting_for_doctor_list
+
+    def get_people_amount_wait_council(self) -> int:
+        patient_waiting_for_council = self.db.councils. \
+            aggregate([{"$match": {"arrived": None}}, {"$count": "waiting"}])
+        return list(patient_waiting_for_council)[0]["waiting"]
 
     @staticmethod
     async def notify_admission(admission: Admission):
