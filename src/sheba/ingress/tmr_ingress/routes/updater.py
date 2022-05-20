@@ -67,3 +67,13 @@ async def update_councils(department: Departments, dal: SqlToDal = Depends(dal_u
     logger.info("Update councils...")
     dal.update_councils(department=department)
     logger.info("Done.")
+
+
+@updater_router.on_event('startup')
+@repeat_every(seconds=600, wait_first=True, logger=logger)
+@inject_dependencies()
+@updater_router.post("/clear", status_code=201)
+async def clear(dal: SqlToDal = Depends(dal_updater)):
+    logger.info("Clearing...")
+    dal.clear()
+    logger.info("Done.")

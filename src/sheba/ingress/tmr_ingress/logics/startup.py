@@ -80,6 +80,12 @@ async def init_wings():
         'department': 'er',
         'blocks': []
     })
+    db.wings.insert_one({
+        'key': 'S',
+        'name': 'חדר הלם',
+        'department': 'er',
+        'blocks': []
+    })
 
 
 async def startup():
