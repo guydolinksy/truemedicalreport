@@ -1,6 +1,7 @@
 import datetime
 from enum import Enum
 
+import pytz
 from sqlalchemy import Column, Integer, String, VARCHAR, DateTime
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.util import classproperty
@@ -27,8 +28,8 @@ class ChameleonMain(Base):
 
     def to_dal(self):
         return dict(
-            arrival=self.arrival.isoformat(),
+            arrival=self.arrival.astimezone(pytz.UTC).isoformat(),
             complaint=self.main_cause,
             admission=Admission(department=self.unit, wing=self.unit_wing).dict(),
-            esi=ESIScore(value=self.esi, at=self.arrival.isoformat()).dict(),
+            esi=ESIScore(value=self.esi, at=self.arrival.astimezone(pytz.UTC).isoformat()).dict(),
         )

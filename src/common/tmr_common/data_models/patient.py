@@ -1,14 +1,15 @@
 import datetime
-from typing import Optional, List, Any
+from enum import Enum
+from typing import Optional, List, Any, Dict
 
 from pydantic import BaseModel
 
+from .esi_score import ESIScore
 from .imaging import Imaging
 from .labs import LabCategory
-from .measures import Measures, Pressure, Systolic, FullMeasures
+from .measures import Measures, FullMeasures
 from .notification import Notification, NotificationLevel
 from .severity import Severity
-from .esi_score import ESIScore
 
 
 class Admission(BaseModel):
@@ -40,8 +41,31 @@ class ExternalPatient(BaseModel):
         super(ExternalPatient, self).__init__(**kwargs)
 
 
+class Icon(Enum):
+    pulse = 1
+    temperature = 2
+    saturation = 3
+    blood_pressure = 4
+    imaging = 5
+    laboratory = 6
+    doctor = 7
+    nurse = 8
+
+
+class Awaiting(BaseModel):
+    awaiting_for: str
+    icon: Icon
+    since: str
+    limit: int
+    complete: bool = False
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+
 class InternalPatient(BaseModel):
-    awaiting: Optional[str]
+    awaiting: Dict[str, Awaiting]
     severity: Severity
     flagged: bool
     warnings: List[Warning]
@@ -54,7 +78,10 @@ class InternalPatient(BaseModel):
     def from_external_patient(cls, patient: ExternalPatient):
         return cls(
             severity=Severity(**patient.esi.dict()),
-            awaiting='מחכה לך',
+            awaiting={
+                'doctor': Awaiting(awaiting_for='בדיקת צוות רפואי', since=patient.arrival, limit=1500, icon=Icon.doctor),
+                'nurse': Awaiting(awaiting_for='בדיקת צוות סיעודי', since=patient.arrival, limit=1500, icon=Icon.nurse),
+            },
             flagged=False,
             warnings=[],
             measures=Measures(),

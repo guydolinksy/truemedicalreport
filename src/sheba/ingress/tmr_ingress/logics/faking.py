@@ -294,7 +294,7 @@ class FakeMain(object):
             chameleon_councils = ChameleonCouncils()
             chameleon_councils.council_name = random.choice(['אא"ג', 'מוח', 'אונקולוגיה'])
             chameleon_councils.patient_id = patient
-            chameleon_councils.doctor_id = random.randint(0,2)
+            chameleon_councils.doctor_id = random.randint(0, 2)
             chameleon_councils.doctor_name = ["רמדאן אבו עקלין", "ניבה לוי", "פבל ליידרמן"][
                 chameleon_councils.doctor_id]
             chameleon_councils.order_date = order_date
@@ -331,3 +331,11 @@ class FakeMain(object):
         for wing in self.wings:
             self._generate_councils_dates(department=department, wing=wing)
 
+    def clear(self):
+        with self.session() as session:
+            session.query(ChameleonMain).delete()
+            session.query(ARCPatient).delete()
+            session.query(ChameleonImaging).delete()
+            session.query(ChameleonLabs).delete()
+            session.query(Measurements).delete()
+            session.commit()

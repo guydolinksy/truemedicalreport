@@ -105,12 +105,3 @@ class SqlToDal(object):
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run councils handler.')
-
-    def clear(self):
-        with self.session() as session:
-            session.query(ChameleonMain).delete()
-            session.query(ARCPatient).delete()
-            session.query(ChameleonImaging).delete()
-            session.query(ChameleonLabs).delete()
-            session.query(Measurements).delete()
-            session.commit()

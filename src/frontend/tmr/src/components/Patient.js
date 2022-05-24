@@ -1,22 +1,16 @@
-import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
-import {Badge, Button, Card, Carousel, Input, Spin, Tooltip} from "antd";
+import React, {useContext, useRef} from "react";
+import {Badge, Button, Card, Carousel, Space, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {
-    faClock,
-    faHeart,
-    faHeartPulse,
-    faPercent,
-    faTemperatureHalf,
-    faWarning,
-} from "@fortawesome/free-solid-svg-icons";
-import {CheckOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
+import {faHeart, faHeartPulse, faPercent, faTemperatureHalf, faWarning,} from "@fortawesome/free-solid-svg-icons";
+import {FlagFilled, UserOutlined} from '@ant-design/icons';
 import {createContext} from "./DataContext";
 import {useLocation, useNavigate} from "react-router";
 import {HashMatch} from "./HashMatch";
-import debounce from 'lodash/debounce';
 
 import Moment from "react-moment";
 import {value} from "lodash/seq";
+import {CustomIcon} from "./CustomIcon";
+import moment from "moment";
 
 export const patientDataContext = createContext({
     data: {},
@@ -126,41 +120,25 @@ const patientMeasures = (patient, measures) => {
 }
 
 const PatientAwaiting = () => {
-    const {loading, value, update} = useContext(patientDataContext.context);
-    const [editing, setEditing] = useState(false)
-
-    const [currentValue, setCurrentValue] = useState(value.awaiting)
-
-    useEffect(() => {
-        setCurrentValue(value.awaiting);
-        setEditing(false)
-    }, [value])
-
-    const onSave = useCallback(() => {
-        update(['awaiting'], currentValue);
-        setEditing(false)
-    }, [currentValue, update])
+    const AWAITING = ['doctor', 'nurse', 'laboratory', 'imaging', 'consult']
+    const {loading, value} = useContext(patientDataContext.context);
 
     if (loading)
         return <Spin/>
-    return <Tooltip overlay={'ממתין.ה עבור'}>{!editing ?
-        <Button style={{paddingRight: 8, paddingLeft: 8, maxWidth: 150}} type={"text"}
-                onClick={e => {
-                    setEditing(true);
-                    e.stopPropagation();
-                }}><span style={{userSelect: "none", overflowX: "hidden", width: "100%"}}>
-        <FontAwesomeIcon icon={faClock}/>&nbsp;{currentValue}
-    </span></Button> :
-        <Input.Group style={{paddingRight: 8, paddingLeft: 8, width: 150, display: "flex"}} compact>
-            <Input size={"small"} onClick={e => e.stopPropagation()} defaultValue={currentValue}
-                   onChange={debounce(e => setCurrentValue(e.target.value), 300)} onPressEnter={onSave}
-                   onBlur={onSave} style={{flex: 1}}/>
-            <Button type={"primary"} size={"small"} onClick={e => {
-                onSave();
-                e.stopPropagation();
-            }} icon={<CheckOutlined/>}/>
-        </Input.Group>}
-    </Tooltip>
+    return <Space>{AWAITING.filter(k => value.awaiting[k]).map((k, i) => {
+        let status, {awaiting_for, since, limit, complete, icon} = value.awaiting[k];
+        if (complete)
+            status = 'success'
+        else if (moment().subtract(limit, "seconds").isBefore(since))
+            status = 'processing'
+        else
+            status = 'error'
+        return <Tooltip key={i} overlay={<span>
+            ממתין.ה עבור&nbsp;{awaiting_for}&nbsp;-&nbsp;<Moment durationFromNow format={'h:mm'} date={since}/>
+        </span>}>
+            <span><CustomIcon status={status} icon={icon}/></span>
+        </Tooltip>
+    })}</Space>
 }
 
 const PatientHeader = ({patient, avatar}) => {
@@ -231,7 +209,7 @@ export const Patient = ({patient, loading, avatar, style, onError}) => {
         </div>
     </Card>
     return patient ? <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={{
-        warnings: [], awaiting: null, severity: {value: 0, at: null}, flagged: null,
+        warnings: [], awaiting: [], severity: {value: 0, at: null}, flagged: null,
         id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
         complaint: null, admission: {bed: null}, measures: {}
     }} onError={onError}>

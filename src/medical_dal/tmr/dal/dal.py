@@ -215,7 +215,6 @@ class MedicalDal:
             c.results[str(lab.test_type_id)] = lab
             c.status = StatusInHebrew[min({l.status for l in c.results.values()})]
         for category in labs.values():
-            logger.debug(category.dict())
             self.db.labs.update_one({"patient_id": patient_id, **category.query_key},
                                     {'$set': dict(patient_id=patient_id, **category.dict())}, upsert=True)
 

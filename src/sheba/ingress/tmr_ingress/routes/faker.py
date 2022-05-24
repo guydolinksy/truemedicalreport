@@ -12,7 +12,7 @@ logger = logbook.Logger(__name__)
 
 
 @faker_router.on_event('startup')
-@repeat_every(seconds=100, logger=logger)
+@repeat_every(seconds=60, logger=logger)
 @inject_dependencies(department=Departments.er)
 @faker_router.post("/patients/admit", tags=["Patient"], status_code=201)
 async def admit_patient(department: Departments, dal: FakeMain = Depends(FakeMain)):
@@ -27,7 +27,7 @@ async def admit_patient(department: Departments, dal: FakeMain = Depends(FakeMai
 
 
 @faker_router.on_event('startup')
-@repeat_every(seconds=200, logger=logger)
+@repeat_every(seconds=240, logger=logger)
 @inject_dependencies(department=Departments.er)
 @faker_router.post("/patients/discharge", tags=["Patient"], status_code=201)
 async def discharge_patient(department: Departments, dal: FakeMain = Depends(FakeMain)):
@@ -42,7 +42,7 @@ async def discharge_patient(department: Departments, dal: FakeMain = Depends(Fak
 
 
 @faker_router.on_event('startup')
-@repeat_every(seconds=100, logger=logger)
+@repeat_every(seconds=30, logger=logger)
 @inject_dependencies(department=Departments.er)
 @faker_router.post("/measurements", tags=["Measurements"], status_code=201)
 async def generate_fake_measurements_for_all_patients(department: Departments, dal: FakeMain = Depends(FakeMain)):
@@ -55,7 +55,7 @@ async def generate_fake_measurements_for_all_patients(department: Departments, d
 
 
 @faker_router.on_event('startup')
-@repeat_every(seconds=150, logger=logger)
+@repeat_every(seconds=60, logger=logger)
 @inject_dependencies(department=Departments.er)
 @faker_router.post("/imagings", tags=["Imagings"], status_code=201)
 async def generate_imagings(department: Departments, dal: FakeMain = Depends(FakeMain)):
@@ -68,7 +68,7 @@ async def generate_imagings(department: Departments, dal: FakeMain = Depends(Fak
 
 
 @faker_router.on_event('startup')
-@repeat_every(seconds=140, logger=logger)
+@repeat_every(seconds=45, logger=logger)
 @inject_dependencies(department=Departments.er)
 @faker_router.post("/labs", tags=["Labs"], status_code=201)
 async def generate_labs(department: Departments, dal: FakeMain = Depends(FakeMain)):
@@ -80,13 +80,22 @@ async def generate_labs(department: Departments, dal: FakeMain = Depends(FakeMai
     logger.debug('Done.')
 
 @faker_router.on_event('startup')
-@repeat_every(seconds=60, logger=logger)
+@repeat_every(seconds=90, logger=logger)
 @inject_dependencies(department=Departments.er)
 @faker_router.post("/councils", tags=["councils"], status_code=201)
-async def generate_labs(department: Departments, dal: FakeMain = Depends(FakeMain)):
+async def generate_councils(department: Departments, dal: FakeMain = Depends(FakeMain)):
     """
     generate fake imagings to all patients in SQL
     """
     logger.debug('Generating Fake Councils for all patients...')
     await dal.update_councils(department=department)
     logger.debug('Done.')
+
+@faker_router.on_event('startup')
+@repeat_every(seconds=3600, wait_first=True, logger=logger)
+@inject_dependencies()
+@faker_router.post("/clear", status_code=201)
+async def clear(dal: FakeMain = Depends(FakeMain)):
+    logger.info("Clearing...")
+    dal.clear()
+    logger.info("Done.")

@@ -44,10 +44,11 @@ export const withLogin = Component => ({...props}) => {
 
 export const LoginRequired = ({...props}) => {
     const {user, loadingUser} = useContext(loginContext);
-    const {location} = useLocation();
+    const {pathname, search, hash} = useLocation();
     if (loadingUser)
         return <Spin/>
-    return user ? props.children : <Navigate to={`/login?next=${encodeURIComponent(location)}`}/>;
+    return user ? props.children :
+        <Navigate to={`/login?next=${encodeURIComponent(pathname + search + hash)}`}/>;
 };
 
 export const LoginForm = () => {
