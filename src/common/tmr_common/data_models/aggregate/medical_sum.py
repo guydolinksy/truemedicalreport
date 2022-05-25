@@ -4,13 +4,13 @@ from pydantic import BaseModel
 
 
 class WaitForDoctor(BaseModel):
-    doctor_name: Optional[str]
+    to: Optional[str]
     patients_waiting: Optional[int]
 
 
 class MedicalSum(BaseModel):
     waiting_for_doctor: Optional[list[WaitForDoctor]]
-    waiting_for_council: Optional[int]
+    waiting_for_referral: Optional[int]
 
     class Config:
         orm_mode = True

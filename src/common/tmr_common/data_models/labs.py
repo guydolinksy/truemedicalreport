@@ -41,7 +41,7 @@ LabTestType = {
 }
 
 
-class LabTest(BaseModel):
+class Laboratory(BaseModel):
     patient_id: str
     external_id: str
     at: str
@@ -71,7 +71,7 @@ class LabCategory(BaseModel):
     category_id: str
     category: str
     status: str = StatusInHebrew[LabStatus.ordered.value]
-    results: Dict[str, LabTest] = {}
+    results: Dict[str, Laboratory] = {}
 
     @property
     def key(self):

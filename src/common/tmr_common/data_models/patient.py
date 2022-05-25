@@ -5,7 +5,7 @@ from typing import Optional, List, Any, Dict
 from pydantic import BaseModel
 
 from .esi_score import ESIScore
-from .imaging import Imaging
+from .image import Image
 from .labs import LabCategory
 from .measures import Measures, FullMeasures
 from .notification import Notification, NotificationLevel
@@ -50,41 +50,30 @@ class Icon(Enum):
     laboratory = 6
     doctor = 7
     nurse = 8
-    council = 9
+    referral = 9
 
 
 class Awaiting(BaseModel):
-    awaiting_for: str
-    tag : Optional[str]  # imaging name or lab test
-    icon: Icon
+    awaiting: str
     since: str
     limit: int
-    complete: bool = False
+    completed: bool = False
 
     class Config:
         orm_mode = True
         use_enum_values = True
 
 
-class AwatingNames(Enum):
+class AwaitingTypes(Enum):
     doctor = "doctor"
     nurse = "nurse"
     imaging = "imaging"
     laboratory = "laboratory"
-    council = "council"
-
-
-AwatingValues = {
-    "doctor": {"icon": Icon.doctor, "message": "בדיקת צוות רפואי"},
-    "nurse": {"icon": Icon.nurse, "message": "בדיקת צוות סיעודי"},
-    "imaging": {"icon": Icon.imaging, "message": "דימות"},
-    "laboratory": {"icon": Icon.laboratory, "message": "מעבדה"},
-    "council": {"icon": Icon.council, "message": "ייעוץ רפואי"},
-}
+    referral = "referral"
 
 
 class InternalPatient(BaseModel):
-    awaiting: dict
+    awaiting: Dict[str, Dict[str, Awaiting]]
     severity: Severity
     flagged: bool
     warnings: List[Warning]
@@ -98,10 +87,12 @@ class InternalPatient(BaseModel):
         return cls(
             severity=Severity(**patient.esi.dict()),
             awaiting={
-                AwatingNames.doctor.value: Awaiting(awaiting_for='בדיקת צוות רפואי', since=patient.arrival, limit=1500,
-                                                    icon=Icon.doctor),
-                AwatingNames.nurse.value: Awaiting(awaiting_for='בדיקת צוות סיעודי', since=patient.arrival, limit=1500,
-                                                   icon=Icon.nurse),
+                AwaitingTypes.doctor.value: {
+                    'exam': Awaiting(awaiting='בדיקת צוות רפואי', since=patient.arrival, limit=1500)
+                },
+                AwaitingTypes.nurse.value: {
+                    'exam': Awaiting(awaiting='בדיקת צוות סיעודי', since=patient.arrival, limit=1500)
+                },
             },
             flagged=False,
             warnings=[],
@@ -128,7 +119,7 @@ class ExtendedPatient(BaseModel):
     full_measures: FullMeasures
     visits: List[Any] = []
     notifications: List[Any] = []
-    imaging: List[Imaging] = []
+    imaging: List[Image] = []
     labs: List[LabCategory] = []
     referrals: List[Any] = []
     events: List[Event] = []

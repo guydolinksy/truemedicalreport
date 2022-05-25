@@ -8,11 +8,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from ..models.arc_patient import ARCPatient
-from ..models.chameleon_councils import ChameleonCouncils
+from ..models.chameleon_referrals import ChameleonReferrals
 from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
-from ..models.chameleon_measurements import Measurements
+from ..models.chameleon_measurements import ChameleonMeasurements
 
 logger = logbook.Logger(__name__)
 
@@ -65,9 +65,9 @@ class SqlToDal(object):
 
             measures = {}
             with self.session() as session:
-                for measurement in session.query(Measurements). \
-                        join(ChameleonMain, Measurements.patient_id == ChameleonMain.patient_id). \
-                        where(ChameleonMain.unit == department.name).order_by(Measurements.at.asc()):
+                for measurement in session.query(ChameleonMeasurements). \
+                        join(ChameleonMain, ChameleonMeasurements.patient_id == ChameleonMain.patient_id). \
+                        where(ChameleonMain.unit == department.name).order_by(ChameleonMeasurements.at.asc()):
                     measures.setdefault(measurement.patient_id, []).append(measurement.to_dal().dict())
 
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/measurements',
@@ -91,17 +91,17 @@ class SqlToDal(object):
         except HTTPError as e:
             logger.exception(f'Could not run labs handler. {e}')
 
-    def update_councils(self, department: Departments):
+    def update_referrals(self, department: Departments):
         try:
-            logger.debug('Getting councils for `{}`...', department.name)
-            councils = {}
+            logger.debug('Getting referrals for `{}`...', department.name)
+            referrals = {}
             with self.session() as session:
-                for council in session.query(ChameleonCouncils). \
-                        join(ChameleonMain, ChameleonCouncils.patient_id == ChameleonMain.patient_id). \
-                        where(ChameleonMain.unit == department.name).order_by(ChameleonCouncils.order_date.desc()):
-                    councils.setdefault(council.patient_id, []).append(council.to_dal().dict())
-            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/councils',
-                                json={'councils': councils})
+                for referral in session.query(ChameleonReferrals). \
+                        join(ChameleonMain, ChameleonReferrals.patient_id == ChameleonMain.patient_id). \
+                        where(ChameleonMain.unit == department.name).order_by(ChameleonReferrals.order_date.desc()):
+                    referrals.setdefault(referral.patient_id, []).append(referral.to_dal().dict())
+            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/referrals',
+                                json={'referrals': referrals})
             res.raise_for_status()
         except HTTPError:
-            logger.exception('Could not run councils handler.')
+            logger.exception('Could not run referrals handler.')

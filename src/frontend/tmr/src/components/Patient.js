@@ -126,17 +126,29 @@ const PatientAwaiting = () => {
     if (loading)
         return <Spin/>
     return <Space>{AWAITING.filter(k => value.awaiting[k]).map((k, i) => {
-        let status, {awaiting_for, since, limit, complete, icon} = value.awaiting[k];
-        if (complete)
-            status = 'success'
-        else if (moment().subtract(limit, "seconds").isBefore(since))
-            status = 'processing'
-        else
+        let status, awaitings = value.awaiting[k];
+        if (Object.values(awaitings).some(({since, limit, completed}) =>
+            !completed && moment().subtract(limit, "seconds").isAfter(since)))
             status = 'error'
-        return <Tooltip key={i} overlay={<span>
-            ממתין.ה עבור&nbsp;{awaiting_for}&nbsp;-&nbsp;<Moment durationFromNow format={'h:mm'} date={since}/>
-        </span>}>
-            <span><CustomIcon status={status} icon={icon}/></span>
+        else if (!Object.values(awaitings).some(({completed}) => !completed))
+            status = 'success'
+        else
+            status = 'processing'
+
+        let completed = Object.values(awaitings).filter(({completed}) => completed),
+            pending = Object.values(awaitings).filter(({completed}) => !completed);
+        return <Tooltip key={i} overlay={<div>
+            {pending.length > 0 && <b>ממתין.ה עבור (דקות):</b>}
+            {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({awaiting, since}, i) =>
+                <div key={i}>{awaiting} - <Moment durationFromNow format={'h:mm'} date={since}/></div>
+            )}
+            {pending.length > 0 && completed.length > 0 && <span><br/></span>}
+            {completed.length > 0 && <b>הושלמו:</b>}
+            {completed.sort((a, b) => a.since > b.since ? 1 : -1).map(({awaiting, since}, i) =>
+                <div key={i}>{awaiting}</div>
+            )}
+        </div>}>
+            <span><CustomIcon status={status} icon={k}/></span>
         </Tooltip>
     })}</Space>
 }

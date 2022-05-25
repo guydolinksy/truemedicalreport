@@ -4,9 +4,9 @@ import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
-from tmr_common.data_models.councils import Councils
-from tmr_common.data_models.imaging import Imaging
-from tmr_common.data_models.labs import LabTest
+from tmr_common.data_models.referrals import Referral
+from tmr_common.data_models.image import Image
+from tmr_common.data_models.labs import Laboratory
 from tmr_common.data_models.measures import Measure
 from tmr_common.data_models.patient import ExternalPatient
 from tmr_common.data_models.wing import WingOverview
@@ -55,7 +55,7 @@ async def update_measurements(measurements: Dict[str, List[Measure]] = Body(...,
 
 
 @department_router.post("/{department}/imaging")
-async def update_imaging(department: str, images: Dict[str, List[Imaging]] = Body(..., embed=True),
+async def update_imaging(department: str, images: Dict[str, List[Image]] = Body(..., embed=True),
                          dal: MedicalDal = Depends(medical_dal)):
     for patient in {patient.external_id for patient in dal.get_department_patients(department)} | set(
             images):
@@ -70,7 +70,7 @@ async def update_imaging(department: str, images: Dict[str, List[Imaging]] = Bod
 
 
 @department_router.post("/{department}/labs")
-async def update_labs(labs: Dict[str, List[LabTest]] = Body(..., embed=True),
+async def update_labs(labs: Dict[str, List[Laboratory]] = Body(..., embed=True),
                       dal: MedicalDal = Depends(medical_dal)):
     for patient in labs:
         try:
@@ -79,15 +79,15 @@ async def update_labs(labs: Dict[str, List[LabTest]] = Body(..., embed=True),
             logger.exception('Cannot update labs')
 
 
-@department_router.post("/{department}/councils")
-async def update_councils(department: str, councils: Dict[str, List[Councils]] = Body(..., embed=True),
+@department_router.post("/{department}/referrals")
+async def update_referrals(department: str, referrals: Dict[str, List[Referral]] = Body(..., embed=True),
                           dal: MedicalDal = Depends(medical_dal)):
-    for patient in {patient.external_id for patient in dal.get_department_patients(department)} | set(councils):
-        updated = {council.external_id: council for council in councils.get(patient, [])}
-        existing = {council.external_id: council for council in dal.get_patient_councils(patient)}
-        for council in set(existing) - set(updated):
-            await dal.upsert_councils(councils_obj=existing[council], action=Action.remove)
-        for council in set(updated) - set(existing):
-            await dal.upsert_councils(councils_obj=updated[council], action=Action.insert)
-        for council in set(updated) & set(existing):
-            await dal.upsert_councils(councils_obj=updated[council], action=Action.update)
+    for patient in {patient.external_id for patient in dal.get_department_patients(department)} | set(referrals):
+        updated = {referral.external_id: referral for referral in referrals.get(patient, [])}
+        existing = {referral.external_id: referral for referral in dal.get_patient_referrals(patient)}
+        for referral in set(existing) - set(updated):
+            await dal.upsert_referrals(referral_obj=existing[referral], action=Action.remove)
+        for referral in set(updated) - set(existing):
+            await dal.upsert_referrals(referral_obj=updated[referral], action=Action.insert)
+        for referral in set(updated) & set(existing):
+            await dal.upsert_referrals(referral_obj=updated[referral], action=Action.update)

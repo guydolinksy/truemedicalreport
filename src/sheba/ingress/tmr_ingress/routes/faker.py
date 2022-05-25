@@ -82,13 +82,13 @@ async def generate_labs(department: Departments, dal: FakeMain = Depends(FakeMai
 @faker_router.on_event('startup')
 @repeat_every(seconds=90, logger=logger)
 @inject_dependencies(department=Departments.er)
-@faker_router.post("/councils", tags=["councils"], status_code=201)
-async def generate_councils(department: Departments, dal: FakeMain = Depends(FakeMain)):
+@faker_router.post("/referrals", tags=["referrals"], status_code=201)
+async def generate_referrals(department: Departments, dal: FakeMain = Depends(FakeMain)):
     """
     generate fake imagings to all patients in SQL
     """
-    logger.debug('Generating Fake Councils for all patients...')
-    await dal.update_councils(department=department)
+    logger.debug('Generating Fake Referrals for all patients...')
+    await dal.update_referrals(department=department)
     logger.debug('Done.')
 
 @faker_router.on_event('startup')

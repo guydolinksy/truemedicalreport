@@ -19,7 +19,7 @@ class ImagingStatus(Enum):
     verified = 'verified'
 
 
-class Imaging(BaseModel):
+class Image(BaseModel):
     external_id: int
     patient_id: str
     title: str
@@ -43,7 +43,7 @@ class Imaging(BaseModel):
                 ImagingStatus.verified: 'אושרר',
             }[kwargs['status']]
 
-        super(Imaging, self).__init__(**kwargs)
+        super(Image, self).__init__(**kwargs)
 
     def to_notification(self):
         return ImagingNotification(

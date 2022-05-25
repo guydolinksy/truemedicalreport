@@ -1,7 +1,8 @@
+import pytz
 from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime
 from sqlalchemy.orm import declarative_base
 
-from tmr_common.data_models.labs import LabTest, LabStatus, CategoriesInHebrew
+from tmr_common.data_models.labs import Laboratory, LabStatus, CategoriesInHebrew
 
 Base = declarative_base()
 
@@ -20,10 +21,10 @@ class ChameleonLabs(Base):
     result_time = Column("ResultTime", DateTime())
 
     def to_initial_dal(self):
-        return LabTest(
+        return Laboratory(
             patient_id = self.patient_id,
-            external_id=f'{self.patient_id}#{self.order_date.isoformat()}#{self.test_type_id}',
-            at=self.order_date.isoformat(),
+            external_id=f'{self.patient_id}#{self.order_date.astimezone(pytz.UTC).isoformat()}#{self.test_type_id}',
+            at=self.order_date.astimezone(pytz.UTC).isoformat(),
             test_type_id=self.test_type_id,
             test_type_name=self.test_type_name,
             category_id=int(str(self.test_type_id)[0:4]),

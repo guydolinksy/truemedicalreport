@@ -50,7 +50,7 @@ export const PatientInfo = ({onError}) => {
                                        onClose={() => navigate('#')}>
             {matched &&
                 <patientDataContext.Provider url={`/api/patients/${match[0]}/info`} defaultValue={{
-                    warnings: [], awaiting: null, severity: {value: 0, at: null}, flagged: null,
+                    warnings: [], awaiting: {}, severity: {value: 0, at: null}, flagged: null,
                     id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
                     complaint: null, admission: {}, measures: {
                         temperature: null,

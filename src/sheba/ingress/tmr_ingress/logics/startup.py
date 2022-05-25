@@ -1,9 +1,12 @@
 from pymongo import MongoClient
+from pymongo.database import Database
 
 
 async def init_wings():
-    db = MongoClient(host='mongo').medical
+    client = MongoClient(host='mongo')
+    client.drop_database('medical')
 
+    db = client.medical
     db.wings.delete_many({})
     db.wings.insert_one({
         'key': 'b1',

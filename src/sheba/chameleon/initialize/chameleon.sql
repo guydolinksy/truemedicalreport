@@ -150,15 +150,12 @@ CREATE TABLE [dbo].[lab_results]
     [ResultTime]     [datetime]     NULL,
 )
 GO
-CREATE TABLE [dbo].[councils](
-	[CouncilCode] [int] IDENTITY (1,1) NOT NULL,
+CREATE TABLE [dbo].[referrals](
+	[ReferralCode] [int] IDENTITY (1,1) NOT NULL,
 	[id] [int] NOT NULL,
-	[CouncilName] [varchar](50) NULL,
 	[DoctorName] [varchar](50) NULL,
-	[DoctorId] [int] NULL,
 	[OrderDate] [datetime] NULL,
-	[CouncilDate] [datetime] NULL,
-	[Arrived] [bit] NULL
+	[CompletedDate] [datetime] NULL,
 ) ON [PRIMARY]
 GO
 alter database [chameleon_db] SET READ_WRITE

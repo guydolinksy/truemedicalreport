@@ -13,20 +13,23 @@ import {
 
 export const CustomIcon = ({status, icon}) => {
     const style = {'error': {color: '#d32029'}, 'processing': {color: '#1890ff'}, 'success': {color: '#49aa19'}}[status]
-    if (icon === 1)
+    if (icon === 'pulse')
         return <FontAwesomeIcon style={style} icon={faHeartPulse}/>
-    if (icon === 2)
+    if (icon === 'temperature')
         return <FontAwesomeIcon style={style} icon={faTemperatureHalf}/>
-    if (icon === 3)
+    if (icon === 'saturation')
         return <FontAwesomeIcon style={style} icon={faPercentage}/>
-    if (icon === 4)
+    if (icon === 'bloodPressure')
         return <FontAwesomeIcon style={style} icon={faHeart}/>
-    if (icon === 5)
+    if (icon === 'imaging')
         return <FontAwesomeIcon style={style} icon={faXRay}/>
-    if (icon === 6)
+    if (icon === 'laboratory')
         return <FontAwesomeIcon style={style} icon={faFlaskVial}/>
-    if (icon === 7)
+    if (icon === 'doctor')
         return <FontAwesomeIcon style={style} icon={faUserDoctor}/>
-    if (icon === 8)
+    if (icon === 'nurse')
         return <FontAwesomeIcon style={style} icon={faUserNurse}/>
+    if (icon === 'referral')
+        return <FontAwesomeIcon style={style} icon={faUserDoctor}/>
+    return <span>{icon}</span>
 }

@@ -1,5 +1,6 @@
+import pytz
 from sqlalchemy import VARCHAR, Integer, Column, DateTime
-from tmr_common.data_models.imaging import Imaging, ImagingTypes, ImagingStatus
+from tmr_common.data_models.image import Image, ImagingTypes, ImagingStatus
 from tmr_common.data_models.notification import NotificationLevel
 from .base import Base
 
@@ -15,10 +16,10 @@ class ChameleonImaging(Base):
     interpretation = Column("Interpretation", VARCHAR(400))
 
     def to_dal(self):
-        return Imaging(
+        return Image(
             external_id=self.imaging_id,
             patient_id=self.patient_id,
-            at=self.order_date.isoformat(),
+            at=self.order_date.astimezone(pytz.UTC).isoformat(),
             title=self.description,
             status=ImagingStatus(self.status),
             interpretation=self.interpretation,

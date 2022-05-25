@@ -1,6 +1,8 @@
 import datetime
 from enum import Enum
 from datetime import datetime
+
+import pytz
 from sqlalchemy import Column, Integer, String, VARCHAR, DateTime
 from sqlalchemy.orm import declarative_base
 
@@ -31,5 +33,5 @@ class ARCPatient(Base):
             name=' '.join([self.first_name, self.last_name]),
             gender=self.gender,
             age=f'{int(age.days / 365)}.{int((age.days % 365) / 30)}' if age else None,
-            birthdate=self.birthdate.isoformat() if self.birthdate else None,
+            birthdate=self.birthdate.astimezone(pytz.UTC).isoformat() if self.birthdate else None,
         )

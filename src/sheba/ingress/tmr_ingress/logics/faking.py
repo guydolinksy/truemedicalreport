@@ -10,15 +10,15 @@ from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from tmr_common.data_models.imaging import ImagingTypes, ImagingStatus
+from tmr_common.data_models.image import ImagingTypes, ImagingStatus
 from tmr_common.data_models.labs import LabCategories, LabTestType
 from tmr_common.data_models.notification import NotificationLevel
 from tmr_ingress.models.arc_patient import ARCPatient
-from tmr_ingress.models.chameleon_councils import ChameleonCouncils
+from tmr_ingress.models.chameleon_referrals import ChameleonReferrals
 from tmr_ingress.models.chameleon_imaging import ChameleonImaging
 from tmr_ingress.models.chameleon_labs import ChameleonLabs
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
-from tmr_ingress.models.chameleon_measurements import Measurements
+from tmr_ingress.models.chameleon_measurements import ChameleonMeasurements
 
 logger = logbook.Logger(__name__)
 
@@ -102,7 +102,7 @@ class FakeMain(object):
         else:
             raise ValueError()
         for patient in patients:
-            pulse = Measurements()
+            pulse = ChameleonMeasurements()
             pulse.patient_id = patient
             pulse.at = datetime.datetime.utcnow()
             pulse.code = 12
@@ -125,7 +125,7 @@ class FakeMain(object):
                 session.add(pulse)
                 session.commit()
 
-            saturation = Measurements()
+            saturation = ChameleonMeasurements()
             saturation.patient_id = patient
             saturation.at = datetime.datetime.utcnow()
             saturation.code = 13
@@ -144,7 +144,7 @@ class FakeMain(object):
                 session.add(saturation)
                 session.commit()
 
-            temperature = Measurements()
+            temperature = ChameleonMeasurements()
             temperature.patient_id = patient
             temperature.at = datetime.datetime.utcnow()
             temperature.code = 11
@@ -167,7 +167,7 @@ class FakeMain(object):
             with self.session() as session:
                 session.add(temperature)
                 session.commit()
-            systolic, diastolic = Measurements(), Measurements()
+            systolic, diastolic = ChameleonMeasurements(), ChameleonMeasurements()
             systolic.patient_id = diastolic.patient_id = patient
             systolic.at = diastolic.at = datetime.datetime.utcnow()
             systolic.code, diastolic.code = 101, 102
@@ -281,7 +281,7 @@ class FakeMain(object):
                     session.add(copy.deepcopy(lab_result))
                     session.commit()
 
-    def _generate_councils_dates(self, chameleon_id=None, department=None, wing=None):
+    def _generate_referrals_dates(self, chameleon_id=None, department=None, wing=None):
         if chameleon_id:
             patients = {chameleon_id}
         elif department and wing:
@@ -290,17 +290,15 @@ class FakeMain(object):
             raise ValueError()
         for patient in patients:
             order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC)
-            council_date = self.faker.date_time_between_dates('+8000m', '+10000m').astimezone(pytz.UTC)
-            chameleon_councils = ChameleonCouncils()
-            chameleon_councils.council_name = random.choice(['אא"ג', 'מוח', 'אונקולוגיה'])
-            chameleon_councils.patient_id = patient
-            chameleon_councils.doctor_id = random.randint(0, 2)
-            chameleon_councils.doctor_name = ["רמדאן אבו עקלין", "ניבה לוי", "פבל ליידרמן"][
-                chameleon_councils.doctor_id]
-            chameleon_councils.order_date = order_date
-            chameleon_councils.council_date = council_date
+            referral_date = self.faker.date_time_between_dates('+8000m', '+10000m').astimezone(pytz.UTC)
+            chameleon_referral = ChameleonReferrals()
+            chameleon_referral.patient_id = patient
+            chameleon_referral.to = random.choice(['אא"ג', 'נוירולוגיה', 'אורטופד', "רמדאן אבו עקלין", "ניבה לוי", "פבל ליידרמן"])
+            chameleon_referral.order_date = order_date
+            if random.randint(0, 1):
+                chameleon_referral.referral_date = referral_date
             with self.session() as session:
-                session.add(chameleon_councils)
+                session.add(chameleon_referral)
                 session.commit()
 
     async def admit_patients(self, department):
@@ -327,9 +325,9 @@ class FakeMain(object):
         for wing in self.wings:
             self._generate_labs(department=department, wing=wing)
 
-    async def update_councils(self, department):
+    async def update_referrals(self, department):
         for wing in self.wings:
-            self._generate_councils_dates(department=department, wing=wing)
+            self._generate_referrals_dates(department=department, wing=wing)
 
     def clear(self):
         with self.session() as session:
@@ -337,5 +335,5 @@ class FakeMain(object):
             session.query(ARCPatient).delete()
             session.query(ChameleonImaging).delete()
             session.query(ChameleonLabs).delete()
-            session.query(Measurements).delete()
+            session.query(ChameleonMeasurements).delete()
             session.commit()

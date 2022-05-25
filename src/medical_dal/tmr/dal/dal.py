@@ -10,15 +10,15 @@ from bson.objectid import ObjectId
 from pymongo.database import Database
 from werkzeug.exceptions import NotFound
 
-from tmr_common.data_models.aggregate.medical_sum import WaitForDoctor, MedicalSum
-from tmr_common.data_models.councils import Councils
-from tmr_common.data_models.imaging import Imaging, ImagingStatus
-from tmr_common.data_models.labs import LabTest, LabCategory, LabStatus, StatusInHebrew
+from tmr_common.data_models.aggregate.medical_sum import WaitForDoctor
+from tmr_common.data_models.referrals import Referral
+from tmr_common.data_models.image import Image, ImagingStatus
+from tmr_common.data_models.labs import Laboratory, LabCategory, StatusInHebrew, LabStatus
 from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures, Latest
 from tmr_common.data_models.measures import Measures
 from tmr_common.data_models.notification import Notification
 from tmr_common.data_models.patient import Patient, Admission, PatientNotifications, ExternalPatient, InternalPatient, \
-    PatientInfo, Event, AwatingNames, Awaiting, AwatingValues
+    PatientInfo, Event, Awaiting, AwaitingTypes
 from ..routes.websocket import notify
 
 logger = logbook.Logger(__name__)
@@ -44,7 +44,7 @@ class MedicalDal:
         return self.db.patients.count_documents({"admission.department": department, "admission.wing": wing})
 
     def get_wing_patients(self, department: str, wing: str) -> List[Patient]:
-        patients = [Patient(oid=str(patient.pop("_id")), **patient) for patient in
+        patients = [Patient(**patient) for patient in
                     self.db.patients.find({"admission.department": department, "admission.wing": wing})]
         return patients
 
@@ -69,15 +69,15 @@ class MedicalDal:
     def get_department_patients(self, department: str) -> List[Patient]:
         return [Patient(**p) for p in self.db.patients.find({"admission.department": department})]
 
-    def get_patient_images(self, patient: str) -> List[Imaging]:
-        return [Imaging(oid=str(image.pop("_id")), **image) for image in self.db.images.find({"patient_id": patient})]
+    def get_patient_images(self, patient: str) -> List[Image]:
+        return [Image(oid=str(image.pop("_id")), **image) for image in self.db.images.find({"patient_id": patient})]
 
-    def get_patient_councils(self, patient: str) -> List[Councils]:
-        return [Councils(oid=str(council.pop("_id")), **council) for council in
-                self.db.councils.find({"patient_id": patient})]
+    def get_patient_referrals(self, patient: str) -> List[Referral]:
+        return [Referral(oid=str(referral.pop("_id")), **referral) for referral in
+                self.db.referrals.find({"patient_id": patient})]
 
-    def get_patient_labs(self, patient: str) -> List[LabTest]:
-        return [LabTest(oid=str(labs.pop("_id")), **labs) for labs in self.db.labs.find({"patient_id": patient})]
+    def get_patient_labs(self, patient: str) -> List[Laboratory]:
+        return [Laboratory(oid=str(labs.pop("_id")), **labs) for labs in self.db.labs.find({"patient_id": patient})]
 
     def get_patient_by_id(self, patient: str) -> Patient:
         res = self.db.patients.find_one({"_id": ObjectId(patient)})
@@ -96,7 +96,7 @@ class MedicalDal:
         if not res:
             raise NotFound()
         patient = Patient(**res)
-        imaging = [Imaging(**res) for res in self.db.imaging.find({"patient_id": patient.external_id})]
+        imaging = [Image(**res) for res in self.db.imaging.find({"patient_id": patient.external_id})]
         measures = FullMeasures(
             measures=[Measure(**d) for d in self.db.measures.find({"patient_id": patient.external_id})]
         )
@@ -166,7 +166,7 @@ class MedicalDal:
     async def upsert_measurements(self, patient_id: str, measures: List[Measure]):
         res = self.db.patients.find_one({"external_id": patient_id})
         if not res:
-            logger.error(f'Measurement Patient {patient_id} Not Fount')
+            logger.error(f'Measurement Patient {patient_id} Not Found')
             return
         previous = Patient(**res)
         current = previous.measures.copy()
@@ -195,10 +195,10 @@ class MedicalDal:
         if previous.measures != current:
             await self.notify_patient(patient=previous.oid)
 
-    async def upsert_imaging(self, imaging_obj: Imaging, action: Action):
+    async def upsert_imaging(self, imaging_obj: Image, action: Action):
         res = self.db.patients.find_one({"external_id": imaging_obj.patient_id})
         if not res:
-            logger.error(f'Imaging Patient {imaging_obj.patient_id} Not Fount')
+            logger.error(f'Imaging Patient {imaging_obj.patient_id} Not Found')
             return
         patient = Patient(**res)
         match action:
@@ -220,11 +220,19 @@ class MedicalDal:
                                                  {'$set': notification.dict()}, upsert=True)
                 await self.notify_patient(patient=patient.oid)
                 await self.notify_notification(patient=patient.oid)
-        await self.update_awaiting(patient, AwatingNames.imaging, (imaging_obj.status == ImagingStatus.verified),
-                                   since=imaging_obj.at, tag=imaging_obj.title)
+        await self.update_awaiting(patient, AwaitingTypes.imaging, str(imaging_obj.external_id), Awaiting(
+            awaiting=imaging_obj.title,
+            completed=imaging_obj.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value],
+            since=imaging_obj.at,
+            limit=3600,
+        ))
 
-
-    async def upsert_labs(self, patient_id: str, new_labs: List[LabTest]):
+    async def upsert_labs(self, patient_id: str, new_labs: List[Laboratory]):
+        res = self.db.patients.find_one({"external_id": patient_id})
+        if not res:
+            logger.error(f'Laboratory Patient {patient_id} Not Found')
+            return
+        patient = Patient(**res)
         labs = {c.key: c for c in [LabCategory(**c) for c in self.db.labs.find({"patient_id": patient_id})]}
         for lab in new_labs:
             c = labs.setdefault(lab.category_key, LabCategory(
@@ -232,52 +240,55 @@ class MedicalDal:
             ))
             c.results[str(lab.test_type_id)] = lab
             c.status = StatusInHebrew[min({l.status for l in c.results.values()})]
-            patient = self.get_patient_by_external_id(patient_id)
-            await self.update_awaiting(patient, AwatingNames.laboratory, completed=(lab.result != None),
-                                       since=lab.at, tag=lab.category_name)
-        for category in labs.values():
-            self.db.labs.update_one({"patient_id": patient_id, **category.query_key},
-                                    {'$set': dict(patient_id=patient_id, **category.dict())}, upsert=True)
+        for c in labs.values():
+            await self.update_awaiting(patient, AwaitingTypes.laboratory, f'{c.category_id}#{c.at}', Awaiting(
+                awaiting=c.category,
+                completed=c.status == StatusInHebrew[LabStatus.analyzed.value],
+                since=c.at,
+                limit=3600,
+            ))
+            self.db.labs.update_one({"patient_id": patient_id, **c.query_key},
+                                    {'$set': dict(patient_id=patient_id, **c.dict())}, upsert=True)
 
-    async def upsert_councils(self, councils_obj: Councils, action: Action):
-        res = self.db.patients.find_one({"external_id": str(councils_obj.patient_id)})
+    async def upsert_referrals(self, referral_obj: Referral, action: Action):
+        res = self.db.patients.find_one({"external_id": str(referral_obj.patient_id)})
         if not res:
-            logger.error(f'Councils, Patient {councils_obj.patient_id} Not Fount')
+            logger.error(f'Referrals Patient {referral_obj.patient_id} Not Found')
             return
         patient = Patient(**res)
         match action:
             case Action.remove:
                 pass
             case Action.insert:
-                self.db.councils.update_one({"external_id": councils_obj.external_id},
-                                            {'$set': councils_obj.dict()}, upsert=True)
+                self.db.referrals.update_one({"external_id": referral_obj.external_id},
+                                             {'$set': referral_obj.dict()}, upsert=True)
                 await self.notify_patient(patient=patient.oid)
                 await self.notify_notification(patient=patient.oid)
             case Action.update:
-                self.db.councils.update_one({"external_id": councils_obj.external_id},
-                                            {'$set': councils_obj.dict()}, upsert=True)
+                self.db.referrals.update_one({"external_id": referral_obj.external_id},
+                                             {'$set': referral_obj.dict()}, upsert=True)
                 await self.notify_patient(patient=patient.oid)
                 await self.notify_notification(patient=patient.oid)
-        await self.update_awaiting(patient, AwatingNames.council, since=councils_obj.at,
-                                   tag=councils_obj.council_name, completed=(
-                    councils_obj.arrived == True))  # councils_obj.arrived can be null, don't delete "=="
+        await self.update_awaiting(patient, AwaitingTypes.referral, referral_obj.to, Awaiting(
+            awaiting=referral_obj.to,
+            since=referral_obj.at,
+            completed=referral_obj.completed,
+            limit=3600,
+        ))
 
     def get_waiting_for_doctor_list(self) -> [WaitForDoctor]:
-        patient_waiting_for_doctor = self.db.councils. \
-            aggregate([{"$match": {"arrived": None}}, {
+        waiting = self.db.referrals. \
+            aggregate([{"$match": {"_id": False}}, {
             "$group": {
-                "_id": "$doctor_name",
+                "_id": "$to",
                 "sum": {"$sum": 1}
             }
         }])
-        waiting_for_doctor_list = [WaitForDoctor(oid=str(data.pop("_id")), **data) for data in
-                                   patient_waiting_for_doctor]
-        return waiting_for_doctor_list
+        return [WaitForDoctor(to=data['_id'], count=data['sum']) for data in waiting]
 
-    def get_people_amount_wait_council(self) -> int:
-        patient_waiting_for_council = self.db.councils. \
-            aggregate([{"$match": {"arrived": None}}, {"$count": "waiting"}])
-        return list(patient_waiting_for_council)[0]["waiting"]
+    def get_people_amount_wait_referral(self) -> int:
+        res = self.db.Referrals.aggregate([{"$match": {"completed": False}}, {"$count": "waiting"}])
+        return list(res)[0]["waiting"]
 
     @staticmethod
     async def notify_admission(admission: Admission):
@@ -294,17 +305,7 @@ class MedicalDal:
         if patient:
             await notify('patient', patient)
 
-    async def update_awaiting(self, patient: Patient, awaiting_name: AwatingNames, completed: bool, since: str,
-                              limit: int = 1500, tag: str = None):
-        awaiting_data = AwatingValues[awaiting_name.value]
-        awaiting = Awaiting(awaiting_for=awaiting_data["message"],
-                            icon=awaiting_data["icon"],
-                            since=since,
-                            limit=limit,
-                            completed=completed,
-                            tag=tag)
-        if tag is None:
-            patient.awaiting.setdefault(awaiting_name.value, awaiting)
-        else:
-            patient.awaiting.setdefault(awaiting_name.value, {})[tag] = awaiting
-        await self.update_patient_by_id(patient.oid, patient.dict())
+    async def update_awaiting(self, patient: Patient, type_: AwaitingTypes, tag: str, awaiting: Awaiting):
+        updated = patient.copy()
+        updated.awaiting.setdefault(type_.value, {}).__setitem__(tag, awaiting)
+        await self.update_patient_by_id(patient.oid, updated.dict(include={'awaiting'}))

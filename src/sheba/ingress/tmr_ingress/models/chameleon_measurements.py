@@ -1,5 +1,6 @@
 from enum import Enum
 
+import pytz
 from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime
 from tmr_common.data_models.measures import Measure, MeasureTypes
 from .base import Base
@@ -13,7 +14,7 @@ class MeasurementsIds(Enum):
     diastolic = 102
 
 
-class Measurements(Base):
+class ChameleonMeasurements(Base):
     __tablename__ = "measurements"
 
     patient_id = Column("id", VARCHAR(200), primary_key=True)
@@ -29,7 +30,7 @@ class Measurements(Base):
             value=self.value,
             minimum=self.min_limit,
             maximum=self.max_limit,
-            at=self.at.isoformat(),
+            at=self.at.astimezone(pytz.UTC).isoformat(),
             type=MeasureTypes(MeasurementsIds(self.code).name),
-            external_id=f'{self.patient_id}#{self.at.isoformat()}#{self.code}',
+            external_id=f'{self.patient_id}#{self.at.astimezone(pytz.UTC).isoformat()}#{self.code}',
         )
