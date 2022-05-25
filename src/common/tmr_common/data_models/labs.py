@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List, Dict
 
-from tmr_common.data_models.notification import LabsNotification
+from tmr_common.data_models.notification import LabsNotification, NotificationLevel
 
 
 class LabCategories(Enum):
@@ -42,6 +42,7 @@ LabTestType = {
 
 
 class LabTest(BaseModel):
+    patient_id: str
     external_id: str
     at: str
     test_type_id: int
@@ -83,3 +84,20 @@ class LabCategory(BaseModel):
     class Config:
         orm_mode = True
         use_enum_values = True
+
+    # TODO: advise with Guy more thoroughly about notifications in general
+    def to_notification(self):
+        message = "תוצאות עבור"
+        for cat_id, category_data in self.results.items():
+            message += category_data.test_type_name+ ", "
+        patient_id = category_data.patient_id
+        static_id = f"{patient_id}#{cat_id}"
+
+        return LabsNotification(
+            static_id=static_id,
+            patient_id=patient_id,
+            at=self.at,
+            message=message,
+            link="TALK TO GUY",
+            level=NotificationLevel.normal,  # Advise with Guy
+        )

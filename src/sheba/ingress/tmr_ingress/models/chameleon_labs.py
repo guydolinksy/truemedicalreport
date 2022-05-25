@@ -21,6 +21,7 @@ class ChameleonLabs(Base):
 
     def to_initial_dal(self):
         return LabTest(
+            patient_id = self.patient_id,
             external_id=f'{self.patient_id}#{self.order_date.isoformat()}#{self.test_type_id}',
             at=self.order_date.isoformat(),
             test_type_id=self.test_type_id,
