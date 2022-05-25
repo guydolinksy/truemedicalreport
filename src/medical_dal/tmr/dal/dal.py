@@ -119,12 +119,22 @@ class MedicalDal:
         await self.notify_patient(patient)
         return update_result.modified_count
 
+    async def _cascade_delete_patient(self, patient_external_id):
+        """
+        delete patient and his data from all collections.
+        :param patient_external_id: external_id of patient
+        """
+        logger.debug(f"Cascade Delete for Patient {patient_external_id}")
+        for collection_name in self.db.list_collection_names():
+            if collection_name not in ("wings"):
+                self.db.get_collection(collection_name).delete_many({"patient_id": patient_external_id})
+
     async def upsert_patient(self, previous: Patient, patient: ExternalPatient):
         if previous and patient:
             self.db.patients.update_one({"external_id": patient.external_id},
                                         {'$set': patient.dict()})
         elif previous and not patient:
-            self.db.patients.delete_one({"external_id": previous.external_id})
+            await self._cascade_delete_patient(previous.external_id)
         elif not previous and patient:
             self.db.patients.update_one({"external_id": patient.external_id}, {'$set': dict(
                 **patient.dict(),
