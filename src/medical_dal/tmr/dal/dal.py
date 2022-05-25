@@ -12,13 +12,13 @@ from werkzeug.exceptions import NotFound
 
 from tmr_common.data_models.aggregate.medical_sum import WaitForDoctor, MedicalSum
 from tmr_common.data_models.councils import Councils
-from tmr_common.data_models.imaging import Imaging
+from tmr_common.data_models.imaging import Imaging, ImagingStatus
 from tmr_common.data_models.labs import LabTest, LabCategory, LabStatus, StatusInHebrew
 from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures, Latest
 from tmr_common.data_models.measures import Measures
 from tmr_common.data_models.notification import Notification
 from tmr_common.data_models.patient import Patient, Admission, PatientNotifications, ExternalPatient, InternalPatient, \
-    PatientInfo, Event
+    PatientInfo, Event, AwatingNames, Awaiting, AwatingValues
 from ..routes.websocket import notify
 
 logger = logbook.Logger(__name__)
@@ -85,6 +85,12 @@ class MedicalDal:
             raise NotFound()
         return Patient(**res)
 
+    def get_patient_by_external_id(self, external_id: str) -> Patient:
+        res = self.db.patients.find_one({"external_id": external_id})
+        if not res:
+            raise NotFound()
+        return Patient(**res)
+
     def get_patient_info_by_id(self, patient: str) -> PatientInfo:
         res = self.db.patients.find_one({"_id": ObjectId(patient)})
         if not res:
@@ -110,7 +116,6 @@ class MedicalDal:
 
     async def update_patient_by_id(self, patient: str, update_object: dict) -> bool:
         update_result = self.db.patients.update_one({"_id": ObjectId(patient)}, {'$set': update_object})
-
         await self.notify_patient(patient)
         return update_result.modified_count
 
@@ -205,6 +210,9 @@ class MedicalDal:
                                                  {'$set': notification.dict()}, upsert=True)
                 await self.notify_patient(patient=patient.oid)
                 await self.notify_notification(patient=patient.oid)
+        await self.update_awaiting(patient, AwatingNames.imaging, (imaging_obj.status == ImagingStatus.verified),
+                                   since=imaging_obj.at, tag=imaging_obj.title)
+
 
     async def upsert_labs(self, patient_id: str, new_labs: List[LabTest]):
         labs = {c.key: c for c in [LabCategory(**c) for c in self.db.labs.find({"patient_id": patient_id})]}
@@ -214,6 +222,9 @@ class MedicalDal:
             ))
             c.results[str(lab.test_type_id)] = lab
             c.status = StatusInHebrew[min({l.status for l in c.results.values()})]
+            patient = self.get_patient_by_external_id(patient_id)
+            await self.update_awaiting(patient, AwatingNames.laboratory, completed=(lab.result != None),
+                                       since=lab.at, tag=lab.category_name)
         for category in labs.values():
             self.db.labs.update_one({"patient_id": patient_id, **category.query_key},
                                     {'$set': dict(patient_id=patient_id, **category.dict())}, upsert=True)
@@ -237,6 +248,9 @@ class MedicalDal:
                                             {'$set': councils_obj.dict()}, upsert=True)
                 await self.notify_patient(patient=patient.oid)
                 await self.notify_notification(patient=patient.oid)
+        await self.update_awaiting(patient, AwatingNames.council, since=councils_obj.at,
+                                   tag=councils_obj.council_name, completed=(
+                    councils_obj.arrived == True))  # councils_obj.arrived can be null, don't delete "=="
 
     def get_waiting_for_doctor_list(self) -> [WaitForDoctor]:
         patient_waiting_for_doctor = self.db.councils. \
@@ -269,3 +283,18 @@ class MedicalDal:
     async def notify_patient(patient: str):
         if patient:
             await notify('patient', patient)
+
+    async def update_awaiting(self, patient: Patient, awaiting_name: AwatingNames, completed: bool, since: str,
+                              limit: int = 1500, tag: str = None):
+        awaiting_data = AwatingValues[awaiting_name.value]
+        awaiting = Awaiting(awaiting_for=awaiting_data["message"],
+                            icon=awaiting_data["icon"],
+                            since=since,
+                            limit=limit,
+                            completed=completed,
+                            tag=tag)
+        if tag is None:
+            patient.awaiting.setdefault(awaiting_name.value, awaiting)
+        else:
+            patient.awaiting.setdefault(awaiting_name.value, {})[tag] = awaiting
+        await self.update_patient_by_id(patient.oid, patient.dict())
