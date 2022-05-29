@@ -150,6 +150,24 @@ CREATE TABLE [dbo].[lab_results]
     [ResultTime]     [datetime]     NULL,
 )
 GO
+CREATE TABLE [dbo].[medical_free_text]
+(
+    [Row_ID]           [INT] IDENTITY ( 1,1) NOT NULL,
+    [Id]               [VARCHAR]             NULL,
+    [Medical_Record]   [VARCHAR]             NULL,
+    [DocumentingDate]  [DATETIME]            NULL,
+    [DocumentingTime]  [DATETIME]            NULL,
+    [unit_name]        [VARCHAR]             NULL,
+    [Unit]             [VARCHAR]             NULL,
+    [Description_code] [VARCHAR]             NULL,
+    [Description]      [VARCHAR]             NULL,
+    [Description_Text] [VARCHAR]             NULL,
+    [DocumentingUser]  [VARCHAR]             NULL,
+    [source]           [VARCHAR]             NULL,
+    [insert_date]      [DATETIME]            NULL
+
+)
+GO
 CREATE TABLE [dbo].[referrals](
 	[ReferralCode] [int] IDENTITY (1,1) NOT NULL,
 	[id] [int] NOT NULL,
