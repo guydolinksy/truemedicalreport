@@ -134,6 +134,7 @@ class MedicalDal:
             self.db.patients.update_one({"external_id": patient.external_id},
                                         {'$set': patient.dict()})
         elif previous and not patient:
+            self.db.patients.delete_one({"external_id": patient.external_id})
             await self._cascade_delete_patient(previous.external_id)
         elif not previous and patient:
             self.db.patients.update_one({"external_id": patient.external_id}, {'$set': dict(
