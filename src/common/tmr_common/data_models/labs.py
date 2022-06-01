@@ -108,7 +108,6 @@ class LabCategory(BaseModel):
                 ))
         return lab_notifications
 
-    # Todo: test it when panic_min_warn_bar and panic_min_warn_bar will exist
     def get_if_panic(self):
         warnings = []
         for cat_id, category_data in self.results.items():
@@ -125,6 +124,5 @@ class LabCategory(BaseModel):
                     message += "\n"
                     severity = Severity(value=0, at=category_data.at)  # TODO advise with guy about the real values
                     patient_warning = p.PatientWarning(content=message, severity=severity)
-                    print(message)
                     warnings.append(patient_warning)
         return warnings
