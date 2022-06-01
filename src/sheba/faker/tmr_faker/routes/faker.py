@@ -1,8 +1,8 @@
+import logbook
 from fastapi import APIRouter, Depends
 from fastapi_utils.tasks import repeat_every
-import logbook
-from random import randint
-from tmr_ingress.logics.faking import FakeMain
+
+from tmr_faker.logics.faking import FakeMain
 from tmr_ingress.logics.utils import inject_dependencies
 from tmr_ingress.models.chameleon_main import Departments
 

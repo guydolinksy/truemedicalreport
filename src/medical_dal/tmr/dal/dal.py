@@ -125,9 +125,12 @@ class MedicalDal:
         :param patient_external_id: external_id of patient
         """
         logger.debug(f"Cascade Delete for Patient {patient_external_id}")
-        for collection_name in self.db.list_collection_names():
-            if collection_name not in ("wings"):
-                self.db.get_collection(collection_name).delete_many({"patient_id": patient_external_id})
+        self.db.labs.delete_many({"patient_id": patient_external_id})
+        self.db.imaging.delete_many({"patient_id": patient_external_id})
+        self.db.measures.delete_many({"patient_id": patient_external_id})
+        self.db.referrals.delete_many({"patient_id": patient_external_id})
+        self.db.notifications.delete_many({"patient_id": patient_external_id})
+        self.db.patients.delete_many({"id_": patient_external_id})
 
     async def upsert_patient(self, previous: Patient, patient: ExternalPatient):
         if previous and patient:
