@@ -17,7 +17,21 @@ services:
 
   proxy:
     volumes:
-      - "./sheba/proxy/conf.dev/ingress/:/etc/nginx/ingress.d/"
-      - "./sheba/proxy/conf.dev/upstream/:/etc/nginx/upstream.d/"
+      - "./sheba/ingress/conf.dev/location/:/etc/nginx/location.d/ingress/"
+      - "./sheba/ingress/conf.dev/upstream/:/etc/nginx/upstream.d/ingress/"
     depends_on:
       - ingress
+
+  sqlpad:
+    image: sqlpad/sqlpad
+    environment:
+      - "SQLPAD_PORT=80"
+      - "SQLPAD_ADMIN=admin@sqlpad.com"
+      - "SQLPAD_ADMIN_PASSWORD=Password123"
+      - "SQLPAD_BASE_URL=/sqlpad"
+    volumes:
+      - "sqlpad:/var/lib/sqlpad"
+    ports:
+      - "8030:80"
+    depends_on:
+      - chameleon

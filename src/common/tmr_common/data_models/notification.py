@@ -12,7 +12,7 @@ class NotificationLevel(Enum):
 class NotificationType(Enum):
     lab = 'labs'
     imaging = 'imaging'
-    consult = 'consults'
+    referral = 'refferals'
     general = 'general'
 
 
@@ -58,3 +58,16 @@ class LabsNotification(Notification):
         if 'notification_id' not in kwargs:
             kwargs['notification_id'] = self.get_id(**kwargs)
         super(LabsNotification, self).__init__(**kwargs)
+
+
+class ReferralsNotification(Notification):
+
+    @classmethod
+    def get_id(cls, **kwargs):
+        return {kwargs['type'].value: kwargs['static_id']}
+
+    def __init__(self, **kwargs):
+        kwargs['type'] = NotificationType.referral
+        if 'notification_id' not in kwargs:
+            kwargs['notification_id'] = self.get_id(**kwargs)
+        super(ReferralsNotification, self).__init__(**kwargs)

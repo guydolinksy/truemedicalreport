@@ -6,21 +6,17 @@ from pydantic import BaseModel
 
 from .esi_score import ESIScore
 from .image import Image
-from .labs import LabCategory
 from .measures import Measures, FullMeasures
 from .notification import Notification, NotificationLevel
 from .severity import Severity
+from .labs import LabCategory
+from .warnings import PatientWarning
 
 
 class Admission(BaseModel):
     department: Optional[str]
     wing: Optional[str]
     bed: Optional[str]
-
-
-class Warning(BaseModel):
-    content: str
-    severity: Severity
 
 
 class ExternalPatient(BaseModel):
@@ -76,7 +72,7 @@ class InternalPatient(BaseModel):
     awaiting: Dict[str, Dict[str, Awaiting]]
     severity: Severity
     flagged: bool
-    warnings: List[Warning]
+    warnings: List[PatientWarning]
     measures: Measures
 
     class Config:

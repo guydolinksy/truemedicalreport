@@ -1,5 +1,4 @@
 from pymongo import MongoClient
-from pymongo.database import Database
 
 
 async def init_wings():
