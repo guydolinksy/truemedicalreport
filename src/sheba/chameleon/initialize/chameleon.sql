@@ -152,28 +152,30 @@ CREATE TABLE [dbo].[lab_results]
 GO
 CREATE TABLE [dbo].[medical_free_text]
 (
-    [Row_ID]           [INT] IDENTITY ( 1,1) NOT NULL,
-    [Id]               [VARCHAR]             NULL,
-    [Medical_Record]   [VARCHAR]             NULL,
-    [DocumentingDate]  [DATETIME]            NULL,
-    [DocumentingTime]  [DATETIME]            NULL,
-    [unit_name]        [VARCHAR]             NULL,
-    [Unit]             [VARCHAR]             NULL,
-    [Description_code] [VARCHAR]             NULL,
-    [Description]      [VARCHAR]             NULL,
-    [Description_Text] [VARCHAR]             NULL,
-    [DocumentingUser]  [VARCHAR]             NULL,
-    [source]           [VARCHAR]             NULL,
-    [insert_date]      [DATETIME]            NULL
+    [Row_ID]           [BIGINT]          NULL,
+    [Id]               [BIGINT]          NULL,
+    [Medical_Record]   [BIGINT]          NULL,
+    [DocumentingDate]  [DATE]         NULL,
+    [DocumentingTime]  [DATETIME]     NULL,
+    [unit_name]        [VARCHAR](80)  NULL,
+    [Unit]             [BIGINT]          NULL,
+    [Description_code] [BIGINT]          NULL,
+    [Description]      [VARCHAR](500) NULL,
+    [Description_Text] [VARCHAR](MAX) NULL,
+    [DocumentingUser]  [BIGINT]          NULL,
+    [source]           [VARCHAR](25)  NULL,
+    /*date of insert the row to ARC db*/
+    [insert_date]      [DATETIME]     NULL
 
 )
 GO
-CREATE TABLE [dbo].[referrals](
-	[ReferralCode] [int] IDENTITY (1,1) NOT NULL,
-	[id] [int] NOT NULL,
-	[DoctorName] [varchar](50) NULL,
-	[OrderDate] [datetime] NULL,
-	[CompletedDate] [datetime] NULL,
+CREATE TABLE [dbo].[referrals]
+(
+    [ReferralCode]  [int] IDENTITY (1,1) NOT NULL,
+    [id]            [int]                NOT NULL,
+    [DoctorName]    [varchar](50)        NULL,
+    [OrderDate]     [datetime]           NULL,
+    [CompletedDate] [datetime]           NULL,
 ) ON [PRIMARY]
 GO
 alter database [chameleon_db] SET READ_WRITE
