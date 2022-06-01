@@ -90,7 +90,6 @@ class LabCategory(BaseModel):
         orm_mode = True
         use_enum_values = True
 
-    # TODO: advise with Guy more thoroughly about notifications in general
     def to_notification(self) -> [LabsNotification]:
         lab_notifications = []
         for cat_id, category_data in self.results.items():

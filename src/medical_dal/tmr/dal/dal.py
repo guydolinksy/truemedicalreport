@@ -205,22 +205,14 @@ class MedicalDal:
         match action:
             case Action.remove:
                 pass
-            case Action.insert:
+            case (Action.insert | Action.update):
                 self.db.imaging.update_one({"external_id": imaging_obj.external_id},
                                            {'$set': imaging_obj.dict()}, upsert=True)
-                notification = imaging_obj.to_notification()
-                self.db.notifications.update_one({"notification_id": notification.notification_id},
-                                                 {'$set': notification.dict()}, upsert=True)
-                await self.notify_patient(patient=patient.oid)
-                await self.notify_notification(patient=patient.oid)
-            case Action.update:
-                self.db.imaging.update_one({"external_id": imaging_obj.external_id},
-                                           {'$set': imaging_obj.dict()}, upsert=True)
-                notification = imaging_obj.to_notification()
-                self.db.notifications.update_one({"notification_id": notification.notification_id},
-                                                 {'$set': notification.dict()}, upsert=True)
-                await self.notify_patient(patient=patient.oid)
-                await self.notify_notification(patient=patient.oid)
+                if imaging_obj.status != ImagingStatus.ordered.value:
+                    notification = imaging_obj.to_notification()
+                    self.db.notifications.update_one({"notification_id": notification.notification_id},
+                                                     {'$set': notification.dict()}, upsert=True)
+                    await self.notify_notification(patient=patient.oid)
         await self.update_awaiting(patient, AwaitingTypes.imaging, str(imaging_obj.external_id), Awaiting(
             awaiting=imaging_obj.title,
             completed=imaging_obj.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value],
@@ -242,15 +234,21 @@ class MedicalDal:
             c.results[str(lab.test_type_id)] = lab
             c.status = StatusInHebrew[min({l.status for l in c.results.values()})]
         for single_lab in labs.values():
+            is_analyzed = single_lab.status == StatusInHebrew[LabStatus.analyzed.value]
             await self.update_awaiting(patient, AwaitingTypes.laboratory, single_lab.get_instance_id(), Awaiting(
                 awaiting=single_lab.category,
                 completed=single_lab.status == StatusInHebrew[LabStatus.analyzed.value],
                 since=single_lab.at,
                 limit=3600,
             ))
-            await self.update_warning(patient,single_lab.get_if_panic())
+            await self.update_warning(patient, single_lab.get_if_panic())
             self.db.labs.update_one({"patient_id": patient_id, **c.query_key},
                                     {'$set': dict(patient_id=patient_id, **c.dict())}, upsert=True)
+            if is_analyzed:
+                notification = single_lab.to_notification()
+                self.db.notifications.update_one({"notification_id": notification.notification_id},
+                                                 {'$set': notification.dict()}, upsert=True)
+                await self.notify_notification(patient=patient.oid)
 
     async def upsert_referrals(self, referral_obj: Referral, action: Action):
         res = self.db.patients.find_one({"external_id": str(referral_obj.patient_id)})
@@ -261,16 +259,15 @@ class MedicalDal:
         match action:
             case Action.remove:
                 pass
-            case Action.insert:
+            case (Action.insert | Action.update):
                 self.db.referrals.update_one({"external_id": referral_obj.external_id},
                                              {'$set': referral_obj.dict()}, upsert=True)
-                await self.notify_patient(patient=patient.oid)
-                await self.notify_notification(patient=patient.oid)
-            case Action.update:
-                self.db.referrals.update_one({"external_id": referral_obj.external_id},
-                                             {'$set': referral_obj.dict()}, upsert=True)
-                await self.notify_patient(patient=patient.oid)
-                await self.notify_notification(patient=patient.oid)
+                if referral_obj.completed:
+                    notification = referral_obj.to_notification()
+                    self.db.notifications.update_one({"notification_id": notification.notification_id},
+                                                     {'$set': notification.dict()}, upsert=True)
+                    await self.notify_notification(patient=patient.oid)
+
         await self.update_awaiting(patient, AwaitingTypes.referral, referral_obj.to, Awaiting(
             awaiting=referral_obj.to,
             since=referral_obj.at,
