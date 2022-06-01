@@ -18,7 +18,8 @@ from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures,
 from tmr_common.data_models.measures import Measures
 from tmr_common.data_models.notification import Notification
 from tmr_common.data_models.patient import Patient, Admission, PatientNotifications, ExternalPatient, InternalPatient, \
-    PatientInfo, Event, Awaiting, AwaitingTypes, PatientWarning
+    PatientInfo, Event, Awaiting, AwaitingTypes
+from tmr_common.data_models.warnings import PatientWarning
 from ..routes.websocket import notify
 
 logger = logbook.Logger(__name__)

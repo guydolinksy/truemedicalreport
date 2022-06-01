@@ -1,12 +1,11 @@
 from enum import Enum
+from typing import Optional, Dict
 
 from pydantic import BaseModel
-from datetime import datetime
-from typing import Optional, List, Dict
 
-from tmr_common.data_models.notification import LabsNotification, NotificationLevel
-import tmr_common.data_models.patient as p
-from tmr_common.data_models.severity import Severity
+from .warnings import PatientWarning
+from .notification import LabsNotification, NotificationLevel
+from .severity import Severity
 
 
 class LabCategories(Enum):
@@ -122,6 +121,6 @@ class LabCategory(BaseModel):
                         message += f"{category_data.panic_max_warn_bar} <= {category_data.result}"
                     message += "\n"
                     severity = Severity(value=0, at=category_data.at)  # TODO advise with guy about the real values
-                    patient_warning = p.PatientWarning(content=message, severity=severity)
+                    patient_warning = PatientWarning(content=message, severity=severity)
                     warnings.append(patient_warning)
         return warnings

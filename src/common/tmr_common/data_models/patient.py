@@ -10,17 +10,13 @@ from .measures import Measures, FullMeasures
 from .notification import Notification, NotificationLevel
 from .severity import Severity
 from .labs import LabCategory
+from .warnings import PatientWarning
 
 
 class Admission(BaseModel):
     department: Optional[str]
     wing: Optional[str]
     bed: Optional[str]
-
-
-class PatientWarning(BaseModel):
-    content: str
-    severity: Severity  # eventually I didn't change it because it depends on esi score
 
 
 class ExternalPatient(BaseModel):
