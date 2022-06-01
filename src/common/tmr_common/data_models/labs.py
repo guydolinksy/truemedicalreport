@@ -5,6 +5,8 @@ from datetime import datetime
 from typing import Optional, List, Dict
 
 from tmr_common.data_models.notification import LabsNotification, NotificationLevel
+import tmr_common.data_models.patient as p
+from tmr_common.data_models.severity import Severity
 
 
 class LabCategories(Enum):
@@ -105,3 +107,24 @@ class LabCategory(BaseModel):
                     level=NotificationLevel.panic,  # Advise with Guy
                 ))
         return lab_notifications
+
+    # Todo: test it when panic_min_warn_bar and panic_min_warn_bar will exist
+    def get_if_panic(self):
+        warnings = []
+        for cat_id, category_data in self.results.items():
+            message = "תוצאות עבור: "
+            if (category_data.panic_min_warn_bar is not None and category_data.panic_max_warn_bar is not None):
+                if not (category_data.panic_min_warn_bar < category_data.result < category_data.panic_max_warn_bar):
+                    message += f"{category_data.category_name}-{category_data.test_type_name} "
+                    if category_data.panic_min_warn_bar <= category_data.result:
+                        message += "נמוכים באופן מסוכן "
+                        message += f"{category_data.panic_min_warn_bar} <= {category_data.result}"
+                    else:
+                        message += "גבוהים באופן מסוכן "
+                        message += f"{category_data.panic_max_warn_bar} <= {category_data.result}"
+                    message += "\n"
+                    severity = Severity(value=0, at=category_data.at)  # TODO advise with guy about the real values
+                    patient_warning = p.PatientWarning(content=message, severity=severity)
+                    print(message)
+                    warnings.append(patient_warning)
+        return warnings
