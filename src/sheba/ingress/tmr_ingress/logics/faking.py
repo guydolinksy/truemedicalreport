@@ -19,6 +19,7 @@ from tmr_ingress.models.chameleon_imaging import ChameleonImaging
 from tmr_ingress.models.chameleon_labs import ChameleonLabs
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
 from tmr_ingress.models.chameleon_measurements import ChameleonMeasurements
+from tmr_ingress.models.chameleon_medical_free_text import ChameleonMedicalFreeText, description_codes, units_code
 
 logger = logbook.Logger(__name__)
 
@@ -293,7 +294,8 @@ class FakeMain(object):
             referral_date = self.faker.date_time_between_dates('+8000m', '+10000m').astimezone(pytz.UTC)
             chameleon_referral = ChameleonReferrals()
             chameleon_referral.patient_id = patient
-            chameleon_referral.to = random.choice(['אא"ג', 'נוירולוגיה', 'אורטופד', "רמדאן אבו עקלין", "ניבה לוי", "פבל ליידרמן"])
+            chameleon_referral.to = random.choice(
+                ['אא"ג', 'נוירולוגיה', 'אורטופד', "רמדאן אבו עקלין", "ניבה לוי", "פבל ליידרמן"])
             chameleon_referral.order_date = order_date
             if random.randint(0, 1):
                 chameleon_referral.referral_date = referral_date
@@ -329,6 +331,29 @@ class FakeMain(object):
         for wing in self.wings:
             self._generate_referrals_dates(department=department, wing=wing)
 
+    def _build_nurse_medical_text(self, department=None, wing=None):
+        patients = [patient for patient in self._get_patients(department, wing) if not random.randint(0, 4)]
+        for patient in patients:
+            patient_medical_text = ChameleonMedicalFreeText(
+                patient_id=patient,
+                medical_record=random.randint(0, 500000),
+                documenting_date=datetime.date.today(),
+                documenting_time=datetime.datetime.utcnow(),
+                unit_name=units_code["er"]["title"],
+                unit=units_code["er"]["code"],
+                medical_text_code=description_codes["nurse_summarize"]["code"],
+                medical_text_title=description_codes["nurse_summarize"]["title"],
+                medical_text=random.choice(description_codes["nurse_summarize"]["text_list"]),
+                documenting_user=random.randint(200, 5800)
+            )
+            with self.session() as session:
+                session.add(patient_medical_text)
+                session.commit()
+
+    async def add_nurse_medical_text_to_department(self, department):
+        for wing in self.wings:
+            self._build_nurse_medical_text(department, wing)
+
     def clear(self):
         with self.session() as session:
             session.query(ChameleonMain).delete()
@@ -336,4 +361,5 @@ class FakeMain(object):
             session.query(ChameleonImaging).delete()
             session.query(ChameleonLabs).delete()
             session.query(ChameleonMeasurements).delete()
+            session.query(ChameleonMedicalFreeText).delete()
             session.commit()

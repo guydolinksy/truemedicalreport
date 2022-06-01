@@ -4,15 +4,16 @@ from .base import Base
 from sqlalchemy import Column, VARCHAR, Integer, DateTime, Date, BigInteger
 from enum import Enum
 
-
-class DescriptionCode(Enum):
-    nurse_summarize = 901
-    doctor_summarize = 900
+description_codes = {"nurse_summarize": {"code": 901, "title": "סיכום ביקור אחות", "text_list": ["""בדרך כלל בריא, חווה כאבים בצד שמאל מאתמול בערב.
+מלווה בכאבי ראש וסחרחורות לסירוגין""", """לא מסוגל להזיז את היד, חשש לשבר במפרק כף היד""",
+                                                                                                 """מתלונן על כאבי גב מזה תקופה ארוכה, לטענתו חווה קשיי בעת מעבר בין ישיבה לעמידה"""]},
+                     "doctor_summarie": {"code": 889, "title": "סיכום רופא"}}
+units_code = {"er": {"code": 1184000, "title": """מלר"ד"""}}
 
 
 class ChameleonMedicalFreeText(Base):
     __tablename__ = "medical_free_text"
-    row_id = Column("Row_ID", BigInteger())
+    row_id = Column("Row_ID", BigInteger(), auto_increment=True, primary_key=True)
     patient_id = Column("Id", BigInteger())
     medical_record = Column("Medical_Record", BigInteger())
     documenting_date = Column("DocumentingDate", Date())
@@ -25,4 +26,4 @@ class ChameleonMedicalFreeText(Base):
     documenting_user = Column("DocumentingUser", BigInteger())
     source = Column("source", VARCHAR(), default="chameleon")
     # date of inserting the row to ARC db
-    inserted_date = Column("inserted_date", DateTime(), default=datetime.datetime.utcnow())
+    insert_date = Column("insert_date", DateTime(), default=datetime.datetime.utcnow())
