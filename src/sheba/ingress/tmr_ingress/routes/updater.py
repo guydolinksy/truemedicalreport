@@ -1,3 +1,5 @@
+import http
+
 import logbook
 from fastapi import APIRouter, Depends
 from fastapi_utils.tasks import repeat_every
@@ -67,3 +69,12 @@ async def update_referrals(department: Departments, dal: SqlToDal = Depends(dal_
     logger.info("Update referrals...")
     dal.update_referrals(department=department)
     logger.info("Done.")
+
+
+@updater_router.on_event('startup')
+# @repeat_every(seconds=60, logger=logger)
+@inject_dependencies(department=Departments.er)
+@updater_router.post("/nurse_summarize", status_code=http.HTTPStatus.ACCEPTED)
+async def update_nurse_medical_summarize(department: Departments, dal: SqlToDal = Depends(dal_updater)):
+    logger.info("Update Nurse Medical Summarize")
+    dal.update_nurse_medical_text(department=department)
