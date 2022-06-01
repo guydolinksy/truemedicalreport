@@ -79,6 +79,7 @@ async def generate_labs(department: Departments, dal: FakeMain = Depends(FakeMai
     await dal.update_labs(department=department)
     logger.debug('Done.')
 
+
 @faker_router.on_event('startup')
 @repeat_every(seconds=90, logger=logger)
 @inject_dependencies(department=Departments.er)
@@ -91,6 +92,7 @@ async def generate_referrals(department: Departments, dal: FakeMain = Depends(Fa
     await dal.update_referrals(department=department)
     logger.debug('Done.')
 
+
 @faker_router.on_event('startup')
 @repeat_every(seconds=3600, wait_first=True, logger=logger)
 @inject_dependencies()
@@ -99,3 +101,13 @@ async def clear(dal: FakeMain = Depends(FakeMain)):
     logger.info("Clearing...")
     dal.clear()
     logger.info("Done.")
+
+
+@faker_router.on_event('startup')
+@repeat_every(seconds=60, wait_first=True, logger=logger)
+@inject_dependencies(department=Departments.er)
+@faker_router.post("/nurse_summarize", status_code=201)
+async def generate_nurse_summarize(department: Departments, dal: FakeMain = Depends(FakeMain)):
+    logger.info("Generate Nurse Summarize")
+    await dal.add_nurse_medical_text_to_department(department=department)
+    logger.info("Done Generate Nurse Summarize")

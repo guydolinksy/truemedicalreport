@@ -152,17 +152,17 @@ CREATE TABLE [dbo].[lab_results]
 GO
 CREATE TABLE [dbo].[medical_free_text]
 (
-    [Row_ID]           [BIGINT]          NULL,
-    [Id]               [BIGINT]          NULL,
-    [Medical_Record]   [BIGINT]          NULL,
+    [Row_ID]           [BIGINT] IDENTITY (1,1) PRIMARY KEY,
+    [Id]               [BIGINT]       NULL,
+    [Medical_Record]   [BIGINT]       NULL,
     [DocumentingDate]  [DATE]         NULL,
     [DocumentingTime]  [DATETIME]     NULL,
     [unit_name]        [VARCHAR](80)  NULL,
-    [Unit]             [BIGINT]          NULL,
-    [Description_code] [BIGINT]          NULL,
+    [Unit]             [BIGINT]       NULL,
+    [Description_code] [BIGINT]       NULL,
     [Description]      [VARCHAR](500) NULL,
     [Description_Text] [VARCHAR](MAX) NULL,
-    [DocumentingUser]  [BIGINT]          NULL,
+    [DocumentingUser]  [BIGINT]       NULL,
     [source]           [VARCHAR](25)  NULL,
     /*date of insert the row to ARC db*/
     [insert_date]      [DATETIME]     NULL
