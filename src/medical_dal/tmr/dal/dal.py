@@ -237,7 +237,7 @@ class MedicalDal:
             is_analyzed = single_lab.status == StatusInHebrew[LabStatus.analyzed.value]
             await self.update_awaiting(patient, AwaitingTypes.laboratory, single_lab.get_instance_id(), Awaiting(
                 awaiting=single_lab.category,
-                completed=single_lab.status == StatusInHebrew[LabStatus.analyzed.value],
+                completed=is_analyzed,
                 since=single_lab.at,
                 limit=3600,
             ))
