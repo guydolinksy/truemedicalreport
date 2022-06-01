@@ -242,7 +242,7 @@ class MedicalDal:
             c.results[str(lab.test_type_id)] = lab
             c.status = StatusInHebrew[min({l.status for l in c.results.values()})]
         for c in labs.values():
-            await self.update_awaiting(patient, AwaitingTypes.laboratory, f'{c.category_id}#{c.at}', Awaiting(
+            await self.update_awaiting(patient, AwaitingTypes.laboratory, c.get_instance_id(), Awaiting(
                 awaiting=c.category,
                 completed=c.status == StatusInHebrew[LabStatus.analyzed.value],
                 since=c.at,

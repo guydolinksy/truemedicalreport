@@ -81,23 +81,27 @@ class LabCategory(BaseModel):
     def query_key(self):
         return {'at': self.at, 'category_id': self.category_id}
 
+    def get_instance_id(self):
+        return f'{self.category_id}#{self.at}'
+
     class Config:
         orm_mode = True
         use_enum_values = True
 
     # TODO: advise with Guy more thoroughly about notifications in general
-    def to_notification(self):
-        message = "תוצאות עבור"
+    def to_notification(self) -> [LabsNotification]:
+        lab_notifications = []
         for cat_id, category_data in self.results.items():
-            message += category_data.test_type_name+ ", "
-        patient_id = category_data.patient_id
-        static_id = f"{patient_id}#{cat_id}"
-
-        return LabsNotification(
-            static_id=static_id,
-            patient_id=patient_id,
-            at=self.at,
-            message=message,
-            link="TALK TO GUY",
-            level=NotificationLevel.normal,  # Advise with Guy
-        )
+            patient_id = category_data.patient_id
+            message = "תוצאות עבור: "
+            message += f"{category_data.category_name}-{category_data.test_type_name} "
+            if category_data.result is not None:
+                lab_notifications.append(LabsNotification(
+                    static_id=self.get_instance_id(),
+                    patient_id=patient_id,
+                    at=self.at,
+                    message=message,
+                    link="Add in the future",
+                    level=NotificationLevel.panic,  # Advise with Guy
+                ))
+        return lab_notifications
