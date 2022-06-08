@@ -1,9 +1,11 @@
+import http
+
 import logbook
 from fastapi import APIRouter, Depends
 from fastapi_utils.tasks import repeat_every
 
 from ..logics.sql_to_dal import SqlToDal
-from ..logics.utils import inject_dependencies
+from ..logics.utils import inject_dependencies, safe
 from ..models.chameleon_main import Departments
 
 updater_router = APIRouter()
@@ -18,6 +20,7 @@ logger = logbook.Logger(__name__)
 
 @updater_router.on_event('startup')
 @repeat_every(seconds=40, logger=logger)
+@safe(logger)
 @inject_dependencies(department=Departments.er)
 @updater_router.post("/update_admissions")
 async def update_admissions(department: Departments, dal: SqlToDal = Depends(dal_updater)):
@@ -29,6 +32,7 @@ async def update_admissions(department: Departments, dal: SqlToDal = Depends(dal
 # TODO: uncomment to enable periodic updates
 @updater_router.on_event('startup')
 @repeat_every(seconds=50, logger=logger)
+@safe(logger)
 @inject_dependencies(department=Departments.er)
 @updater_router.post("/update_measurements", status_code=201)
 async def update_measurements(department: Departments, dal: SqlToDal = Depends(dal_updater)):
@@ -40,6 +44,7 @@ async def update_measurements(department: Departments, dal: SqlToDal = Depends(d
 # TODO: uncomment to enable periodic updates
 @updater_router.on_event('startup')
 @repeat_every(seconds=70, logger=logger)
+@safe(logger)
 @inject_dependencies(department=Departments.er)
 @updater_router.post("/update_imagings", status_code=201)
 async def update_imagings(department: Departments, dal: SqlToDal = Depends(dal_updater)):
@@ -50,6 +55,7 @@ async def update_imagings(department: Departments, dal: SqlToDal = Depends(dal_u
 
 @updater_router.on_event('startup')
 @repeat_every(seconds=60, logger=logger)
+@safe(logger)
 @inject_dependencies(department=Departments.er)
 @updater_router.post("/update_labs", status_code=201)
 async def update_labs(department: Departments, dal: SqlToDal = Depends(dal_updater)):
@@ -60,9 +66,20 @@ async def update_labs(department: Departments, dal: SqlToDal = Depends(dal_updat
 
 @updater_router.on_event('startup')
 @repeat_every(seconds=60, logger=logger)
+@safe(logger)
 @inject_dependencies(department=Departments.er)
 @updater_router.post("/update_referrals", status_code=201)
 async def update_referrals(department: Departments, dal: SqlToDal = Depends(dal_updater)):
     logger.info("Update referrals...")
     dal.update_referrals(department=department)
     logger.info("Done.")
+
+
+@updater_router.on_event('startup')
+# @repeat_every(seconds=60, logger=logger)
+@safe(logger)
+@inject_dependencies(department=Departments.er)
+@updater_router.post("/nurse_summarize", status_code=http.HTTPStatus.ACCEPTED)
+async def update_nurse_medical_summarize(department: Departments, dal: SqlToDal = Depends(dal_updater)):
+    logger.info("Update Nurse Medical Summarize")
+    dal.update_nurse_medical_text(department=department)

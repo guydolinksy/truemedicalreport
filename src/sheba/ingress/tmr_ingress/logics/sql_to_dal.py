@@ -118,4 +118,3 @@ class SqlToDal(object):
 
         except HTTPError:
             logger.exception("Couldn't Update Nurse Summarize")
-

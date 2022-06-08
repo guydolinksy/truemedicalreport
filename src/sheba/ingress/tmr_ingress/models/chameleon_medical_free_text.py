@@ -9,8 +9,10 @@ description_codes = {"nurse_summarize": {"code": 901, "title": "סיכום בי�
 מלווה בכאבי ראש וסחרחורות לסירוגין""", """לא מסוגל להזיז את היד, חשש לשבר במפרק כף היד""",
                                                                                                  """מתלונן על כאבי גב מזה תקופה ארוכה, לטענתו חווה קשיי בעת מעבר בין ישיבה לעמידה"""]},
                      "doctor_summarie": {"code": 889, "title": "סיכום רופא"}}
-units_code = {"er": {"code": 1184000, "title": """מלר"ד"""}}
+units_code = {"er": {"code": 5, "title": """מלר"ד"""}}
 
+
+# real code og er in chameleon is 1184000
 
 class ChameleonMedicalFreeText(Base):
     __tablename__ = "medical_free_text"
@@ -29,19 +31,6 @@ class ChameleonMedicalFreeText(Base):
     # date of inserting the row to ARC db
     insert_date = Column("insert_date", DateTime(), default=datetime.datetime.utcnow())
 
-    def to_dal(self) -> FreeText:
-        return FreeText(
-            patient_id=self.patient_id,
-            medical_record=self.medical_record,
-            documenting_date=self.documenting_date,
-            documenting_time=self.documenting_time,
-            unit_name=self.unit_name,
-            unit=self.unit,
-            medical_text_code=self.medical_text_code,
-            medical_text_title=self.medical_text_title,
-            medical_text=self.medical_text,
-            documenting_user=self.documenting_user,
-            source=self.source)
     def to_dal(self):
         return dict(
             since=self.documenting_time,
