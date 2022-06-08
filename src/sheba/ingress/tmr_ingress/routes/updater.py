@@ -16,7 +16,6 @@ def dal_updater() -> SqlToDal:
 logger = logbook.Logger(__name__)
 
 
-# TODO: uncomment to enable periodic updates
 @updater_router.on_event('startup')
 @repeat_every(seconds=40, logger=logger)
 @inject_dependencies(department=Departments.er)
