@@ -1,18 +1,29 @@
 import datetime
 
-from src.common.tmr_common.data_models.free_text import FreeText
 from .base import Base
 from sqlalchemy import Column, VARCHAR, Integer, DateTime, Date, BigInteger
 from enum import Enum
 
-description_codes = {"nurse_summarize": {"code": 901, "title": "סיכום ביקור אחות", "text_list": ["""בדרך כלל בריא, חווה כאבים בצד שמאל מאתמול בערב.
-מלווה בכאבי ראש וסחרחורות לסירוגין""", """לא מסוגל להזיז את היד, חשש לשבר במפרק כף היד""",
-                                                                                                 """מתלונן על כאבי גב מזה תקופה ארוכה, לטענתו חווה קשיי בעת מעבר בין ישיבה לעמידה"""]},
-                     "doctor_summarie": {"code": 889, "title": "סיכום רופא"}}
-units_code = {"er": {"code": 5, "title": """מלר"ד"""}}
+description_codes = {
+    "nurse_summarize": {
+        "code": 901,
+        "title": "סיכום ביקור אחות",
+        "text_list":
+            [
+                """ בדרך כלל בריא, חווה כאבים בצד שמאל מאתמול בערב. מלווה בכאבי ראש וסחרחורות לסירוגין"""
+                , """לא מסוגל להזיז את היד, חשש לשבר במפרק כף היד""",
+                """מתלונן על כאבי גב מזה תקופה ארוכה, לטענתו חווה קשיי בעת מעבר בין ישיבה לעמידה"""
+            ]
+    },
+    "doctor_summarie": {
+        "code": 889,
+        "title": "סיכום רופא"
+    }
+}
+units_code = {"er": {"code": 1184000, "title": "המחלקה לרפואה דחופה"}}
 
 
-# real code og er in chameleon is 1184000
+# real code of ER in chameleon is 1184000
 
 class ChameleonMedicalFreeText(Base):
     __tablename__ = "medical_free_text"
