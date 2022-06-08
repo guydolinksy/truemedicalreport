@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from ..models.arc_patient import ARCPatient
+from ..models.chameleon_medical_free_text import ChameleonMedicalFreeText
 from ..models.chameleon_referrals import ChameleonReferrals
 from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleon_imaging import ChameleonImaging
@@ -90,6 +91,20 @@ class SqlToDal(object):
             res.raise_for_status()
         except HTTPError as e:
             logger.exception(f'Could not run labs handler. {e}')
+
+    def upsert_free_text(self, department: Departments):
+        try:
+            logger.debug('Getting free_text for `{}`...', department.name)
+            free_data = {}
+            with self.session() as session:
+                for free_text in session.query(ChameleonMedicalFreeText) \
+                        .join(ChameleonMain,ChameleonReferrals.patient_id == ChameleonMain.patient_id):
+                    free_data.setdefault(free_text.patient_id, []).append(free_text.to_dal().dict())
+            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/free_text',
+                                json={'free_text': free_data})
+            res.raise_for_status()
+        except HTTPError:
+            logger.exception('Could not run referrals handler.')
 
     def update_referrals(self, department: Departments):
         try:

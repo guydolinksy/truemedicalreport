@@ -254,6 +254,8 @@ class MedicalDal:
                                                  {'$set': notification.dict()}, upsert=True)
                 await self.notify_notification(patient=patient.oid)
 
+
+
     async def upsert_referrals(self, referral_obj: Referral, action: Action):
         res = self.db.patients.find_one({"external_id": str(referral_obj.patient_id)})
         if not res:
@@ -278,6 +280,9 @@ class MedicalDal:
             completed=referral_obj.completed,
             limit=3600,
         ))
+
+    def update_from_free_text(self):
+        pass
 
     def get_waiting_for_doctor_list(self) -> [WaitForDoctor]:
         waiting = self.db.referrals. \
@@ -317,4 +322,5 @@ class MedicalDal:
         updated = patient.copy()
         updated.warnings += warnings
         await self.update_patient_by_id(patient.oid, updated.dict(include={'warnings'}))
+
 
