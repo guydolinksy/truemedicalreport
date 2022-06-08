@@ -42,3 +42,9 @@ class ChameleonMedicalFreeText(Base):
             medical_text=self.medical_text,
             documenting_user=self.documenting_user,
             source=self.source)
+    def to_dal(self):
+        return dict(
+            since=self.documenting_time,
+            code=self.medical_text_code,
+            text=self.medical_text
+        )

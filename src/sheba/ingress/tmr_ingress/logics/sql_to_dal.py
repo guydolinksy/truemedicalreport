@@ -8,12 +8,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from ..models.arc_patient import ARCPatient
-from ..models.chameleon_medical_free_text import ChameleonMedicalFreeText
 from ..models.chameleon_referrals import ChameleonReferrals
 from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
 from ..models.chameleon_measurements import ChameleonMeasurements
+from ..models.chameleon_medical_free_text import ChameleonMedicalFreeText, description_codes, units_code
 
 logger = logbook.Logger(__name__)
 
@@ -92,20 +92,6 @@ class SqlToDal(object):
         except HTTPError as e:
             logger.exception(f'Could not run labs handler. {e}')
 
-    def upsert_free_text(self, department: Departments):
-        try:
-            logger.debug('Getting free_text for `{}`...', department.name)
-            free_data = {}
-            with self.session() as session:
-                for free_text in session.query(ChameleonMedicalFreeText) \
-                        .join(ChameleonMain,ChameleonReferrals.patient_id == ChameleonMain.patient_id):
-                    free_data.setdefault(free_text.patient_id, []).append(free_text.to_dal().dict())
-            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/free_text',
-                                json={'free_text': free_data})
-            res.raise_for_status()
-        except HTTPError:
-            logger.exception('Could not run referrals handler.')
-
     def update_referrals(self, department: Departments):
         try:
             logger.debug('Getting referrals for `{}`...', department.name)
@@ -120,3 +106,16 @@ class SqlToDal(object):
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run referrals handler.')
+
+    def update_nurse_medical_text(self, department: Departments):
+        try:
+            logger.debug(f"Getting Nurse Summarize for {department.name}")
+            with self.session() as session:
+                for summarize in session.query(ChameleonMedicalFreeText) \
+                        .join(ChameleonMedicalFreeText.patient_id == ChameleonMain.patient_id) \
+                        .where(ChameleonMedicalFreeText.unit == 0):
+                    pass
+
+        except HTTPError:
+            logger.exception("Couldn't Update Nurse Summarize")
+
