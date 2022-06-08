@@ -109,5 +109,6 @@ async def clear(dal: FakeMain = Depends(FakeMain)):
 @faker_router.post("/nurse_summarize", status_code=201)
 async def generate_nurse_summarize(department: Departments, dal: FakeMain = Depends(FakeMain)):
     logger.info("Generate Nurse Summarize")
+    # TODO: after pull request change "nurse text" to "free text"
     await dal.add_nurse_medical_text_to_department(department=department)
     logger.info("Done Generate Nurse Summarize")

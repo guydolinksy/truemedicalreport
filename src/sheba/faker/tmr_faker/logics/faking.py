@@ -334,6 +334,8 @@ class FakeMain(object):
     def _build_nurse_medical_text(self, department=None, wing=None):
         patients = [patient for patient in self._get_patients(department, wing) if not random.randint(0, 4)]
         for patient in patients:
+            print(list(description_codes.keys()))
+            description_name = random.choice(list(description_codes.keys()))
             patient_medical_text = ChameleonMedicalFreeText(
                 patient_id=patient,
                 medical_record=random.randint(0, 500000),
@@ -341,15 +343,15 @@ class FakeMain(object):
                 documenting_time=datetime.datetime.utcnow(),
                 unit_name=units_code["er"]["title"],
                 unit=units_code["er"]["code"],
-                medical_text_code=description_codes["nurse_summarize"]["code"],
-                medical_text_title=description_codes["nurse_summarize"]["title"],
-                medical_text=random.choice(description_codes["nurse_summarize"]["text_list"]),
+                medical_text_code=description_codes[description_name]["code"],
+                medical_text_title=description_codes[description_name]["title"],
+                medical_text=random.choice(description_codes[description_name]["text_list"]),
                 documenting_user=random.randint(200, 5800)
             )
             with self.session() as session:
                 session.add(patient_medical_text)
-                session.commit()
 
+                session.commit()
     async def add_nurse_medical_text_to_department(self, department):
         for wing in self.wings:
             self._build_nurse_medical_text(department, wing)

@@ -11,6 +11,7 @@ from pymongo.database import Database
 from werkzeug.exceptions import NotFound
 
 from tmr_common.data_models.aggregate.medical_sum import WaitForDoctor
+from tmr_common.data_models.free_text import FreeText, MedicalCode
 from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.image import Image, ImagingStatus
 from tmr_common.data_models.labs import Laboratory, LabCategory, StatusInHebrew, LabStatus
@@ -254,8 +255,6 @@ class MedicalDal:
                                                  {'$set': notification.dict()}, upsert=True)
                 await self.notify_notification(patient=patient.oid)
 
-
-
     async def upsert_referrals(self, referral_obj: Referral, action: Action):
         res = self.db.patients.find_one({"external_id": str(referral_obj.patient_id)})
         if not res:
@@ -281,8 +280,21 @@ class MedicalDal:
             limit=3600,
         ))
 
-    def update_from_free_text(self):
-        pass
+    def upsert_free_text(self, patient_id, free_texts: [FreeText]):
+        res = self.db.patients.find_one({"external_id": str(patient_id)})
+        if not res:
+            logger.error(f'free text Patient {str(patient_id)} Not Found')
+            return
+        patient = Patient(**res)
+        for free_text_obj in free_texts:
+            awaiting = None
+            match free_text_obj.medical_text_code:
+                case MedicalCode.doctor:
+                    tag = "exam"
+                    awaiting = patient.awaiting[AwaitingTypes.doctor.value][tag]
+                    awaiting.completed = True
+            if free_text_obj.medical_text_code is not None and awaiting is not None:
+                await self.update_awaiting(patient_id,AwaitingTypes.doctor,tag,awaiting)
 
     def get_waiting_for_doctor_list(self) -> [WaitForDoctor]:
         waiting = self.db.referrals. \
@@ -322,5 +334,3 @@ class MedicalDal:
         updated = patient.copy()
         updated.warnings += warnings
         await self.update_patient_by_id(patient.oid, updated.dict(include={'warnings'}))
-
-

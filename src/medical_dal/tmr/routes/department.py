@@ -4,6 +4,7 @@ import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
+from tmr_common.data_models.free_text import FreeText
 from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.image import Image
 from tmr_common.data_models.labs import Laboratory
@@ -94,14 +95,7 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
 
 
 @department_router.post("/{department}/free_text")
-async def update_referrals(department: str, referrals: Dict[str, List[Referral]] = Body(..., embed=True),
+async def update_free_texts(department: str, free_texts: Dict[str, List[FreeText]] = Body(..., embed=True),
                            dal: MedicalDal = Depends(medical_dal)):
-    for patient in {patient.external_id for patient in dal.get_department_patients(department)} | set(referrals):
-        updated = {referral.external_id: referral for referral in referrals.get(patient, [])}
-        existing = {referral.external_id: referral for referral in dal.get_patient_referrals(patient)}
-        for referral in set(existing) - set(updated):
-            await dal.upsert_referrals(referral_obj=existing[referral], action=Action.remove)
-        for referral in set(updated) - set(existing):
-            await dal.upsert_referrals(referral_obj=updated[referral], action=Action.insert)
-        for referral in set(updated) & set(existing):
-            await dal.upsert_referrals(referral_obj=updated[referral], action=Action.update)
+    for patient, free_texts in free_texts.items():
+        await dal.upsert_free_text(patient_id=patient,free_texts=free_texts)
