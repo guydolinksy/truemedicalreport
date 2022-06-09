@@ -66,6 +66,8 @@ const PatientAge = ({patient}) => {
 export const PatientComplaint = ({patient, style}) => {
     const navigate = useNavigate();
     const {value, loading} = useContext(patientDataContext.context);
+    const {minutes} = useTime({});
+    const [arrivalColor, setArrivalColor] = useState(undefined);
     const innerStyle = {
         userSelect: "none",
         padding: 20,
@@ -74,6 +76,11 @@ export const PatientComplaint = ({patient, style}) => {
         textAlign: "center",
         ...style
     };
+
+    useEffect(() => {
+        if (moment().subtract(30, "minutes").isAfter(value.arrival) && !value.awaiting.doctor.exam.completed)
+            setArrivalColor('red')
+    }, [minutes]);
 
     return loading ? <Spin/> : <div
         style={innerStyle}
@@ -84,7 +91,9 @@ export const PatientComplaint = ({patient, style}) => {
         <Tooltip overlay={'תלונה עיקרית'}>{value.complaint}</Tooltip>
         &nbsp;-&nbsp;
         <Tooltip overlay={'זמן מקבלה'}>
-            <Moment interval={1000} durationFromNow format={'h:mm'} date={value.arrival}/>
+            <Moment style={{"color": arrivalColor}} interval={1000} durationFromNow format={'h:mm'}
+                    date={value.arrival}/>
+
         </Tooltip>
     </div>
 }
@@ -165,10 +174,10 @@ const PatientHeader = ({patient, avatar}) => {
     if (!patient)
         return <Button shape={"circle"} type={"text"}>{avatar || <UserOutlined/>}</Button>
     return <span>
-        {avatar || value.admission.bed || <UserOutlined/>}&nbsp;<Tooltip overlay={`ת.ז. ${value.id_ || 'לא ידוע'}`}>
+            {avatar || value.admission.bed || <UserOutlined/>}&nbsp;<Tooltip overlay={`ת.ז. ${value.id_ || 'לא ידוע'}`}>
             {value.name}
-        </Tooltip><PatientAge patient={patient}/>
-    </span>
+                </Tooltip><PatientAge patient={patient}/>
+                </span>
 }
 const PatientInner = ({patient, avatar, style}) => {
     const ref = useRef(null);
