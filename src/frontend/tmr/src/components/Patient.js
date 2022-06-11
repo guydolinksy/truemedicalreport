@@ -78,7 +78,7 @@ export const PatientComplaint = ({patient, style}) => {
     };
 
     useEffect(() => {
-        if (moment().subtract(30, "minutes").isAfter(value.arrival) && !value.awaiting.doctor.exam.completed)
+        if (moment().subtract(30, "minutes").isAfter(value.arrival))
             setArrivalColor('red')
     }, [minutes]);
 
