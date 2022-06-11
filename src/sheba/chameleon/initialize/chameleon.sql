@@ -181,3 +181,164 @@ GO
 alter database [chameleon_db] SET READ_WRITE
 USE [master]
 GO
+/****** Object:  Database [sbwnd81c.chameleon]    Script Date: 12/06/2022 1:01:52 ******/
+CREATE DATABASE [sbwnd81c.chameleon]
+ CONTAINMENT = NONE
+ ON  PRIMARY
+( NAME = N'sbwnd81c.chameleon', FILENAME = N'/var/opt/mssql/data/sbwnd81c.chameleon.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON
+( NAME = N'sbwnd81c.chameleon_log', FILENAME = N'/var/opt/mssql/data/sbwnd81c.chameleon_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ COLLATE Hebrew_CI_AS
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET COMPATIBILITY_LEVEL = 150
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [sbwnd81c.chameleon].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET ANSI_NULL_DEFAULT OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET ANSI_NULLS OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET ANSI_PADDING OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET ANSI_WARNINGS OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET ARITHABORT OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET AUTO_CLOSE OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET AUTO_SHRINK OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET AUTO_UPDATE_STATISTICS ON
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET CURSOR_CLOSE_ON_COMMIT OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET CURSOR_DEFAULT  GLOBAL
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET CONCAT_NULL_YIELDS_NULL OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET NUMERIC_ROUNDABORT OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET QUOTED_IDENTIFIER OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET RECURSIVE_TRIGGERS OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET  DISABLE_BROKER
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET AUTO_UPDATE_STATISTICS_ASYNC OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET DATE_CORRELATION_OPTIMIZATION OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET TRUSTWORTHY OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET ALLOW_SNAPSHOT_ISOLATION OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET PARAMETERIZATION SIMPLE
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET READ_COMMITTED_SNAPSHOT OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET HONOR_BROKER_PRIORITY OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET RECOVERY FULL
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET  MULTI_USER
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET PAGE_VERIFY CHECKSUM
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET DB_CHAINING OFF
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF )
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET TARGET_RECOVERY_TIME = 60 SECONDS
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET DELAYED_DURABILITY = DISABLED
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET ACCELERATED_DATABASE_RECOVERY = OFF
+GO
+EXEC sys.sp_db_vardecimal_storage_format N'sbwnd81c.chameleon', N'ON'
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET QUERY_STORE = OFF
+GO
+USE [sbwnd81c.chameleon]
+GO
+/****** Object:  Table [dbo].[AdmissionTreatmentDecision]    Script Date: 12/06/2022 1:01:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AdmissionTreatmentDecision](
+	[Decision] [nvarchar](150) NULL,
+	[Hosp_Unit] [int] NULL,
+	[Delete_Date] [datetime] NULL,
+	[Medical_Record] [int] NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[MedicalRecords]    Script Date: 12/06/2022 1:01:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[MedicalRecords](
+	[Medical_Record] [int] NULL,
+	[Delete_Date] [datetime] NULL,
+	[Unit] [int] NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ResponsibleDoctor]    Script Date: 12/06/2022 1:01:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ResponsibleDoctor](
+	[Doctor] [nvarchar](150) NULL,
+	[Medical_Record] [int] NULL,
+	[Delete_Date] [datetime] NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[SystemUnits]    Script Date: 12/06/2022 1:01:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[SystemUnits](
+	[Unit] [int] NULL,
+	[Name] [nvarchar](150) NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[TableAnswers]    Script Date: 12/06/2022 1:01:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TableAnswers](
+	[Answer_Code] [int] NULL,
+	[Answer_Text] [nvarchar](150) NULL,
+	[Table_Code] [int] NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[TreatmentCause]    Script Date: 12/06/2022 1:01:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TreatmentCause](
+	[remarks] [nvarchar](250) NULL,
+	[Medical_Record] [int] NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Users]    Script Date: 12/06/2022 1:01:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Users](
+	[usernamenotitle] [nvarchar](150) NULL,
+	[Code] [nvarchar](150) NULL
+) ON [PRIMARY]
+GO
+USE [master]
+GO
+ALTER DATABASE [sbwnd81c.chameleon] SET  READ_WRITE
+GO
