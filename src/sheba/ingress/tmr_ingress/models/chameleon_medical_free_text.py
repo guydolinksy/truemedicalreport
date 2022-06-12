@@ -1,6 +1,6 @@
 import datetime
 
-from src.common.tmr_common.data_models.free_text import FreeText
+from tmr_common.data_models.free_text import FreeText
 from .base import Base
 from sqlalchemy import Column, VARCHAR, Integer, DateTime, Date, BigInteger
 from enum import Enum
