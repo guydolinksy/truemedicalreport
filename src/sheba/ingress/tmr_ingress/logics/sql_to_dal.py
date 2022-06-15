@@ -7,6 +7,7 @@ from requests import HTTPError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
+from . import sql_queries
 from ..models.arc_patient import ARCPatient
 from ..models.chameleon_medical_free_text import ChameleonMedicalFreeText
 from ..models.chameleon_referrals import ChameleonReferrals
@@ -98,7 +99,7 @@ class SqlToDal(object):
             free_data = {}
             with self.session() as session:
                 for free_text in session.query(ChameleonMedicalFreeText) \
-                        .join(ChameleonMain,ChameleonReferrals.patient_id == ChameleonMain.patient_id):
+                        .join(ChameleonMain, ChameleonReferrals.patient_id == ChameleonMain.patient_id):
                     free_data.setdefault(free_text.patient_id, []).append(free_text.to_dal().dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/free_text',
                                 json={'free_text': free_data})
@@ -120,3 +121,8 @@ class SqlToDal(object):
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run referrals handler.')
+
+    def update_admission_treatment_decision(self):
+        with self.session() as session:
+            result = session.execute(sql_queries.treatment_decision)
+            print(result.fetchall())

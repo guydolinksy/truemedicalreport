@@ -30,6 +30,7 @@ class ExternalPatient(BaseModel):
     birthdate: Optional[str]
     complaint: Optional[str]
     admission: Optional[Admission]
+    discharge_time: Optional[str]
 
     def __init__(self, **kwargs):
         if 'gender' in kwargs and kwargs['gender'] in ['M', 'F']:

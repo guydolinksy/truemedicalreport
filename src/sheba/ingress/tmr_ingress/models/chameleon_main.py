@@ -22,7 +22,9 @@ class ChameleonMain(Base):
     patient_id = Column("id", Integer(), primary_key=True)
     unit = Column("DepartmentName", VARCHAR(200))
     unit_wing = Column("DepartmentWing", VARCHAR(200))
+    department_code = Column("DepartmentCode", Integer())
     arrival = Column("DepartmentAdmission", DateTime())
+    discharge_time = Column("DepartmentWingDischarge", DateTime())
     main_cause = Column("MainCause", VARCHAR(200))
     esi = Column("esi", Integer())
 
@@ -32,4 +34,5 @@ class ChameleonMain(Base):
             complaint=self.main_cause,
             admission=Admission(department=self.unit, wing=self.unit_wing).dict(),
             esi=ESIScore(value=self.esi, at=self.arrival.astimezone(pytz.UTC).isoformat()).dict(),
+            discharge_time=self.discharge_time.astimezone(pytz.UTC).isoformat() if self.discharge_time else None
         )
