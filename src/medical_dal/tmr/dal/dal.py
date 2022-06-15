@@ -11,6 +11,7 @@ from pymongo.database import Database
 from werkzeug.exceptions import NotFound
 
 from tmr_common.data_models.aggregate.medical_sum import WaitForDoctor
+from tmr_common.data_models.free_text import FreeText, MedicalCode
 from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.image import Image, ImagingStatus
 from tmr_common.data_models.labs import Laboratory, LabCategory, StatusInHebrew, LabStatus
@@ -18,7 +19,7 @@ from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures,
 from tmr_common.data_models.measures import Measures
 from tmr_common.data_models.notification import Notification
 from tmr_common.data_models.patient import Patient, Admission, PatientNotifications, ExternalPatient, InternalPatient, \
-    PatientInfo, Event, Awaiting, AwaitingTypes
+    PatientInfo, Event, Awaiting, AwaitingTypes, BasicMedical
 from tmr_common.data_models.warnings import PatientWarning
 from ..routes.websocket import notify
 
@@ -254,8 +255,6 @@ class MedicalDal:
                                                  {'$set': notification.dict()}, upsert=True)
                 await self.notify_notification(patient=patient.oid)
 
-
-
     async def upsert_referrals(self, referral_obj: Referral, action: Action):
         res = self.db.patients.find_one({"external_id": str(referral_obj.patient_id)})
         if not res:
@@ -281,8 +280,15 @@ class MedicalDal:
             limit=3600,
         ))
 
-    def update_from_free_text(self):
-        pass
+    async def upsert_basic_medical(self, patient_id, basic_medical: BasicMedical):
+        # res = self.db.patients.find_one({"external_id": str(patient_id)})
+        # if not res:
+        #     logger.error(f'basic medical Patient {patient_id} Not Found')
+        #     return
+        # print(f"PATIENT IDDDDD: {patient_id}")
+        patient = self.get_patient_by_external_id(patient_id)
+        patient.basic_medical = basic_medical
+        await self.update_patient_by_id(patient.oid, patient.dict())
 
     def get_waiting_for_doctor_list(self) -> [WaitForDoctor]:
         waiting = self.db.referrals. \
@@ -322,5 +328,3 @@ class MedicalDal:
         updated = patient.copy()
         updated.warnings += warnings
         await self.update_patient_by_id(patient.oid, updated.dict(include={'warnings'}))
-
-

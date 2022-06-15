@@ -60,6 +60,13 @@ class Awaiting(BaseModel):
         use_enum_values = True
 
 
+class BasicMedical(BaseModel):
+    nurse_description: Optional[str]
+    nurse_seen_time: Optional[str]
+    doctor_seen_time: Optional[str]
+
+
+
 class AwaitingTypes(Enum):
     doctor = "doctor"
     nurse = "nurse"
@@ -74,6 +81,7 @@ class InternalPatient(BaseModel):
     flagged: bool
     warnings: List[PatientWarning]
     measures: Measures
+    basic_medical: Optional[BasicMedical]
 
     class Config:
         orm_mode = True

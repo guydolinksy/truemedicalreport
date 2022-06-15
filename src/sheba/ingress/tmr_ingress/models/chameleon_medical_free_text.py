@@ -1,5 +1,9 @@
 import datetime
 
+import pytz
+
+from tmr_common.data_models.free_text import MedicalCode
+from tmr_common.data_models.patient import BasicMedical
 from .base import Base
 from sqlalchemy import Column, VARCHAR, Integer, DateTime, Date, BigInteger
 from enum import Enum
@@ -17,7 +21,11 @@ description_codes = {
     },
     "doctor_summarie": {
         "code": 889,
-        "title": "סיכום רופא"
+        "title": "סיכום רופא",
+        "text_list":
+            [
+                ""
+            ]
     }
 }
 units_code = {"er": {"code": 1184000, "title": "המחלקה לרפואה דחופה"}}
@@ -48,3 +56,12 @@ class ChameleonMedicalFreeText(Base):
             code=self.medical_text_code,
             text=self.medical_text
         )
+
+    def convert_to_basic_medical(self, basic_medical: BasicMedical) -> BasicMedical:
+        print(self.medical_text_code)
+        if self.medical_text_code == MedicalCode.nurse.value:
+            basic_medical.nurse_description = self.medical_text
+            basic_medical.nurse_seen_time = self.documenting_time.astimezone(pytz.UTC).isoformat()
+        elif self.medical_text_code == MedicalCode.doctor.value:
+            basic_medical.doctor_seen_time = self.documenting_time.astimezone(pytz.UTC).isoformat()
+        return basic_medical
