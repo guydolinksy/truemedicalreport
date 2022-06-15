@@ -19,7 +19,7 @@ from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures,
 from tmr_common.data_models.measures import Measures
 from tmr_common.data_models.notification import Notification
 from tmr_common.data_models.patient import Patient, Admission, PatientNotifications, ExternalPatient, InternalPatient, \
-    PatientInfo, Event, Awaiting, AwaitingTypes
+    PatientInfo, Event, Awaiting, AwaitingTypes, BasicMedical
 from tmr_common.data_models.warnings import PatientWarning
 from ..routes.websocket import notify
 
@@ -280,21 +280,15 @@ class MedicalDal:
             limit=3600,
         ))
 
-    def upsert_free_text(self, patient_id, free_texts: [FreeText]):
-        res = self.db.patients.find_one({"external_id": str(patient_id)})
-        if not res:
-            logger.error(f'free text Patient {str(patient_id)} Not Found')
-            return
-        patient = Patient(**res)
-        for free_text_obj in free_texts:
-            awaiting = None
-            match free_text_obj.medical_text_code:
-                case MedicalCode.doctor:
-                    tag = "exam"
-                    awaiting = patient.awaiting[AwaitingTypes.doctor.value][tag]
-                    awaiting.completed = True
-            if free_text_obj.medical_text_code is not None and awaiting is not None:
-                await self.update_awaiting(patient_id,AwaitingTypes.doctor,tag,awaiting)
+    async def upsert_basic_medical(self, patient_id, basic_medical: BasicMedical):
+        # res = self.db.patients.find_one({"external_id": str(patient_id)})
+        # if not res:
+        #     logger.error(f'basic medical Patient {patient_id} Not Found')
+        #     return
+        # print(f"PATIENT IDDDDD: {patient_id}")
+        patient = self.get_patient_by_external_id(patient_id)
+        patient.basic_medical = basic_medical
+        await self.update_patient_by_id(patient.oid, patient.dict())
 
     def get_waiting_for_doctor_list(self) -> [WaitForDoctor]:
         waiting = self.db.referrals. \

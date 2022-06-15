@@ -1,17 +1,37 @@
 import datetime
 
-from tmr_common.data_models.free_text import FreeText, MedicalCode
+import pytz
+
+from tmr_common.data_models.free_text import MedicalCode
+from tmr_common.data_models.patient import BasicMedical
 from .base import Base
 from sqlalchemy import Column, VARCHAR, Integer, DateTime, Date, BigInteger
 from enum import Enum
 
-description_codes = {"nurse_summarize": {"code": 901, "title": "סיכום ביקור אחות", "text_list": ["""בדרך כלל בריא, חווה כאבים בצד שמאל מאתמול בערב.
-מלווה בכאבי ראש וסחרחורות לסירוגין""", """לא מסוגל להזיז את היד, חשש לשבר במפרק כף היד""",
-                                                                                                 """מתלונן על כאבי גב מזה תקופה ארוכה, לטענתו חווה קשיי בעת מעבר בין ישיבה לעמידה"""]},
-                     "doctor_summarie": {"code": 1, "title": "סיכום רופא"}, "text_list": ["""בדרך כלל בריא, חווה כאבים בצד שמאל מאתמול בערב.
-מלווה בכאבי ראש וסחרחורות לסירוגין""", """לא מסוגל להזיז את היד, חשש לשבר במפרק כף היד""",
-                                                                                                 """מתלונן על כאבי גב מזה תקופה ארוכה, לטענתו חווה קשיי בעת מעבר בין ישיבה לעמידה"""] }
-units_code = {"er": {"code": 1184000, "title": """מלר"ד"""}}
+description_codes = {
+    "nurse_summarize": {
+        "code": 901,
+        "title": "סיכום ביקור אחות",
+        "text_list":
+            [
+                """ בדרך כלל בריא, חווה כאבים בצד שמאל מאתמול בערב. מלווה בכאבי ראש וסחרחורות לסירוגין"""
+                , """לא מסוגל להזיז את היד, חשש לשבר במפרק כף היד""",
+                """מתלונן על כאבי גב מזה תקופה ארוכה, לטענתו חווה קשיי בעת מעבר בין ישיבה לעמידה"""
+            ]
+    },
+    "doctor_summarie": {
+        "code": 889,
+        "title": "סיכום רופא",
+        "text_list":
+            [
+                ""
+            ]
+    }
+}
+units_code = {"er": {"code": 1184000, "title": "המחלקה לרפואה דחופה"}}
+
+
+# real code of ER in chameleon is 1184000
 
 class ChameleonMedicalFreeText(Base):
     __tablename__ = "medical_free_text"
@@ -30,16 +50,18 @@ class ChameleonMedicalFreeText(Base):
     # date of inserting the row to ARC db
     insert_date = Column("insert_date", DateTime(), default=datetime.datetime.utcnow())
 
-    def to_dal(self) -> FreeText:
-        return FreeText(
-            patient_id=self.patient_id,
-            medical_record=self.medical_record,
-            documenting_date=self.documenting_date,
-            documenting_time=self.documenting_time,
-            unit_name=self.unit_name,
-            unit=self.unit,
-            medical_text_code=(MedicalCode.doctor if self.medical_text_code == 1 else None),
-            medical_text_title=self.medical_text_title,
-            medical_text=self.medical_text,
-            documenting_user=self.documenting_user,
-            source=self.source)
+    def to_dal(self):
+        return dict(
+            since=self.documenting_time,
+            code=self.medical_text_code,
+            text=self.medical_text
+        )
+
+    def convert_to_basic_medical(self, basic_medical: BasicMedical) -> BasicMedical:
+        print(self.medical_text_code)
+        if self.medical_text_code == MedicalCode.nurse.value:
+            basic_medical.nurse_description = self.medical_text
+            basic_medical.nurse_seen_time = self.documenting_time.astimezone(pytz.UTC).isoformat()
+        elif self.medical_text_code == MedicalCode.doctor.value:
+            basic_medical.doctor_seen_time = self.documenting_time.astimezone(pytz.UTC).isoformat()
+        return basic_medical
