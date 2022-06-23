@@ -1,4 +1,4 @@
-import React, {useContext, useRef} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import {Badge, Button, Card, Carousel, Space, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faHeart, faHeartPulse, faPercent, faTemperatureHalf, faWarning,} from "@fortawesome/free-solid-svg-icons";
@@ -11,6 +11,7 @@ import Moment from "react-moment";
 import {value} from "lodash/seq";
 import {CustomIcon} from "./CustomIcon";
 import moment from "moment";
+import {useTime} from 'react-timer-hook';
 
 export const patientDataContext = createContext({
     data: {},
@@ -65,6 +66,8 @@ const PatientAge = ({patient}) => {
 export const PatientComplaint = ({patient, style}) => {
     const navigate = useNavigate();
     const {value, loading} = useContext(patientDataContext.context);
+    const {minutes} = useTime({});
+    const [arrivalColor, setArrivalColor] = useState(undefined);
     const innerStyle = {
         userSelect: "none",
         padding: 20,
@@ -73,6 +76,11 @@ export const PatientComplaint = ({patient, style}) => {
         textAlign: "center",
         ...style
     };
+
+    useEffect(() => {
+        if (moment().subtract(2, "hours").isAfter(value.arrival))
+            setArrivalColor('red')
+    }, [minutes]);
 
     return loading ? <Spin/> : <div
         style={innerStyle}
@@ -83,7 +91,9 @@ export const PatientComplaint = ({patient, style}) => {
         <Tooltip overlay={'תלונה עיקרית'}>{value.complaint}</Tooltip>
         &nbsp;-&nbsp;
         <Tooltip overlay={'זמן מקבלה'}>
-            <Moment durationFromNow format={'h:mm'} date={value.arrival}/>
+            <Moment style={{"color": arrivalColor}} interval={1000} durationFromNow format={'h:mm'}
+                    date={value.arrival}/>
+
         </Tooltip>
     </div>
 }
@@ -126,31 +136,37 @@ const PatientAwaiting = () => {
     if (loading)
         return <Spin/>
     return <Space>{AWAITING.filter(k => value.awaiting[k]).map((k, i) => {
-        let status, awaitings = value.awaiting[k];
+        return <PatientAwaitingIcon awaitings={value.awaiting[k]} type={k} key={k}/>
+    })}</Space>
+}
+const PatientAwaitingIcon = ({awaitings, type}) => {
+    const [status, setStatus] = useState();
+    const {seconds} = useTime({});
+    useEffect(() => {
         if (Object.values(awaitings).some(({since, limit, completed}) =>
             !completed && moment().subtract(limit, "seconds").isAfter(since)))
-            status = 'error'
+            setStatus('error')
         else if (!Object.values(awaitings).some(({completed}) => !completed))
-            status = 'success'
+            setStatus('success')
         else
-            status = 'processing'
+            setStatus('processing')
 
-        let completed = Object.values(awaitings).filter(({completed}) => completed),
-            pending = Object.values(awaitings).filter(({completed}) => !completed);
-        return <Tooltip key={i} overlay={<div>
-            {pending.length > 0 && <b>ממתין.ה עבור (דקות):</b>}
-            {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({awaiting, since}, i) =>
-                <div key={i}>{awaiting} - <Moment durationFromNow format={'h:mm'} date={since}/></div>
-            )}
-            {pending.length > 0 && completed.length > 0 && <span><br/></span>}
-            {completed.length > 0 && <b>הושלמו:</b>}
-            {completed.sort((a, b) => a.since > b.since ? 1 : -1).map(({awaiting, since}, i) =>
-                <div key={i}>{awaiting}</div>
-            )}
-        </div>}>
-            <span><CustomIcon status={status} icon={k}/></span>
-        </Tooltip>
-    })}</Space>
+    }, [seconds])
+    let completed = Object.values(awaitings).filter(({completed}) => completed),
+        pending = Object.values(awaitings).filter(({completed}) => !completed);
+    return <Tooltip key={type} overlay={<div>
+        {pending.length > 0 && <b>ממתין.ה עבור (דקות):</b>}
+        {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({awaiting, since}, i) =>
+            <div key={i}>{awaiting} - <Moment interval={1000} durationFromNow format={'h:mm'} date={since}/></div>
+        )}
+        {pending.length > 0 && completed.length > 0 && <span><br/></span>}
+        {completed.length > 0 && <b>הושלמו:</b>}
+        {completed.sort((a, b) => a.since > b.since ? 1 : -1).map(({awaiting, since}, i) =>
+            <div key={i}>{awaiting}</div>
+        )}
+    </div>}>
+        <span><CustomIcon status={status} icon={type}/></span>
+    </Tooltip>
 }
 
 const PatientHeader = ({patient, avatar}) => {
@@ -158,10 +174,10 @@ const PatientHeader = ({patient, avatar}) => {
     if (!patient)
         return <Button shape={"circle"} type={"text"}>{avatar || <UserOutlined/>}</Button>
     return <span>
-        {avatar || value.admission.bed || <UserOutlined/>}&nbsp;<Tooltip overlay={`ת.ז. ${value.id_ || 'לא ידוע'}`}>
+            {avatar || value.admission.bed || <UserOutlined/>}&nbsp;<Tooltip overlay={`ת.ז. ${value.id_ || 'לא ידוע'}`}>
             {value.name}
-        </Tooltip><PatientAge patient={patient}/>
-    </span>
+                </Tooltip><PatientAge patient={patient}/>
+                </span>
 }
 const PatientInner = ({patient, avatar, style}) => {
     const ref = useRef(null);

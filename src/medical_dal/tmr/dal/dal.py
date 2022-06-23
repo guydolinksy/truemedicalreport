@@ -139,7 +139,7 @@ class MedicalDal:
             self.db.patients.update_one({"external_id": patient.external_id},
                                         {'$set': patient.dict()})
         elif previous and not patient:
-            self.db.patients.delete_one({"external_id": patient.external_id})
+            self.db.patients.delete_one({"external_id": previous.external_id})
             await self._cascade_delete_patient(previous.external_id)
         elif not previous and patient:
             self.db.patients.update_one({"external_id": patient.external_id}, {'$set': dict(
@@ -234,7 +234,7 @@ class MedicalDal:
         labs = {c.key: c for c in [LabCategory(**c) for c in self.db.labs.find({"patient_id": patient_id})]}
         for lab in new_labs:
             c = labs.setdefault(lab.category_key, LabCategory(
-                at=lab.at, category_id=lab.category_id, category=lab.category_name
+                patient_id=patient_id, at=lab.at, category_id=lab.category_id, category=lab.category_name
             ))
             c.results[str(lab.test_type_id)] = lab
             c.status = StatusInHebrew[min({l.status for l in c.results.values()})]
@@ -248,7 +248,7 @@ class MedicalDal:
             ))
             await self.update_warning(patient, single_lab.get_if_panic())
             self.db.labs.update_one({"patient_id": patient_id, **c.query_key},
-                                    {'$set': dict(patient_id=patient_id, **c.dict())}, upsert=True)
+                                    {'$set': dict(patient_id=patient_id, **c.dict(exclude={'patient_id'}))}, upsert=True)
             if is_analyzed:
                 notification = single_lab.to_notification()
                 self.db.notifications.update_one({"notification_id": notification.notification_id},
