@@ -348,6 +348,492 @@ CREATE TABLE [dbo].[Users]
     [Code]            [nvarchar](150) NULL
 ) ON [PRIMARY]
 GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[faker_wing_Doctore](
+	[DepartmentWing] [nvarchar](150) NULL,
+	[Code] [nvarchar](150) NULL
+) ON [PRIMARY]
+GO
+CREATE TABLE [dbo].[RoomBeds](
+	[Row_ID] [int] NULL,
+	[Bed_Name] [nvarchar](150) NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[RoomDetails]    Script Date: 23/06/2022 9:09:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[RoomDetails](
+	[Room_Code] [int] NULL,
+	[Unit] [int] NULL,
+	[Beds] [int] NULL,
+	[Room_Name] [nvarchar](150) NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[RoomPlacmentPatient]    Script Date: 23/06/2022 9:09:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[RoomPlacmentPatient](
+	[Start_Date] [datetime] NULL,
+	[End_Date] [datetime] NULL,
+	[Unit] [int] NULL,
+	[Bed_ID] [int] NULL,
+	[Medical_Record] [int] NULL,
+	[Room] [nvarchar](150) NULL
+) ON [PRIMARY]
+GO
+CREATE TABLE [dbo].[faker_beds](
+	[room] [nvarchar](150) NULL,
+	[row_id] [nvarchar](150) NULL
+) ON [PRIMARY]
+GO
+INSERT [dbo].[AdmissionTreatmentDecision] ([Decision], [Hosp_Unit], [Delete_Date], [Medical_Record]) VALUES (N'2', 118390, NULL, 1111111)
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'1')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'2')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'3')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'4')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'5')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'6')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'7')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'8')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'9')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'10')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'11')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'12')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'13')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'14')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'1')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'2')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'3')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'4')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'5')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'6')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'7')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'8')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'9')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'10')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'11')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'12')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'13')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'14')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'15')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'16')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'17')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'18')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'19')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'20')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'1')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'2')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'3')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'4')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'5')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'6')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'7')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'8')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'9')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'10')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'11')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'12')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'13')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'1')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'2')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'3')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'4')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'5')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'6')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'7')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'8')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'9')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'10')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'11')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'12')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'13')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'14')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'15')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'16')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'17')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'18')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'19')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'20')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'21')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'22')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'23')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'24')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'25')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'26')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'27')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'28')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'29')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'30')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'31')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'32')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'33')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'34')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'35')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'36')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'37')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'38')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'39')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'40')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'41')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'42')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'43')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'44')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'45')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'46')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'47')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'48')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'49')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'50')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'51')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'52')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'53')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'54')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'55')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'56')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'57')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'58')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'59')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'60')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'61')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'62')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'63')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'64')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'65')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'66')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'67')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'68')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'69')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'70')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'71')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'72')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'73')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'74')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'75')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'76')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'77')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'78')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'79')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'80')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'81')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'82')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'83')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'84')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'85')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'86')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'87')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'88')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'89')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'90')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'91')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'92')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'93')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'94')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'95')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'96')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'97')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'98')
+GO
+INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'99')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (1, 1184000, 14, N'אגף B2')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (2, 1184000, 20, N'אגף B3')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (3, 1184000, 99, N'אגף הולכים')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (4, 1184000, 5, N'חדר הלם')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (5, 1184000, 13, N'אגף B1')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (6, 1184000, 15, N'אגף פסיכיאטרי')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (7, 1184000, 37, N'בידוד אדום')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (8, 1184000, 99, N'אגף אנטיגן')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (9, 1184000, 99, N'אגף שוכבים ירוק')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (123, N'השהיה מלרד')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (126, N'נוירולוגיה')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (124, N'עור ומין')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (125, N'פנימית')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (1184000, N'המחלקה לרפואה דחופה')
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (1, N'אחר', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (2, N'אשפוז', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (3, N'אשפוז בית', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (4, N'באולטרסאונד גינקולוגי', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (5, N'בדיקה', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (6, N'בדיקה חוזרת', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (7, N'בירור', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (8, N'במיון הכללי', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (9, N'במיון כללי', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (10, N'הלך על דעת עצמו', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (11, N'המתנה למעבדה', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (12, N'העברה לחדר לידה', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (13, N'העברה לצינתורים', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (14, N'השראת לידה', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (15, N'חדר לידה', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (16, N'חדר ניתוח', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (17, N'חזרה לאשפוז', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (18, N'חזרה למחלקת האשפוז', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (19, N'חזרה למיון', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (20, N'ממתינה לאולטרסאונד', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (21, N'ניטור', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (22, N'נפטר במיון', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (23, N'נפטר/ה', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (24, N'עבר למיון אחר', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (25, N'עזבו על דעת עצמם', 1092)
+GO
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (26, N'שחרור', 1092)
+GO
+INSERT [dbo].[Users] ([usernamenotitle], [Code]) VALUES (N'ניסים אהרון', N'1')
+GO
+INSERT [dbo].[Users] ([usernamenotitle], [Code]) VALUES (N'שירה גרינשטיין', N'2')
+GO
+INSERT [dbo].[Users] ([usernamenotitle], [Code]) VALUES (N'ניצן חלבי', N'3')
+GO
+INSERT [dbo].[Users] ([usernamenotitle], [Code]) VALUES (N'עמית גזית', N'4')
+GO
+/****** Object:  StoredProcedure [dbo].[faker_ResponsibleDoctor]    Script Date: 23/06/2022 10:09:29 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
+	AS
+	Begin
+	if exists (select * from [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] rd where rd.medical_record=@medical_record and rd.delete_date is null)
+		begin
+			update [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] set  delete_date= GETDATE() where medical_record=@medical_record and delete_date is null;
+			insert into [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] values(
+			(select top 1 rd.doctor from (select top 1 id,DepartmentWing from [chameleon_db].[dbo].[Emergency_visits] order by DepartmentAdmission desc) ev
+			join [sbwnd81c_chameleon].[dbo].[faker_wing_Doctore] as fwd on fwd.DepartmentWing=ev.DepartmentWing
+			join [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] as rd on rd.doctor = fwd.code
+			where id=@medical_record
+			group by  rd.doctor
+			order by count(*) asc),@medical_record,null);
+		end
+	else
+		begin
+			insert into [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] values(
+			(select top 1 rd.doctor from (select top 1 id,DepartmentWing from [chameleon_db].[dbo].[Emergency_visits] order by DepartmentAdmission desc) ev
+			join [sbwnd81c_chameleon].[dbo].[faker_wing_Doctore] as fwd on fwd.DepartmentWing=ev.DepartmentWing
+			join [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] as rd on rd.doctor = fwd.code
+			where id=@medical_record
+			group by  rd.doctor
+			order by count(*) asc),@medical_record,null);
+		end
+	end
+GO
+/****** Object:  StoredProcedure [dbo].[faker_RoomPlacmentPatient_admission]    Script Date: 23/06/2022 10:09:29 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[faker_RoomPlacmentPatient_admission](@medical_record int,@room_num nvarchar)
+	AS
+	Begin
+	declare @bed_name as varchar;
+	-- insert into @bed_name
+	select  top 1 @bed_name= fb.row_id  from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
+	where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is not null and rpp.start_date is not null and room =@room_num)
+	and room=@room_num
+	order by newid();
+	insert into  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_name,@medical_record ,@room_num);
+	end
+	;
+GO
+/****** Object:  StoredProcedure [dbo].[faker_RoomPlacmentPatient_dismission]    Script Date: 23/06/2022 10:09:29 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+	CREATE PROCEDURE [dbo].[faker_RoomPlacmentPatient_dismission](@medical_record nvarchar(50))
+	AS
+	Begin
+	update [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] set end_date = GETUTCDATE() where [Medical_Record]=@medical_record and end_date is null;
+	end
+	;
+GO
 USE [master]
 GO
 ALTER DATABASE [sbwnd81c_chameleon] SET READ_WRITE
