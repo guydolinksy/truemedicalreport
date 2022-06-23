@@ -112,7 +112,7 @@ class SqlToDal(object):
             logger.debug(f"Getting Nurse Summarize for {department.name}")
             with self.session() as session:
                 for summarize in session.query(ChameleonMedicalFreeText) \
-                        .join(ChameleonMedicalFreeText.patient_id == ChameleonMain.patient_id) \
+                        .join(ChameleonMain, ChameleonMedicalFreeText.patient_id == ChameleonMain.patient_id) \
                         .where(ChameleonMedicalFreeText.unit == 0):
                     pass
 
