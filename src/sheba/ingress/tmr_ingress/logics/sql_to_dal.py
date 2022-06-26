@@ -15,6 +15,7 @@ from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
 from ..models.chameleon_measurements import ChameleonMeasurements
+from tmr_common.data_models.treatment_decision import TreatmentDecision
 
 logger = logbook.Logger(__name__)
 
@@ -122,7 +123,19 @@ class SqlToDal(object):
         except HTTPError:
             logger.exception('Could not run referrals handler.')
 
-    def update_admission_treatment_decision(self):
-        with self.session() as session:
-            result = session.execute(sql_queries.treatment_decision)
-            print(result.fetchall())
+    def update_admission_treatment_decision(self, department: Departments):
+        decisions = {}
+        try:
+            with self.session() as session:
+                result = session.execute(sql_queries.treatment_decision.format(department.value))
+                for row in result:
+                    decisions.setdefault(row[0],
+                                         TreatmentDecision(decision=row[1],
+                                                           destination=row[2]))
+            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/decisions',
+                                json=decisions)
+            res.raise_for_status()
+        except IndexError as e:
+            logger.exception("No Data Fetched From SQL", e)
+        except HTTPError:
+            logger.exception('Could not update treat decisions')

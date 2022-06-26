@@ -75,4 +75,4 @@ async def update_referrals(department: Departments, dal: SqlToDal = Depends(dal_
 @updater_router.post("/update_admission_treatment_decision/")
 async def update_admission_treatment_decision(department: Departments, dal: SqlToDal = Depends(dal_updater)):
     logger.debug("Treatment")
-    dal.update_admission_treatment_decision()
+    dal.update_admission_treatment_decision(department)

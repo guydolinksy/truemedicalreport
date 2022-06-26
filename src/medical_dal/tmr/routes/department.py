@@ -1,4 +1,5 @@
-from typing import List, Dict
+import http
+from typing import List, Dict, Optional
 
 import logbook
 from fastapi import APIRouter, Depends, Body
@@ -10,6 +11,7 @@ from tmr_common.data_models.labs import Laboratory
 from tmr_common.data_models.measures import Measure
 from tmr_common.data_models.patient import ExternalPatient
 from tmr_common.data_models.wing import WingOverview
+from tmr_common.data_models.treatment_decision import TreatmentDecision
 from .wing import wing_router
 from ..dal.dal import MedicalDal, Action
 
@@ -105,3 +107,11 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
             await dal.upsert_referrals(referral_obj=updated[referral], action=Action.insert)
         for referral in set(updated) & set(existing):
             await dal.upsert_referrals(referral_obj=updated[referral], action=Action.update)
+
+
+@department_router.post("/{department}/decisions", status_code=http.HTTPStatus.OK)
+async def update_treatment_decisions(department: str,
+                                     decisions: Optional[dict[int, TreatmentDecision]] = Body(..., embed=True),
+                                     dal: MedicalDal = Depends(medical_dal)):
+    for patient in decisions:
+        await dal.upsert_treatment_decision()

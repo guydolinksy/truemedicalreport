@@ -13,7 +13,7 @@ from tmr_ingress.models.base import Base
 
 
 class Departments(Enum):
-    er = '5'
+    er = '1184000'
 
 
 class ChameleonMain(Base):
@@ -22,7 +22,7 @@ class ChameleonMain(Base):
     patient_id = Column("id", Integer(), primary_key=True)
     unit = Column("DepartmentName", VARCHAR(200))
     unit_wing = Column("DepartmentWing", VARCHAR(200))
-    department_code = Column("DepartmentCode", Integer())
+    department_code = Column("DepartmentCode", Integer(), default=1184000)
     arrival = Column("DepartmentAdmission", DateTime())
     discharge_time = Column("DepartmentWingDischarge", DateTime())
     main_cause = Column("MainCause", VARCHAR(200))

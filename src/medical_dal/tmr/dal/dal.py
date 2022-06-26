@@ -15,6 +15,7 @@ from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.image import Image, ImagingStatus
 from tmr_common.data_models.labs import Laboratory, LabCategory, StatusInHebrew, LabStatus
 from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures, Latest
+from tmr_common.data_models.treatment_decision import TreatmentDecision
 from tmr_common.data_models.measures import Measures
 from tmr_common.data_models.notification import Notification
 from tmr_common.data_models.patient import Patient, Admission, PatientNotifications, ExternalPatient, InternalPatient, \
@@ -254,8 +255,6 @@ class MedicalDal:
                                                  {'$set': notification.dict()}, upsert=True)
                 await self.notify_notification(patient=patient.oid)
 
-
-
     async def upsert_referrals(self, referral_obj: Referral, action: Action):
         res = self.db.patients.find_one({"external_id": str(referral_obj.patient_id)})
         if not res:
@@ -280,6 +279,9 @@ class MedicalDal:
             completed=referral_obj.completed,
             limit=3600,
         ))
+
+    def upsert_treatment_decision(self, patient: int, decision: TreatmentDecision):
+        self.db.patients.update_one({"external_id": patient}, {"$set": decision.dict()}, upsert=True)
 
     def update_from_free_text(self):
         pass
@@ -322,5 +324,3 @@ class MedicalDal:
         updated = patient.copy()
         updated.warnings += warnings
         await self.update_patient_by_id(patient.oid, updated.dict(include={'warnings'}))
-
-
