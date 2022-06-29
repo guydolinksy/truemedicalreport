@@ -281,7 +281,7 @@ class MedicalDal:
         ))
 
     def upsert_treatment_decision(self, patient: int, decision: TreatmentDecision):
-        self.db.patients.update_one({"external_id": patient}, {"$set": decision.dict()}, upsert=True)
+        self.db.patients.update_one({"external_id": patient}, {"$set": {"decision": decision.dict()}}, upsert=True)
 
     def update_from_free_text(self):
         pass
