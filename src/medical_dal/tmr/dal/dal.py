@@ -11,7 +11,6 @@ from pymongo.database import Database
 from werkzeug.exceptions import NotFound
 
 from tmr_common.data_models.aggregate.medical_sum import WaitForDoctor
-from tmr_common.data_models.free_text import FreeText, MedicalCode
 from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.image import Image, ImagingStatus
 from tmr_common.data_models.labs import Laboratory, LabCategory, StatusInHebrew, LabStatus
@@ -234,7 +233,7 @@ class MedicalDal:
         labs = {c.key: c for c in [LabCategory(**c) for c in self.db.labs.find({"patient_id": patient_id})]}
         for lab in new_labs:
             c = labs.setdefault(lab.category_key, LabCategory(
-                at=lab.at, category_id=lab.category_id, category=lab.category_name
+                patient_id=patient_id, at=lab.at, category_id=lab.category_id, category=lab.category_name
             ))
             c.results[str(lab.test_type_id)] = lab
             c.status = StatusInHebrew[min({l.status for l in c.results.values()})]
@@ -248,7 +247,7 @@ class MedicalDal:
             ))
             await self.update_warning(patient, single_lab.get_if_panic())
             self.db.labs.update_one({"patient_id": patient_id, **c.query_key},
-                                    {'$set': dict(patient_id=patient_id, **c.dict())}, upsert=True)
+                                    {'$set': dict(patient_id=patient_id, **c.dict(exclude={'patient_id'}))}, upsert=True)
             if is_analyzed:
                 notification = single_lab.to_notification()
                 self.db.notifications.update_one({"notification_id": notification.notification_id},
@@ -281,14 +280,18 @@ class MedicalDal:
         ))
 
     async def upsert_basic_medical(self, patient_id, basic_medical: BasicMedical):
-        # res = self.db.patients.find_one({"external_id": str(patient_id)})
-        # if not res:
-        #     logger.error(f'basic medical Patient {patient_id} Not Found')
-        #     return
-        # print(f"PATIENT IDDDDD: {patient_id}")
-        patient = self.get_patient_by_external_id(patient_id)
+        res = self.db.patients.find_one({"external_id": str(patient_id)})
+        if not res:
+            logger.error(f'basic medical Patient {patient_id} Not Found')
+            return
+        patient = Patient(**res)
         patient.basic_medical = basic_medical
-        await self.update_patient_by_id(patient.oid, patient.dict())
+        await self.update_patient_by_id(patient.oid, patient.dict(include={'basic_medical'}))
+        if basic_medical.doctor_seen_time:
+            await self.update_awaiting(patient, AwaitingTypes.doctor, 'exam', patient.awaiting_doctor(patient, True))
+        if basic_medical.nurse_description:
+            await self.update_awaiting(patient, AwaitingTypes.nurse, 'exam', patient.awaiting_nurse(patient, True))
+
 
     def get_waiting_for_doctor_list(self) -> [WaitForDoctor]:
         waiting = self.db.referrals. \

@@ -27,7 +27,7 @@ class WingOverview(Wing):
         orm_mode = True
 
 
-class WingSummarize(Wing):
+class WingSummary(Wing):
     patients: List[Patient]
     details: Wing
 

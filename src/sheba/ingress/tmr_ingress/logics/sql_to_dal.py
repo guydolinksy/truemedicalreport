@@ -8,15 +8,14 @@ from requests import HTTPError
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import Session
 
-from tmr_common.data_models.free_text import MedicalCode
 from tmr_common.data_models.patient import BasicMedical
 from ..models.arc_patient import ARCPatient
-from ..models.chameleon_medical_free_text import ChameleonMedicalFreeText
 from ..models.chameleon_referrals import ChameleonReferrals
 from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
 from ..models.chameleon_measurements import ChameleonMeasurements
+from ..models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
 
 logger = logbook.Logger(__name__)
 
@@ -95,40 +94,20 @@ class SqlToDal(object):
         except HTTPError as e:
             logger.exception(f'Could not run labs handler. {e}')
 
-    def upsert_basic_medical(self, department: Departments):
+    def update_basic_medical(self, department: Departments):
         try:
             logger.debug('Getting free_text for `{}`...', department.name)
-            basic_medical_info = {}
+            infos = {}
             with self.session() as session:
-                for free_text in session.query(ChameleonMedicalFreeText) \
-                        .filter((ChameleonMedicalFreeText.medical_text_code == MedicalCode.doctor.value) |
-                               (ChameleonMedicalFreeText.medical_text_code == MedicalCode.nurse.value)):
-
-                    basic_medical_info[free_text.patient_id] = (free_text.convert_to_basic_medical(
-                        basic_medical_info.setdefault(free_text.patient_id, BasicMedical())))
-            for key in basic_medical_info.keys():
-                basic_medical_info[key] = basic_medical_info[key].dict()
-            print(f"shayeaa: {basic_medical_info}")
+                for free_text in session.query(ChameleonMedicalText).filter(ChameleonMedicalText.medical_text_code.in_([
+                    FreeTextCodes.DOCTOR_VISIT.value, FreeTextCodes.NURSE_SUMMARY.value
+                ])):
+                    free_text.update_basic_medical(infos.setdefault(free_text.patient_id, BasicMedical()))
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/basic_medical',
-                                json={'basic_medicals': basic_medical_info})
-            print(res.content)
+                                json={'basic_medicals': {patient: infos[patient].dict() for patient in infos}})
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run basic medical handler.')
-
-    # def upsert_free_text(self, department: Departments):
-    #     try:
-    #         logger.debug('Getting free_text for `{}`...', department.name)
-    #         free_data = {}
-    #         with self.session() as session:
-    #             for free_text in session.query(ChameleonMedicalFreeText) \
-    #                     .join(ChameleonMain, ChameleonReferrals.patient_id == ChameleonMain.patient_id):
-    #                 free_data.setdefault(free_text.patient_id, []).append(free_text.to_dal().dict())
-    #         res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/free_text',
-    #                             json={'free_text': free_data})
-    #         res.raise_for_status()
-    #     except HTTPError:
-    #         logger.exception('Could not run referrals handler.')
 
     def update_referrals(self, department: Departments):
         try:

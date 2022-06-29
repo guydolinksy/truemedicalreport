@@ -66,7 +66,6 @@ class BasicMedical(BaseModel):
     doctor_seen_time: Optional[str]
 
 
-
 class AwaitingTypes(Enum):
     doctor = "doctor"
     nurse = "nurse"
@@ -91,17 +90,21 @@ class InternalPatient(BaseModel):
         return cls(
             severity=Severity(**patient.esi.dict()),
             awaiting={
-                AwaitingTypes.doctor.value: {
-                    'exam': Awaiting(awaiting='בדיקת צוות רפואי', since=patient.arrival, limit=1500)
-                },
-                AwaitingTypes.nurse.value: {
-                    'exam': Awaiting(awaiting='בדיקת צוות סיעודי', since=patient.arrival, limit=1500)
-                },
+                AwaitingTypes.doctor.value: {'exam': cls.awaiting_doctor(patient)},
+                AwaitingTypes.nurse.value: {'exam': cls.awaiting_nurse(patient)},
             },
             flagged=False,
             warnings=[],
             measures=Measures(),
         )
+
+    @classmethod
+    def awaiting_doctor(cls, patient: ExternalPatient, completed=False):
+        return Awaiting(awaiting='בדיקת צוות רפואי', since=patient.arrival, limit=1500, completed=completed)
+
+    @classmethod
+    def awaiting_nurse(cls, patient: ExternalPatient, completed=False):
+        return Awaiting(awaiting='בדיקת צוות סיעודי', since=patient.arrival, limit=1500, completed=completed)
 
 
 class Patient(ExternalPatient, InternalPatient):
