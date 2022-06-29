@@ -1,6 +1,7 @@
 import contextlib
 import copy
 import datetime
+import logging
 import os
 import random
 
@@ -290,19 +291,22 @@ class FakeMain(object):
         else:
             raise ValueError()
         for patient in patients:
-            order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC)
-            referral_date = self.faker.date_time_between_dates('+8000m', '+10000m').astimezone(pytz.UTC)
-            chameleon_referral = ChameleonReferrals()
-            chameleon_referral.patient_id = patient
-            chameleon_referral.to = random.choice(
-                ['אא"ג', 'נוירולוגיה', 'אורטופד', "רמדאן אבו עקלין", "ניבה לוי", "פבל ליידרמן"])
-            chameleon_referral.order_date = order_date
-            if random.randint(0, 1):
-                chameleon_referral.referral_date = referral_date
             with self.session() as session:
-                session.add(chameleon_referral)
+                session.execute(f"execute [sbwnd81c_chameleon].[dbo].[faker_ResponsibleDoctor] {patient}")
                 session.commit()
-
+                
+    def _generate_room_placements(self, chameleon_id=None, department=None, wing=None):
+        if chameleon_id:
+            patients = {chameleon_id}
+        elif department and wing:
+            patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 5)]
+        else:
+            raise ValueError()
+        for patient in patients:
+            with self.session() as session:
+                session.execute(f"execute [sbwnd81c_chameleon].[dbo].[faker_RoomPlacmentPatient_admission] {patient}, {random.randint(1,4)}")
+                session.commit()
+    
     async def admit_patients(self, department):
         for wing in self.wings:
             if random.randint(0, 1):
@@ -330,6 +334,10 @@ class FakeMain(object):
     async def update_referrals(self, department):
         for wing in self.wings:
             self._generate_referrals_dates(department=department, wing=wing)
+
+    async def update_room_placements(self, department):
+        for wing in self.wings:
+            self._generate_room_placements(department=department, wing=wing)
 
     def _build_nurse_medical_text(self, department=None, wing=None):
         patients = [patient for patient in self._get_patients(department, wing) if not random.randint(0, 4)]
