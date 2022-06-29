@@ -794,13 +794,13 @@ CREATE PROCEDURE [dbo].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
 		end
 	else
 		begin
-			insert into [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] values(
-			(select top 1 rd.doctor from (select top 1 id,DepartmentWing from [chameleon_db].[dbo].[Emergency_visits] order by DepartmentAdmission desc) ev
-			join [sbwnd81c_chameleon].[dbo].[faker_wing_Doctore] as fwd on fwd.DepartmentWing=ev.DepartmentWing
-			join [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] as rd on rd.doctor = fwd.code
-			where id=@medical_record
-			group by  rd.doctor
-			order by count(*) asc),@medical_record,null);
+			insert into [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] values(select top 1 fwd.code from (select top 1 DepartmentWing from [chameleon_db].[dbo].[Emergency_visits] where
+            id=@medical_record and
+            DepartmentWingDischarge is null ) ev
+            join [sbwnd81c_chameleon].[dbo].[faker_wing_Doctore] as fwd on fwd.DepartmentWing=ev.DepartmentWing
+            left join [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] as rd on rd.doctor = fwd.code
+            group by  rd.doctor
+            order by count(*) asc),@medical_record,null);
 		end
 	end
 GO
