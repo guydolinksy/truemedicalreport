@@ -114,4 +114,4 @@ async def update_treatment_decisions(department: str,
                                      decisions: Optional[dict[int, TreatmentDecision]] = Body(..., embed=True),
                                      dal: MedicalDal = Depends(medical_dal)):
     for patient in decisions:
-        await dal.upsert_treatment_decision()
+        await dal.upsert_treatment_decision(patient, decisions[patient])

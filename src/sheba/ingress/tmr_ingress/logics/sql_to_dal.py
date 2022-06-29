@@ -138,4 +138,4 @@ class SqlToDal(object):
         except IndexError as e:
             logger.exception("No Data Fetched From SQL", e)
         except HTTPError:
-            logger.exception('Could not update treat decisions')
+            logger.exception('Could not update treatment decisions')
