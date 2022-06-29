@@ -8,7 +8,7 @@ from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.image import Image
 from tmr_common.data_models.labs import Laboratory
 from tmr_common.data_models.measures import Measure
-from tmr_common.data_models.patient import ExternalPatient
+from tmr_common.data_models.patient import ExternalPatient, BasicMedical
 from tmr_common.data_models.wing import WingOverview
 from .wing import wing_router
 from ..dal.dal import MedicalDal, Action
@@ -93,15 +93,8 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
             await dal.upsert_referrals(referral_obj=updated[referral], action=Action.update)
 
 
-@department_router.post("/{department}/free_text")
-async def update_referrals(department: str, referrals: Dict[str, List[Referral]] = Body(..., embed=True),
-                           dal: MedicalDal = Depends(medical_dal)):
-    for patient in {patient.external_id for patient in dal.get_department_patients(department)} | set(referrals):
-        updated = {referral.external_id: referral for referral in referrals.get(patient, [])}
-        existing = {referral.external_id: referral for referral in dal.get_patient_referrals(patient)}
-        for referral in set(existing) - set(updated):
-            await dal.upsert_referrals(referral_obj=existing[referral], action=Action.remove)
-        for referral in set(updated) - set(existing):
-            await dal.upsert_referrals(referral_obj=updated[referral], action=Action.insert)
-        for referral in set(updated) & set(existing):
-            await dal.upsert_referrals(referral_obj=updated[referral], action=Action.update)
+@department_router.post("/{department}/basic_medical")
+async def update_basic_medical(department: str, basic_medicals: Dict[str, BasicMedical] = Body(..., embed=True),
+                               dal: MedicalDal = Depends(medical_dal)):
+    for patient_id, basic_medical in basic_medicals.items():
+        await dal.upsert_basic_medical(patient_id, basic_medical)

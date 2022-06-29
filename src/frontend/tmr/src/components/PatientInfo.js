@@ -52,19 +52,18 @@ export const PatientInfo = ({onError}) => {
                 <patientDataContext.Provider url={`/api/patients/${match[0]}/info`} defaultValue={{
                     warnings: [], awaiting: {}, severity: {value: 0, at: null}, flagged: null,
                     id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
-                    complaint: null, admission: {}, measures: {
+                    complaint: null, admission: {}, basic_medical: {nurse_description: null}, measures: {
                         temperature: null,
                         blood_pressure: null,
                         saturation: null,
                         pulse: null
-                    }, secondary_complaint: null, nurse_summary: null,
+                    },
                     full_measures: {
                         temperature: [],
                         blood_pressure: [],
                         saturation: [],
                         pulse: []
-                    }, visits: [],
-                    notifications: [], labs: [], imaging: [], referrals: []
+                    }, visits: [], notifications: [], labs: [], imaging: [], referrals: []
                 }} onError={onError}>
                     {() => <InternalPatientCard patient={match[0]} setTitle={setTitle}/>}
                 </patientDataContext.Provider>}
@@ -122,14 +121,9 @@ const InternalPatientCard = ({patient, setTitle}) => {
 
                 </div>
 
-                <HashMatch match={['info', patient, 'basic', 'secondary-complaint']}>{({matched}) =>
-                    <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
-                        תלונה משנית: {value.secondary_complaint}
-                    </p>}
-                </HashMatch>
                 <HashMatch match={['info', patient, 'basic', 'nurse-summary']}>{({matched}) =>
                     <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
-                        תיאור צוות סיעודי: {value.nurse_summary}
+                        תיאור צוות סיעודי: {value.basic_medical.nurse_description}
                     </p>}
                 </HashMatch>
             </Panel>
