@@ -62,6 +62,23 @@ const PatientAge = ({patient}) => {
         </Tooltip>
     </span>
 }
+const PatientTreatmentDecision = ({patient, style}) => {
+        const {value, loading} = useContext(patientDataContext.context);
+
+    const innerStyle = {
+        userSelect: "none",
+        padding: 20,
+        backgroundColor: severityColor[value.severity.value],
+        cursor: "pointer",
+        textAlign: "center",
+        ...style
+    };
+    return !value.treatment_decision || loading ? null :
+        <div style={innerStyle}>{value.treatment_decision.destination ?
+            value.treatment_decision.destination : value.treatment_decision.decision}</div>
+
+
+}
 export const PatientComplaint = ({patient, style}) => {
     const navigate = useNavigate();
     const {value, loading} = useContext(patientDataContext.context);
@@ -193,6 +210,9 @@ const PatientInner = ({patient, avatar, style}) => {
                         {value.warnings.map((warning, i) => <div key={i}>
                             <PatientWarning patient={patient} warning={warning} index={i} style={{direction: "rtl"}}/>
                         </div>)}
+                        {value.treatment_decision ? <div>
+                            <PatientTreatmentDecision patient={patient} style={{direction: "rtl"}}/></div> : null}
+
                     </Carousel>
                 </Badge.Ribbon>
             </div>
