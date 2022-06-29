@@ -303,9 +303,36 @@ class MedicalDal:
         }])
         return [WaitForDoctor(to=data['_id'], count=data['sum']) for data in waiting]
 
-    def get_people_amount_wait_referral(self) -> int:
-        res = self.db.Referrals.aggregate([{"$match": {"completed": False}}, {"$count": "waiting"}])
-        return list(res)[0]["waiting"]
+
+    def get_people_amount_wait_doctor(self) -> int:
+        res = self.db.Patients.aggregate([{"$match": {"awaiting.doctor.exam.completed": False}}, {"$count": "count"}])
+        return list(res)[0]["count"]
+
+
+    def get_people_amount_wait_nurse(self) -> int:
+        res = self.db.Patients.aggregate([{"$match": {"awaiting.nurse.exam.completed": False}}, {"$count": "count"}])
+        return list(res)[0]["count"]
+
+    def get_people_amount_waiting_labs(self)->int:
+        count = 0
+        for labs in self.db.patients.find({}, {"awaiting.laboratory": 1, "_id": 0}):
+            if "False" in str(labs):
+                count = count + 1
+        return count
+
+    def get_people_amount_waiting_imaging(self)->int:
+        count = 0
+        for image in self.db.patients.find({}, {"awaiting.imaging": 1, "_id": 0}):
+            if "False" in str(image):
+                count = count + 1
+        return count
+    def get_people_amount_waiting_referrals(self)->int:
+        count = 0
+        for referral in self.db.patients.find({}, {"awaiting.imaging": 1, "_id": 0}):
+            if "False" in str(referral):
+                count = count + 1
+        return count
+
 
     @staticmethod
     async def notify_admission(admission: Admission):
