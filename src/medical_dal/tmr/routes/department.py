@@ -4,7 +4,6 @@ import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
-from tmr_common.data_models.free_text import FreeText
 from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.image import Image
 from tmr_common.data_models.labs import Laboratory

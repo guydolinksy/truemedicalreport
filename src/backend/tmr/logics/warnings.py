@@ -78,8 +78,13 @@ async def admission_handler(admission: Admission = Body(..., embed=True)):
 async def notification_handler(patient: str):
     await notify(f"/api/patients/{patient}")
     await notify(f"/api/patients/{patient}/info")
+    try:
+        res = requests.get(f"http://medical-dal/medical-dal/patients/{patient}")
+        res.raise_for_status()
+    except:
+        return
 
-    patient = Patient(**requests.get(f"http://medical-dal/medical-dal/patients/{patient}").json())
+    patient = Patient(**res.json())
     await trigger_notification(patient, True)
 
 
