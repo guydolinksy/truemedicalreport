@@ -98,3 +98,38 @@ async def update_basic_medical(department: str, basic_medicals: Dict[str, BasicM
                                dal: MedicalDal = Depends(medical_dal)):
     for patient_id, basic_medical in basic_medicals.items():
         await dal.upsert_basic_medical(patient_id, basic_medical)
+
+
+@department_router.get("/{department}/{wing}/waiting_labs", tags=["Department"], response_model=int,
+                       response_model_exclude_unset=True)
+def get_department_people_amount_waiting_labs(department: str, wing: str,
+                                              dal: MedicalDal = Depends(medical_dal)) -> int:
+    return dal.get_people_amount_waiting_labs(department, wing)
+
+
+@department_router.get("/{department}/{wing}/waiting_nurse", tags=["Department"], response_model=int,
+                       response_model_exclude_unset=True)
+def get_department_people_amount_waiting_nurse(department: str, wing: str,
+                                               dal: MedicalDal = Depends(medical_dal)) -> int:
+    return dal.get_people_amount_waiting_nurse(department, wing)
+
+
+@department_router.get("/{department}/{wing}/waiting_doctor", tags=["Department"], response_model=int,
+                       response_model_exclude_unset=True)
+def get_department_people_amount_waiting_doctor(department: str, wing: str,
+                                                dal: MedicalDal = Depends(medical_dal)) -> int:
+    return dal.get_people_amount_waiting_doctor(department, wing)
+
+
+@department_router.get("/{department}/{wing}/waiting_imaging", tags=["Department"], response_model=int,
+                       response_model_exclude_unset=True)
+def get_department_people_amount_waiting_imaging(department: str, wing: str,
+                                                 dal: MedicalDal = Depends(medical_dal)) -> int:
+    return dal.get_people_amount_waiting_imaging(department, wing)
+
+
+@department_router.get("/{department}/{wing}/waiting_referrals", tags=["Department"], response_model=int,
+                       response_model_exclude_unset=True)
+def get_department_people_amount_waiting_referrals(department: str, wing: str,
+                                                   dal: MedicalDal = Depends(medical_dal)) -> int:
+    return dal.get_people_amount_waiting_referrals(department, wing)

@@ -304,31 +304,40 @@ class MedicalDal:
         return [WaitForDoctor(to=data['_id'], count=data['sum']) for data in waiting]
 
 
-    def get_people_amount_wait_doctor(self) -> int:
-        res = self.db.Patients.aggregate([{"$match": {"awaiting.doctor.exam.completed": False}}, {"$count": "count"}])
-        return list(res)[0]["count"]
+    def get_people_amount_waiting_doctor(self,department,wing) -> int:
+        res = self.db.Patients.aggregate([{"$match": {
+        '$and': [{"awaiting.doctor.exam.completed": False}, {'admission.department': department, 'admission.wing':wing}]}},
+                                 {"$count": "count"}])
+        if list(res):
+            return list(res)[0]["count"]
+        else :
+            return 0
 
+    def get_people_amount_waiting_nurse(self,department,wing) -> int:
+        res = self.db.Patients.aggregate([{"$match": {
+        '$and': [{"awaiting.nurse.exam.completed": False}, {'admission.department': department, 'admission.wing':wing}]}},
+                                 {"$count": "count"}])
+        if list(res):
+            return list(res)[0]["count"]
+        else :
+            return 0
 
-    def get_people_amount_wait_nurse(self) -> int:
-        res = self.db.Patients.aggregate([{"$match": {"awaiting.nurse.exam.completed": False}}, {"$count": "count"}])
-        return list(res)[0]["count"]
-
-    def get_people_amount_waiting_labs(self)->int:
+    def get_people_amount_waiting_labs(self,department,wing)->int:
         count = 0
-        for labs in self.db.patients.find({}, {"awaiting.laboratory": 1, "_id": 0}):
+        for labs in self.db.patients.find({'admission.department': department, 'admission.wing': wing}, {"awaiting.laboratory": 1, "_id": 0}):
             if "False" in str(labs):
                 count = count + 1
         return count
 
-    def get_people_amount_waiting_imaging(self)->int:
+    def get_people_amount_waiting_imaging(self,department,wing)->int:
         count = 0
-        for image in self.db.patients.find({}, {"awaiting.imaging": 1, "_id": 0}):
+        for image in self.db.patients.find({'admission.department': department, 'admission.wing': wing}, {"awaiting.imaging": 1, "_id": 0}):
             if "False" in str(image):
                 count = count + 1
         return count
-    def get_people_amount_waiting_referrals(self)->int:
+    def get_people_amount_waiting_referrals(self,department,wing)->int:
         count = 0
-        for referral in self.db.patients.find({}, {"awaiting.imaging": 1, "_id": 0}):
+        for referral in self.db.patients.find({'admission.department': department, 'admission.wing': wing}, {"awaiting.imaging": 1, "_id": 0}):
             if "False" in str(referral):
                 count = count + 1
         return count
