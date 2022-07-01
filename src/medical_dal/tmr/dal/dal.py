@@ -308,8 +308,9 @@ class MedicalDal:
         res = self.db.Patients.aggregate([{"$match": {
         '$and': [{"awaiting.doctor.exam.completed": False}, {'admission.department': department, 'admission.wing':wing}]}},
                                  {"$count": "count"}])
-        if list(res):
-            return list(res)[0]["count"]
+        response_list=list(res)
+        if response_list:
+            return response_list[0]["count"]
         else :
             return 0
 
@@ -317,8 +318,9 @@ class MedicalDal:
         res = self.db.Patients.aggregate([{"$match": {
         '$and': [{"awaiting.nurse.exam.completed": False}, {'admission.department': department, 'admission.wing':wing}]}},
                                  {"$count": "count"}])
-        if list(res):
-            return list(res)[0]["count"]
+        response_list=list(res)
+        if response_list:
+            return response_list[0]["count"]
         else :
             return 0
 
