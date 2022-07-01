@@ -305,9 +305,9 @@ class MedicalDal:
 
 
     def get_people_amount_waiting_doctor(self,department,wing) -> int:
-        res = self.db.Patients.aggregate([{"$match": {
-        '$and': [{"awaiting.doctor.exam.completed": False}, {'admission.department': department, 'admission.wing':wing}]}},
-                                 {"$count": "count"}])
+        res = self.db.patients.aggregate(
+        [{"$match": {"awaiting.doctor.exam.completed": False,'admission.department': department, 'admission.wing': wing}},
+        {"$count": "count"}])
         response_list=list(res)
         if response_list:
             return response_list[0]["count"]
@@ -315,9 +315,9 @@ class MedicalDal:
             return 0
 
     def get_people_amount_waiting_nurse(self,department,wing) -> int:
-        res = self.db.Patients.aggregate([{"$match": {
-        '$and': [{"awaiting.nurse.exam.completed": False}, {'admission.department': department, 'admission.wing':wing}]}},
-                                 {"$count": "count"}])
+        res = self.db.patients.aggregate(
+        [{"$match": {"awaiting.nurse.exam.completed": False,'admission.department': department, 'admission.wing': wing}},
+        {"$count": "count"}])
         response_list=list(res)
         if response_list:
             return response_list[0]["count"]
@@ -339,7 +339,7 @@ class MedicalDal:
         return count
     def get_people_amount_waiting_referrals(self,department,wing)->int:
         count = 0
-        for referral in self.db.patients.find({'admission.department': department, 'admission.wing': wing}, {"awaiting.imaging": 1, "_id": 0}):
+        for referral in self.db.patients.find({'admission.department': department, 'admission.wing': wing}, {"awaiting.referral": 1, "_id": 0}):
             if "False" in str(referral):
                 count = count + 1
         return count
