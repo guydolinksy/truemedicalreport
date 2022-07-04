@@ -279,6 +279,15 @@ CREATE TABLE [dbo].[AdmissionTreatmentDecision]
     [Medical_Record] [int]           NULL
 ) ON [PRIMARY]
 GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[faker_answer_HospUnit](
+	[decision] [int] NULL,
+	[name] [nvarchar](150) NULL
+) ON [PRIMARY]
+GO
 /****** Object:  Table [dbo].[MedicalRecords]    Script Date: 12/06/2022 1:01:52 ******/
 SET ANSI_NULLS ON
 GO
@@ -391,7 +400,81 @@ CREATE TABLE [dbo].[faker_beds](
 	[row_id] [nvarchar](150) NULL
 ) ON [PRIMARY]
 GO
-INSERT [dbo].[AdmissionTreatmentDecision] ([Decision], [Hosp_Unit], [Delete_Date], [Medical_Record]) VALUES (N'2', 118390, NULL, 1111111)
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'819000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'834000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'836000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'837000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'853000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'859000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'860000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'870000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'871000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'872000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'873000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'874000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'875000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'876000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'972000')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'1505100')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'1539200')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'1549983')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15054500')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15059312')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15063421')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15064114')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15065323')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15066727')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068347')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068369')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068397')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068422')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068423')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068448')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068510')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068531')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068593')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068594')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068596')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068598')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068666')
+GO
+INSERT [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (2, NULL)
 GO
 INSERT [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'1')
 GO
@@ -703,19 +786,85 @@ INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (8,
 GO
 INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (9, 1184000, 99, N'אגף שוכבים ירוק')
 GO
-INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (123, N'השהיה מלרד')
+INSERT [dbo].[RoomPlacmentPatient] ([Start_Date], [End_Date], [Unit], [Bed_ID], [Medical_Record], [Room]) VALUES (CAST(N'2022-06-23T06:59:11.777' AS DateTime), NULL, 1184000, 7, 123345345, N'a')
 GO
-INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (126, N'נוירולוגיה')
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (819000, N'פנימית גריאטריה ג')
 GO
-INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (124, N'עור ומין')
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (834000, N'כירורגית חזה-כלי דם')
 GO
-INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (125, N'פנימית')
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (836000, N'כירורגית ב')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (837000, N'כירורגית ג')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (853000, N'כירורגית ילדים')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (859000, N'כירורגית כויות')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (860000, N'כירורגית לב')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (870000, N'כירורגית פה ולסת')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (871000, N'פנימית א')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (872000, N'פנימית ב')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (873000, N'פנימית ג')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (874000, N'פנימית ד')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (875000, N'פנימית ה')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (876000, N'פנימית ו')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (972000, N'אשפוז יום שיקום ילדים')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (1505100, N'אשפוז יום שיקומי - לצפייה')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (1539200, N'אשפוז יום פסיכיאטרי')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (1549983, N'פנימית בלינסון')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15054500, N'כירורגית לב ילדים')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15059312, N'אשפוז יום גניקולוגי')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15063421, N'פנימית')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15064114, N'אשפוז יום נפגעי ראש - לצפייה')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15065323, N'פנימית ט')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15066727, N'אשפוז יום נוירואונקולוגי')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068347, N'אשפוז יום הפרעות אכילה')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068369, N'פנימית גריאטריה ד')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068397, N'אשפוז יום נשימתי - לצפייה')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068422, N'כירורגית חזה')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068423, N'כירורגית כלי דם')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068448, N'וירטואלי פנימית א')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068510, N'אשפוז')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068531, N'אשפוז כירורגי קצר')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068593, N'פנימית קורונה ג')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068594, N'פנימית קורונה ד')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068596, N'פנימית קורונה ב')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068598, N'פנימית קורונה ה')
+GO
+INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (15068666, N'פנימית קורונה ח')
 GO
 INSERT [dbo].[SystemUnits] ([Unit], [Name]) VALUES (1184000, N'המחלקה לרפואה דחופה')
 GO
-INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (1, N'אחר', 1092)
-GO
-INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (2, N'אשפוז', 1092)
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (1, N'אשפוז', 1092)
 GO
 INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (3, N'אשפוז בית', 1092)
 GO
@@ -763,7 +912,7 @@ INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES 
 GO
 INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (25, N'עזבו על דעת עצמם', 1092)
 GO
-INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (26, N'שחרור', 1092)
+INSERT [dbo].[TableAnswers] ([Answer_Code], [Answer_Text], [Table_Code]) VALUES (2, N'שחרור', 1092)
 GO
 INSERT [dbo].[Users] ([usernamenotitle], [Code]) VALUES (N'ניסים אהרון', N'1')
 GO
@@ -833,6 +982,40 @@ GO
 	update [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] set end_date = GETUTCDATE() where [Medical_Record]=@medical_record and end_date is null;
 	end
 	;
+GO
+/****** Object:  StoredProcedure [dbo].[faker_decision]    Script Date: 04/07/2022 21:16:23 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[faker_decision](@medical_record nvarchar(50))
+	AS
+	Begin
+	declare @decision as varchar;
+	declare @unit_hosp as varchar;
+	if exists (select * from [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision] atd where atd.medical_record=@medical_record and atd.delete_date is null)
+		begin
+			update [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision] set delete_date= getdate() where medical_record=@medical_record and delete_date is null;
+		end
+	if (select top 1 count(*)*100.0/ sum(count(*)) over() as ratio from [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision] a
+		join [dbo].[faker_answer_HospUnit] f on a.Hosp_Unit=f.name
+		group by f.name) > 0.7
+		begin
+		-- insert release
+		insert into [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision]
+		values(2,null,null,@medical_record);
+		end
+	else
+		begin
+		-- insert hosp
+		select top 1 @decision=hu.decision ,@unit_hosp=hu.name
+		from [sbwnd81c_chameleon].[dbo].faker_answer_HospUnit hu
+		where hu.decision=1 order by newid();
+
+		insert into [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision]
+		values( @decision,@unit_hosp,null,@medical_record);
+		end
+	end
 GO
 USE [master]
 GO
