@@ -6,8 +6,7 @@ import requests
 from requests import HTTPError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-
-from . import sql_queries
+from ..utils import sql_statements
 from ..models.arc_patient import ARCPatient
 from ..models.chameleon_medical_free_text import ChameleonMedicalFreeText
 from ..models.chameleon_referrals import ChameleonReferrals
@@ -127,7 +126,7 @@ class SqlToDal(object):
         decisions = {}
         try:
             with self.session() as session:
-                result = session.execute(sql_queries.treatment_decision.format(department.value))
+                result = session.execute(sql_statements.query_discharge_or_hospitalized.format(department.value))
                 for row in result:
                     decisions.setdefault(row[0],
                                          TreatmentDecision(decision=row[1],

@@ -1,7 +1,6 @@
 import contextlib
 import copy
 import datetime
-import logging
 import os
 import random
 
@@ -15,12 +14,12 @@ from tmr_common.data_models.image import ImagingTypes, ImagingStatus
 from tmr_common.data_models.labs import LabCategories, LabTestType
 from tmr_common.data_models.notification import NotificationLevel
 from tmr_ingress.models.arc_patient import ARCPatient
-from tmr_ingress.models.chameleon_referrals import ChameleonReferrals
 from tmr_ingress.models.chameleon_imaging import ChameleonImaging
 from tmr_ingress.models.chameleon_labs import ChameleonLabs
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
 from tmr_ingress.models.chameleon_measurements import ChameleonMeasurements
 from tmr_ingress.models.chameleon_medical_free_text import ChameleonMedicalFreeText, description_codes, units_code
+from tmr_ingress.utils import sql_statements
 
 logger = logbook.Logger(__name__)
 
@@ -294,7 +293,7 @@ class FakeMain(object):
             with self.session() as session:
                 session.execute(f"execute [sbwnd81c_chameleon].[dbo].[faker_ResponsibleDoctor] {patient}")
                 session.commit()
-                
+
     def _generate_room_placements(self, chameleon_id=None, department=None, wing=None):
         if chameleon_id:
             patients = {chameleon_id}
@@ -304,7 +303,7 @@ class FakeMain(object):
             raise ValueError()
         for patient in patients:
             with self.session() as session:
-                session.execute(f"execute [sbwnd81c_chameleon].[dbo].[faker_RoomPlacmentPatient_admission] {patient}, {random.randint(1,4)}")
+                session.execute(sql_statements.execute_set_patient_admission.format(patient, patient.unit_wing))
                 session.commit()
     
     async def admit_patients(self, department):
