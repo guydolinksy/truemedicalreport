@@ -71,6 +71,7 @@ class LabCategory(BaseModel):
     at: str
     category_id: str
     category: str
+    patient_id: str
     status: str = StatusInHebrew[LabStatus.ordered.value]
     results: Dict[str, Laboratory] = {}
 
@@ -90,21 +91,14 @@ class LabCategory(BaseModel):
         use_enum_values = True
 
     def to_notification(self) -> [LabsNotification]:
-        lab_notifications = []
-        for cat_id, category_data in self.results.items():
-            patient_id = category_data.patient_id
-            message = "תוצאות עבור: "
-            message += f"{category_data.category_name}-{category_data.test_type_name} "
-            if category_data.result is not None:
-                lab_notifications.append(LabsNotification(
-                    static_id=self.get_instance_id(),
-                    patient_id=patient_id,
-                    at=self.at,
-                    message=message,
-                    link="Add in the future",
-                    level=NotificationLevel.panic,  # Advise with Guy
-                ))
-        return lab_notifications
+        return LabsNotification(
+            static_id=self.get_instance_id(),
+            patient_id=self.patient_id,
+            at=self.at,
+            message=f"התקבלו תוצאות {self.category}",
+            link="Add in the future",
+            level=NotificationLevel.normal,
+        )
 
     def get_if_panic(self):
         warnings = []

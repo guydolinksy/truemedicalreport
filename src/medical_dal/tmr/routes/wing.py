@@ -7,7 +7,7 @@ from pymongo import MongoClient
 import json
 from tmr_common.data_models.bed import Bed
 from tmr_common.data_models.patient import PatientNotifications
-from tmr_common.data_models.wing import Wing, WingSummarize
+from tmr_common.data_models.wing import Wing, WingSummary
 from ..dal.dal import MedicalDal
 
 logger = logbook.Logger(__name__)
@@ -18,11 +18,11 @@ def medical_dal() -> MedicalDal:
     return MedicalDal(MongoClient("mongo").medical)
 
 
-@wing_router.get("/{wing}", response_model=WingSummarize, response_model_exclude_unset=True, tags=["Wing"])
+@wing_router.get("/{wing}", response_model=WingSummary, response_model_exclude_unset=True, tags=["Wing"])
 def get_wing_details(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> dict:
     patients = dal.get_wing_patients(department, wing)
     details = dal.get_wing(department, wing)
-    return WingSummarize(patients=patients, details=details).dict(exclude_unset=True)
+    return WingSummary(patients=patients, details=details).dict(exclude_unset=True)
 
 
 # TODO move logic to backend service after it works

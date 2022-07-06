@@ -1,18 +1,25 @@
 import datetime
 
-from tmr_common.data_models.free_text import FreeText
+import pytz
+
+from tmr_common.data_models.patient import BasicMedical
 from .base import Base
 from sqlalchemy import Column, VARCHAR, Integer, DateTime, Date, BigInteger
 from enum import Enum
 
-description_codes = {"nurse_summarize": {"code": 901, "title": "סיכום ביקור אחות", "text_list": ["""בדרך כלל בריא, חווה כאבים בצד שמאל מאתמול בערב.
-מלווה בכאבי ראש וסחרחורות לסירוגין""", """לא מסוגל להזיז את היד, חשש לשבר במפרק כף היד""",
-                                                                                                 """מתלונן על כאבי גב מזה תקופה ארוכה, לטענתו חווה קשיי בעת מעבר בין ישיבה לעמידה"""]},
-                     "doctor_summarie": {"code": 889, "title": "סיכום רופא"}}
-units_code = {"er": {"code": 1184000, "title": """מלר"ד"""}}
+
+class FreeTextCodes(Enum):
+    DOCTOR_VISIT = 1
+    DOCTOR_SUMMARY = 889
+    NURSE_SUMMARY = 901
 
 
-class ChameleonMedicalFreeText(Base):
+class Units(Enum):
+    ER = 1184000
+
+
+
+class ChameleonMedicalText(Base):
     __tablename__ = "medical_free_text"
     row_id = Column("Row_ID", BigInteger(), primary_key=True)
     patient_id = Column("Id", BigInteger())
@@ -29,16 +36,9 @@ class ChameleonMedicalFreeText(Base):
     # date of inserting the row to ARC db
     insert_date = Column("insert_date", DateTime(), default=datetime.datetime.utcnow())
 
-    def to_dal(self) -> FreeText:
-        return FreeText(
-            patient_id=self.patient_id,
-            medical_record=self.medical_record,
-            documenting_date=self.documenting_date,
-            documenting_time=self.documenting_time,
-            unit_name=self.unit_name,
-            unit=self.unit,
-            medical_text_code=self.medical_text_code,
-            medical_text_title=self.medical_text_title,
-            medical_text=self.medical_text,
-            documenting_user=self.documenting_user,
-            source=self.source)
+    def update_basic_medical(self, basic_medical: BasicMedical):
+        if self.medical_text_code == FreeTextCodes.NURSE_SUMMARY.value:
+            basic_medical.nurse_description = self.medical_text
+            basic_medical.nurse_seen_time = self.documenting_time.astimezone(pytz.UTC).isoformat()
+        elif self.medical_text_code == FreeTextCodes.DOCTOR_VISIT.value:
+            basic_medical.doctor_seen_time = self.documenting_time.astimezone(pytz.UTC).isoformat()

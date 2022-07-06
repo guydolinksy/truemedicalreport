@@ -7,7 +7,7 @@ import {loginContext} from "./LoginContext";
 
 export const MainMenu = () => {
     const {user} = useContext(loginContext);
-    const {navigate} = useNavigate();
+    const navigate = useNavigate();
     const {pathname} = useLocation();
     return <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
         <Menu mode={"horizontal"} selectedKeys={pathname.split('/').slice(1, 2)}

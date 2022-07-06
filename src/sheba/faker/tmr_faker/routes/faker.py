@@ -94,6 +94,26 @@ async def generate_referrals(department: Departments, dal: FakeMain = Depends(Fa
 
 
 @faker_router.on_event('startup')
+@repeat_every(seconds=60, wait_first=True, logger=logger)
+@inject_dependencies(department=Departments.er)
+@faker_router.post("/nurse_summaries", status_code=201)
+async def generate_nurse_summaries(department: Departments, dal: FakeMain = Depends(FakeMain)):
+    logger.info("Generate Nurse Summary...")
+    await dal.update_nurse_summaries(department=department)
+    logger.info("Done.")
+
+
+@faker_router.on_event('startup')
+@repeat_every(seconds=60, wait_first=True, logger=logger)
+@inject_dependencies(department=Departments.er)
+@faker_router.post("/doctor_visits", status_code=201)
+async def generate_doctor_visits(department: Departments, dal: FakeMain = Depends(FakeMain)):
+    logger.info("Generate Doctor Visits...")
+    await dal.update_doctor_visits(department=department)
+    logger.info("Done.")
+
+
+@faker_router.on_event('startup')
 @repeat_every(seconds=3600, wait_first=True, logger=logger)
 @inject_dependencies()
 @faker_router.post("/clear", status_code=201)
@@ -101,16 +121,6 @@ async def clear(dal: FakeMain = Depends(FakeMain)):
     logger.info("Clearing...")
     dal.clear()
     logger.info("Done.")
-
-
-@faker_router.on_event('startup')
-@repeat_every(seconds=60, wait_first=True, logger=logger)
-@inject_dependencies(department=Departments.er)
-@faker_router.post("/nurse_summarize", status_code=201)
-async def generate_nurse_summarize(department: Departments, dal: FakeMain = Depends(FakeMain)):
-    logger.info("Generate Nurse Summarize")
-    await dal.add_nurse_medical_text_to_department(department=department)
-    logger.info("Done Generate Nurse Summarize")
 
 
 @faker_router.on_event('startup')
