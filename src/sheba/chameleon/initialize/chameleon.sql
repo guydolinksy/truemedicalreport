@@ -359,7 +359,7 @@ CREATE TABLE [dbo].[Users]
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE TABLE [dbo].[faker_wing_Doctore](
+CREATE TABLE [dbo].[faker_wing_Doctor](
 	[DepartmentWing] [nvarchar](150) NULL,
 	[Code] [nvarchar](150) NULL
 ) ON [PRIMARY]
@@ -922,6 +922,10 @@ INSERT [dbo].[Users] ([usernamenotitle], [Code]) VALUES (N'ניצן חלבי', N
 GO
 INSERT [dbo].[Users] ([usernamenotitle], [Code]) VALUES (N'עמית גזית', N'4')
 GO
+insert into [dbo].[faker_wing_Doctore]  values('a',1),('a',5),('b1',2),('b1',3),('b2',4),('b2',6),('b3',7),('b3',8)
+go
+INSERT INTO [dbo].[Users] ([usernamenotitle],[Code]) VALUES (N'אחמד מלמוד',5),(N'מוחמד דבור',6),(N'אילנית כהן',7),(N'נגב ניצן',8)
+GO
 /****** Object:  StoredProcedure [dbo].[faker_ResponsibleDoctor]    Script Date: 23/06/2022 10:09:29 ******/
 SET ANSI_NULLS ON
 GO
@@ -934,22 +938,20 @@ CREATE PROCEDURE [dbo].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
 		begin
 			update [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] set  delete_date= GETDATE() where medical_record=@medical_record and delete_date is null;
 			insert into [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] values(
-			(select top 1 rd.doctor from (select top 1 id,DepartmentWing from [chameleon_db].[dbo].[Emergency_visits] order by DepartmentAdmission desc) ev
+			(select top 1 fwd.code from (select top 1 id,DepartmentWing from [chameleon_db].[dbo].[Emergency_visits] where id=@medical_record order by DepartmentAdmission desc) ev
 			join [sbwnd81c_chameleon].[dbo].[faker_wing_Doctore] as fwd on fwd.DepartmentWing=ev.DepartmentWing
-			join [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] as rd on rd.doctor = fwd.code
-			where id=@medical_record
-			group by  rd.doctor
+			left join [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] as rd on rd.doctor = fwd.code
+			group by  fwd.code
 			order by count(*) asc),@medical_record,null);
 		end
 	else
 		begin
-			insert into [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] values(select top 1 fwd.code from (select top 1 DepartmentWing from [chameleon_db].[dbo].[Emergency_visits] where
-            id=@medical_record and
-            DepartmentWingDischarge is null ) ev
-            join [sbwnd81c_chameleon].[dbo].[faker_wing_Doctore] as fwd on fwd.DepartmentWing=ev.DepartmentWing
-            left join [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] as rd on rd.doctor = fwd.code
-            group by  rd.doctor
-            order by count(*) asc),@medical_record,null);
+			insert into [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] values(
+			(select top 1 fwd.code from (select top 1 id,DepartmentWing from [chameleon_db].[dbo].[Emergency_visits] where id=@medical_record order by DepartmentAdmission desc) ev
+			join [sbwnd81c_chameleon].[dbo].[faker_wing_Doctore] as fwd on fwd.DepartmentWing=ev.DepartmentWing
+			left join [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] as rd on rd.doctor = fwd.code
+			group by  fwd.code
+			order by count(*) asc),@medical_record,null);
 		end
 	end
 GO

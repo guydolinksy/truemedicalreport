@@ -93,6 +93,7 @@ class FakeMain(object):
             result = {patient.patient_id for patient in session.query(ChameleonMain).filter(
                 (ChameleonMain.unit == department.name) & (ChameleonMain.unit_wing == wing)
             )}
+            print(result)
             return result
 
     def _generate_measurements(self, chameleon_id=None, department=None, wing=None):
@@ -301,11 +302,11 @@ class FakeMain(object):
             patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 5)]
         else:
             raise ValueError()
-        for patient in patients:
-            with self.session() as session:
-                session.execute(sql_statements.execute_set_patient_admission.format(patient, patient.unit_wing))
-                session.commit()
-    
+        # for patient in patients:
+        #     with self.session() as session:
+        #         session.execute(sql_statements.execute_set_patient_admission.format(patient, ))
+        #         session.commit()
+
     async def admit_patients(self, department):
         for wing in self.wings:
             if random.randint(0, 1):
