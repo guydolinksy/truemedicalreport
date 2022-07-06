@@ -111,7 +111,10 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
 
 @department_router.post("/{department}/decisions", status_code=http.HTTPStatus.OK)
 async def update_treatment_decisions(department: str,
-                                     decisions: Optional[dict[int, TreatmentDecision]] = Body(..., embed=True),
+                                     decisions: dict[str, TreatmentDecision] = Body(...),
                                      dal: MedicalDal = Depends(medical_dal)):
     for patient in decisions:
-        await dal.upsert_treatment_decision(patient, decisions[patient])
+        try:
+            dal.upsert_treatment_decision(patient, decisions[patient])
+        except TypeError as e:
+            logger.exception(f"Error Update Decision for {patient} stack:{e}")

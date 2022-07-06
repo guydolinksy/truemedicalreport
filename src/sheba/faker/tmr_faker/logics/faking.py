@@ -93,7 +93,6 @@ class FakeMain(object):
             result = {patient.patient_id for patient in session.query(ChameleonMain).filter(
                 (ChameleonMain.unit == department.name) & (ChameleonMain.unit_wing == wing)
             )}
-            print(result)
             return result
 
     def _generate_measurements(self, chameleon_id=None, department=None, wing=None):
@@ -295,6 +294,18 @@ class FakeMain(object):
                 session.execute(f"execute [sbwnd81c_chameleon].[dbo].[faker_ResponsibleDoctor] {patient}")
                 session.commit()
 
+    def _set_hospitalized_decision(self, chameleon_id=None, department=None, wing=None):
+        if chameleon_id:
+            patients = {chameleon_id}
+        elif department and wing:
+            patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 2)]
+        else:
+            raise ValueError()
+        for patient in patients:
+            with self.session() as session:
+                session.execute(sql_statements.execute_set_hospitalized_decision.format(patient))
+                session.commit()
+
     def _generate_room_placements(self, chameleon_id=None, department=None, wing=None):
         if chameleon_id:
             patients = {chameleon_id}
@@ -338,6 +349,10 @@ class FakeMain(object):
     async def update_room_placements(self, department):
         for wing in self.wings:
             self._generate_room_placements(department=department, wing=wing)
+
+    async def set_hospitalized_decision(self, department):
+        for wing in self.wings:
+            self._set_hospitalized_decision(department=department, wing=wing)
 
     def _build_nurse_medical_text(self, department=None, wing=None):
         patients = [patient for patient in self._get_patients(department, wing) if not random.randint(0, 4)]
