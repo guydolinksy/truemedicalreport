@@ -277,7 +277,8 @@ create TABLE [dbo].[AdmissionTreatmentDecision]
     [Decision]       [int] NULL,
     [Hosp_Unit]      [int]           NULL,
     [Delete_Date]    [datetime]      NULL,
-    [Medical_Record] [int]           NULL
+    [Medical_Record] [int]           NULL,
+    [delete_date] [datetime]
 ) ON [PRIMARY]
 GO
 SET ANSI_NULLS ON
@@ -962,16 +963,33 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-create procedure [dbo].[faker_RoomPlacmentPatient_admission](@medical_record int,@room_num nvarchar)
+CREATE PROCEDURE [dbo].[faker_RoomPlacmentPatient_admission](@medical_record int)
 	AS
 	Begin
-	declare @bed_name as varchar;
-	-- insert into @bed_name
-	select  top 1 @bed_name= fb.row_id  from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
-	where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is not null and rpp.start_date is not null and room =@room_num)
-	and room=@room_num
-	order by newid();
-	insert into  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_name,@medical_record ,@room_num);
+	declare @bed_name as varchar(50);
+	declare @exists as varchar(50);
+	declare @room_num as varchar(50);
+	select @exists = ev.DepartmentCode, @room_num=ev.DepartmentWing from chameleon_db.dbo.Emergency_visits ev where ev.id=@medical_record;
+	if exists ( select ev.DepartmentName from  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  rp join chameleon_db.dbo.Emergency_visits ev on rp.Medical_Record=ev.id and ev.id=@medical_record)
+		begin
+			update  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] set [End_Date]=GETDATE() where Medical_Record=@medical_record and End_Date is null;
+			if @exists='1184000'
+				begin
+					select  top 1 @bed_name=fb.row_id  from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
+					join [chameleon_db].[dbo].[Emergency_visits] ev on ev.DepartmentWing=fb.room and ev.id=@medical_record
+					where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is not null and rpp.start_date is not null and room =ev.DepartmentWing)
+					order by newid();
+					insert into  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_name,@medical_record ,@room_num);
+				end
+		end
+	else
+		begin
+			select  top 1 @bed_name=fb.row_id  from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
+			join [chameleon_db].[dbo].[Emergency_visits] ev on ev.DepartmentWing=fb.room and ev.id=@medical_record
+			where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is not null and rpp.start_date is not null and room =ev.DepartmentWing)
+			order by newid();
+			insert into  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_name,@medical_record ,@room_num);
+		end
 	end
 	;
 GO
