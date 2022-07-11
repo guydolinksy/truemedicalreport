@@ -291,7 +291,7 @@ class FakeMain(object):
             raise ValueError()
         for patient in patients:
             with self.session() as session:
-                session.execute(f"execute [sbwnd81c_chameleon].[dbo].[faker_ResponsibleDoctor] {patient}")
+                session.execute(sql_statements.execute_set_responsible_doctor.format(patient))
                 session.commit()
 
     def _set_hospitalized_decision(self, chameleon_id=None, department=None, wing=None):
@@ -381,7 +381,7 @@ class FakeMain(object):
             raise ValueError()
         for patient in patients:
             with self.session() as session:
-                session.execute(sql_statements.execute_set_patient_admission.format(patient, ))
+                session.execute(sql_statements.execute_set_patient_admission.format(patient))
                 session.commit()
 
     async def admit_patients(self, department):
