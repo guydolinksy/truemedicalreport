@@ -13,7 +13,7 @@ from tmr_ingress.models.base import Base
 
 
 class Departments(Enum):
-    er = '5'
+    er = '1184000'
 
 
 class ARCPatient(Base):
