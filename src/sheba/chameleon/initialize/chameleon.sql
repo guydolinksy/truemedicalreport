@@ -1001,10 +1001,10 @@ create procedure [dbo].[faker_decision](@medical_record nvarchar(50))
 		begin
 			update [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision] set delete_date= getdate() where medical_record=@medical_record and delete_date is null;
 		end
-	if (select top 1 count(*)*100/ sum(count(*)) over() as ratio from [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision] a
+	if (select top 1  count(*)*100/ sum(count(*)) over() as ratio from [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision] a
 		left join [dbo].[faker_answer_HospUnit] f on a.Hosp_Unit=f.name and a.Delete_Date is null
-		group by f.name
-		order by 1) < 30
+		group by (case when f.name is null then 0 else 1 end )
+		order by (case when f.name is null then 0 else 1 end ) ) <30
 		begin
 		-- insert release
 		insert into [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision]
