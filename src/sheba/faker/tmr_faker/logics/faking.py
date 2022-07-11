@@ -18,7 +18,7 @@ from tmr_ingress.models.chameleon_imaging import ChameleonImaging
 from tmr_ingress.models.chameleon_labs import ChameleonLabs
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
 from tmr_ingress.models.chameleon_measurements import ChameleonMeasurements
-from tmr_ingress.utils import sql_statements
+from ..utils import sql_statements
 from tmr_ingress.models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
 
 logger = logbook.Logger(__name__)
