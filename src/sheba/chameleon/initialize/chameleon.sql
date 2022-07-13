@@ -395,12 +395,21 @@ create TABLE [dbo].[RoomPlacmentPatient](
 	[Unit] [int] NULL,
 	[Bed_ID] [int] NULL,
 	[Medical_Record] [int] NULL,
-	[Room] [nvarchar](150) NULL
+	[Room] [int] NULL
 ) ON [PRIMARY]
 GO
-create TABLE [dbo].[faker_beds](
+CREATE TABLE [dbo].[faker_beds](
 	[room] [nvarchar](150) NULL,
-	[row_id] [nvarchar](150) NULL
+	[bed_name] [nvarchar](150) NULL,
+	[row_id] [int] IDENTITY(1,1) NOT NULL
+) ON [PRIMARY]
+GO
+create TABLE [dbo].[AdmissionTreatmentDecision]
+(
+    [Decision]       [int] NULL,
+    [Hosp_Unit]      [int]           NULL,
+    [Delete_Date]    [datetime]      NULL,
+    [Medical_Record] [int]           NULL
 ) ON [PRIMARY]
 GO
 insert [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'819000')
@@ -771,6 +780,303 @@ insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'98')
 GO
 insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'99')
 GO
+GO
+SET IDENTITY_INSERT [dbo].[RoomBeds] ON
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'1', 1)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'2', 2)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'3', 3)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'4', 4)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'5', 5)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'6', 6)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'7', 7)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'8', 8)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'9', 9)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'10', 10)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'11', 11)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'12', 12)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'13', 13)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'14', 14)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'1', 15)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'2', 16)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'3', 17)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'4', 18)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'5', 19)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'6', 20)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'7', 21)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'8', 22)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'9', 23)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'10', 24)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'11', 25)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'12', 26)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'13', 27)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'14', 28)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'15', 29)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'16', 30)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'17', 31)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'18', 32)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'19', 33)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'20', 34)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'1', 35)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'2', 36)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'3', 37)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'4', 38)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'5', 39)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'6', 40)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'7', 41)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'8', 42)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'9', 43)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'10', 44)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'11', 45)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'12', 46)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'13', 47)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'1', 48)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'2', 49)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'3', 50)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'4', 51)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'5', 52)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'6', 53)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'7', 54)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'8', 55)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'9', 56)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'10', 57)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'11', 58)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'12', 59)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'13', 60)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'14', 61)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'15', 62)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'16', 63)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'17', 64)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'18', 65)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'19', 66)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'20', 67)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'21', 68)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'22', 69)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'23', 70)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'24', 71)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'25', 72)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'26', 73)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'27', 74)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'28', 75)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'29', 76)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'30', 77)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'31', 78)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'32', 79)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'33', 80)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'34', 81)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'35', 82)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'36', 83)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'37', 84)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'38', 85)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'39', 86)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'40', 87)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'41', 88)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'42', 89)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'43', 90)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'44', 91)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'45', 92)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'46', 93)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'47', 94)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'48', 95)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'49', 96)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'50', 97)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'51', 98)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'52', 99)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'53', 100)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'54', 101)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'55', 102)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'56', 103)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'57', 104)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'58', 105)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'59', 106)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'60', 107)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'61', 108)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'62', 109)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'63', 110)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'64', 111)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'65', 112)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'66', 113)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'67', 114)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'68', 115)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'69', 116)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'70', 117)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'71', 118)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'72', 119)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'73', 120)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'74', 121)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'75', 122)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'76', 123)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'77', 124)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'78', 125)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'79', 126)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'80', 127)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'81', 128)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'82', 129)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'83', 130)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'84', 131)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'85', 132)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'86', 133)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'87', 134)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'88', 135)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'89', 136)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'90', 137)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'91', 138)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'92', 139)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'93', 140)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'94', 141)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'95', 142)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'96', 143)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'97', 144)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'98', 145)
+GO
+INSERT [dbo].[RoomBeds] ([Bed_Name], [row_id]) VALUES (N'99', 146)
+GO
+SET IDENTITY_INSERT [dbo].[RoomBeds] OFF
+GO
 insert [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (1, 1184000, 14, N'אגף B2')
 GO
 insert [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (2, 1184000, 20, N'אגף B3')
@@ -788,6 +1094,14 @@ GO
 insert [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (8, 1184000, 99, N'אגף אנטיגן')
 GO
 insert [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (9, 1184000, 99, N'אגף שוכבים ירוק')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (10, 1184000, 99, N'a')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (11, 1184000, 13, N'b1')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (12, 1184000, 14, N'b2')
+GO
+INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (13, 184000, 20, N'b3')
 GO
 insert [dbo].[RoomPlacmentPatient] ([Start_Date], [End_Date], [Unit], [Bed_ID], [Medical_Record], [Room]) VALUES (CAST(N'2022-06-23T06:59:11.777' AS DateTime), NULL, 1184000, 7, 123345345, N'a')
 GO
@@ -962,33 +1276,42 @@ GO
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
+USE [sbwnd81c_chameleon]
+GO
+
+/****** Object:  StoredProcedure [dbo].[faker_RoomPlacmentPatient_admission]    Script Date: 13/07/2022 15:32:00 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
 GO
 CREATE PROCEDURE [dbo].[faker_RoomPlacmentPatient_admission](@medical_record int)
 	AS
 	Begin
-	declare @bed_name as varchar(50);
+	declare @bed_id as varchar(50);
 	declare @exists as varchar(50);
 	declare @room_num as varchar(50);
-	select @exists = ev.DepartmentCode, @room_num=ev.DepartmentWing from chameleon_db.dbo.Emergency_visits ev where ev.id=@medical_record;
+	select @exists = ev.DepartmentCode, @room_num=rd.Room_Code from chameleon_db.dbo.Emergency_visits ev
+	join sbwnd81c_chameleon.dbo.RoomDetails rd on rd.Room_Name=ev.DepartmentWing where ev.id=@medical_record;
 	if exists ( select ev.DepartmentName from  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  rp join chameleon_db.dbo.Emergency_visits ev on rp.Medical_Record=ev.id and ev.id=@medical_record)
 		begin
 			update  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] set [End_Date]=GETDATE() where Medical_Record=@medical_record and End_Date is null;
 			if @exists='1184000'
 				begin
-					select  top 1 @bed_name=fb.row_id  from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
+					select  top 1 @bed_id=fb.row_id  from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
 					join [chameleon_db].[dbo].[Emergency_visits] ev on ev.DepartmentWing=fb.room and ev.id=@medical_record
-					where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is not null and rpp.start_date is not null and room =ev.DepartmentWing)
+					where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is not null and rpp.start_date is not null)
 					order by newid();
-					insert into  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_name,@medical_record ,@room_num);
+					insert into  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_id,@medical_record ,@room_num);
 				end
 		end
 	else
 		begin
-			select  top 1 @bed_name=fb.row_id  from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
+			select  top 1 @bed_id=fb.row_id  from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
 			join [chameleon_db].[dbo].[Emergency_visits] ev on ev.DepartmentWing=fb.room and ev.id=@medical_record
 			where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is not null and rpp.start_date is not null and room =ev.DepartmentWing)
 			order by newid();
-			insert into  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_name,@medical_record ,@room_num);
+			insert into  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_id,@medical_record ,@room_num);
 		end
 	end
 	;
