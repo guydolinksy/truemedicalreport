@@ -428,6 +428,9 @@ class FakeMain(object):
             session.query(ChameleonLabs).delete()
             session.query(ChameleonMeasurements).delete()
             session.query(ChameleonMedicalText).delete()
+            session.execute(sql_statements.delete_admission_treatment_decision)
+            session.execute(sql_statements.delete_responsible_doctor)
+            session.execute(sql_statements.delete_room_placement)
             session.commit()
 
     async def update_room_placements(self, department):
