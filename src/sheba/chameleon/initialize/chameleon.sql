@@ -277,8 +277,7 @@ create TABLE [dbo].[AdmissionTreatmentDecision]
     [Decision]       [int] NULL,
     [Hosp_Unit]      [int]           NULL,
     [Delete_Date]    [datetime]      NULL,
-    [Medical_Record] [int]           NULL,
-    [delete_date] [datetime]
+    [Medical_Record] [int]           NULL
 ) ON [PRIMARY]
 GO
 SET ANSI_NULLS ON
