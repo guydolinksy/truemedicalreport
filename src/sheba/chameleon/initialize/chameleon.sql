@@ -169,7 +169,6 @@ create TABLE [dbo].[medical_free_text]
     [source]           [VARCHAR](25)  NULL,
     /*date of insert the row to ARC db*/
     [insert_date]      [DATETIME]     NULL
-
 )
 GO
 create TABLE [dbo].[referrals]
@@ -403,14 +402,6 @@ CREATE TABLE [dbo].[faker_beds](
 	[row_id] [int] IDENTITY(1,1) NOT NULL
 ) ON [PRIMARY]
 GO
-create TABLE [dbo].[AdmissionTreatmentDecision]
-(
-    [Decision]       [int] NULL,
-    [Hosp_Unit]      [int]           NULL,
-    [Delete_Date]    [datetime]      NULL,
-    [Medical_Record] [int]           NULL
-) ON [PRIMARY]
-GO
 insert [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'819000')
 GO
 insert [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'834000')
@@ -487,298 +478,297 @@ insert [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'15068666'
 GO
 insert [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (2, NULL)
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'1')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'1')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'2')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'2')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'3')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'3')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'4')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'4')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'5')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'5')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'6')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'6')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'7')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'7')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'8')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'8')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'9')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'9')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'10')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'10')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'11')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'11')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'12')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'12')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'13')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'13')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b1', N'14')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b1', N'14')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'1')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'1')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'2')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'2')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'3')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'3')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'4')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'4')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'5')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'5')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'6')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'6')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'7')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'7')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'8')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'8')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'9')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'9')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'10')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'10')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'11')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'11')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'12')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'12')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'13')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'13')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'14')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'14')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'15')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'15')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'16')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'16')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'17')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'17')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'18')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'18')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'19')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'19')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b2', N'20')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b2', N'20')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'1')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'1')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'2')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'2')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'3')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'3')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'4')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'4')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'5')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'5')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'6')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'6')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'7')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'7')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'8')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'8')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'9')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'9')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'10')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'10')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'11')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'11')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'12')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'12')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'b3', N'13')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'b3', N'13')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'1')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'1')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'2')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'2')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'3')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'3')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'4')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'4')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'5')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'5')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'6')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'6')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'7')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'7')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'8')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'8')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'9')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'9')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'10')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'10')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'11')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'11')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'12')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'12')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'13')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'13')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'14')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'14')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'15')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'15')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'16')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'16')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'17')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'17')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'18')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'18')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'19')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'19')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'20')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'20')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'21')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'21')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'22')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'22')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'23')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'23')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'24')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'24')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'25')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'25')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'26')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'26')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'27')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'27')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'28')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'28')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'29')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'29')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'30')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'30')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'31')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'31')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'32')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'32')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'33')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'33')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'34')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'34')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'35')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'35')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'36')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'36')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'37')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'37')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'38')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'38')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'39')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'39')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'40')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'40')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'41')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'41')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'42')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'42')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'43')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'43')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'44')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'44')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'45')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'45')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'46')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'46')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'47')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'47')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'48')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'48')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'49')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'49')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'50')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'50')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'51')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'51')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'52')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'52')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'53')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'53')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'54')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'54')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'55')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'55')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'56')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'56')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'57')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'57')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'58')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'58')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'59')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'59')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'60')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'60')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'61')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'61')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'62')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'62')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'63')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'63')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'64')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'64')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'65')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'65')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'66')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'66')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'67')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'67')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'68')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'68')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'69')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'69')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'70')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'70')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'71')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'71')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'72')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'72')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'73')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'73')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'74')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'74')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'75')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'75')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'76')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'76')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'77')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'77')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'78')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'78')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'79')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'79')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'80')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'80')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'81')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'81')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'82')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'82')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'83')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'83')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'84')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'84')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'85')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'85')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'86')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'86')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'87')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'87')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'88')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'88')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'89')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'89')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'90')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'90')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'91')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'91')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'92')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'92')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'93')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'93')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'94')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'94')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'95')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'95')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'96')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'96')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'97')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'97')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'98')
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'98')
 GO
-insert [dbo].[faker_beds] ([room], [row_id]) VALUES (N'a', N'99')
-GO
+insert [dbo].[faker_beds] ([room], [bed_name]) VALUES (N'a', N'99')
 GO
 SET IDENTITY_INSERT [dbo].[RoomBeds] ON
 GO
@@ -1271,25 +1261,17 @@ create procedure [dbo].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
 		end
 	end
 GO
-/****** Object:  StoredProcedure [dbo].[faker_RoomPlacmentPatient_admission]    Script Date: 23/06/2022 10:09:29 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-USE [sbwnd81c_chameleon]
-GO
-
 /****** Object:  StoredProcedure [dbo].[faker_RoomPlacmentPatient_admission]    Script Date: 13/07/2022 15:32:00 ******/
 SET ANSI_NULLS ON
 GO
-
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE PROCEDURE [dbo].[faker_RoomPlacmentPatient_admission](@medical_record int)
 	AS
 	Begin
-	declare @bed_id as varchar(50);
+	declare @bed_id as int;
 	declare @exists as varchar(50);
-	declare @room_num as varchar(50);
+	declare @room_num as int;
 	select @exists = ev.DepartmentCode, @room_num=rd.Room_Code from chameleon_db.dbo.Emergency_visits ev
 	join sbwnd81c_chameleon.dbo.RoomDetails rd on rd.Room_Name=ev.DepartmentWing where ev.id=@medical_record;
 	if exists ( select ev.DepartmentName from  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  rp join chameleon_db.dbo.Emergency_visits ev on rp.Medical_Record=ev.id and ev.id=@medical_record)
@@ -1308,12 +1290,11 @@ CREATE PROCEDURE [dbo].[faker_RoomPlacmentPatient_admission](@medical_record int
 		begin
 			select  top 1 @bed_id=fb.row_id  from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
 			join [chameleon_db].[dbo].[Emergency_visits] ev on ev.DepartmentWing=fb.room and ev.id=@medical_record
-			where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is not null and rpp.start_date is not null and room =ev.DepartmentWing)
+			where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is not null and rpp.start_date is not null)
 			order by newid();
 			insert into  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_id,@medical_record ,@room_num);
 		end
 	end
-	;
 GO
 /****** Object:  StoredProcedure [dbo].[faker_RoomPlacmentPatient_dismission]    Script Date: 23/06/2022 10:09:29 ******/
 SET ANSI_NULLS ON
@@ -1325,7 +1306,6 @@ GO
 	Begin
 	update [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] set end_date = GETUTCDATE() where [Medical_Record]=@medical_record and end_date is null;
 	end
-	;
 GO
 /****** Object:  StoredProcedure [dbo].[faker_decision]    Script Date: 04/07/2022 21:16:23 ******/
 SET ANSI_NULLS ON
