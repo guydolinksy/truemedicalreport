@@ -7,12 +7,13 @@ where a.delete_date is null"""
 # uncomment sql lines in production
 query_patient_admission = """
 SELECT
-  ev.id,su.Name,ev.DepartmentWing,ev.DepartmentAdmission,
-  ev.DepartmentWingDischarge,ev.MainCause,ev.esi,p.birth_date,p.first_name,p.last_name,p.gender
-  ,rb.Bed_Name
+	ev.id,p.first_name,p.last_name,p.birth_date,p.gender,
+	ev.esi,ev.MainCause,rb.Bed_Name,ev.DepartmentWing,su.Name,
+	ev.DepartmentAdmission,ev.DepartmentWingDischarge
+
 FROM [sbwnd81c_chameleon].dbo.RoomPlacmentPatient AS rpp
 --INNER JOIN MedicalRecords AS mr ON mr.Medical_Record = rpp.Medical_Record AND mr.Delete_Date IS NULL
-left join chameleon_db.dbo.Emergency_visits as ev on rpp.Medical_Record=ev.id 
+right join chameleon_db.dbo.Emergency_visits as ev on rpp.Medical_Record=ev.id 
 left JOIN chameleon_db.dbo.patients AS p ON p.id = ev.id
 LEFT JOIN [sbwnd81c_chameleon].dbo.RoomDetails AS rd ON rd.Room_Code = rpp.Room AND rd.Unit = rpp.Unit
 LEFT JOIN [sbwnd81c_chameleon].dbo.RoomBeds AS rb ON rb.Row_ID = rpp.Bed_ID
@@ -20,8 +21,8 @@ LEFT JOIN [sbwnd81c_chameleon].dbo.SystemUnits AS su ON su.Unit = rpp.Unit
 WHERE
 -- p.Id NOT LIKE '%99999%' AND 
 TRY_CAST(p.id AS bigint) IS NOT NULL
-AND rpp.Start_Date IS NOT NULL
 AND rpp.End_Date IS NULL
 and ev.DepartmentCode=1184000
 and ev.DepartmentWingDischarge is null
+
 """

@@ -1,7 +1,7 @@
 import contextlib
 import json
 import os
-
+import datetime
 import logbook
 import requests
 from requests import HTTPError
@@ -9,7 +9,7 @@ from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import Session
 from ..utils import sql_statements
 
-from tmr_common.data_models.patient import BasicMedical
+from tmr_common.data_models.patient import BasicMedical, ExternalPatient, Admission
 from ..models.arc_patient import ARCPatient
 from ..models.chameleon_referrals import ChameleonReferrals
 from ..models.chameleon_main import ChameleonMain, Departments
@@ -32,7 +32,6 @@ class SqlToDal(object):
         with Session(self._engine) as session:
             yield session
 
-    # TODO validate the data inside json parameter can be accepted succecfully on dal
     def update_imaging(self, department: Departments):
         try:
             logger.debug('Getting imaging for `{}`...', department.name)
@@ -53,10 +52,17 @@ class SqlToDal(object):
             logger.debug('Getting admissions for `{}`...', department.name)
 
             patients = []
+            #TODO validate E2E checks
             with self.session() as session:
-                for patient in session.query(ChameleonMain).filter(ChameleonMain.unit == department.name):
-                    data = session.query(ARCPatient).filter(ARCPatient.patient_id == patient.patient_id).first()
-                    patients.append(dict(**data.to_dal(), **patient.to_dal()))
+                result = session.execute(sql_statements.query_patient_admission.format(department.value))
+            for row in result:
+                patients.append(
+                    ExternalPatient(external_id=row[0], id_=row[0], esi=row[5], name=' '.join(row[1], row[2]),
+                                    arrival=row[10],
+                                    age=(datetime.now() - self.birthdate) if self.birthdate else None, gender=row[4],
+                                    birthdate=row[3], complaint=row[6],
+                                    admission=Admission(department=row[9], wing=row[8], bed=row[7])
+                                    , discharge_time=row[11]))
 
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/admissions',
                                 json={'admissions': patients})
