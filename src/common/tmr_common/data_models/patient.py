@@ -11,6 +11,7 @@ from .notification import Notification, NotificationLevel
 from .severity import Severity
 from .labs import LabCategory
 from .warnings import PatientWarning
+from .treatment_decision import TreatmentDecision
 
 
 class Admission(BaseModel):
@@ -30,6 +31,8 @@ class ExternalPatient(BaseModel):
     birthdate: Optional[str]
     complaint: Optional[str]
     admission: Optional[Admission]
+    discharge_time: Optional[str]
+    treatment_decision: Optional[TreatmentDecision]
 
     def __init__(self, **kwargs):
         if 'gender' in kwargs and kwargs['gender'] in ['M', 'F']:

@@ -7,6 +7,7 @@ import requests
 from requests import HTTPError
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import Session
+from ..utils import sql_statements
 
 from tmr_common.data_models.patient import BasicMedical
 from ..models.arc_patient import ARCPatient
@@ -17,6 +18,7 @@ from ..models.chameleon_labs import ChameleonLabs
 from ..models.chameleon_measurements import ChameleonMeasurements
 from ..models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
 
+from tmr_common.data_models.treatment_decision import TreatmentDecision
 logger = logbook.Logger(__name__)
 
 
@@ -123,3 +125,19 @@ class SqlToDal(object):
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run referrals handler.')
+
+    def update_admission_treatment_decision(self, department: Departments):
+        decisions = {}
+        try:
+            with self.session() as session:
+                result = session.execute(sql_statements.query_discharge_or_hospitalized.format(department.value))
+                for row in result:
+                    decisions[row[0]] = TreatmentDecision(decision=row[1],
+                                                          destination=row[2]).dict()
+            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/decisions',
+                                json=decisions)
+            res.raise_for_status()
+        except IndexError as e:
+            logger.exception("No Data Fetched From SQL", e)
+        except HTTPError:
+            logger.exception('Could not update treatment decisions')

@@ -14,11 +14,11 @@ from tmr_common.data_models.image import ImagingTypes, ImagingStatus
 from tmr_common.data_models.labs import LabCategories, LabTestType
 from tmr_common.data_models.notification import NotificationLevel
 from tmr_ingress.models.arc_patient import ARCPatient
-from tmr_ingress.models.chameleon_referrals import ChameleonReferrals
 from tmr_ingress.models.chameleon_imaging import ChameleonImaging
 from tmr_ingress.models.chameleon_labs import ChameleonLabs
 from tmr_ingress.models.chameleon_main import ChameleonMain, Departments
 from tmr_ingress.models.chameleon_measurements import ChameleonMeasurements
+from ..utils import sql_statements
 from tmr_ingress.models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
 
 logger = logbook.Logger(__name__)
@@ -290,17 +290,20 @@ class FakeMain(object):
         else:
             raise ValueError()
         for patient in patients:
-            order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC)
-            referral_date = self.faker.date_time_between_dates('+8000m', '+10000m').astimezone(pytz.UTC)
-            chameleon_referral = ChameleonReferrals()
-            chameleon_referral.patient_id = patient
-            chameleon_referral.to = random.choice(
-                ['אא"ג', 'נוירולוגיה', 'אורטופד', "רמדאן אבו עקלין", "ניבה לוי", "פבל ליידרמן"])
-            chameleon_referral.order_date = order_date
-            if random.randint(0, 1):
-                chameleon_referral.referral_date = referral_date
             with self.session() as session:
-                session.add(chameleon_referral)
+                session.execute(sql_statements.execute_set_responsible_doctor.format(patient))
+                session.commit()
+
+    def _set_hospitalized_decision(self, chameleon_id=None, department=None, wing=None):
+        if chameleon_id:
+            patients = {chameleon_id}
+        elif department and wing:
+            patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 2)]
+        else:
+            raise ValueError()
+        for patient in patients:
+            with self.session() as session:
+                session.execute(sql_statements.execute_set_hospitalized_decision.format(patient))
                 session.commit()
 
     def _generate_nurse_summary(self, chameleon_id=None, department=None, wing=None):
@@ -369,6 +372,18 @@ class FakeMain(object):
 
                 session.commit()
 
+    def _generate_room_placements(self, chameleon_id=None, department=None, wing=None):
+        if chameleon_id:
+            patients = {chameleon_id}
+        elif department and wing:
+            patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 5)]
+        else:
+            raise ValueError()
+        for patient in patients:
+            with self.session() as session:
+                session.execute(sql_statements.execute_set_patient_admission.format(patient))
+                session.commit()
+
     async def admit_patients(self, department):
         for wing in self.wings:
             if random.randint(0, 1):
@@ -414,3 +429,11 @@ class FakeMain(object):
             session.query(ChameleonMeasurements).delete()
             session.query(ChameleonMedicalText).delete()
             session.commit()
+
+    async def update_room_placements(self, department):
+        for wing in self.wings:
+            self._generate_room_placements(department=department, wing=wing)
+
+    async def set_hospitalized_decision(self, department):
+        for wing in self.wings:
+            self._set_hospitalized_decision(department=department, wing=wing)

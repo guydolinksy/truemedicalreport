@@ -8,7 +8,8 @@ import {
     faTemperatureHalf,
     faUserDoctor,
     faUserNurse,
-    faXRay
+    faXRay,
+    faFileMedical,
 } from "@fortawesome/free-solid-svg-icons";
 
 export const CustomIcon = ({status, icon}) => {
@@ -30,6 +31,6 @@ export const CustomIcon = ({status, icon}) => {
     if (icon === 'nurse')
         return <FontAwesomeIcon style={style} icon={faUserNurse}/>
     if (icon === 'referral')
-        return <FontAwesomeIcon style={style} icon={faUserDoctor}/>
+        return <FontAwesomeIcon style={style} icon={faFileMedical}/>
     return <span>{icon}</span>
 }

@@ -121,3 +121,23 @@ async def clear(dal: FakeMain = Depends(FakeMain)):
     logger.info("Clearing...")
     dal.clear()
     logger.info("Done.")
+
+
+@faker_router.on_event('startup')
+@repeat_every(seconds=60, wait_first=True, logger=logger)
+@inject_dependencies(department=Departments.er)
+@faker_router.post("/room_placements", status_code=201)
+async def generate_room_placement(department: Departments, dal: FakeMain = Depends(FakeMain)):
+    logger.info("Generate room placements")
+    await dal.update_room_placements(department=department)
+    logger.info("Done Generate room placements")
+
+
+@faker_router.on_event('startup')
+@repeat_every(seconds=60, wait_first=True, logger=logger)
+@inject_dependencies(department=Departments.er)
+@faker_router.post("/hospitalized_decision", status_code=201)
+async def generate_hospitalized_decision(department: Departments, dal: FakeMain = Depends(FakeMain)):
+    logger.info("Generate Hospitalized Decision")
+    await dal.set_hospitalized_decision(department=department)
+    logger.info("Done Generate Hospitalized Decision")

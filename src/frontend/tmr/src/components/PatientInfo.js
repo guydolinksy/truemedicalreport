@@ -123,7 +123,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
 
                 <HashMatch match={['info', patient, 'basic', 'nurse-summary']}>{({matched}) =>
                     <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
-                        תיאור צוות סיעודי: {value.basic_medical.nurse_description}
+                        תיאור צוות סיעודי: {value.basic_medical ? value.basic_medical.nurse_description : undefined}
                     </p>}
                 </HashMatch>
             </Panel>

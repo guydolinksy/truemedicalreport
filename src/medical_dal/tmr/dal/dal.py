@@ -15,6 +15,7 @@ from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.image import Image, ImagingStatus
 from tmr_common.data_models.labs import Laboratory, LabCategory, StatusInHebrew, LabStatus
 from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures, Latest
+from tmr_common.data_models.treatment_decision import TreatmentDecision
 from tmr_common.data_models.measures import Measures
 from tmr_common.data_models.notification import Notification
 from tmr_common.data_models.patient import Patient, Admission, PatientNotifications, ExternalPatient, InternalPatient, \
@@ -247,7 +248,8 @@ class MedicalDal:
             ))
             await self.update_warning(patient, single_lab.get_if_panic())
             self.db.labs.update_one({"patient_id": patient_id, **c.query_key},
-                                    {'$set': dict(patient_id=patient_id, **c.dict(exclude={'patient_id'}))}, upsert=True)
+                                    {'$set': dict(patient_id=patient_id, **c.dict(exclude={'patient_id'}))},
+                                    upsert=True)
             if is_analyzed:
                 notification = single_lab.to_notification()
                 self.db.notifications.update_one({"notification_id": notification.notification_id},
@@ -279,6 +281,10 @@ class MedicalDal:
             limit=3600,
         ))
 
+    def upsert_treatment_decision(self, patient: str, decision: TreatmentDecision):
+        self.db.patients.update_one({"external_id": patient}, {"$set": {"treatment_decision": decision.dict()}},
+                                    upsert=True)
+
     async def upsert_basic_medical(self, patient_id, basic_medical: BasicMedical):
         res = self.db.patients.find_one({"external_id": str(patient_id)})
         if not res:
@@ -292,7 +298,6 @@ class MedicalDal:
         if basic_medical.nurse_description:
             await self.update_awaiting(patient, AwaitingTypes.nurse, 'exam', patient.awaiting_nurse(patient, True))
 
-
     def get_waiting_for_doctor_list(self) -> [WaitForDoctor]:
         waiting = self.db.referrals. \
             aggregate([{"$match": {"_id": False}}, {
@@ -303,9 +308,47 @@ class MedicalDal:
         }])
         return [WaitForDoctor(to=data['_id'], count=data['sum']) for data in waiting]
 
-    def get_people_amount_wait_referral(self) -> int:
-        res = self.db.Referrals.aggregate([{"$match": {"completed": False}}, {"$count": "waiting"}])
-        return list(res)[0]["waiting"]
+
+    def get_people_amount_waiting_doctor(self,department,wing) -> int:
+        res = self.db.patients.aggregate(
+        [{"$match": {"awaiting.doctor.exam.completed": False,'admission.department': department, 'admission.wing': wing}},
+        {"$count": "count"}])
+        response_list=list(res)
+        if response_list:
+            return response_list[0]["count"]
+        else :
+            return 0
+
+    def get_people_amount_waiting_nurse(self,department,wing) -> int:
+        res = self.db.patients.aggregate(
+        [{"$match": {"awaiting.nurse.exam.completed": False,'admission.department': department, 'admission.wing': wing}},
+        {"$count": "count"}])
+        response_list=list(res)
+        if response_list:
+            return response_list[0]["count"]
+        else :
+            return 0
+
+    def get_people_amount_waiting_labs(self,department,wing)->int:
+        count = 0
+        for labs in self.db.patients.find({'admission.department': department, 'admission.wing': wing}, {"awaiting.laboratory": 1, "_id": 0}):
+            if "False" in str(labs):
+                count = count + 1
+        return count
+
+    def get_people_amount_waiting_imaging(self,department,wing)->int:
+        count = 0
+        for image in self.db.patients.find({'admission.department': department, 'admission.wing': wing}, {"awaiting.imaging": 1, "_id": 0}):
+            if "False" in str(image):
+                count = count + 1
+        return count
+    def get_people_amount_waiting_referrals(self,department,wing)->int:
+        count = 0
+        for referral in self.db.patients.find({'admission.department': department, 'admission.wing': wing}, {"awaiting.referral": 1, "_id": 0}):
+            if "False" in str(referral):
+                count = count + 1
+        return count
+
 
     @staticmethod
     async def notify_admission(admission: Admission):
