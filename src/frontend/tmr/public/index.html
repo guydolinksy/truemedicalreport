@@ -25,21 +25,26 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>TMR</title>
-    <!-- Matomo -->
-    <script>
-      var _paq = window._paq = window._paq || [];
-      /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-      _paq.push(['trackPageView']);
-      _paq.push(['enableLinkTracking']);
+
+    <script type="text/javascript">
+      //<![CDATA[
+      var owa_baseUrl = 'http://localhost:8090/';
+      var owa_cmds = owa_cmds || [];
+      owa_cmds.push(['setSiteId', '86a9106ae65537651a8e456835b316ab']);
+      owa_cmds.push(['trackPageView']);
+      owa_cmds.push(['trackClicks']);
+      owa_cmds.push(['trackDomStream']);
+
       (function() {
-        var u="//localhost:8090/";
-        _paq.push(['setTrackerUrl', u+'matomo.php']);
-        _paq.push(['setSiteId', '1']);
-        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-      })();
+      	var _owa = document.createElement('script'); _owa.type = 'text/javascript'; _owa.async = true;
+      	owa_baseUrl = ('https:' == document.location.protocol ? window.owa_baseSecUrl || owa_baseUrl.replace(/http:/, 'https:') : owa_baseUrl );
+      	_owa.src = owa_baseUrl + 'modules/base/js/owa.tracker-combined-min.js';
+      	var _owa_s = document.getElementsByTagName('script')[0]; _owa_s.parentNode.insertBefore(_owa, _owa_s);
+      }());
+      //]]>
     </script>
-    <!-- End Matomo Code -->
+
+
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
