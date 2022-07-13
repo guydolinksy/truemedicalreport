@@ -1092,8 +1092,6 @@ INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (12
 GO
 INSERT [dbo].[RoomDetails] ([Room_Code], [Unit], [Beds], [Room_Name]) VALUES (13, 184000, 20, N'b3')
 GO
-insert [dbo].[RoomPlacmentPatient] ([Start_Date], [End_Date], [Unit], [Bed_ID], [Medical_Record], [Room]) VALUES (CAST(N'2022-06-23T06:59:11.777' AS DateTime), NULL, 1184000, 7, 123345345, N'a')
-GO
 insert [dbo].[SystemUnits] ([Unit], [Name]) VALUES (819000, N'פנימית גריאטריה ג')
 GO
 insert [dbo].[SystemUnits] ([Unit], [Name]) VALUES (834000, N'כירורגית חזה-כלי דם')
@@ -1281,7 +1279,7 @@ CREATE PROCEDURE [dbo].[faker_RoomPlacmentPatient_admission](@medical_record int
 				begin
 					select  top 1 @bed_id=fb.row_id  from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
 					join [chameleon_db].[dbo].[Emergency_visits] ev on ev.DepartmentWing=fb.room and ev.id=@medical_record
-					where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is not null and rpp.start_date is not null)
+					where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is null and rpp.start_date is not null)
 					order by newid();
 					insert into  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_id,@medical_record ,@room_num);
 				end
@@ -1290,7 +1288,7 @@ CREATE PROCEDURE [dbo].[faker_RoomPlacmentPatient_admission](@medical_record int
 		begin
 			select  top 1 @bed_id=fb.row_id  from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
 			join [chameleon_db].[dbo].[Emergency_visits] ev on ev.DepartmentWing=fb.room and ev.id=@medical_record
-			where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is not null and rpp.start_date is not null)
+			where row_id not in (select bed_id from [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is null and rpp.start_date is not null)
 			order by newid();
 			insert into  [sbwnd81c_chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_id,@medical_record ,@room_num);
 		end
