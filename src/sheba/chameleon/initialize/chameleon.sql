@@ -342,7 +342,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 create TABLE [dbo].[TreatmentCause]
 (
-    [remarks]        [nvarchar](250) NULL,
+    [remarks]        [nvarchar](500) NULL,
     [Medical_Record] [int]           NULL,
     [delete_date]  [datetime]
 ) ON [PRIMARY]
@@ -394,6 +394,19 @@ create TABLE [dbo].[RoomPlacmentPatient](
 	[Bed_ID] [int] NULL,
 	[Medical_Record] [int] NULL,
 	[Room] [int] NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[faker_nurse_remarks]    Script Date: 13/07/2022 22:19:35 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[faker_nurse_remarks](
+	[MainCause] [nvarchar](200) NULL,
+	[gender] [nvarchar](2) NULL,
+	[remarks] [varchar](500) NULL
 ) ON [PRIMARY]
 GO
 CREATE TABLE [dbo].[faker_beds](
@@ -1228,6 +1241,110 @@ insert [dbo].[Users] ([usernamenotitle], [Code]) VALUES (N'עמית גזית', N
 GO
 insert into [dbo].[faker_wing_Doctor]  values('a',1),('a',5),('b1',2),('b1',3),('b2',4),('b2',6),('b3',7),('b3',8)
 go
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאב חזה','M',N'ידוע על מחלה גרורתית של הערמונית.HCC,יתר לד .מהבוקר לחץ בחזה במנוחה מלווה בקושי בנשימה, ללא צרבצ, ללא הקרנה.')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאב חזה','M',N'בשע 12 כאבים בחזה ללא תלונות נוספות במשך 15 שעה אשר חלפו. מדווח על הרגשה טובה')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאב חזה','F',N' לדבריה היום בשעה 16:15 הופיעו לחצים בחזה עם הקרנה לשני הידיים מלווה בזיעה. שוללת קושי בנשימה. מציינת כי השבוע לא לקחה אספירין.  קיבלה אספירין 300 מג בלעיסה ואיזוקט 1.25 ופרמין 10 מג')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאב חזה','M',N'פנה עקב כאבים בחזה שחלפו.  הקרנה לגב')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאב חזה','M',N' ברקע IHD VTN הגיע עם תלונה על כאב בחזה לסירוגין מקרין ליד שמאל חולף ספונטנית')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאב חזה','F',N'חולה אונקולוגית עם חולשה וכאבים בחזה')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חבלה/נפילה','F',N'מטופת צלולה הובאה על ידי מדא לאחר נפילה טכנית עם חבלה בכפות הרגליים שוללת חבלות נוספות')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חבלה/נפילה','M',N' חולה המופיליה  לדבריו לפני שבוע נפילה ללא חבלת ראש מלווה בחבלה באגן ומאז חולשה כללית וקושי בהליכה ')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חבלה/נפילה','M',N'נפל נפילה טכנית   לדבריו נחבל בראש ובמרפק ימין   ללא איבוד הכרה , אינו זוכר אם נוטל תרופות לדילול דם ')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חבלה/נפילה','M',N'. לדבריו לפני כשעה וחצי נפילה טכנית במדרכה עם חבלת ראש ללא מדללי דם בקבלתו יציב נשימתית')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חבלה/נפילה','F',N'חשד לשבר פרק ירך שמאלית-נמצאת בחדר טיפולים-נבצע הכנה לאשפוז מחוסנת ב-2 חיסונים כנגד-COVID 19')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאבי בטן','F',N'לדב ריה לאחר ניתוח WHIPPLE OPERATION , כעת הגיעה עקב הפרשה מוגלתית מצלקת ניתוחית')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאבי בטן','M',N' הופנה  ממלר"ד אונקולוגי   עקב חולשה  הקאות וחשד  לחסימת  מעי.')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאבי בטן','F',N' לדבריה מזה חודש   דימומים  רקטלים   \היום  קרישי  דם  .  כמו  כן  נבדקה על  ידי פרוקטולוג  הורגש  גוש')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאבי בטן','M',N'פנה לחדר מיון בשל עליה בתפקודי כבד , כאבים בטן אפיגסטריים מקרינים לגב ,')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאבי בטן','M',N'פניה חוזרת למיון עקב כאבי בטן על רקע דלקת במעי, שולל חום')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'קוצר נשימה','F',N'ברקע COPD מזה 5 ימים שיעול ליחתי ללא חום, סיימה טיפול ב-LEVOOFLOXACIN, כעת החמרה עם הקוצ"נ.')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'קוצר נשימה','F',N'פנתה עקב קוצר נשימה מזה חודש. שוללת כאבים בחזה. ברקע ידוע על HTN, DM, היפרליפידמיה.')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'קוצר נשימה','M',N'ברקע IHD COPD סכרת הובא לחדר מיון בשל קוצר נשימה חריף')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'קוצר נשימה','F',N' הובאה למיון ע"י נט"ן בשל קוצר נשימה חריף, הזעה וערכי ל"ד גבוהים. הוכנסה לחדר הלם לצורך הערכה וטיפול.')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'קוצר נשימה','M',N' ברקע- אי ספיקת לב, לפי דברי בתו, בשבוע האחרון קושי בנשימה, ללא כאב בחזה, ללא שיעול')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חולשה','F',N'מזה חודש חולשה כללית, מלווה בתחושת קוצר נשימה קל במאמצים. ללא כאבים בחזה, לא חום')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חולשה','F',N'ברקע סכרת פנתה למיון עקב חולשה כללית וסוכר גבוהה בדם')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חולשה','M',N'מטופל עם מחלת CA OF COLON META הגיע כעת עקב חולשה ניכרת וקושי במילוי ADL ,ללא סיפור חבלתי  .')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חולשה','M',N'מטופל עם פניאומוניה מהקהילה , טופל ברוליד , היום אירוע של PRE SYNCOPE וחולשה כללית ללא סיפור חבלתי  .')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חולשה','F',N'לדבריה חולשה כללית מאתמול בבוקר, מלינה על כאבי ראש ולחץ דם גבוה סביב 200 סיסטולי בבית.')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חום','M',N', ברקע - GASTRIC CA , היפותירואידיזם')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חום','F',N', ברקע: PTC  פנתה למיון עקב חום, מלווה בבחילות, ללא הקאות. מלווה בשיעול.')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חום','M',N'רקע אונקולוגי. מזה כיומיים חום עד 39. מלווה בכאבי בטן והקאות.')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חום','F',N'לדבריה הגיעה עקב מחלת חום  .   ברקע: CA OF LUNG .')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'חום','F',N'ברקע אם נקז של דרכי מרע מלפני שבוע -החלפה -כעת הגיעה עקב חום עד 37.7')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאב גב','M',N'פנה בשל החמרה של כאבי גב ')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאב גב','M',N'כאבי גב עזים קושי בהליכה לאחר אנלגטיקה  בוצע סיטי פריצות דיסק  הסיטי הוטמע ')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאב גב','F',N'כאבי גב  כמה ימים. לפני שבועיים אישפוז באורטופדיה   עברה ניתוח ירכיים עקב שבר פטולוגי. ברקע HTN')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאב גב','F',N'חולה עם  מחלה גרורתית  מפושתת מקור לבלב לדבריה כאבים בגב תחתון מקרינים לרגל שמאל')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאב גב','M',N'בעברו אונקולוגי. הועבר מברזילי לבקשתו שם אושפז בשל כאבי גב תחתון עם ממצא של פריצת דיסק')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'סחרחורת','F',N'פנתה למיון עקב סחרחורת, שמלווה בבחילות , שוללת כאבים בחזה')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'סחרחורת','M',N'הובא על ידי מד"א עקב בחילות וסחרחורות. ברקע ידוע על DM.')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'סחרחורת','F',N'סחרחורות סיבוביות   בנסיון לקום מהמיטה הקאה אחת ללא מחלות')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'סחרחורת','M',N'ברקע חולה אונקולוגי ב 23.8 עבר ניתוח עקב הוצאת גידול מלבלב כעת הגיעה עקב סחרחורות הקאות -ללא חום')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'סחרחורת','F',N'ברקע:Digestive System Malignancy: Colon  לדבריה מזה מס" ימים כאבים ביד ימים , סחרחורת  שוללת כאבים בחזה.')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאבי ראש','F',N'מזה 3 חודשים סובלת מכאבי ראש אתמול עשתה MRI  כעת הגיעה לצורך המשך בירור')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאבי ראש','F',N'פנתה למיון עקב יתר לחץ דם שמלווה בכאבי ראש ובחילות')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאבי ראש','F',N'לדבריה מזה הרבה זמן, היום לחץ באזור העורף וכן נימול בפנים, לחץ בלסתות. ברקע גידול בראש עם הגרורות. אמורה לקבל טיפול כמוטרפי')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאבי ראש','M',N'נפילה מתוך שינה וחבלת ראש . מאז כאבי ראש וסחרחורות .')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'כאבי ראש','M',N'לדבריו מזה שבועיים. לדבריו לראשונה מזה שבועיים, בעמידה ומאמץ אפילו קל מופעיים סחרחורות')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'שבר','M',N'לדברי בנו מטופל מעד ונפל נחבל ביד שמאל, נבדק במוקד ובוצע צילום וכן הודגם שבר בשורש כף יד שמאל, ברקע דמנציה')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'שבר','M',N' ברקע: הפטיטיס C.  כעת הופנה לאחר נפילה ביום חמישי האחרון עם חבלה במרפק.  בצילום שביצע בקהילה שבר באולנה פרוקסימאלית עם חשד לשבר בראש רדיוס.  בנוסף נפיחות בכף היד.')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'שבר','F',N'חבלת כתף  . החליקה נפלה נחבלה בכתף  .  ברקע HTN ')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'שבר','F',N'הבוקר גובסה במיון. כעת פנתה בשל כאב באזור הגבס ')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'שבר','F',N'חבלת קרסול שמאול  נפיחות כאבים חזקים באזור וחבלת גב . לפני כשעה נפלה. ברקע אוסטאופורוזיס')
+ GO
+insert into  sbwnd81c_chameleon.dbo.faker_nurse_remarks values(N'שבר','M',N'נפל בלילה  לאחר סחרחורת  מדווח על חבלת אגן  רגל ימין . ברקע  שרטן מעיים  גרורתי')
+ GO
 insert into [dbo].[Users] ([usernamenotitle],[Code]) VALUES (N'אחמד מלמוד',5),(N'מוחמד דבור',6),(N'אילנית כהן',7),(N'נגב ניצן',8)
 GO
 /****** Object:  StoredProcedure [dbo].[faker_ResponsibleDoctor]    Script Date: 23/06/2022 10:09:29 ******/
@@ -1337,6 +1454,36 @@ create procedure [dbo].[faker_decision](@medical_record nvarchar(50))
 
 		insert into [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision]
 		values( @decision,@unit_hosp,null,@medical_record);
+		end
+	end
+GO
+USE [sbwnd81c_chameleon]
+GO
+/****** Object:  StoredProcedure [dbo].[faker_decision]    Script Date: 13/07/2022 21:27:45 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+create procedure [dbo].[proc_faker_nurse_remarks](@medical_record nvarchar(50))
+	AS
+	Begin
+	declare @remarks as varchar(500);
+	declare @gender as varchar(5);
+	declare @mainCause as varchar(50);
+
+	if not exists (select * from sbwnd81c_chameleon.dbo.TreatmentCause tc where tc.Medical_Record=@medical_record)
+		begin
+			select @gender=p.gender, @mainCause=ev.MainCause from chameleon_db.dbo.patients p join chameleon_db.dbo.Emergency_visits ev
+			on ev.id = p.id and  p.id=@medical_record;
+			select top 1 @remarks= nr.remarks from [sbwnd81c_chameleon].dbo.[faker_nurse_remarks] as nr
+			left join  [sbwnd81c_chameleon].dbo.TreatmentCause tc on tc.remarks=nr.remarks
+			where nr.gender = @gender
+			and nr.MainCause=@mainCause
+			group by nr.remarks
+			order by count(*);
+			insert into  [sbwnd81c_chameleon].dbo.TreatmentCause values(@remarks,@medical_record,null);
 		end
 	end
 GO

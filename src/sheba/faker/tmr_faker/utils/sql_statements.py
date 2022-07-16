@@ -4,8 +4,12 @@ execute_set_hospitalized_decision = """execute sbwnd81c_chameleon.dbo.faker_deci
 
 execute_set_responsible_doctor = """execute sbwnd81c_chameleon.dbo.faker_ResponsibleDoctor {}"""
 
-delete_room_placement =""" truncate table sbwnd81c_chameleon.dbo.RoomPlacementPatient"""
+execute_set_nurse_remarks = """execute sbwnd81c_chameleon.dbo.proc_faker_nurse_remarks {} """
+
+delete_room_placement = """ truncate table sbwnd81c_chameleon.dbo.RoomPlacementPatient"""
 
 delete_admission_treatment_decision = """truncate table sbwnd81c_chameleon.dbo.AdmissionTreatmentDecision"""
 
-delete_responsible_doctor= """truncate table sbwnd81c_chameleon.dbo.ResponsibleDoctor"""
+delete_responsible_doctor = """truncate table sbwnd81c_chameleon.dbo.ResponsibleDoctor"""
+
+delete_TreatmentCause = """truncate table sbwnd81c_chameleon.dbo.TreatmentCause"""

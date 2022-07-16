@@ -71,8 +71,8 @@ class FakeMain(object):
         o.arrival = self.faker.past_datetime('-30m').astimezone(pytz.UTC)
 
         o.main_cause = random.choice([
-            'קוצר נשימה', 'כאבים בחזה', 'סחרחורות', 'חבלת ראש', 'חבלת פנים', 'חבלה בגפיים',
-            'בחילות ו/או הקאות', 'כאב ראש', 'כאב בטן', 'לאחר התעלפות'
+            'חבלה/נפילה', 'חולשה', 'חום', 'כאב גב',
+            'כאב חזה', 'כאבי בטן', 'כאבי ראש', 'סחרחורת', 'קוצר נשימה', 'שבר'
         ])
         o.esi = random.choice([1, 2, 3, 4])
 
@@ -384,6 +384,18 @@ class FakeMain(object):
                 session.execute(sql_statements.execute_set_patient_admission.format(patient))
                 session.commit()
 
+    def _generate_update_nurse_remarks(self, chameleon_id=None, department=None, wing=None):
+        if chameleon_id:
+            patients = {chameleon_id}
+        elif department and wing:
+            patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 5)]
+        else:
+            raise ValueError()
+        for patient in patients:
+            with self.session() as session:
+                session.execute(sql_statements.execute_set_nurse_remarks.format(patient))
+                session.commit()
+
     async def admit_patients(self, department):
         for wing in self.wings:
             if random.randint(0, 1):
@@ -431,6 +443,7 @@ class FakeMain(object):
             session.execute(sql_statements.delete_admission_treatment_decision)
             session.execute(sql_statements.delete_responsible_doctor)
             session.execute(sql_statements.delete_room_placement)
+            session.execute(sql_statements.delete_TreatmentCause)
             session.commit()
 
     async def update_room_placements(self, department):
@@ -440,3 +453,7 @@ class FakeMain(object):
     async def set_hospitalized_decision(self, department):
         for wing in self.wings:
             self._set_hospitalized_decision(department=department, wing=wing)
+
+    async def update_nurse_remarks(self, department):
+        for wing in self.wings:
+            self._generate_update_nurse_remarks(department=department, wing=wing)
