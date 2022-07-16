@@ -106,10 +106,10 @@ async def generate_nurse_summaries(department: Departments, dal: FakeMain = Depe
 @faker_router.on_event('startup')
 @repeat_every(seconds=60, wait_first=True, logger=logger)
 @inject_dependencies(department=Departments.er)
-# @faker_router.post("/nurse_remarks", status_code=201)
+@faker_router.post("/nurse_remarks", status_code=201)
 async def update_nurse_remarks(department: Departments, dal: FakeMain = Depends(FakeMain)):
     logger.info("Generate Nurse Remarks...")
-    await dal.update_nurse_summaries(department=department)
+    await dal.update_nurse_remarks(department=department)
     logger.info("Done.")
 
 @faker_router.on_event('startup')
