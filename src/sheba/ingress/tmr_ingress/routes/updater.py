@@ -95,3 +95,13 @@ async def update_basic_medical(department: Departments, dal: SqlToDal = Depends(
     dal.update_basic_medical(department=department)
     logger.info("Done.")
 
+
+@updater_router.on_event('startup')
+@repeat_every(seconds=60, logger=logger)
+@safe(logger)
+@inject_dependencies(department=Departments.er)
+@updater_router.post("/nurse_remarks", status_code=http.HTTPStatus.ACCEPTED)
+async def update_basic_medical(department: Departments, dal: SqlToDal = Depends(dal_updater)):
+    logger.info("Update Basic Medical Info...")
+    dal.update_nurse_remarks(department=department)
+    logger.info("Done.")

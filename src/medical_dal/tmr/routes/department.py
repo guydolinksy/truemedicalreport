@@ -95,12 +95,19 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
             await dal.upsert_referrals(referral_obj=updated[referral], action=Action.update)
 
 
-
 @department_router.post("/{department}/basic_medical")
 async def update_basic_medical(department: str, basic_medicals: Dict[str, BasicMedical] = Body(..., embed=True),
                                dal: MedicalDal = Depends(medical_dal)):
     for patient_id, basic_medical in basic_medicals.items():
         await dal.upsert_basic_medical(patient_id, basic_medical)
+
+
+@department_router.post("/{department}/nurse_remarks")
+async def update_nurse_remarks(department: str, nurse_remarks: Dict[str, str] = Body(...),
+                               dal: MedicalDal = Depends(medical_dal)):
+    for patient_id, nurse_remark in nurse_remarks.items():
+        print(f'pid:{patient_id} , nurse remark :{nurse_remark}')
+        await dal.upsert_nurse_remarks(patient_id, nurse_remarks)
 
 
 @department_router.get("/{department}/{wing}/waiting_labs", tags=["Department"], response_model=int,

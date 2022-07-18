@@ -285,8 +285,17 @@ class MedicalDal:
         self.db.patients.update_one({"external_id": patient}, {"$set": {"treatment_decision": decision.dict()}},
                                     upsert=True)
 
+    async def upsert_nurse_remarks(self,patient_id,nurse_remarks:str):
+        res = self.db.patients.find_one({"external_id": patient_id})
+        if not res:
+            logger.error(f'upsert nurse remarks Patient {patient_id} Not Found')
+            return
+        patient=Patient(**res)
+        await self.update_basic_medical_add_nurse_remarks(patient,nurse_remarks)
+        await self.update_awaiting(patient, AwaitingTypes.nurse, 'exam', patient.awaiting_nurse(patient, True))
+
     async def upsert_basic_medical(self, patient_id, basic_medical: BasicMedical):
-        res = self.db.patients.find_one({"external_id": str(patient_id)})
+        res = self.db.patients.find_one({"external_id": patient_id})
         if not res:
             logger.error(f'basic medical Patient {patient_id} Not Found')
             return
@@ -374,3 +383,8 @@ class MedicalDal:
         updated = patient.copy()
         updated.warnings += warnings
         await self.update_patient_by_id(patient.oid, updated.dict(include={'warnings'}))
+
+    async def update_basic_medical_add_nurse_remarks(self, patient: Patient, nurse_remarks:str) -> None:
+        updated = patient.copy()
+        updated.basic_medical.nurse_description=nurse_remarks
+        await self.update_patient_by_id(patient.oid, updated.dict(include={'nurse_remarks'}))

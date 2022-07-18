@@ -141,3 +141,18 @@ class SqlToDal(object):
             logger.exception("No Data Fetched From SQL", e)
         except HTTPError:
             logger.exception('Could not update treatment decisions')
+
+    def update_nurse_remarks(self, department: Departments):
+        remarks = {}
+        try:
+            with self.session() as session:
+                result = session.execute(sql_statements.query_nurse_remarks.format(department.value))
+                for row in result:
+                    remarks[str(row[0])] = str(row[1])
+            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/nurse_remarks',
+                                json=remarks)
+            res.raise_for_status()
+        except IndexError as e:
+            logger.exception("No Data Fetched From SQL", e)
+        except HTTPError:
+            logger.exception('Could not update treatment decisions')
