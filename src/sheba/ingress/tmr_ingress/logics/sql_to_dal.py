@@ -144,8 +144,8 @@ class SqlToDal(object):
             with self.session() as session:
                 result = session.execute(sql_statements.query_discharge_or_hospitalized.format(department.value))
                 for row in result:
-                    decisions[row[0]] = TreatmentDecision(decision=row[1],
-                                                          destination=row[2]).dict()
+                    decisions[row["id"]] = TreatmentDecision(decision=row["Answer_Text"],
+                                                             destination=row["Name"]).dict()
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/decisions',
                                 json=decisions)
             res.raise_for_status()
