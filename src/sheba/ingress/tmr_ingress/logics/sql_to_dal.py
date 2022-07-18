@@ -1,24 +1,24 @@
 import contextlib
 import json
 import os
-import datetime
+from datetime import datetime
 import logbook
 import requests
 from requests import HTTPError
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import Session
-from ..utils import sql_statements
+from ..utils import sql_statements, utils
 
 from tmr_common.data_models.patient import BasicMedical, ExternalPatient, Admission
-from ..models.arc_patient import ARCPatient
 from ..models.chameleon_referrals import ChameleonReferrals
 from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
 from ..models.chameleon_measurements import ChameleonMeasurements
-from ..models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
-
+from ..models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes
+from tmr_common.data_models.esi_score import ESIScore
 from tmr_common.data_models.treatment_decision import TreatmentDecision
+
 logger = logbook.Logger(__name__)
 
 
@@ -52,21 +52,27 @@ class SqlToDal(object):
             logger.debug('Getting admissions for `{}`...', department.name)
 
             patients = []
-            #TODO validate E2E checks
             with self.session() as session:
                 result = session.execute(sql_statements.query_patient_admission.format(department.value))
-            for row in result:
-                patients.append(
-                    ExternalPatient(external_id=row[0], id_=row[0], esi=row[5], name=' '.join(row[1], row[2]),
-                                    arrival=row[10],
-                                    age=(datetime.now() - self.birthdate) if self.birthdate else None, gender=row[4],
-                                    birthdate=row[3], complaint=row[6],
-                                    admission=Admission(department=row[9], wing=row[8], bed=row[7])
-                                    , discharge_time=row[11]))
-
+                for row in result:
+                    patients.append(
+                        ExternalPatient(external_id=row["id"], id_=row["id"],
+                                        esi=ESIScore(value=row["esi"]),
+                                        name=row["full_name"],
+                                        arrival=str(row["DepartmentAdmission"]),
+                                        gender=row["gender"],
+                                        birthdate=utils.datetime_utc_serializer(row["birthdate"]),
+                                        age=utils.calculate_patient_age(row["birthdate"]),
+                                        complaint=row["MainCause"],
+                                        admission=Admission(department=row["Name"],
+                                                            wing=row["DepartmentWing"],
+                                                            bed=row["Bed_Name"])
+                                        , discharge_time=utils.datetime_utc_serializer(row["DepartmentWingDischarge"])
+                                        ).dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/admissions',
                                 json={'admissions': patients})
             res.raise_for_status()
+
         except HTTPError:
             logger.exception('Could not run admissions handler.')
 

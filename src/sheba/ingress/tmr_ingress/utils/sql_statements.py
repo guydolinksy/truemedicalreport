@@ -7,8 +7,8 @@ where a.delete_date is null"""
 # uncomment sql lines in production
 query_patient_admission = """
 SELECT
-	ev.id,p.first_name,p.last_name,p.birth_date,p.gender,
-	ev.esi,ev.MainCause,rb.Bed_Name,ev.DepartmentWing,su.Name,
+	ev.id,CONCAT(p.first_name,' ',p.last_name) AS full_name,p.birth_date AS	birthdate,p.gender,
+	ev.esi,ev.MainCause,rb.Bed_Name,ev.DepartmentWing,'er' AS Name,
 	ev.DepartmentAdmission,ev.DepartmentWingDischarge
 
 FROM [sbwnd81c_chameleon].dbo.RoomPlacmentPatient AS rpp

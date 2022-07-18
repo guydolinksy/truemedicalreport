@@ -53,9 +53,9 @@ class Icon(Enum):
 
 
 class Awaiting(BaseModel):
-    awaiting: str
-    since: str
-    limit: int
+    awaiting: Optional[str]
+    since: Optional[str]
+    limit: Optional[int]
     completed: bool = False
 
     class Config:
@@ -78,11 +78,11 @@ class AwaitingTypes(Enum):
 
 
 class InternalPatient(BaseModel):
-    awaiting: Dict[str, Dict[str, Awaiting]]
-    severity: Severity
-    flagged: bool
-    warnings: List[PatientWarning]
-    measures: Measures
+    awaiting: Optional[Dict[str, Dict[str, Awaiting]]]
+    severity: Optional[Severity]
+    flagged: Optional[bool]
+    warnings: Optional[List[PatientWarning]]
+    measures: Optional[Measures]
     basic_medical: Optional[BasicMedical]
 
     class Config:
