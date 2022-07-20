@@ -1,5 +1,5 @@
 import './App.css';
-import React from 'react'
+import React, { useEffect } from "react";
 import {ConfigProvider, Layout} from 'antd';
 import {LoginProvider} from "./components/LoginContext";
 import {BrowserRouter as Router, generatePath, Route, Routes} from 'react-router-dom';
@@ -8,11 +8,17 @@ import {WING_URL, WingView} from "./pages/WingView";
 import {LOGIN_URL, LoginView} from "./pages/LoginView";
 import {DEPARTMENT_URL, DepartmentView} from "./pages/DepartmentView";
 import {SETTINGS_URL, SettingsView} from "./pages/SettingsView";
-
+import {useMatomo} from "@datapunt/matomo-tracker-react";
 
 
 function App() {
-    
+
+    const { trackPageView } = useMatomo();
+
+    useEffect(() => {
+        trackPageView();
+    }, [])
+
     return (
         <ConfigProvider direction={"rtl"}>
             <div className={"App"} style={{backgroundColor: "#dcdcdc"}} dir={"rtl"}>
