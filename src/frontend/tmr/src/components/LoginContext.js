@@ -2,6 +2,7 @@ import React, {useCallback, useContext, useEffect, useState} from "react";
 import Axios from 'axios';
 import {useLocation, useNavigate} from "react-router";
 import {Navigate} from "react-router-dom";
+import { useMatomo } from '@datapunt/matomo-tracker-react'
 
 import {Button, Form, Input, Spin} from 'antd';
 import {LockOutlined, UserOutlined} from "@ant-design/icons";
@@ -56,6 +57,7 @@ export const LoginForm = () => {
     const {search} = useLocation();
     const {user, checkUser, loadingUser} = useContext(loginContext);
     const [error, setError] = useState(false);
+    const { pushInstruction } = useMatomo()
 
     const loginErrorProps = {hasFeedback: true, validateStatus: "error", help: "שם המשתמש והסיסמה אינם תואמים."};
 
@@ -70,9 +72,12 @@ export const LoginForm = () => {
     useEffect(() => {
         if (!user)
             return;
+
+        pushInstruction('setUserId', user.user);
         let next = (new URLSearchParams(search)).get('next');
         navigate(next ? decodeURIComponent(next) : '/');
     }, [user, search, navigate])
+
 
     return loadingUser ? <Spin/> :
         <Form name={"login"} onFinish={onFinish} onValuesChange={() => setError(false)}>
