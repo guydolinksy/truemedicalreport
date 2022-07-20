@@ -46,10 +46,19 @@ export const withLogin = Component => ({...props}) => {
 export const LoginRequired = ({...props}) => {
     const {user, loadingUser} = useContext(loginContext);
     const {pathname, search, hash} = useLocation();
+    const { pushInstruction } = useMatomo()
+
     if (loadingUser)
         return <Spin/>
-    return user ? props.children :
-        <Navigate to={`/login?next=${encodeURIComponent(pathname + search + hash)}`}/>;
+
+    if(user)
+    {
+        pushInstruction('setUserId', user.user);
+        console.log(user.user)
+        return props.children;
+    }
+
+    return <Navigate to={`/login?next=${encodeURIComponent(pathname + search + hash)}`}/>;
 };
 
 export const LoginForm = () => {
@@ -57,7 +66,6 @@ export const LoginForm = () => {
     const {search} = useLocation();
     const {user, checkUser, loadingUser} = useContext(loginContext);
     const [error, setError] = useState(false);
-    const { pushInstruction } = useMatomo()
 
     const loginErrorProps = {hasFeedback: true, validateStatus: "error", help: "שם המשתמש והסיסמה אינם תואמים."};
 
@@ -73,7 +81,6 @@ export const LoginForm = () => {
         if (!user)
             return;
 
-        pushInstruction('setUserId', user.user);
         let next = (new URLSearchParams(search)).get('next');
         navigate(next ? decodeURIComponent(next) : '/');
     }, [user, search, navigate])
