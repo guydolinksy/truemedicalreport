@@ -1,24 +1,24 @@
 import contextlib
 import json
 import os
-
+from datetime import datetime
 import logbook
 import requests
 from requests import HTTPError
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import Session
-from ..utils import sql_statements
+from ..utils import sql_statements, utils
 
-from tmr_common.data_models.patient import BasicMedical
-from ..models.arc_patient import ARCPatient
+from tmr_common.data_models.patient import BasicMedical, ExternalPatient, Admission
 from ..models.chameleon_referrals import ChameleonReferrals
 from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
 from ..models.chameleon_measurements import ChameleonMeasurements
-from ..models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
-
+from ..models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes
+from tmr_common.data_models.esi_score import ESIScore
 from tmr_common.data_models.treatment_decision import TreatmentDecision
+
 logger = logbook.Logger(__name__)
 
 
@@ -32,7 +32,6 @@ class SqlToDal(object):
         with Session(self._engine) as session:
             yield session
 
-    # TODO validate the data inside json parameter can be accepted succecfully on dal
     def update_imaging(self, department: Departments):
         try:
             logger.debug('Getting imaging for `{}`...', department.name)
@@ -54,13 +53,26 @@ class SqlToDal(object):
 
             patients = []
             with self.session() as session:
-                for patient in session.query(ChameleonMain).filter(ChameleonMain.unit == department.name):
-                    data = session.query(ARCPatient).filter(ARCPatient.patient_id == patient.patient_id).first()
-                    patients.append(dict(**data.to_dal(), **patient.to_dal()))
-
+                result = session.execute(sql_statements.query_patient_admission.format(department.value))
+                for row in result:
+                    patients.append(
+                        ExternalPatient(external_id=row["id"], id_=row["id"],
+                                        esi=ESIScore(value=row["esi"]),
+                                        name=row["full_name"],
+                                        arrival=str(row["DepartmentAdmission"]),
+                                        gender=row["gender"],
+                                        birthdate=utils.datetime_utc_serializer(row["birthdate"]),
+                                        age=utils.calculate_patient_age(row["birthdate"]),
+                                        complaint=row["MainCause"],
+                                        admission=Admission(department=row["Name"],
+                                                            wing=row["DepartmentWing"],
+                                                            bed=row["Bed_Name"])
+                                        , discharge_time=utils.datetime_utc_serializer(row["DepartmentWingDischarge"])
+                                        ).dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/admissions',
                                 json={'admissions': patients})
             res.raise_for_status()
+
         except HTTPError:
             logger.exception('Could not run admissions handler.')
 
@@ -132,8 +144,8 @@ class SqlToDal(object):
             with self.session() as session:
                 result = session.execute(sql_statements.query_discharge_or_hospitalized.format(department.value))
                 for row in result:
-                    decisions[row[0]] = TreatmentDecision(decision=row[1],
-                                                          destination=row[2]).dict()
+                    decisions[row["id"]] = TreatmentDecision(decision=row["Answer_Text"],
+                                                             destination=row["Name"]).dict()
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/decisions',
                                 json=decisions)
             res.raise_for_status()
