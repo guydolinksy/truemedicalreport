@@ -367,6 +367,10 @@ class MedicalDal:
 
     async def update_awaiting(self, patient: Patient, type_: AwaitingTypes, tag: str, awaiting: Awaiting):
         updated = patient.copy()
+
+        if not updated.awaiting:
+            updated.awaiting = {}
+
         updated.awaiting.setdefault(type_.value, {}).__setitem__(tag, awaiting)
         await self.update_patient_by_id(patient.oid, updated.dict(include={'awaiting'}))
 
