@@ -54,7 +54,6 @@ export const LoginRequired = ({...props}) => {
     if(user)
     {
         pushInstruction('setUserId', user.user);
-        console.log(user.user)
         return props.children;
     }
 
