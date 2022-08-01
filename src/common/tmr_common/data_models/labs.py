@@ -51,10 +51,10 @@ class Laboratory(BaseModel):
     category_id: int
     category_name: str
     test_tube_id: Optional[int]
-    panic_min_warn_bar: Optional[float]
+    min_panic_bar: Optional[float]
     min_warn_bar: Optional[float]
     max_warn_bar: Optional[float]
-    panic_max_warn_bar: Optional[float]
+    max_panic_bar: Optional[float]
     result: Optional[float]
     status: LabStatus
 
@@ -100,21 +100,14 @@ class LabCategory(BaseModel):
             level=NotificationLevel.normal,
         )
 
-    def get_if_panic(self):
-        warnings = []
+    @property
+    def warnings(self):
         for cat_id, category_data in self.results.items():
-            message = "תוצאות עבור: "
-            if (category_data.panic_min_warn_bar is not None and category_data.panic_max_warn_bar is not None):
-                if not (category_data.panic_min_warn_bar < category_data.result < category_data.panic_max_warn_bar):
-                    message += f"{category_data.category_name}-{category_data.test_type_name} "
-                    if category_data.panic_min_warn_bar <= category_data.result:
-                        message += "נמוכים באופן מסוכן "
-                        message += f"{category_data.panic_min_warn_bar} <= {category_data.result}"
-                    else:
-                        message += "גבוהים באופן מסוכן "
-                        message += f"{category_data.panic_max_warn_bar} <= {category_data.result}"
-                    message += "\n"
-                    severity = Severity(value=0, at=category_data.at)  # TODO advise with guy about the real values
-                    patient_warning = PatientWarning(content=message, severity=severity)
-                    warnings.append(patient_warning)
-        return warnings
+            message = f"תוצאת {category_data.category_name}-{category_data.test_type_name} חריגה "
+            if category_data.min_panic_bar is not None and category_data.min_panic_bar > category_data.result:
+                message += f"{category_data.min_panic_bar} >> {category_data.result}"
+            elif category_data.max_panic_bar is not None and category_data.max_panic_bar < category_data.result:
+                message += f"{category_data.max_panic_bar} << {category_data.result}"
+            else:
+                continue
+            yield cat_id, PatientWarning(content=message, severity=Severity(value=0, at=category_data.at))

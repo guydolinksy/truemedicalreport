@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import interruptingcow
 import ldap
@@ -70,12 +70,12 @@ class LDAPConnection(Connection):
 
 class LDAP(BaseModel):
     enabled: bool = False
-    connection: str
-    user_dn: str = '{}'
-    bind_dn: str
-    bind_password: str
-    admin_ou: str
-    users_ou: str
+    connection: Optional[str]
+    user_dn: Optional[str]
+    bind_dn: Optional[str]
+    bind_password: Optional[str]
+    admin_ou: Optional[str]
+    users_ou: Optional[str]
 
 
 class Authentication(object):

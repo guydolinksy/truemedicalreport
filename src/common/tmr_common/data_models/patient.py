@@ -11,13 +11,19 @@ from .notification import Notification, NotificationLevel
 from .severity import Severity
 from .labs import LabCategory
 from .warnings import PatientWarning
-from .treatment_decision import TreatmentDecision
+from .treatment import Treatment
 
 
 class Admission(BaseModel):
     department: Optional[str]
     wing: Optional[str]
     bed: Optional[str]
+
+
+class BasicMedical(BaseModel):
+    nurse_description: Optional[str]
+    nurse_seen_time: Optional[str]
+    doctor_seen_time: Optional[str]
 
 
 class ExternalPatient(BaseModel):
@@ -32,7 +38,8 @@ class ExternalPatient(BaseModel):
     complaint: Optional[str]
     admission: Optional[Admission]
     discharge_time: Optional[str]
-    treatment_decision: Optional[TreatmentDecision]
+    treatment: Optional[Treatment]
+    basic_medical: Optional[BasicMedical]
 
     def __init__(self, **kwargs):
         if 'gender' in kwargs and kwargs['gender'] in ['M', 'F']:
@@ -53,20 +60,14 @@ class Icon(Enum):
 
 
 class Awaiting(BaseModel):
-    awaiting: Optional[str]
-    since: Optional[str]
-    limit: Optional[int]
+    awaiting: str
+    since: str
+    limit: int
     completed: bool = False
 
     class Config:
         orm_mode = True
         use_enum_values = True
-
-
-class BasicMedical(BaseModel):
-    nurse_description: Optional[str]
-    nurse_seen_time: Optional[str]
-    doctor_seen_time: Optional[str]
 
 
 class AwaitingTypes(Enum):
@@ -78,12 +79,11 @@ class AwaitingTypes(Enum):
 
 
 class InternalPatient(BaseModel):
-    awaiting: Optional[Dict[str, Dict[str, Awaiting]]]
-    severity: Optional[Severity]
-    flagged: Optional[bool]
-    warnings: Optional[List[PatientWarning]]
-    measures: Optional[Measures]
-    basic_medical: Optional[BasicMedical]
+    severity: Severity
+    awaiting: Dict[str, Dict[str, Awaiting]] = {}
+    flagged: bool
+    warnings: Dict[str, PatientWarning]
+    measures: Measures
 
     class Config:
         orm_mode = True
@@ -93,21 +93,17 @@ class InternalPatient(BaseModel):
         return cls(
             severity=Severity(**patient.esi.dict()),
             awaiting={
-                AwaitingTypes.doctor.value: {'exam': cls.awaiting_doctor(patient)},
-                AwaitingTypes.nurse.value: {'exam': cls.awaiting_nurse(patient)},
+                AwaitingTypes.doctor.value: {
+                    'exam': Awaiting(awaiting='בדיקת צוות רפואי', since=patient.arrival, limit=1500)
+                },
+                AwaitingTypes.nurse.value: {
+                    'exam': Awaiting(awaiting='בדיקת צוות סיעודי', since=patient.arrival, limit=1500)
+                },
             },
             flagged=False,
             warnings=[],
             measures=Measures(),
         )
-
-    @classmethod
-    def awaiting_doctor(cls, patient: ExternalPatient, completed=False):
-        return Awaiting(awaiting='בדיקת צוות רפואי', since=patient.arrival, limit=1500, completed=completed)
-
-    @classmethod
-    def awaiting_nurse(cls, patient: ExternalPatient, completed=False):
-        return Awaiting(awaiting='בדיקת צוות סיעודי', since=patient.arrival, limit=1500, completed=completed)
 
 
 class Patient(ExternalPatient, InternalPatient):

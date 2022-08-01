@@ -1,9 +1,6 @@
-from json import loads
-
 import requests
 from fastapi import APIRouter, Depends
 
-from tmr_common.data_models.patient import Patient
 from ..logics.auth import manager
 from ..logics.notifications import load_notification
 

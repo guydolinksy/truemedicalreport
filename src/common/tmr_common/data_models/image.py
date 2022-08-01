@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel
 
@@ -20,7 +19,7 @@ class ImagingStatus(Enum):
 
 
 class Image(BaseModel):
-    external_id: int
+    external_id: str
     patient_id: str
     title: str
     status: ImagingStatus

@@ -4,8 +4,9 @@ from tmr_common.data_models.notification import ReferralsNotification, Notificat
 
 
 class Referral(BaseModel):
+    patient_id: str
+
     external_id: str
-    patient_id: int
     to: str
     at: str
     completed: bool = False
@@ -19,7 +20,7 @@ class Referral(BaseModel):
         message += " הסתיימה"
 
         return ReferralsNotification(
-            static_id=self.get_instance_id(),
+            static_id=self.external_id,
             patient_id=self.patient_id,
             at=self.at,
             message=message,

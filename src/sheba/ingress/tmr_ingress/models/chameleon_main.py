@@ -1,10 +1,10 @@
-import datetime
 from enum import Enum
 
 import pytz
 from sqlalchemy import Column, Integer, VARCHAR, DateTime
-from tmr_common.data_models.patient import Admission
+
 from tmr_common.data_models.esi_score import ESIScore
+from tmr_common.data_models.patient import Admission
 from tmr_ingress.models.base import Base
 
 

@@ -1,11 +1,11 @@
 import datetime
+from enum import Enum
 
 import pytz
+from sqlalchemy import Column, VARCHAR, DateTime, Date, BigInteger
 
 from tmr_common.data_models.patient import BasicMedical
 from .base import Base
-from sqlalchemy import Column, VARCHAR, Integer, DateTime, Date, BigInteger
-from enum import Enum
 
 
 class FreeTextCodes(Enum):

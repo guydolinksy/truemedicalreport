@@ -1,23 +1,22 @@
 import contextlib
-import json
 import os
-from datetime import datetime
+
 import logbook
 import requests
 from requests import HTTPError
-from sqlalchemy import create_engine, or_
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from ..utils import sql_statements, utils
 
+from tmr_common.data_models.esi_score import ESIScore
 from tmr_common.data_models.patient import BasicMedical, ExternalPatient, Admission
-from ..models.chameleon_referrals import ChameleonReferrals
-from ..models.chameleon_main import ChameleonMain, Departments
+from tmr_common.data_models.treatment import Treatment
 from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
+from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleon_measurements import ChameleonMeasurements
 from ..models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes
-from tmr_common.data_models.esi_score import ESIScore
-from tmr_common.data_models.treatment_decision import TreatmentDecision
+from ..models.chameleon_referrals import ChameleonReferrals
+from ..utils import sql_statements, utils
 
 logger = logbook.Logger(__name__)
 
@@ -55,20 +54,21 @@ class SqlToDal(object):
             with self.session() as session:
                 result = session.execute(sql_statements.query_patient_admission.format(department.value))
                 for row in result:
-                    patients.append(
-                        ExternalPatient(external_id=row["id"], id_=row["id"],
-                                        esi=ESIScore(value=row["esi"]),
-                                        name=row["full_name"],
-                                        arrival=str(row["DepartmentAdmission"]),
-                                        gender=row["gender"],
-                                        birthdate=utils.datetime_utc_serializer(row["birthdate"]),
-                                        age=utils.calculate_patient_age(row["birthdate"]),
-                                        complaint=row["MainCause"],
-                                        admission=Admission(department=row["Name"],
-                                                            wing=row["DepartmentWing"],
-                                                            bed=row["Bed_Name"])
-                                        , discharge_time=utils.datetime_utc_serializer(row["DepartmentWingDischarge"])
-                                        ).dict())
+                    patients.append(ExternalPatient(
+                        external_id=row["id"],
+                        id_=row["id"],
+                        esi=ESIScore(value=row["esi"]),
+                        name=row["full_name"],
+                        arrival=str(row["DepartmentAdmission"]),
+                        gender=row["gender"],
+                        birthdate=utils.datetime_utc_serializer(row["birthdate"]),
+                        age=utils.calculate_patient_age(row["birthdate"]),
+                        complaint=row["MainCause"],
+                        admission=Admission(department=row["Name"],
+                                            wing=row["DepartmentWing"],
+                                            bed=row["Bed_Name"]),
+                        discharge_time=utils.datetime_utc_serializer(row["DepartmentWingDischarge"])
+                    ).dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/admissions',
                                 json={'admissions': patients})
             res.raise_for_status()
@@ -138,18 +138,17 @@ class SqlToDal(object):
         except HTTPError:
             logger.exception('Could not run referrals handler.')
 
-    def update_admission_treatment_decision(self, department: Departments):
-        decisions = {}
+    def update_treatment(self, department: Departments):
+        treatments = {}
         try:
             with self.session() as session:
                 result = session.execute(sql_statements.query_discharge_or_hospitalized.format(department.value))
                 for row in result:
-                    decisions[row["id"]] = TreatmentDecision(decision=row["Answer_Text"],
-                                                             destination=row["Name"]).dict()
-            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/decisions',
-                                json=decisions)
+                    treatments[row["id"]] = Treatment(destination=row["Name"] or row["Answer_Text"]).dict()
+            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/treatments',
+                                json=treatments)
             res.raise_for_status()
         except IndexError as e:
             logger.exception("No Data Fetched From SQL", e)
         except HTTPError:
-            logger.exception('Could not update treatment decisions')
+            logger.exception('Could not update treatments')

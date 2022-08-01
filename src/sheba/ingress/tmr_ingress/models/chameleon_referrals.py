@@ -1,5 +1,5 @@
 import pytz
-from sqlalchemy import VARCHAR, Integer, Column, DateTime, BINARY
+from sqlalchemy import VARCHAR, Integer, Column, DateTime
 
 from tmr_common.data_models.referrals import Referral
 from .base import Base

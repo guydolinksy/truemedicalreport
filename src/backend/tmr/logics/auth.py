@@ -72,7 +72,7 @@ async def test_ldap_settings(_=Depends(manager), args=Body(...)):
             connection = ldap.initialize(args['connection'])
             connection.whoami_s()
             return True
-    except (ldap.SERVER_DOWN, TimeoutError) as e:
+    except (ldap.SERVER_DOWN, TimeoutError):
         return False
 
 

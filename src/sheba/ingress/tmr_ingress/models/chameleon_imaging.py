@@ -1,6 +1,7 @@
 import pytz
 from sqlalchemy import VARCHAR, Integer, Column, DateTime
-from tmr_common.data_models.image import Image, ImagingTypes, ImagingStatus
+
+from tmr_common.data_models.image import Image, ImagingStatus
 from tmr_common.data_models.notification import NotificationLevel
 from .base import Base
 

@@ -294,7 +294,7 @@ class FakeMain(object):
                 session.execute(sql_statements.execute_set_responsible_doctor.format(patient))
                 session.commit()
 
-    def _set_hospitalized_decision(self, chameleon_id=None, department=None, wing=None):
+    def _generate_treatment(self, chameleon_id=None, department=None, wing=None):
         if chameleon_id:
             patients = {chameleon_id}
         elif department and wing:
@@ -303,7 +303,7 @@ class FakeMain(object):
             raise ValueError()
         for patient in patients:
             with self.session() as session:
-                session.execute(sql_statements.execute_set_hospitalized_decision.format(patient))
+                session.execute(sql_statements.execute_set_hospitalize_or_discharge.format(patient))
                 session.commit()
 
     def _generate_nurse_summary(self, chameleon_id=None, department=None, wing=None):
@@ -420,6 +420,14 @@ class FakeMain(object):
         for wing in self.wings:
             self._generate_doctor_visit(department=department, wing=wing)
 
+    async def update_room_placements(self, department):
+        for wing in self.wings:
+            self._generate_room_placements(department=department, wing=wing)
+
+    async def update_treatment(self, department):
+        for wing in self.wings:
+            self._generate_treatment(department=department, wing=wing)
+
     def clear(self):
         with self.session() as session:
             session.query(ChameleonMain).delete()
@@ -428,15 +436,7 @@ class FakeMain(object):
             session.query(ChameleonLabs).delete()
             session.query(ChameleonMeasurements).delete()
             session.query(ChameleonMedicalText).delete()
-            session.execute(sql_statements.delete_admission_treatment_decision)
+            session.execute(sql_statements.delete_admission_treatment)
             session.execute(sql_statements.delete_responsible_doctor)
             session.execute(sql_statements.delete_room_placement)
             session.commit()
-
-    async def update_room_placements(self, department):
-        for wing in self.wings:
-            self._generate_room_placements(department=department, wing=wing)
-
-    async def set_hospitalized_decision(self, department):
-        for wing in self.wings:
-            self._set_hospitalized_decision(department=department, wing=wing)

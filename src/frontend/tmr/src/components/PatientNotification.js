@@ -19,7 +19,7 @@ export const PatientNotification = ({notification}) => {
         flexFlow: "column nowrap",
         alignItems: "flex-start",
     }}>
-        <div><UserOutlined/>{notification.patient.name}</div>
+        <div><UserOutlined/>&nbsp;{notification.patient.name}</div>
         <div style={{textOverflow: "ellipsis", fontSize: "10px"}}>{notification.preview}</div>
     </div>} extra={<div style={{
         display: "flex",

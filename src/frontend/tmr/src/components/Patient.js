@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useRef, useState} from "react";
 import {Badge, Button, Card, Carousel, Space, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faHeart, faHeartPulse, faPercent, faTemperatureHalf, faWarning,} from "@fortawesome/free-solid-svg-icons";
-import {FlagFilled, UserOutlined} from '@ant-design/icons';
+import {ArrowLeftOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
 import {createContext} from "./DataContext";
 import {useLocation, useNavigate} from "react-router";
 import {HashMatch} from "./HashMatch";
@@ -63,24 +63,7 @@ const PatientAge = ({patient}) => {
         </Tooltip>
     </span>
 }
-const PatientTreatmentDecision = ({patient, style}) => {
-        const {value, loading} = useContext(patientDataContext.context);
-
-    const innerStyle = {
-        userSelect: "none",
-        padding: 20,
-        backgroundColor: severityColor[value.severity.value],
-        cursor: "pointer",
-        textAlign: "center",
-        ...style
-    };
-    return !value.treatment_decision || loading ? null :
-        <div style={innerStyle}>{value.treatment_decision.destination ?
-            value.treatment_decision.destination : value.treatment_decision.decision}</div>
-
-
-}
-export const PatientComplaint = ({patient, style}) => {
+export const PatientStatus = ({patient, style}) => {
     const navigate = useNavigate();
     const {value, loading} = useContext(patientDataContext.context);
     const {minutes} = useTime({});
@@ -105,13 +88,15 @@ export const PatientComplaint = ({patient, style}) => {
             navigate(`#info#${patient}#basic#complaint`);
             e.stopPropagation();
         }}>
-        <Tooltip overlay={'תלונה עיקרית'}>{value.complaint}</Tooltip>
-        &nbsp;-&nbsp;
-        <Tooltip overlay={'זמן מקבלה'}>
-            <Moment style={{"color": arrivalColor}} interval={1000} durationFromNow format={'h:mm'}
-                    date={value.arrival}/>
+        <div><Tooltip overlay={'תלונה עיקרית'}>{value.complaint}</Tooltip>
+            &nbsp;-&nbsp;
+            <Tooltip overlay={'זמן מקבלה'}>
+                <Moment style={{"color": arrivalColor}} interval={1000} durationFromNow format={'h:mm'}
+                        date={value.arrival}/>
 
-        </Tooltip>
+            </Tooltip></div>
+        <div><ArrowLeftOutlined/>&nbsp;{value.treatment && value.treatment.destination || '(לא הוחלט)'}</div>
+
     </div>
 }
 export const PatientWarning = ({patient, warning, index, style}) => {
@@ -222,13 +207,10 @@ const PatientInner = ({patient, avatar, style}) => {
                 <Badge.Ribbon text={text}
                               color={value.warnings.length ? "red" : value.flagged ? "blue" : "grey"}>
                     <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
-                        <div><PatientComplaint patient={patient} style={{direction: "rtl"}}/></div>
-                        {value.warnings.map((warning, i) => <div key={i}>
+                        <div><PatientStatus patient={patient} style={{direction: "rtl"}}/></div>
+                        {Object.entries(value.warnings).map(([key, warning], i) => <div key={i}>
                             <PatientWarning patient={patient} warning={warning} index={i} style={{direction: "rtl"}}/>
                         </div>)}
-                        {value.treatment_decision ? <div>
-                            <PatientTreatmentDecision patient={patient} style={{direction: "rtl"}}/></div> : null}
-
                     </Carousel>
                 </Badge.Ribbon>
             </div>
@@ -259,7 +241,7 @@ export const Patient = ({patient, loading, avatar, style, onError}) => {
     return patient ? <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={{
         warnings: [], awaiting: [], severity: {value: 0, at: null}, flagged: null,
         id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
-        complaint: null, admission: {bed: null}, measures: {}
+        treatment: {destination: null}, complaint: null, admission: {bed: null}, measures: {}
     }} onError={onError}>
         {data => data.loading || loading ? placeholder(<Spin size={"small"}/>) :
             <PatientInner patient={patient} avatar={avatar} style={style}/>}

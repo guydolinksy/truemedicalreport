@@ -1,10 +1,9 @@
-import datetime
 from typing import List
 
 import logbook
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
-import json
+
 from tmr_common.data_models.bed import Bed
 from tmr_common.data_models.patient import PatientNotifications
 from tmr_common.data_models.wing import Wing, WingSummary

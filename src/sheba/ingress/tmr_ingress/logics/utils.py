@@ -7,7 +7,7 @@ def safe(logger):
         async def _wrapper(*args, **kwargs):
             try:
                 return await func(*args, **kwargs)
-            except Exception as e:
+            except Exception:
                 logger.exception('Safe run encountered an exception.')
 
         return _wrapper

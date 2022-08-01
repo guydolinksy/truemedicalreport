@@ -49,7 +49,7 @@ async def generate_fake_measurements_for_all_patients(department: Departments, d
     """
     generate fake measurements to all patients in SQL
     """
-    logger.debug('Generating Fake Measurements for all patients...')
+    logger.debug('Generating fake measurements for all patients...')
     await dal.update_measurements(department=department)
     logger.debug('Done.')
 
@@ -62,7 +62,7 @@ async def generate_imagings(department: Departments, dal: FakeMain = Depends(Fak
     """
     generate fake imagings to all patients in SQL
     """
-    logger.debug('Generating Fake Imagings for all patients...')
+    logger.debug('Generating fake imagings for all patients...')
     await dal.update_imagings(department=department)
     logger.debug('Done.')
 
@@ -75,7 +75,7 @@ async def generate_labs(department: Departments, dal: FakeMain = Depends(FakeMai
     """
     generate fake imagings to all patients in SQL
     """
-    logger.debug('Generating Fake Labs for all patients...')
+    logger.debug('Generating fake labs for all patients...')
     await dal.update_labs(department=department)
     logger.debug('Done.')
 
@@ -88,7 +88,7 @@ async def generate_referrals(department: Departments, dal: FakeMain = Depends(Fa
     """
     generate fake imagings to all patients in SQL
     """
-    logger.debug('Generating Fake Referrals for all patients...')
+    logger.debug('Generating fake referrals for all patients...')
     await dal.update_referrals(department=department)
     logger.debug('Done.')
 
@@ -98,7 +98,7 @@ async def generate_referrals(department: Departments, dal: FakeMain = Depends(Fa
 @inject_dependencies(department=Departments.er)
 @faker_router.post("/nurse_summaries", status_code=201)
 async def generate_nurse_summaries(department: Departments, dal: FakeMain = Depends(FakeMain)):
-    logger.info("Generate Nurse Summary...")
+    logger.info("Generate nurse summary...")
     await dal.update_nurse_summaries(department=department)
     logger.info("Done.")
 
@@ -108,9 +108,28 @@ async def generate_nurse_summaries(department: Departments, dal: FakeMain = Depe
 @inject_dependencies(department=Departments.er)
 @faker_router.post("/doctor_visits", status_code=201)
 async def generate_doctor_visits(department: Departments, dal: FakeMain = Depends(FakeMain)):
-    logger.info("Generate Doctor Visits...")
+    logger.info("Generate doctor visits...")
     await dal.update_doctor_visits(department=department)
     logger.info("Done.")
+
+@faker_router.on_event('startup')
+@repeat_every(seconds=60, wait_first=True, logger=logger)
+@inject_dependencies(department=Departments.er)
+@faker_router.post("/room_placements", status_code=201)
+async def generate_room_placements(department: Departments, dal: FakeMain = Depends(FakeMain)):
+    logger.info("Generate room placements...")
+    await dal.update_room_placements(department=department)
+    logger.info("Done generate room placements")
+
+
+@faker_router.on_event('startup')
+@repeat_every(seconds=60, wait_first=True, logger=logger)
+@inject_dependencies(department=Departments.er)
+@faker_router.post("/treatments", status_code=201)
+async def generate_treatments(department: Departments, dal: FakeMain = Depends(FakeMain)):
+    logger.info("Generate treatment...")
+    await dal.update_treatment(department=department)
+    logger.info("Done generate treatment")
 
 
 @faker_router.on_event('startup')
@@ -122,22 +141,3 @@ async def clear(dal: FakeMain = Depends(FakeMain)):
     dal.clear()
     logger.info("Done.")
 
-
-@faker_router.on_event('startup')
-@repeat_every(seconds=60, wait_first=True, logger=logger)
-@inject_dependencies(department=Departments.er)
-@faker_router.post("/room_placements", status_code=201)
-async def generate_room_placement(department: Departments, dal: FakeMain = Depends(FakeMain)):
-    logger.info("Generate room placements")
-    await dal.update_room_placements(department=department)
-    logger.info("Done Generate room placements")
-
-
-@faker_router.on_event('startup')
-@repeat_every(seconds=60, wait_first=True, logger=logger)
-@inject_dependencies(department=Departments.er)
-@faker_router.post("/hospitalized_decision", status_code=201)
-async def generate_hospitalized_decision(department: Departments, dal: FakeMain = Depends(FakeMain)):
-    logger.info("Generate Hospitalized Decision")
-    await dal.set_hospitalized_decision(department=department)
-    logger.info("Done Generate Hospitalized Decision")

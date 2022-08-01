@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Optional, Any, Dict
+from typing import Optional, Dict
+
 from pydantic import BaseModel
 
 
@@ -12,7 +13,7 @@ class NotificationLevel(Enum):
 class NotificationType(Enum):
     lab = 'labs'
     imaging = 'imaging'
-    referral = 'refferals'
+    referral = 'referral'
     general = 'general'
 
 

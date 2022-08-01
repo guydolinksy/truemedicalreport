@@ -9,7 +9,7 @@ import theme from 'highcharts/themes/dark-unica';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faHeart, faHeartPulse, faPercent, faTemperatureHalf,} from "@fortawesome/free-solid-svg-icons";
 import {HashMatch} from "./HashMatch";
-import {PatientComplaint, patientDataContext, PatientWarning, severityBorderColor, severityColor} from "./Patient";
+import {PatientStatus, patientDataContext, PatientWarning, severityBorderColor, severityColor} from "./Patient";
 
 theme(Highcharts);
 highchartsMore(Highcharts);
@@ -52,7 +52,8 @@ export const PatientInfo = ({onError}) => {
                 <patientDataContext.Provider url={`/api/patients/${match[0]}/info`} defaultValue={{
                     warnings: [], awaiting: {}, severity: {value: 0, at: null}, flagged: null,
                     id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
-                    complaint: null, admission: {}, basic_medical: {nurse_description: null}, measures: {
+                    treatment: {destination: null}, complaint: null, admission: {},
+                    basic_medical: {nurse_description: null}, measures: {
                         temperature: null,
                         blood_pressure: null,
                         saturation: null,
@@ -104,7 +105,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
     return <HashMatch match={['info', patient]}>
         {({match}) => <Collapse defaultActiveKey={['basic'].concat(...match.slice(0, 1))}>
             <Panel key={'basic'} showArrow={false} collapsible={"disabled"} header={'מידע בסיסי'}>
-                {value.warnings.map((warning, i) =>
+                {Object.entries(value.warnings).map(([key, warning], i) =>
                     <HashMatch key={i} match={['info', patient, 'basic', `warning-${i}`]}>{({matched}) =>
                         <PatientWarning patient={patient} warning={warning} index={i} style={{
                             animation: matched ? 'highlight 2s ease-out' : undefined, marginBottom: 18
@@ -112,7 +113,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                     }</HashMatch>
                 )}
                 <HashMatch match={['info', patient, 'basic', 'complaint']}>{({matched}) =>
-                    <PatientComplaint patient={patient} style={{
+                    <PatientStatus patient={patient} style={{
                         animation: matched ? 'highlight 2s ease-out' : undefined, marginBottom: 18
                     }}/>
                 }</HashMatch>

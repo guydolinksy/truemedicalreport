@@ -18,3 +18,4 @@ def datetime_utc_serializer(datetime_object):
         serialized = datetime_object.astimezone(pytz.UTC).isoformat()
     except AttributeError:
         serialized = None
+    return serialized

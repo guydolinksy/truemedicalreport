@@ -21,3 +21,7 @@
     border: 2px solid rgba(0, 0, 0, 0);
     -webkit-border-radius: 100px;
 }
+
+.ant-collapse-extra {
+    margin-left: 10px !important;
+}

@@ -79,10 +79,10 @@ async def update_referrals(department: Departments, dal: SqlToDal = Depends(dal_
 @safe(logger)
 @repeat_every(seconds=10, logger=logger)
 @inject_dependencies(department=Departments.er)
-@updater_router.post("/update_admission_treatment_decision/")
-async def update_admission_treatment_decision(department: Departments, dal: SqlToDal = Depends(dal_updater)):
+@updater_router.post("/update_treatment")
+async def update_treatment(department: Departments, dal: SqlToDal = Depends(dal_updater)):
     logger.debug("Treatment")
-    dal.update_admission_treatment_decision(department)
+    dal.update_treatment(department)
 
 
 @updater_router.on_event('startup')
