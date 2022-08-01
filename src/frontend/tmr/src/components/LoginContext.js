@@ -2,6 +2,7 @@ import React, {useCallback, useContext, useEffect, useState} from "react";
 import Axios from 'axios';
 import {useLocation, useNavigate} from "react-router";
 import {Navigate} from "react-router-dom";
+import { useMatomo } from '@datapunt/matomo-tracker-react'
 
 import {Button, Form, Input, Spin} from 'antd';
 import {LockOutlined, UserOutlined} from "@ant-design/icons";
@@ -45,10 +46,17 @@ export const withLogin = Component => ({...props}) => {
 export const LoginRequired = ({...props}) => {
     const {user, loadingUser} = useContext(loginContext);
     const {pathname, search, hash} = useLocation();
+    const { pushInstruction } = useMatomo()
+
     if (loadingUser)
         return <Spin/>
-    return user ? props.children :
-        <Navigate to={`/login?next=${encodeURIComponent(pathname + search + hash)}`}/>;
+
+    if(user) {
+        pushInstruction('setUserId', user.user);
+        return props.children;
+    }
+
+    return <Navigate to={`/login?next=${encodeURIComponent(pathname + search + hash)}`}/>;
 };
 
 export const LoginForm = () => {
@@ -70,9 +78,11 @@ export const LoginForm = () => {
     useEffect(() => {
         if (!user)
             return;
+
         let next = (new URLSearchParams(search)).get('next');
         navigate(next ? decodeURIComponent(next) : '/');
     }, [user, search, navigate])
+
 
     return loadingUser ? <Spin/> :
         <Form name={"login"} onFinish={onFinish} onValuesChange={() => setError(false)}>

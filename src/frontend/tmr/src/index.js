@@ -4,10 +4,18 @@ import 'antd/dist/antd.dark.css';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import {MatomoProvider, createInstance} from '@datapunt/matomo-tracker-react'
+
+const instance = createInstance({
+    urlBase: 'http://localhost:8090/',
+    siteId: 1
+})
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <MatomoProvider value={instance}>
+        <App />
+    </MatomoProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

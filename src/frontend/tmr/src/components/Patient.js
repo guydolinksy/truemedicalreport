@@ -6,6 +6,7 @@ import {ArrowLeftOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
 import {createContext} from "./DataContext";
 import {useLocation, useNavigate} from "react-router";
 import {HashMatch} from "./HashMatch";
+import { useMatomo } from '@datapunt/matomo-tracker-react'
 
 import Moment from "react-moment";
 import {value} from "lodash/seq";
@@ -22,8 +23,11 @@ export const patientDataContext = createContext({
 
 const Measure = ({patient, measure, value, icon, title}) => {
     const navigate = useNavigate();
+    const { trackEvent } = useMatomo()
+
     return <div onClick={patient && value ? e => {
         navigate(`#info#${patient}#measures#${measure}`);
+        trackEvent({ category: 'patient-'+measure, action: 'click-event' });
         e.stopPropagation();
     } : null}>
         <div style={{fontSize: 12}}>{title}&nbsp;<FontAwesomeIcon icon={icon}/></div>
@@ -68,6 +72,7 @@ export const PatientStatus = ({patient, style}) => {
     const {value, loading} = useContext(patientDataContext.context);
     const {minutes} = useTime({});
     const [arrivalColor, setArrivalColor] = useState(undefined);
+    const { trackEvent } = useMatomo()
     const innerStyle = {
         userSelect: "none",
         padding: 20,
@@ -86,6 +91,7 @@ export const PatientStatus = ({patient, style}) => {
         style={innerStyle}
         onClick={e => {
             navigate(`#info#${patient}#basic#complaint`);
+            trackEvent({ category: 'patient-complaint', action: 'click-event' });
             e.stopPropagation();
         }}>
         <div><Tooltip overlay={'תלונה עיקרית'}>{value.complaint}</Tooltip>
@@ -101,6 +107,7 @@ export const PatientStatus = ({patient, style}) => {
 }
 export const PatientWarning = ({patient, warning, index, style}) => {
     const navigate = useNavigate();
+    const { trackEvent } = useMatomo()
     return <div
         style={{
             userSelect: "none",
@@ -112,6 +119,7 @@ export const PatientWarning = ({patient, warning, index, style}) => {
         }}
         onClick={patient ? e => {
             navigate(`#info#${patient}#basic#warning-${index}`);
+            trackEvent({ category: 'patient-alert', action: 'click-event' });
             e.stopPropagation();
         } : null}>
         <FontAwesomeIcon icon={faWarning}/>&nbsp;{warning.content}
@@ -186,10 +194,12 @@ const PatientInner = ({patient, avatar, style}) => {
     const {hash} = useLocation();
     const navigate = useNavigate();
     const {value, update, loading} = useContext(patientDataContext.context);
+    const { trackEvent } = useMatomo();
 
     let text = value.warnings.length || <Tooltip overlay={'סימון דגל'}>
         {<FlagFilled onClick={e => {
             update(['flagged'], !value.flagged);
+            trackEvent({ category: 'patient-flagged', action: 'click-event' });
             e.stopPropagation();
         }}/>}
     </Tooltip>
@@ -201,8 +211,10 @@ const PatientInner = ({patient, avatar, style}) => {
         }} title={<PatientHeader patient={patient} avatar={avatar}/>} style={{
             margin: 0, maxWidth: 400, minWidth: 300, borderStyle: patient ? "solid" : "dotted",
             borderColor: severityBorderColor[value.severity.value], ...style
-        }} hoverable onClick={() => navigate(`#info#${patient}#basic`)}
-              extra={<PatientAwaiting/>} actions={patientMeasures(patient, value.measures)}>
+        }} hoverable onClick={() => {
+            navigate(`#info#${patient}#basic`);
+            trackEvent({ category: 'patient', action: 'click-event' });
+        }} extra={<PatientAwaiting/>} actions={patientMeasures(patient, value.measures)}>
             <div style={style}>
                 <Badge.Ribbon text={text}
                               color={value.warnings.length ? "red" : value.flagged ? "blue" : "grey"}>
