@@ -84,7 +84,7 @@ class LabCategory(BaseModel):
         return {'at': self.at, 'category_id': self.category_id}
 
     def get_instance_id(self):
-        return f'{self.category_id}#{self.at}'
+        return f'{self.category_id}#{self.at.replace(":", "-")}'
 
     class Config:
         orm_mode = True

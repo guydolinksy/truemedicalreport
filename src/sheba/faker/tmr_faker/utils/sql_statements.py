@@ -1,4 +1,4 @@
-execute_set_patient_admission = """execute sbwnd81c_chameleon.dbo.faker_RoomPlacmentPatient_admission {}"""
+execute_set_patient_admission = """execute sbwnd81c_chameleon.dbo.faker_RoomPlacementPatient_admission {}"""
 
 execute_set_hospitalize_or_discharge = """execute sbwnd81c_chameleon.dbo.faker_decision {}"""
 

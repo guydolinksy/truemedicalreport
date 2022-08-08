@@ -11,7 +11,6 @@ join (
 left join sbwnd81c_chameleon.dbo.SystemUnits s on a.Hosp_Unit=s.Unit
 join chameleon_db.dbo.Emergency_visits ev on ev.id=a.medical_record 
                                              and ev.DepartmentWingDischarge is null
-                                             and ev.DepartmentAdmission between getdate()-3 and getdate() 
                                              and ev.DepartmentCode={}
 where a.delete_date is null"""
 
@@ -19,10 +18,9 @@ where a.delete_date is null"""
 query_patient_admission = """
 SELECT
 	ev.id,CONCAT(p.first_name,' ',p.last_name) AS full_name,p.birth_date AS	birthdate,p.gender,
-	ev.esi,ev.MainCause,rb.Bed_Name,ev.DepartmentWing,'er' AS Name,
-	ev.DepartmentAdmission,ev.DepartmentWingDischarge
+	ev.esi,ev.MainCause,rb.Bed_Name,ev.DepartmentWing, ev.DepartmentAdmission,ev.DepartmentWingDischarge
 
-FROM [sbwnd81c_chameleon].dbo.RoomPlacmentPatient AS rpp
+FROM [sbwnd81c_chameleon].dbo.RoomPlacementPatient AS rpp
 --INNER JOIN MedicalRecords AS mr ON mr.Medical_Record = rpp.Medical_Record AND mr.Delete_Date IS NULL
 right join chameleon_db.dbo.Emergency_visits as ev on rpp.Medical_Record=ev.id 
 left JOIN chameleon_db.dbo.patients AS p ON p.id = ev.id
@@ -33,6 +31,6 @@ WHERE
 -- p.Id NOT LIKE '%99999%' AND 
 TRY_CAST(p.id AS bigint) IS NOT NULL
 AND rpp.End_Date IS NULL
-and ev.DepartmentCode=1184000
+and ev.DepartmentCode={}
 and ev.DepartmentWingDischarge is null
 """

@@ -4,7 +4,6 @@ from typing import List, Dict
 import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
-from werkzeug.exceptions import NotFound
 
 from tmr_common.data_models.image import Image
 from tmr_common.data_models.labs import Laboratory
@@ -13,6 +12,7 @@ from tmr_common.data_models.patient import ExternalPatient, BasicMedical
 from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.treatment import Treatment
 from tmr_common.data_models.wing import WingOverview
+from tmr_common.utilities.exceptions import PatientNotFound
 from .wing import wing_router
 from ..dal.dal import MedicalDal, Action
 
@@ -53,8 +53,8 @@ async def update_measurements(measurements: Dict[str, List[Measure]] = Body(...,
     for patient in measurements:
         try:
             await dal.upsert_measurements(patient_id=patient, measures=measurements[patient])
-        except NotFound:
-            logger.exception('Cannot update patient {} measurements', patient)
+        except PatientNotFound:
+            logger.debug('Cannot update patient {} measurements', patient)
 
 
 @department_router.post("/{department}/imaging")
@@ -64,8 +64,8 @@ async def update_imaging(department: str, images: Dict[str, List[Image]] = Body(
         for image in images[patient]:
             try:
                 await dal.upsert_imaging(imaging_obj=image)
-            except NotFound:
-                logger.exception('Cannot update patient {} images', patient)
+            except PatientNotFound:
+                logger.debug('Cannot update patient {} images', patient)
 
 
 @department_router.post("/{department}/labs")
@@ -74,8 +74,8 @@ async def update_labs(labs: Dict[str, List[Laboratory]] = Body(..., embed=True),
     for patient in labs:
         try:
             await dal.upsert_labs(patient_id=patient, new_labs=labs[patient])
-        except NotFound:
-            logger.exception('Cannot update patient {} labs', patient)
+        except PatientNotFound:
+            logger.debug('Cannot update patient {} labs', patient)
 
 
 @department_router.post("/{department}/referrals")
@@ -85,8 +85,8 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
         for referral in referrals[patient]:
             try:
                 await dal.upsert_referral(referral_obj=referral)
-            except NotFound:
-                logger.exception('Cannot update patient {} referrals', patient)
+            except PatientNotFound:
+                logger.debug('Cannot update patient {} referrals', patient)
 
 
 @department_router.post("/{department}/basic_medical")
@@ -95,8 +95,8 @@ async def update_basic_medical(department: str, basic_medicals: Dict[str, BasicM
     for patient, basic_medical in basic_medicals.items():
         try:
             await dal.upsert_basic_medical(patient, basic_medical)
-        except NotFound:
-            logger.exception('Cannot update patient {} basic medical', patient)
+        except PatientNotFound:
+            logger.debug('Cannot update patient {} basic medical', patient)
 
 
 @department_router.post("/{department}/treatments", status_code=http.HTTPStatus.OK)
@@ -105,8 +105,8 @@ async def update_treatments(department: str, treatments: Dict[str, Treatment] = 
     for patient in treatments:
         try:
             await dal.upsert_treatment(patient, treatments[patient])
-        except NotFound:
-            logger.exception('Cannot update patient {} treatments', patient)
+        except PatientNotFound:
+            logger.debug('Cannot update patient {} treatments', patient)
 
 
 @department_router.get("/{department}/{wing}/waiting_labs", tags=["Department"], response_model=int,

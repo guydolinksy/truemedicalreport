@@ -5,4 +5,4 @@ from typing import Optional
 
 class ESIScore(BaseModel):
     value: Optional[int]
-    at: Optional[str] = datetime.utcnow().isoformat()
+    at: Optional[str]

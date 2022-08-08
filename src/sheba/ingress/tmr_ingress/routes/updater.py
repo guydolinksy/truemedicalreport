@@ -29,7 +29,6 @@ async def update_admissions(department: Departments, dal: SqlToDal = Depends(dal
     logger.info("Done.")
 
 
-# TODO: uncomment to enable periodic updates
 @updater_router.on_event('startup')
 @repeat_every(seconds=50, logger=logger)
 @safe(logger)
@@ -41,7 +40,6 @@ async def update_measurements(department: Departments, dal: SqlToDal = Depends(d
     logger.info("Done.")
 
 
-# TODO: uncomment to enable periodic updates
 @updater_router.on_event('startup')
 @repeat_every(seconds=70, logger=logger)
 @safe(logger)
@@ -81,15 +79,16 @@ async def update_referrals(department: Departments, dal: SqlToDal = Depends(dal_
 @inject_dependencies(department=Departments.er)
 @updater_router.post("/update_treatment")
 async def update_treatment(department: Departments, dal: SqlToDal = Depends(dal_updater)):
-    logger.debug("Treatment")
+    logger.debug("Update Treatment...")
     dal.update_treatment(department)
+    logger.debug("Done.")
 
 
 @updater_router.on_event('startup')
 @repeat_every(seconds=60, logger=logger)
 @safe(logger)
 @inject_dependencies(department=Departments.er)
-@updater_router.post("/nurse_summary", status_code=http.HTTPStatus.ACCEPTED)
+@updater_router.post("/basic_medical", status_code=http.HTTPStatus.ACCEPTED)
 async def update_basic_medical(department: Departments, dal: SqlToDal = Depends(dal_updater)):
     logger.info("Update Basic Medical Info...")
     dal.update_basic_medical(department=department)

@@ -35,20 +35,10 @@ class FakeMain(object):
         with Session(self._engine) as session:
             yield session
 
-    wings = {
-        'a': {None},
-        'b1': {str(i) for i in range(1, 13)} | {None},
-        'b2': {str(i) for i in range(13, 25)} | {None},
-        'b3': {str(i) for i in range(25, 41)} | {None},
-    }
-
-    # def get_used_beds(self, wing):
-    #     with self.session() as session:
-    #         return {str(cm.bed_num) for cm in (session.query(ChameleonMain).filter(
-    #             (ChameleonMain.unit_wing == wing) & (ChameleonMain.bed_num != None)))}
+    wings = {'אגף B1', 'אגף B2', 'אגף B3', 'אגף הולכים', 'חדר הלם'}
 
     def _admit_patient(self, department: Departments, wing):
-        patient_id = f'{self.faker.pyint(min_value=000000000, max_value=999999999):09}'
+        patient_id = f'{self.faker.pyint(min_value=1, max_value=999999999)}'
         p = ARCPatient()
         p.patient_id = patient_id
         p.gender = 'M' if random.randint(0, 1) else 'F'
@@ -84,14 +74,19 @@ class FakeMain(object):
 
     def _discharge_patient(self, chameleon_id):
         with self.session() as session:
-            patient = session.query(ChameleonMain).where(ChameleonMain.patient_id == chameleon_id).first()
-            patient.unit = patient.unit_wing = patient.bed_num = None
+            patient = session.query(ChameleonMain).where(
+                (ChameleonMain.patient_id == chameleon_id) &
+                (ChameleonMain.discharge_time == None)
+            ).first()
+            patient.discharge_time = datetime.datetime.now()
             session.commit()
 
     def _get_patients(self, department: Departments, wing):
         with self.session() as session:
             result = {patient.patient_id for patient in session.query(ChameleonMain).filter(
-                (ChameleonMain.unit == department.name) & (ChameleonMain.unit_wing == wing)
+                (ChameleonMain.unit == department.name) &
+                (ChameleonMain.unit_wing == wing) &
+                (ChameleonMain.discharge_time == None)
             )}
             return result
 
@@ -393,7 +388,7 @@ class FakeMain(object):
     async def discharge_patient(self, department):
         for wing in self.wings:
             for patient in self._get_patients(department, wing):
-                if not random.randint(0, 20):
+                if not random.randint(0, 3):
                     self._discharge_patient(patient)
 
     async def update_measurements(self, department):

@@ -8,7 +8,7 @@ async def init_wings():
     db = client.medical
     db.wings.delete_many({})
     db.wings.insert_one({
-        'key': 'b1',
+        'key': 'אגף B1',
         'name': 'אגף א׳',
         'department': 'er',
         'columns': [
@@ -30,7 +30,7 @@ async def init_wings():
         ],
     })
     db.wings.insert_one({
-        'key': 'b2',
+        'key': 'אגף B2',
         'name': 'אגף ב׳',
         'department': 'er',
         'columns': [
@@ -52,7 +52,7 @@ async def init_wings():
         ],
     })
     db.wings.insert_one({
-        'key': 'b3',
+        'key': 'אגף B3',
         'name': 'אגף ג׳',
         'department': 'er',
         'columns': [
@@ -77,13 +77,13 @@ async def init_wings():
         ],
     })
     db.wings.insert_one({
-        'key': 'a',
-        'name': 'אגף מהלכים',
+        'key': 'אגף הולכים',
+        'name': 'אגף הולכים',
         'department': 'er',
         'blocks': []
     })
     db.wings.insert_one({
-        'key': 'S',
+        'key': 'חדר הלם',
         'name': 'חדר הלם',
         'department': 'er',
         'blocks': []

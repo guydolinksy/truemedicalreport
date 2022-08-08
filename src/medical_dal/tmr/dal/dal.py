@@ -1,6 +1,5 @@
 import datetime
 import json
-import traceback
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Dict
@@ -9,19 +8,19 @@ import logbook
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from pymongo.database import Database
-from pymongo.errors import DuplicateKeyError
-from werkzeug.exceptions import NotFound
 
+from tmr.routes.websocket import notify, notify_property
 from tmr_common.data_models.aggregate.medical_sum import WaitForDoctor
 from tmr_common.data_models.image import Image, ImagingStatus
 from tmr_common.data_models.labs import Laboratory, LabCategory, StatusInHebrew, LabStatus
 from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures, Latest
 from tmr_common.data_models.notification import Notification
-from tmr_common.data_models.patient import Patient, Admission, PatientNotifications, ExternalPatient, InternalPatient, \
+from tmr_common.data_models.patient import Patient, PatientNotifications, ExternalPatient, InternalPatient, \
     PatientInfo, Event, Awaiting, AwaitingTypes, BasicMedical
 from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.treatment import Treatment
-from ..routes.websocket import notify
+from tmr_common.utilities.exceptions import PatientNotFound
+from tmr_common.utilities.websocket import atomic_update
 
 logger = logbook.Logger(__name__)
 
@@ -35,6 +34,11 @@ class Action(Enum):
 @dataclass
 class MedicalDal:
     db: Database
+
+    @property
+    def atomic_update_patient(self):
+        return atomic_update(klass=Patient, collection=self.db.patients,
+                             notify=notify, notify_property=notify_property)
 
     def get_department_wings(self, department: str) -> dict:
         return json.loads(dumps(self.db.wings.find({"department": department}, {"_id": 1, "key": 1, "name": 1})))
@@ -84,7 +88,7 @@ class MedicalDal:
     def get_patient(self, patient: dict) -> Patient:
         res = self.db.patients.find_one(patient)
         if not res:
-            raise NotFound()
+            raise PatientNotFound()
         return Patient(**res)
 
     def get_patient_info(self, patient: dict) -> PatientInfo:
@@ -107,24 +111,6 @@ class MedicalDal:
         res = self.db.patients.find_one({"admission": {"department": department, "wing": wing, "bed": bed}})
         return str(res.pop('_id')) if res else None
 
-    async def update_patient(self, patient: dict, update: dict, old: dict = None) -> bool:
-        if old is None:
-            old = self.get_patient(patient).dict(include=set(update), exclude_none=True)
-        while any(old.get(k) != update.get(k) for k in update):
-            try:
-                update_result = self.db.patients.update_one({**patient, **old}, {'$set': update}, upsert=True)
-                if update_result.modified_count:
-                    break
-            except DuplicateKeyError:
-                pass
-            old = self.get_patient(patient).dict(include=set(update), exclude_none=True)
-        else:
-            return False
-        if update.get('admission') and old.get('admission') != update.get('admission'):
-            await self.notify_admission(update.get('admission'))
-
-        return await self.notify_patient(str(self.db.patients.find_one(patient).pop('_id')))
-
     async def _cascade_delete_patient(self, patient_external_id):
         """
         delete patient and his data from all collections.
@@ -143,19 +129,17 @@ class MedicalDal:
             self.db.patients.delete_one({"external_id": previous.external_id})
             await self._cascade_delete_patient(previous.external_id)
         elif previous and patient:
-            await self.update_patient(
+            await self.atomic_update_patient(
                 {"_id": ObjectId(previous.oid)},
-                patient.dict(exclude_none=True),
-                old=previous.dict()
+                patient.dict(exclude_unset=True),
             )
         elif not previous and patient:
-            await self.update_patient(
+            await self.atomic_update_patient(
                 {"external_id": patient.external_id},
                 dict(
-                    **patient.dict(exclude_none=True),
-                    **InternalPatient.from_external_patient(patient).dict(exclude_none=True)
+                    **patient.dict(exclude_unset=True),
+                    **InternalPatient.from_external_patient(patient).dict(exclude_unset=True)
                 ),
-                old={}
             )
 
     async def upsert_measurements(self, patient_id: str, measures: List[Measure]):
@@ -165,32 +149,31 @@ class MedicalDal:
         for measure in measures:
             match measure.type:
                 case MeasureTypes.pulse.value:
-                    if not updated.measures.pulse or measure.at_ > updated.measures.pulse.at_:
+                    if not updated.measures.pulse.at_ or measure.at_ > updated.measures.pulse.at_:
                         updated.measures.pulse = Latest(value=int(measure.value), at=measure.at,
                                                         is_valid=measure.is_valid)
                 case MeasureTypes.temperature.value:
-                    if not updated.measures.temperature or measure.at_ > updated.measures.temperature.at_:
+                    if not updated.measures.temperature.at_ or measure.at_ > updated.measures.temperature.at_:
                         updated.measures.temperature = Latest(value=measure.value, at=measure.at,
                                                               is_valid=measure.is_valid)
                 case MeasureTypes.saturation.value:
-                    if not updated.measures.saturation or measure.at_ > updated.measures.saturation.at_:
+                    if not updated.measures.saturation.at_ or measure.at_ > updated.measures.saturation.at_:
                         updated.measures.saturation = Latest(value=int(measure.value), at=measure.at,
                                                              is_valid=measure.is_valid)
                 case MeasureTypes.systolic.value:
-                    if not updated.measures.systolic or measure.at_ > updated.measures.systolic.at_:
+                    if not updated.measures.systolic.at_ or measure.at_ > updated.measures.systolic.at_:
                         updated.measures.systolic = Latest(value=int(measure.value), at=measure.at,
                                                            is_valid=measure.is_valid)
                 case MeasureTypes.diastolic.value:
-                    if not updated.measures.diastolic or measure.at_ > updated.measures.diastolic.at_:
+                    if not updated.measures.diastolic.at_ or measure.at_ > updated.measures.diastolic.at_:
                         updated.measures.diastolic = Latest(value=int(measure.value), at=measure.at,
                                                             is_valid=measure.is_valid)
             self.db.measures.update_one({"external_id": measure.external_id},
                                         {'$set': dict(patient_id=patient_id, **measure.dict())}, upsert=True)
 
-        await self.update_patient(
+        await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)},
-            updated.dict(include={'measures'}, exclude_none=True),
-            old=patient.dict()
+            updated.dict(include={'measures'}, exclude_unset=True)
         )
 
     async def upsert_imaging(self, imaging_obj: Image):
@@ -203,7 +186,7 @@ class MedicalDal:
             notification = imaging_obj.to_notification()
             self.db.notifications.update_one({"notification_id": notification.notification_id},
                                              {'$set': notification.dict()}, upsert=True)
-            await self.notify_notification(patient=patient.oid)
+            await notify('notification', patient.oid)
         updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).setdefault(imaging_obj.external_id, Awaiting(
             awaiting=imaging_obj.title,
             since=imaging_obj.at,
@@ -211,15 +194,14 @@ class MedicalDal:
             limit=3600,
         ))
 
-        await self.update_patient(
+        await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)},
-            updated.dict(include={'awaiting'}, exclude_none=True),
-            old=patient.dict()
+            updated.dict(include={'awaiting'}, exclude_unset=True)
         )
 
     async def upsert_labs(self, patient_id: str, new_labs: List[Laboratory]):
         labs: Dict[tuple, LabCategory] = {
-            c.key: c for c in [LabCategory(**c) for c in self.db.labs.find({"patient_id": patient_id})]
+            c.key: c for c in [LabCategory(**l) for l in self.db.labs.find({"patient_id": patient_id})]
         }
         for lab in new_labs:
             c = labs.setdefault(lab.category_key, LabCategory(
@@ -232,27 +214,29 @@ class MedicalDal:
 
         updated = patient.copy()
         for lab in labs.values():
-            self.db.labs.update_one({"patient_id": patient_id, **c.query_key},
-                                    {'$set': dict(patient_id=patient_id, **c.dict(exclude={'patient_id'}))},
+            self.db.labs.update_one({"patient_id": patient_id, **lab.query_key},
+                                    {'$set': dict(patient_id=patient_id, **lab.dict(exclude={'patient_id'}))},
                                     upsert=True)
             if lab.status == StatusInHebrew[LabStatus.analyzed.value]:
                 notification = lab.to_notification()
                 self.db.notifications.update_one({"notification_id": notification.notification_id},
                                                  {'$set': notification.dict()}, upsert=True)
-                await self.notify_notification(patient=patient.oid)
+                await notify('notification', patient.oid)
             for key, warning in lab.warnings:
                 updated.warnings.setdefault(key, warning)
+
+            logger.debug('%%%%%%%%%%%%%%%% {} {}', patient_id, lab.get_instance_id())
             updated.awaiting.setdefault(AwaitingTypes.laboratory.value, {}).setdefault(lab.get_instance_id(), Awaiting(
                 awaiting=lab.category,
                 since=lab.at,
                 completed=lab.status == StatusInHebrew[LabStatus.analyzed.value],
                 limit=3600,
             ))
+        logger.debug('{} {}', updated.dict(include={'awaiting', 'warnings'}, exclude_unset=True), patient.dict())
 
-        await self.update_patient(
+        await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)},
-            updated.dict(include={'awaiting', 'warnings'}, exclude_none=True),
-            old=patient.dict()
+            updated.dict(include={'awaiting', 'warnings'}, exclude_unset=True)
         )
 
     async def upsert_referral(self, referral_obj: Referral):
@@ -265,7 +249,7 @@ class MedicalDal:
             notification = referral_obj.to_notification()
             self.db.notifications.update_one({"notification_id": notification.notification_id},
                                              {'$set': notification.dict()}, upsert=True)
-            await self.notify_notification(patient=patient.oid)
+            await notify('notification', patient.oid)
         updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).setdefault(referral_obj.to, Awaiting(
             awaiting=referral_obj.to,
             since=referral_obj.at,
@@ -273,9 +257,9 @@ class MedicalDal:
             limit=3600,
         ))
 
-        await self.update_patient(
+        await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)},
-            updated.dict(include={'awaiting'}, exclude_none=True),
+            updated.dict(include={'awaiting'}, exclude_unset=True),
             patient.dict()
         )
 
@@ -285,10 +269,9 @@ class MedicalDal:
         updated = patient.copy()
         updated.treatment = treatment
 
-        await self.update_patient(
+        await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)},
-            updated.dict(include={'treatment'}, exclude_none=True),
-            old=patient.dict()
+            updated.dict(include={'treatment'}, exclude_unset=True)
         )
 
     async def upsert_basic_medical(self, patient_id: str, basic_medical: BasicMedical):
@@ -301,10 +284,9 @@ class MedicalDal:
         if basic_medical.nurse_description:
             updated.awaiting[AwaitingTypes.nurse.value]['exam'].completed = True
 
-        await self.update_patient(
+        await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)},
-            updated.dict(include={'basic_medical', 'awaiting'}, exclude_none=True),
-            old=patient.dict()
+            updated.dict(include={'basic_medical', 'awaiting'}, exclude_unset=True)
         )
 
     def get_waiting_for_doctor_list(self) -> [WaitForDoctor]:
@@ -362,20 +344,3 @@ class MedicalDal:
             if "False" in str(referral):
                 count = count + 1
         return count
-
-    @staticmethod
-    async def notify_admission(admission: dict):
-        if admission:
-            await notify('admission', admission)
-
-    @staticmethod
-    async def notify_notification(patient: str):
-        if patient:
-            await notify('notification', patient)
-
-    @staticmethod
-    async def notify_patient(patient: str) -> bool:
-        if not patient:
-            return False
-
-        return await notify('patient', patient)

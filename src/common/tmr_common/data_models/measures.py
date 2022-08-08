@@ -1,9 +1,12 @@
 import datetime
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Union, Any
 
 import logbook
 from pydantic import BaseModel
+
+# from pydantic.typing import AbstractSetIntStr, MappingIntStrAny, DictStrAny
+AbstractSetIntStr, MappingIntStrAny, DictStrAny = Any, Any, Any
 
 logger = logbook.Logger(__name__)
 
@@ -98,38 +101,86 @@ class Pressure(Measure):
 
 
 class Latest(BaseModel):
-    value: str
-    at: str
-    is_valid: bool
+    value: Optional[str]
+    at: Optional[str]
+    is_valid: Optional[bool]
 
     @property
     def at_(self):
-        return datetime.datetime.fromisoformat(self.at)
+        return datetime.datetime.fromisoformat(self.at) if self.at else None
 
     class Config:
         orm_mode = True
 
 
 class Measures(BaseModel):
-    blood_pressure: Optional[Latest]
-    systolic: Optional[Latest]
-    diastolic: Optional[Latest]
-    pulse: Optional[Latest]
-    temperature: Optional[Latest]
-    saturation: Optional[Latest]
+
+    @classmethod
+    def get_properties(cls):
+        return [prop for prop in dir(cls) if
+                isinstance(getattr(cls, prop), property) and prop not in ("__values__", "fields")]
+
+    def dict(
+            self,
+            *,
+            include: Union[AbstractSetIntStr, MappingIntStrAny] = None,
+            exclude: Union[AbstractSetIntStr, MappingIntStrAny] = None,
+            by_alias: bool = False,
+            skip_defaults: bool = None,
+            exclude_unset: bool = False,
+            exclude_defaults: bool = False,
+            exclude_none: bool = False,
+    ) -> DictStrAny:
+        attribs = super().dict(
+            include=include,
+            exclude=exclude,
+            by_alias=by_alias,
+            skip_defaults=skip_defaults,
+            exclude_unset=exclude_unset,
+            exclude_defaults=exclude_defaults,
+            exclude_none=exclude_none,
+        )
+        props = self.get_properties()
+        # Include and exclude properties
+        if include:
+            props = [prop for prop in props if prop in include]
+        if exclude:
+            props = [prop for prop in props if prop not in exclude]
+
+        # Update the attribute dict with the properties
+        for prop in props:
+            value = getattr(self, prop)
+            attribs[prop] = value if not isinstance(value, BaseModel) else value.dict(
+                by_alias=by_alias,
+                skip_defaults=skip_defaults,
+                exclude_unset=exclude_unset,
+                exclude_defaults=exclude_defaults,
+                exclude_none=exclude_none,
+            )
+
+        return attribs
+
+    systolic: Latest = Latest()
+    diastolic: Latest = Latest()
+    pulse: Latest = Latest()
+    temperature: Latest = Latest()
+    saturation: Latest = Latest()
+
+    @property
+    def blood_pressure(self):
+        return Latest(
+            value=f"{self.systolic.value or '?'}/{self.diastolic.value or '?'}" \
+                if self.systolic.value or self.diastolic.value else None,
+            is_valid=self.systolic.is_valid and self.diastolic.is_valid \
+                if self.systolic.is_valid or self.diastolic.is_valid else None,
+            at=min(filter(None, [self.systolic.at_, self.diastolic.at_])).isoformat() \
+                if self.systolic.at_ or self.diastolic.at_ else None
+        )
 
     class Config:
         orm_mode = True
 
     def __init__(self, **kwargs):
-        systolic = Latest(**kwargs['systolic']) if kwargs.get('systolic') else None
-        diastolic = Latest(**kwargs['diastolic']) if kwargs.get('diastolic') else None
-        if systolic or diastolic:
-            kwargs['blood_pressure'] = Latest(
-                value=f"{systolic.value if systolic else '?'}/{diastolic.value if diastolic else '?'}",
-                is_valid=(not systolic or systolic.is_valid) and (not diastolic or diastolic.is_valid),
-                at=min(([systolic.at_] if systolic else []) + ([diastolic.at_] if diastolic else [])).isoformat()
-            )
         super(Measures, self).__init__(**kwargs)
 
 

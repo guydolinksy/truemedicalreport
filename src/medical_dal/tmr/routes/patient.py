@@ -3,7 +3,8 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
 
-from tmr_common.data_models.patient import Patient, PatientInfo
+from tmr_common.data_models.patient import Patient, PatientInfo, Admission
+from .websocket import subscribe, notify
 from ..dal.dal import MedicalDal
 
 patient_router = APIRouter(tags=["Patient"])
@@ -28,5 +29,11 @@ def get_patient_info_by_id(patient: str, dal: MedicalDal = Depends(medical_dal))
 @patient_router.post("/{patient}")
 async def update_patient_by_id(patient: str, update_object: dict,
                                dal: MedicalDal = Depends(medical_dal)) -> bool:
-    return await dal.update_patient({'_id': ObjectId(patient)}, update_object)
+    return await dal.atomic_update_patient({'_id': ObjectId(patient)}, update_object)
 
+
+@subscribe('.'.join([Patient.__name__, 'admission']))
+async def on_admission_change(data: dict):
+    key, old, new = data['key'], data['old'], data['new']
+    await notify(Admission.__name__, data['old'])
+    await notify(Admission.__name__, data['new'])

@@ -38,7 +38,10 @@ class SqlToDal(object):
             with self.session() as session:
                 for image in session.query(ChameleonImaging). \
                         join(ChameleonMain, ChameleonImaging.patient_id == ChameleonMain.patient_id). \
-                        where(ChameleonMain.unit == department.name).order_by(ChameleonImaging.order_date.desc()):
+                        where(
+                    (ChameleonMain.unit == department.name) &
+                    (ChameleonMain.discharge_time == None)
+                ).order_by(ChameleonImaging.order_date.desc()):
                     imaging.setdefault(image.patient_id, []).append(image.to_dal().dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/imaging',
                                 json={'images': imaging})
@@ -57,18 +60,18 @@ class SqlToDal(object):
                     patients.append(ExternalPatient(
                         external_id=row["id"],
                         id_=row["id"],
-                        esi=ESIScore(value=row["esi"]),
+                        esi=ESIScore(value=row["esi"], at=row["DepartmentAdmission"].isoformat()),
                         name=row["full_name"],
-                        arrival=str(row["DepartmentAdmission"]),
+                        arrival=row["DepartmentAdmission"].isoformat(),
                         gender=row["gender"],
                         birthdate=utils.datetime_utc_serializer(row["birthdate"]),
                         age=utils.calculate_patient_age(row["birthdate"]),
                         complaint=row["MainCause"],
-                        admission=Admission(department=row["Name"],
+                        admission=Admission(department=department.name,
                                             wing=row["DepartmentWing"],
                                             bed=row["Bed_Name"]),
-                        discharge_time=utils.datetime_utc_serializer(row["DepartmentWingDischarge"])
-                    ).dict())
+                        discharge_time=utils.datetime_utc_serializer(row["DepartmentWingDischarge"]),
+                    ).dict(exclude_unset=True))
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/admissions',
                                 json={'admissions': patients})
             res.raise_for_status()
@@ -83,8 +86,10 @@ class SqlToDal(object):
             measures = {}
             with self.session() as session:
                 for measurement in session.query(ChameleonMeasurements). \
-                        join(ChameleonMain, ChameleonMeasurements.patient_id == ChameleonMain.patient_id). \
-                        where(ChameleonMain.unit == department.name).order_by(ChameleonMeasurements.at.asc()):
+                        join(ChameleonMain, ChameleonMeasurements.patient_id == ChameleonMain.patient_id).where(
+                    (ChameleonMain.unit == department.name) &
+                    (ChameleonMain.discharge_time == None)
+                ).order_by(ChameleonMeasurements.at.asc()):
                     measures.setdefault(measurement.patient_id, []).append(measurement.to_dal().dict())
 
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/measurements',
@@ -99,8 +104,10 @@ class SqlToDal(object):
             labs = {}
             with self.session() as session:
                 for lab_data in session.query(ChameleonLabs). \
-                        join(ChameleonMain, ChameleonLabs.patient_id == ChameleonMain.patient_id). \
-                        where(ChameleonMain.unit == department.name).order_by(ChameleonLabs.patient_id):
+                        join(ChameleonMain, ChameleonLabs.patient_id == ChameleonMain.patient_id).where(
+                    (ChameleonMain.unit == department.name) &
+                    (ChameleonMain.discharge_time == None)
+                ).order_by(ChameleonLabs.patient_id):
                     labs.setdefault(lab_data.patient_id, []).append(lab_data.to_initial_dal().dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/labs',
                                 json={"labs": labs})
@@ -113,7 +120,11 @@ class SqlToDal(object):
             logger.debug('Getting free_text for `{}`...', department.name)
             infos = {}
             with self.session() as session:
-                for free_text in session.query(ChameleonMedicalText).filter(ChameleonMedicalText.medical_text_code.in_([
+                for free_text in session.query(ChameleonMedicalText). \
+                        join(ChameleonMain, ChameleonMedicalText.patient_id == ChameleonMain.patient_id).where(
+                    (ChameleonMain.unit == department.name) &
+                    (ChameleonMain.discharge_time == None)
+                ).filter(ChameleonMedicalText.medical_text_code.in_([
                     FreeTextCodes.DOCTOR_VISIT.value, FreeTextCodes.NURSE_SUMMARY.value
                 ])):
                     free_text.update_basic_medical(infos.setdefault(free_text.patient_id, BasicMedical()))
@@ -130,7 +141,10 @@ class SqlToDal(object):
             with self.session() as session:
                 for referral in session.query(ChameleonReferrals). \
                         join(ChameleonMain, ChameleonReferrals.patient_id == ChameleonMain.patient_id). \
-                        where(ChameleonMain.unit == department.name).order_by(ChameleonReferrals.order_date.desc()):
+                        where(
+                    (ChameleonMain.unit == department.name) &
+                    (ChameleonMain.discharge_time == None)
+                ).order_by(ChameleonReferrals.order_date.desc()):
                     referrals.setdefault(referral.patient_id, []).append(referral.to_dal().dict())
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/referrals',
                                 json={'referrals': referrals})
@@ -141,6 +155,7 @@ class SqlToDal(object):
     def update_treatment(self, department: Departments):
         treatments = {}
         try:
+            logger.debug('Getting treatments for `{}`...', department.name)
             with self.session() as session:
                 result = session.execute(sql_statements.query_discharge_or_hospitalized.format(department.value))
                 for row in result:

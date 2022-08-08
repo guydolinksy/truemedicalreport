@@ -28,18 +28,18 @@ class BasicMedical(BaseModel):
 
 class ExternalPatient(BaseModel):
     external_id: str
-    id_: Optional[str]
-    esi: Optional[ESIScore]
+    id_: str
+    esi: ESIScore
     name: Optional[str]
     arrival: Optional[str]
     age: Optional[str]
     gender: Optional[str]
     birthdate: Optional[str]
     complaint: Optional[str]
-    admission: Optional[Admission]
+    admission: Admission = Admission()
     discharge_time: Optional[str]
-    treatment: Optional[Treatment]
-    basic_medical: Optional[BasicMedical]
+    treatment: Treatment = Treatment()
+    basic_medical: BasicMedical = BasicMedical()
 
     def __init__(self, **kwargs):
         if 'gender' in kwargs and kwargs['gender'] in ['M', 'F']:

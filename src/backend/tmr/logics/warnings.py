@@ -1,60 +1,19 @@
-import asyncio
 import json
-from asyncio import CancelledError
-from typing import Callable, Coroutine, List, Any
 
-import fastapi
 import logbook
 import requests
-import websockets
 from fastapi import Body
 
 from tmr_common.data_models.patient import Patient, Admission
+from tmr_common.utilities.websocket import websocket_subscriber
 from ..routes.websocket import notify
 
 logger = logbook.Logger(__name__)
 
-
-def websocket_subscriber(websocket_url):
-    handlers: List[Coroutine] = []
-    router_ = fastapi.APIRouter()
-    tasks = []
-
-    def subscribe_(key: str, mapper: Callable[[Any], Any] = json.loads):
-        def decorator(func: Callable[[str], Coroutine]):
-            async def wrapper():
-                try:
-                    async for ws in websockets.connect(f"{websocket_url}?key={key}"):
-                        async for message in ws:
-                            try:
-                                await func(mapper(message))
-                            except Exception:
-                                logger.exception('Error running handler for message: {}', message)
-                except CancelledError:
-                    pass
-
-            handlers.append(wrapper())
-            return func
-
-        return decorator
-
-    @router_.on_event('startup')
-    async def on_startup():
-        for func in handlers:
-            tasks.append(asyncio.create_task(func))
-
-    @router_.on_event('shutdown')
-    async def on_shutdown():
-        for task in tasks:
-            task.cancel()
-
-    return router_, subscribe_
-
-
 subscriber_router, subscribe = websocket_subscriber(websocket_url="ws://medical-dal/medical-dal/sync/ws")
 
 
-@subscribe(key="patient")
+@subscribe(key=Patient.__name__)
 @subscriber_router.post('/patients/{patient}')
 async def patient_handler(patient: str):
     await notify(f"/api/patients/{patient}")
@@ -64,7 +23,7 @@ async def patient_handler(patient: str):
     await trigger_notification(patient)
 
 
-@subscribe(key="admission", mapper=lambda message: Admission(**json.loads(message)))
+@subscribe(key=Admission.__name__, mapper=lambda m: Admission(**json.loads(m)))
 @subscriber_router.post('/admissions')
 async def admission_handler(admission: Admission = Body(..., embed=True)):
     await notify(f"/api/departments/{admission.department}")
