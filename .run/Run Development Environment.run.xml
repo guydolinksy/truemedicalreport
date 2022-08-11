@@ -8,6 +8,7 @@
           <list>
             <option value="src/docker-compose.sheba.yml" />
             <option value="src/docker-compose.sheba.faker.yml" />
+            <option value="src/docker-compose.dev.yml" />
           </list>
         </option>
         <option name="services">

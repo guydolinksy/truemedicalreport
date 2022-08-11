@@ -1,7 +1,24 @@
-import React, {useCallback, useContext, useEffect, useState} from 'react';
-import {Badge, List, Space, Card, Col, Collapse, Empty, Input, Layout, Menu, Row, Spin} from 'antd';
+import React, {useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import {
+    Badge,
+    Card,
+    Col,
+    Collapse,
+    Divider,
+    Empty,
+    Input,
+    Layout,
+    List,
+    Menu,
+    Radio,
+    Row,
+    Space,
+    Spin,
+    Tree,
+    Typography
+} from 'antd';
 import {Patient} from "./Patient";
-import {createContext} from "./DataContext";
+import {createContext} from "../hooks/DataContext";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faRightFromBracket,} from "@fortawesome/free-solid-svg-icons";
 import {useNavigate} from "react-router";
@@ -9,19 +26,19 @@ import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
-
 import {PushpinOutlined, SettingOutlined, UserOutlined} from "@ant-design/icons";
 import {Link} from "react-router-dom";
 import Moment from "react-moment";
 
 import {useViewport} from "./UseViewPort";
 import moment from 'moment';
-import {loginContext} from "./LoginContext";
+import {useLocalStorage} from "../hooks/localStorageHook";
 
+const {Paragraph} = Typography;
 const {Search} = Input;
 const {Content, Sider} = Layout;
 const wingDataContext = createContext(null);
-const notificationsDataContext = createContext(null);
+const statusDataContext = createContext(null);
 
 const highlighter = new Highlighter('root');
 const {Panel} = Collapse;
@@ -31,12 +48,13 @@ const badgeClass = {
     2: 'status-badge status-warn',
     3: 'status-badge status-success',
 }
-const WingNotificationsInner = ({wingName}) => {
+const WingStatusInner = ({wingName}) => {
     const navigate = useNavigate();
     const [openKeys, setOpenKeys] = useState([]);
     const [search, setSearch] = useState('');
-    const {value, lastMessage} = useContext(notificationsDataContext.context);
-    const {userSettings} = useContext(loginContext);
+    const {value, lastMessage} = useContext(statusDataContext.context);
+
+    const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'location');
 
     useEffect(() => {
         highlighter.apply(search)
@@ -73,12 +91,35 @@ const WingNotificationsInner = ({wingName}) => {
         }}>
             <Collapse>
                 <Panel key={'basic'} showArrow={false} extra={<SettingOutlined/>} header={wingName}>
+                    <Paragraph>
+                        סנן לפי:
+                    </Paragraph>
+                    <Tree treeData={value.filters.tree} checkable selectable={false} defaultExpandAll/>
+                    <Divider/>
+                    <Paragraph>
+                        מיין לפי:
+                    </Paragraph>
+                    <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}>
+                        <Radio.Button value={"location"}>מיקום</Radio.Button>
+                        <Radio.Button value={"arrival"}>זמן קבלה</Radio.Button>
+                        <Radio.Button value={"name"}>שם מלא</Radio.Button>
+                        <Radio.Button value={"severity"}>דחיפות</Radio.Button>
+                    </Radio.Group>
+                    <Divider/>
+                    <Paragraph>
+                        רופא מטפל:
+                    </Paragraph>
+                    <Radio.Group>
+                        <Radio.Button value="doctor-1">דר שרון שושן</Radio.Button>
+                        <Radio.Button value="doctor-2">דר נופרת נהוראי</Radio.Button>
+                        <Radio.Button value="doctor-3">דר גבע הרמלין</Radio.Button>
+                    </Radio.Group>
                 </Panel>
             </Collapse>
             <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
                     placeholder={'חיפוש'}/>
             <Collapse style={{overflowY: "auto", flex: 1}} activeKey={openKeys} onChange={openChange}>
-                {value.map((notification) =>
+                {value.notifications.map((notification) =>
                     <Panel key={notification.patient.oid} showArrow={false} header={
                         <div style={{
                             display: "flex",
@@ -113,10 +154,13 @@ const WingNotificationsInner = ({wingName}) => {
                     }>
                         <List>
                             {notification.notifications.map((message, j) =>
-                                <Item><Link key={`${notification.patient.oid}-${j}`}
-                                            to={`#info#${notification.patient.oid}#${message.type}#${message.static_id}`}>
-                                    <span className={message.danger ? 'warn-text' : undefined}>{message.message}</span>
-                                </Link></Item>
+                                <Item key={`${notification.patient.oid}-${j}`}>
+                                    <Link to={`#info#${notification.patient.oid}#${message.type}#${message.static_id}`}>
+                                        <span className={message.danger ? 'warn-text' : undefined}>
+                                            {message.message}
+                                        </span>
+                                    </Link>
+                                </Item>
                             )}
                         </List>
                     </Panel>
@@ -128,12 +172,12 @@ const WingNotificationsInner = ({wingName}) => {
         ]} onClick={() => navigate('/')}/>
     </div>
 };
-const WingNotifications = ({department, wing, wingName, onError}) => {
-    const notificationsURI = `/api/departments/${department}/wings/${wing}/notifications`;
+const WingStatus = ({department, wing, wingName, onError}) => {
+    const statusURI = `/api/departments/${department}/wings/${wing}/status`;
 
-    return <notificationsDataContext.Provider url={notificationsURI} defaultValue={[]} onError={onError}>
-        {({loading}) => loading ? <Spin/> : <WingNotificationsInner wingName={wingName}/>}
-    </notificationsDataContext.Provider>;
+    return <statusDataContext.Provider url={statusURI} defaultValue={{}} onError={onError}>
+        {({loading}) => loading ? <Spin/> : <WingStatusInner wingName={wingName}/>}
+    </statusDataContext.Provider>;
 }
 const WingLayout = ({department, wing, details, onError}) => {
     return <Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
@@ -161,9 +205,18 @@ const Patients = ({patients, onError}) => {
         </div> : <Empty description={false} image={Empty.PRESENTED_IMAGE_SIMPLE}/>}
     </Card>
 }
+
+const sortFunctions = {
+    name: (i, j) => i.name.localeCompare(j.name),
+    severity: (i, j) => i.severity.value - j.severity.value,
+    arrival: (i, j) => moment(i.arrival).isAfter(j.arrival) ? 1 : -1,
+    [undefined]: (i, j) => moment(i.arrival).isAfter(j.arrival) ? 1 : -1
+}
 const WingInner = ({department, wing, onError}) => {
     const navigate = useNavigate();
     const {value, flush} = useContext(wingDataContext.context);
+
+    const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'location');
 
     const onInfoError = useCallback(() => {
         flush(true)
@@ -172,28 +225,22 @@ const WingInner = ({department, wing, onError}) => {
 
     const siderWidth = 350, totalWidth = useViewport();
 
-    const forceTabletMode = useCallback(() => {
+    const isForceTabletMode = useMemo(() => {
         const buffer = 100;
         if (!value || !value.details || !value.details.columns)
             return true
         return totalWidth - siderWidth - value.details.columns.reduce((s, c) => s + c.minWidth, 0) < buffer;
     }, [totalWidth, value, siderWidth]);
 
-    const [tabletMode, setTabletMode] = useState({forced: forceTabletMode(), value: false})
-
-    useEffect(() => {
-        setTabletMode(({value}) => ({forced: forceTabletMode(), value: value}))
-    }, [forceTabletMode, totalWidth, value, siderWidth]);
-
-    const allPatients = value.patients.sort((i, j) => moment(i.arrival).isAfter(j.arrival) ? 1 : -1);
+    const allPatients = value.patients.sort(sortFunctions[wingSortKey]);
     const unassignedPatients = allPatients.filter(({oid, admission}) => !admission.bed);
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
-            <WingNotifications department={department} wing={wing} wingName={value.details.name} onError={onError}/>
+            <WingStatus department={department} wing={wing} wingName={value.details.name} onError={onError}/>
         </Sider>
         <Content className={'content'} style={{overflowY: "auto"}}>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
-                {tabletMode.forced || tabletMode.value ?
+                {isForceTabletMode || wingSortKey !== 'location' ?
                     <Patients key={'patients'} patients={allPatients} onError={flush}/> : [
                         <WingLayout key={'wing'} department={department} wing={wing} details={value.details}
                                     onError={flush}/>,

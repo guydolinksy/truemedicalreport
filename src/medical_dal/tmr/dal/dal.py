@@ -19,6 +19,7 @@ from tmr_common.data_models.patient import Patient, PatientNotifications, Extern
     PatientInfo, Event, Awaiting, AwaitingTypes, BasicMedical
 from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.treatment import Treatment
+from tmr_common.data_models.wing import WingFilter, WingFilters
 from tmr_common.utilities.exceptions import PatientNotFound
 from tmr_common.utilities.websocket import atomic_update
 
@@ -53,6 +54,39 @@ class MedicalDal:
         patients = [Patient(**patient) for patient in
                     self.db.patients.find({"admission.department": department, "admission.wing": wing})]
         return patients
+
+    def get_wing_filters(self, department: str, wing: str) -> WingFilters:
+        res = {}
+        patients = self.get_wing_patients(department, wing)
+        for patient in patients:
+            for awaiting in patient.awaiting:
+                for key in patient.awaiting[awaiting]:
+                    if not patient.awaiting[awaiting][key].completed:
+                        res.setdefault(awaiting, {}).setdefault(patient.awaiting[awaiting][key].awaiting, []).append(
+                            patient.oid
+                        )
+        awaiting_total = set(p for keys in res.values() for l in keys.values() for p in l)
+        return WingFilters(
+            tree=[
+                WingFilter(key='awaiting', title=f'({len(awaiting_total)}) ממתינים עבור:', children=[WingFilter(
+                    key=awaiting, title=f'({len(set(p for l in keys.values() for p in l))}) {awaiting}',
+                    children=[WingFilter(
+                        key='.'.join([awaiting, key]), title=f'({len(keys[key])}) {key}') for key in keys]
+                ) for awaiting, keys in res.items()]),
+                WingFilter(key='not-awaiting', title=f'({len(patients) - len(awaiting_total)}) לא מתינים'),
+            ],
+            mapping=dict(
+                [
+                    ('.'.join([awaiting, key]), patients) for awaiting, keys in res.items() for key, patients in
+                    keys.items()
+                ] + [
+                    (awaiting, list(set(p for l in keys.values() for p in l))) for awaiting, keys in res.items()
+                ] + [
+                    ('awaiting', list(awaiting_total)),
+                    ('not-awaiting', list({p.oid for p in patients} - awaiting_total)),
+                ]
+            )
+        )
 
     def get_wing_notifications(self, department: str, wing: str) -> List[PatientNotifications]:
         patients = {patient.external_id: patient for patient in self.get_wing_patients(department, wing)}

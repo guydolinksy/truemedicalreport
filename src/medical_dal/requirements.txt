@@ -3,7 +3,7 @@ setuptools~=60.2.0
 pydantic~=1.9.0
 pydentic~=0.0.1.dev3
 common
-fastapi==0.75.0
+fastapi_offline
 pymongo==4.0.2
 uvicorn==0.17.6
 broadcaster

@@ -1,9 +1,9 @@
-from typing import List
+from typing import List, Any, Dict
 from typing import Optional
 
 from pydantic import BaseModel
 
-from tmr_common.data_models.patient import Patient
+from .patient import Patient, PatientNotifications
 
 
 class Wing(BaseModel):
@@ -22,6 +22,31 @@ class Wing(BaseModel):
 class WingOverview(Wing):
     patient_count: Optional[int]
     waiting_patient: Optional[int]
+
+    class Config:
+        orm_mode = True
+
+
+class WingFilter(BaseModel):
+    key: str
+    title: str
+    children: List[Any] = list()
+
+    class Config:
+        orm_mode = True
+
+
+class WingFilters(BaseModel):
+    tree: List[WingFilter]
+    mapping: Dict[str, List[str]]
+
+    class Config:
+        orm_mode = True
+
+
+class WingStatus(BaseModel):
+    filters: WingFilters
+    notifications: List[PatientNotifications]
 
     class Config:
         orm_mode = True

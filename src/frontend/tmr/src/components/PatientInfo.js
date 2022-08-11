@@ -196,6 +196,20 @@ const InternalPatientCard = ({patient, setTitle}) => {
                     </Timeline.Item>
                 )}</Timeline>
             </Panel>
+            <Panel key={'mortality'} header={'AI חיזוי תמותה'}>
+                <div>סיכון לתמותה בתוך 48 שעות: <b>X3</b> מהאוכלוסיה הכללית!</div>
+                <div>TOP Vectors:
+                    <div>
+                        ESI (+)
+                    </div>
+                    <div>
+                        Age(-)
+                    </div>
+                    <div>
+                        Respiratory Rate (++)
+                    </div>
+                </div>
+            </Panel>
         </Collapse>}
     </HashMatch>
 }

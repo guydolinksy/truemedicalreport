@@ -1,9 +1,12 @@
+import logbook
 import requests
 from fastapi import APIRouter, Depends
 
 from .auth import manager
 
 wing_router = APIRouter()
+
+logger = logbook.Logger(__name__)
 
 
 @wing_router.get("/{wing}")
@@ -12,9 +15,9 @@ def get_wing_details(department: str, wing: str, _=Depends(manager)) -> dict:
     return res
 
 
-@wing_router.get("/{wing}/notifications")
-def wing_notifications(department: str, wing: str, _=Depends(manager)) -> dict:
-    res = requests.get(f"http://medical-dal/medical-dal/departments/{department}/wings/{wing}/notifications").json()
+@wing_router.get("/{wing}/status")
+def wing_status(department: str, wing: str, _=Depends(manager)) -> dict:
+    res = requests.get(f"http://medical-dal/medical-dal/departments/{department}/wings/{wing}/status").json()
     return res
 
 

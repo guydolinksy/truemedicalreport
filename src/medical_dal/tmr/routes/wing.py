@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any, Dict
 
 import logbook
 from fastapi import APIRouter, Depends
@@ -6,7 +6,7 @@ from pymongo import MongoClient
 
 from tmr_common.data_models.bed import Bed
 from tmr_common.data_models.patient import PatientNotifications
-from tmr_common.data_models.wing import Wing, WingSummary
+from tmr_common.data_models.wing import Wing, WingSummary, WingStatus
 from ..dal.dal import MedicalDal
 
 logger = logbook.Logger(__name__)
@@ -25,10 +25,14 @@ def get_wing_details(department: str, wing: str, dal: MedicalDal = Depends(medic
 
 
 # TODO move logic to backend service after it works
-@wing_router.get("/{wing}/notifications", tags=["Wing"], status_code=200)
-def wing_notifications(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> \
-        List[PatientNotifications]:
-    return dal.get_wing_notifications(department, wing)
+@wing_router.get("/{wing}/status", response_model=WingStatus)
+def wing_status(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> WingStatus:
+    res = WingStatus(
+        filters=dal.get_wing_filters(department, wing),
+        notifications=dal.get_wing_notifications(department, wing)
+    )
+    logger.debug(res)
+    return res
 
 
 @wing_router.get("/{wing}/details", response_model=Wing, response_model_exclude_unset=True, tags=["Wing"])

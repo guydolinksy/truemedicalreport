@@ -20,7 +20,9 @@ async def patient_handler(patient: str):
     await notify(f"/api/patients/{patient}/info")
 
     patient = Patient(**requests.get(f"http://medical-dal/medical-dal/patients/{patient}").json())
-    await trigger_notification(patient)
+    await notify(f"/api/departments/{patient.admission.department}")
+    await notify(f"/api/departments/{patient.admission.department}/wings/{patient.admission.wing}")
+    await trigger_status(patient)
 
 
 @subscribe(key=Admission.__name__, mapper=lambda m: Admission(**json.loads(m)))
@@ -28,13 +30,13 @@ async def patient_handler(patient: str):
 async def admission_handler(admission: Admission = Body(..., embed=True)):
     await notify(f"/api/departments/{admission.department}")
     await notify(f"/api/departments/{admission.department}/wings/{admission.wing}")
-    await notify(f"/api/departments/{admission.department}/wings/{admission.wing}/notifications")
+    await notify(f"/api/departments/{admission.department}/wings/{admission.wing}/status")
     await notify(f"/api/departments/{admission.department}/wings/{admission.wing}/beds/{admission.bed}")
 
 
-@subscribe(key="notification")
-@subscriber_router.post('/patients/{patient}/notification')
-async def notification_handler(patient: str):
+@subscribe(key="status")
+@subscriber_router.post('/patients/{patient}/status')
+async def status_handler(patient: str):
     await notify(f"/api/patients/{patient}")
     await notify(f"/api/patients/{patient}/info")
     try:
@@ -44,12 +46,11 @@ async def notification_handler(patient: str):
         return
 
     patient = Patient(**res.json())
-    await trigger_notification(patient, True)
+    await trigger_status(patient, True)
 
 
-async def trigger_notification(patient: Patient, should_open=False):
+async def trigger_status(patient: Patient, should_open=False):
     if patient.admission:
         await notify(
-            f"/api/departments/{patient.admission.department}"
-            f"/wings/{patient.admission.wing}/notifications",
+            f"/api/departments/{patient.admission.department}/wings/{patient.admission.wing}/status",
             {'openKeys': [patient.oid] if should_open else []})

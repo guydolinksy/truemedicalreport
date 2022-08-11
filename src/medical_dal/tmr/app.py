@@ -1,11 +1,11 @@
 import sys
 
-from fastapi import FastAPI
+from fastapi_offline import FastAPIOffline
 from logbook import StreamHandler
 
 
-def create_app() -> FastAPI:
-    app_ = FastAPI(openapi_url='/medical-dal/openapi.json', docs_url='/medical-dal/docs')
+def create_app() -> FastAPIOffline:
+    app_ = FastAPIOffline(openapi_url='/medical-dal/openapi.json', docs_url='/medical-dal/docs')
 
     StreamHandler(sys.stdout).push_application()
 

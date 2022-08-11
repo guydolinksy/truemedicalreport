@@ -1,8 +1,6 @@
-import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import Axios from "axios";
-import {Alert, Button, Card, Form, Input, Radio} from "antd";
-import {EyeInvisibleOutlined, UserOutlined} from "@ant-design/icons";
-import {loginContext} from "../LoginContext";
+import {Alert, Button, Card, Form, Radio} from "antd";
 
 export const DisplayCard = () => {
     const [success, setSuccess] = useState(false);
