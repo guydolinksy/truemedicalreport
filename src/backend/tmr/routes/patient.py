@@ -4,7 +4,7 @@ from fastapi import APIRouter, Body
 
 from tmr_common.data_models.patient import Patient, PatientInfo
 from tmr_common.utilities.exceptions import PatientNotFound
-from ..utils import prepare_update_object
+from tmr.logics.utils import prepare_update_object
 
 patient_router = APIRouter()
 
@@ -13,18 +13,18 @@ logger = logbook.Logger(__name__)
 
 @patient_router.get("/{patient}")
 def get_patient_by_id(patient: str) -> dict:
-    res = requests.get(f"http://medical-dal/medical-dal/patients/{patient}").json()
-    if not res:
+    res = requests.get(f"http://medical-dal/medical-dal/patients/{patient}")
+    if not res.ok:
         raise PatientNotFound()
-    return Patient(**res).dict()
+    return Patient(**res.json()).dict()
 
 
 @patient_router.get("/{patient}/info")
 def get_patient_info_by_id(patient: str) -> dict:
-    res = requests.get(f"http://medical-dal/medical-dal/patients/{patient}/info").json()
-    if not res:
+    res = requests.get(f"http://medical-dal/medical-dal/patients/{patient}/info")
+    if not res.ok:
         raise PatientNotFound()
-    return PatientInfo(**res).dict()
+    return PatientInfo(**res.json()).dict()
 
 
 @patient_router.post("/{patient}")

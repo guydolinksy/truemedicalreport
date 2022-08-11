@@ -14,6 +14,7 @@
           <list>
             <option value="proxy" />
             <option value="sqlpad" />
+            <option value="matomo-web" />
           </list>
         </option>
         <option name="sourceFilePath" value="src/docker-compose.yml" />

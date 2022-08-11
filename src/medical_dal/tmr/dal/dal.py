@@ -69,7 +69,7 @@ class MedicalDal:
             notifications or patients[patient].flagged
         ], key=lambda pn: (
             bool(pn.patient.flagged),
-            datetime.datetime.fromisoformat(pn.at) if pn.at else datetime.datetime.min
+            datetime.datetime.fromisoformat(pn.at).timestamp() if pn.at else 0
         ), reverse=True)
 
     def get_department_patients(self, department: str) -> List[Patient]:
@@ -108,7 +108,11 @@ class MedicalDal:
         )
 
     def get_patient_by_bed(self, department: str, wing: str, bed: str) -> str:
-        res = self.db.patients.find_one({"admission": {"department": department, "wing": wing, "bed": bed}})
+        res = self.db.patients.find_one({
+            "admission.department": department,
+            "admission.wing": wing,
+            "admission.bed": bed
+        })
         return str(res.pop('_id')) if res else None
 
     async def _cascade_delete_patient(self, patient_external_id):
@@ -187,7 +191,7 @@ class MedicalDal:
             self.db.notifications.update_one({"notification_id": notification.notification_id},
                                              {'$set': notification.dict()}, upsert=True)
             await notify('notification', patient.oid)
-        updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).setdefault(imaging_obj.external_id, Awaiting(
+        updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(imaging_obj.external_id, Awaiting(
             awaiting=imaging_obj.title,
             since=imaging_obj.at,
             completed=imaging_obj.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value],
@@ -226,7 +230,7 @@ class MedicalDal:
                 updated.warnings.setdefault(key, warning)
 
             logger.debug('%%%%%%%%%%%%%%%% {} {}', patient_id, lab.get_instance_id())
-            updated.awaiting.setdefault(AwaitingTypes.laboratory.value, {}).setdefault(lab.get_instance_id(), Awaiting(
+            updated.awaiting.setdefault(AwaitingTypes.laboratory.value, {}).__setitem__(lab.get_instance_id(), Awaiting(
                 awaiting=lab.category,
                 since=lab.at,
                 completed=lab.status == StatusInHebrew[LabStatus.analyzed.value],
@@ -250,7 +254,7 @@ class MedicalDal:
             self.db.notifications.update_one({"notification_id": notification.notification_id},
                                              {'$set': notification.dict()}, upsert=True)
             await notify('notification', patient.oid)
-        updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).setdefault(referral_obj.to, Awaiting(
+        updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(referral_obj.to, Awaiting(
             awaiting=referral_obj.to,
             since=referral_obj.at,
             completed=referral_obj.completed,

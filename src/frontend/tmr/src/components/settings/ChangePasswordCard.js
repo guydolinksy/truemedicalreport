@@ -73,7 +73,7 @@ export const ChangePasswordCard = () => {
                            placeholder={"וידוא סיסמה"}/>
                 </Form.Item>
                 <Form.Item>
-                    <Button disabled={!canSubmit} type={"primary"} htmlType={"submit"}>שלח</Button>
+                    <Button disabled={!canSubmit} type={"primary"} htmlType={"submit"}>שמירה</Button>
                 </Form.Item>
             </Form>}
     </Card>

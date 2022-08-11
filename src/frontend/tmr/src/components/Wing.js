@@ -1,5 +1,5 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
-import {Card, Col, Collapse, Empty, Input, Layout, Menu, Row, Spin} from 'antd';
+import {Badge, List, Space, Card, Col, Collapse, Empty, Input, Layout, Menu, Row, Spin} from 'antd';
 import {Patient} from "./Patient";
 import {createContext} from "./DataContext";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -9,10 +9,14 @@ import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
-import {PatientNotification} from "./PatientNotification";
-import {SettingOutlined} from "@ant-design/icons";
+
+import {PushpinOutlined, SettingOutlined, UserOutlined} from "@ant-design/icons";
+import {Link} from "react-router-dom";
+import Moment from "react-moment";
+
 import {useViewport} from "./UseViewPort";
 import moment from 'moment';
+import {loginContext} from "./LoginContext";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -21,12 +25,18 @@ const notificationsDataContext = createContext(null);
 
 const highlighter = new Highlighter('root');
 const {Panel} = Collapse;
-
+const {Item} = List;
+const badgeClass = {
+    1: 'status-badge status-error',
+    2: 'status-badge status-warn',
+    3: 'status-badge status-success',
+}
 const WingNotificationsInner = ({wingName}) => {
     const navigate = useNavigate();
     const [openKeys, setOpenKeys] = useState([]);
     const [search, setSearch] = useState('');
     const {value, lastMessage} = useContext(notificationsDataContext.context);
+    const {userSettings} = useContext(loginContext);
 
     useEffect(() => {
         highlighter.apply(search)
@@ -69,10 +79,51 @@ const WingNotificationsInner = ({wingName}) => {
                     placeholder={'חיפוש'}/>
             <Collapse style={{overflowY: "auto", flex: 1}} activeKey={openKeys} onChange={openChange}>
                 {value.map((notification) =>
-                    <PatientNotification key={notification.patient.oid} notification={notification}/>)}
+                    <Panel key={notification.patient.oid} showArrow={false} header={
+                        <div style={{
+                            display: "flex",
+                            flexFlow: "column nowrap",
+                            alignItems: "flex-start",
+                        }}>
+                            <div><UserOutlined/>&nbsp;{notification.patient.name}</div>
+                            <div style={{
+                                textOverflow: "ellipsis",
+                                fontSize: "10px"
+                            }}>{notification.preview}</div>
+                        </div>
+                    } extra={
+                        <div style={{
+                            display: "flex",
+                            flexFlow: "column nowrap",
+                            alignItems: "flex-end",
+                        }}>
+                            <Moment style={{display: "block"}}
+                                    date={notification.at || notification.patient.arrival}
+                                    format={'hh:mm'}/>
+                            <Space>
+                                {notification.patient.flagged &&
+                                    <PushpinOutlined style={{marginLeft: 0}}/>}
+                                {notification.notifications.length > 0 &&
+                                    <Badge
+                                        className={badgeClass[notification.level]}
+                                        count={notification.notifications.length}
+                                        size={"small"}/>}
+                            </Space>
+                        </div>
+                    }>
+                        <List>
+                            {notification.notifications.map((message, j) =>
+                                <Item><Link key={`${notification.patient.oid}-${j}`}
+                                            to={`#info#${notification.patient.oid}#${message.type}#${message.static_id}`}>
+                                    <span className={message.danger ? 'warn-text' : undefined}>{message.message}</span>
+                                </Link></Item>
+                            )}
+                        </List>
+                    </Panel>
+                )}
             </Collapse>
         </div>
-        <Menu selectable={false} theme={"dark"} mode={"inline"} style={{userSelect: "none"}} items={[
+        <Menu selectable={false} mode={"inline"} style={{userSelect: "none"}} items={[
             {key: 'exit', label: <span><FontAwesomeIcon icon={faRightFromBracket}/>&nbsp;חזרה למחלקה</span>}
         ]} onClick={() => navigate('/')}/>
     </div>
@@ -111,49 +162,48 @@ const Patients = ({patients, onError}) => {
     </Card>
 }
 const WingInner = ({department, wing, onError}) => {
-        const navigate = useNavigate();
-        const {value, flush} = useContext(wingDataContext.context);
+    const navigate = useNavigate();
+    const {value, flush} = useContext(wingDataContext.context);
 
-        const onInfoError = useCallback(() => {
-            flush(true)
-            navigate('#')
-        }, [navigate, flush]);
+    const onInfoError = useCallback(() => {
+        flush(true)
+        navigate('#')
+    }, [navigate, flush]);
 
-        const siderWidth = 350, totalWidth = useViewport();
+    const siderWidth = 350, totalWidth = useViewport();
 
-        const forceTabletMode = useCallback(() => {
-            const buffer = 100;
-            if (!value || !value.details || !value.details.columns)
-                return true
-            return totalWidth - siderWidth - value.details.columns.reduce((s, c) => s + c.minWidth, 0) < buffer;
-        }, [totalWidth, value, siderWidth]);
+    const forceTabletMode = useCallback(() => {
+        const buffer = 100;
+        if (!value || !value.details || !value.details.columns)
+            return true
+        return totalWidth - siderWidth - value.details.columns.reduce((s, c) => s + c.minWidth, 0) < buffer;
+    }, [totalWidth, value, siderWidth]);
 
-        const [tabletMode, setTabletMode] = useState({forced: forceTabletMode(), value: false})
+    const [tabletMode, setTabletMode] = useState({forced: forceTabletMode(), value: false})
 
-        useEffect(() => {
-            setTabletMode(({value}) => ({forced: forceTabletMode(), value: value}))
-        }, [forceTabletMode, totalWidth, value, siderWidth]);
+    useEffect(() => {
+        setTabletMode(({value}) => ({forced: forceTabletMode(), value: value}))
+    }, [forceTabletMode, totalWidth, value, siderWidth]);
 
-        const allPatients = value.patients.sort((i, j) => moment(i.arrival).isAfter(j.arrival) ? 1 : -1);
-        const unassignedPatients = allPatients.filter(({oid, admission}) => !admission.bed);
-        return <Layout>
-            <Sider breakpoint={"lg"} width={siderWidth}>
-                <WingNotifications department={department} wing={wing} wingName={value.details.name} onError={onError}/>
-            </Sider>
-            <Content style={{backgroundColor: "#000d17", overflowY: "auto"}}>
-                <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
-                    {tabletMode.forced || tabletMode.value ?
-                        <Patients key={'patients'} patients={allPatients} onError={flush}/> : [
-                            <WingLayout key={'wing'} department={department} wing={wing} details={value.details}
-                                        onError={flush}/>,
-                            <Patients key={'patients'} patients={unassignedPatients} onError={flush}/>
-                        ]}
-                </Col>
-            </Content>
-            <PatientInfo onError={onInfoError}/>
-        </Layout>
-    }
-;
+    const allPatients = value.patients.sort((i, j) => moment(i.arrival).isAfter(j.arrival) ? 1 : -1);
+    const unassignedPatients = allPatients.filter(({oid, admission}) => !admission.bed);
+    return <Layout>
+        <Sider breakpoint={"lg"} width={siderWidth}>
+            <WingNotifications department={department} wing={wing} wingName={value.details.name} onError={onError}/>
+        </Sider>
+        <Content className={'content'} style={{overflowY: "auto"}}>
+            <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
+                {tabletMode.forced || tabletMode.value ?
+                    <Patients key={'patients'} patients={allPatients} onError={flush}/> : [
+                        <WingLayout key={'wing'} department={department} wing={wing} details={value.details}
+                                    onError={flush}/>,
+                        <Patients key={'patients'} patients={unassignedPatients} onError={flush}/>
+                    ]}
+            </Col>
+        </Content>
+        <PatientInfo onError={onInfoError}/>
+    </Layout>
+};
 
 export const Wing = ({department, wing, onError}) => {
     const uri = `/api/departments/${department}/wings/${wing}`;

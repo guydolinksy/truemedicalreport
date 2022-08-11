@@ -6,7 +6,7 @@ from fastapi import Body
 
 from tmr_common.data_models.patient import Patient, Admission
 from tmr_common.utilities.websocket import websocket_subscriber
-from ..routes.websocket import notify
+from .websocket import notify
 
 logger = logbook.Logger(__name__)
 

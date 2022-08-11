@@ -1,27 +1,28 @@
-import React, {useCallback, useContext, useEffect, useState} from "react";
+import React, {useCallback, useContext, useEffect, useState, Suspense} from "react";
 import Axios from 'axios';
 import {useLocation, useNavigate} from "react-router";
 import {Navigate} from "react-router-dom";
-import { useMatomo } from '@datapunt/matomo-tracker-react'
+import {useMatomo} from '@datapunt/matomo-tracker-react'
 
 import {Button, Form, Input, Spin} from 'antd';
 import {LockOutlined, UserOutlined} from "@ant-design/icons";
+import {LightTheme} from "../themes/ThemeContext";
 
 export const loginContext = React.createContext(null);
 
 export const LoginProvider = ({...props}) => {
 
-    const [{loading, user}, setUser] = useState({loading: false, user: null});
+    const [{loading, user, userSettings}, setUser] = useState({loading: false, user: null, userSettings: {}});
     const {pathname} = useLocation();
 
     const checkUser = useCallback((token = null) => {
-        setUser(prevState => ({loading: true, user: prevState.user}));
+        setUser(prevState => ({loading: true, user: prevState.user, userSettings: prevState.userSettings}));
         Axios.get('/api/auth/user', {cancelToken: token}).then(response => {
-            setUser({loading: false, user: response.data});
+            setUser({loading: false, user: response.data.user, userSettings: response.data.userSettings});
         }).catch(error => {
             if (Axios.isCancel(error))
                 return;
-            setUser({loading: false, user: null});
+            setUser({loading: false, user: null, userSettings: {}});
             console.error(error)
         })
     }, []);
@@ -32,26 +33,27 @@ export const LoginProvider = ({...props}) => {
         return () => s.cancel()
     }, [pathname, checkUser]);
 
-    return <loginContext.Provider value={{user: user, checkUser: checkUser, loadingUser: loading}}>
-        {props.children({user: user, checkUser: checkUser, loadingUser: loading, ...props})}
+    return <loginContext.Provider
+        value={{user: user, userSettings: userSettings, checkUser: checkUser, loadingUser: loading}}>
+        {props.children({user: user, userSettings: userSettings, checkUser: checkUser, loadingUser: loading, ...props})}
     </loginContext.Provider>
 }
 
 export const withLogin = Component => ({...props}) => {
-    return <loginContext.Consumer>{({user, checkUser, loadingUser}) =>
-        <Component user={user} checkUser={checkUser} loadingUser={loadingUser} {...props}/>
+    return <loginContext.Consumer>{({user, userSettings, checkUser, loadingUser}) =>
+        <Component user={user} userSettings={userSettings} checkUser={checkUser} loadingUser={loadingUser} {...props}/>
     }</loginContext.Consumer>
 };
 
 export const LoginRequired = ({...props}) => {
     const {user, loadingUser} = useContext(loginContext);
     const {pathname, search, hash} = useLocation();
-    const { pushInstruction } = useMatomo()
+    const {pushInstruction} = useMatomo()
 
     if (loadingUser)
         return <Spin/>
 
-    if(user) {
+    if (user) {
         pushInstruction('setUserId', user.user);
         return props.children;
     }
@@ -84,8 +86,11 @@ export const LoginForm = () => {
     }, [user, search, navigate])
 
 
-    return loadingUser ? <Spin/> :
-        <Form name={"login"} onFinish={onFinish} onValuesChange={() => setError(false)}>
+    return <>
+        <Suspense fallback={<span/>}>
+            <LightTheme/>
+        </Suspense>
+        {loadingUser ? <Spin/> : <Form name={"login"} onFinish={onFinish} onValuesChange={() => setError(false)}>
             <Form.Item name={"username"} label={"שם משתמש"} rules={[{required: true, message: 'נדרש שם משתמש'}]}
                        {...(error ? loginErrorProps : {})}>
                 <Input prefix={<UserOutlined/>} autoComplete={"username"}
@@ -103,5 +108,6 @@ export const LoginForm = () => {
                     התחבר.י
                 </Button>
             </Form.Item>
-        </Form>
+        </Form>}
+    </>
 }

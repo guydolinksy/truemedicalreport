@@ -134,7 +134,6 @@ def atomic_update(klass, collection, notify, notify_property, max_retries=10):
             old = json_to_dot_notation(klass(**prv).dict(include=set(new), exclude_unset=True)) if prv else {}
 
             if all(k in old and update[k] == old[k] for k in update):
-                logger.debug('CANCELLED', query)
                 return False
             try:
                 update_result = collection.update_one({**query, **old}, {'$set': update}, upsert=True)

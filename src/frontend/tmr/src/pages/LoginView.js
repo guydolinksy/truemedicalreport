@@ -5,10 +5,8 @@ import {LoginForm} from "../components/LoginContext";
 export const LOGIN_URL = '/login'
 
 export const LoginView = () => {
-
-
     return <div style={{padding: 16}}>
-        <Row>
+        <Row style={{marginTop: 200}}>
             <Col offset={9} span={6}>
                 <LoginForm/>
             </Col>

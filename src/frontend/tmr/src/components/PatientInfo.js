@@ -5,18 +5,23 @@ import Moment from "react-moment";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import highchartsMore from 'highcharts/highcharts-more';
-import theme from 'highcharts/themes/dark-unica';
+import lightTheme from 'highcharts/themes/grid-light';
+import darkTheme from 'highcharts/themes/dark-unica';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faHeart, faHeartPulse, faPercent, faTemperatureHalf,} from "@fortawesome/free-solid-svg-icons";
 import {HashMatch} from "./HashMatch";
-import {PatientStatus, patientDataContext, PatientWarning, severityBorderColor, severityColor} from "./Patient";
+import {PatientStatus, patientDataContext, PatientWarning} from "./Patient";
+import {loginContext} from "./LoginContext";
+import {UserTheme} from "../themes/ThemeContext";
 
-theme(Highcharts);
 highchartsMore(Highcharts);
+const themes = {['dark-theme']: darkTheme, ['light-theme']: lightTheme}
 
 const {Panel} = Collapse;
 const fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;";
 const MeasureGraph = ({data, title, graphProps}) => {
+    const {userSettings} = useContext(loginContext);
+    (themes[userSettings.theme] || (x => x))(Highcharts);
     return <HighchartsReact highcharts={Highcharts} options={{
         title: null,
         xAxis: {type: "datetime", useHTML: true},
@@ -34,11 +39,9 @@ const PatientSeverity = () => {
     return <Radio.Group value={value.severity.value} size={"small"} buttonStyle={"solid"}
                         style={{flex: 1, display: "inline-flex", textAlign: "center"}}
                         onChange={e => update(['severity', 'value'], e.target.value)}>
-        {[1, 2, 3, 4, 5].map(i => <Radio.Button key={i} value={i} style={{
-            flex: 1,
-            color: value.severity.value === i ? undefined : severityBorderColor[i],
-            backgroundColor: value.severity.value === i ? severityColor[i] : undefined,
-        }}>{i}</Radio.Button>)}
+        {[1, 2, 3, 4, 5].map(i => <Radio.Button key={i} value={i} style={{flex: 1}} className={
+            `severity-${i} severity-` + (value.severity.value === i ? "background" : "color")
+        }>{i}</Radio.Button>)}
     </Radio.Group>
 }
 export const PatientInfo = ({onError}) => {
@@ -47,7 +50,7 @@ export const PatientInfo = ({onError}) => {
     const [title, setTitle] = useState();
     return <HashMatch match={['info']}>
         {({matched, match}) => <Drawer title={title} placement={"left"} visible={matched}
-                                       onClose={() => navigate('#')}>
+                                       onClose={() => navigate('#')}><UserTheme>
             {matched &&
                 <patientDataContext.Provider url={`/api/patients/${match[0]}/info`} defaultValue={{
                     warnings: [], awaiting: {}, severity: {value: 0, at: null}, flagged: null,
@@ -68,7 +71,7 @@ export const PatientInfo = ({onError}) => {
                 }} onError={onError}>
                     {() => <InternalPatientCard patient={match[0]} setTitle={setTitle}/>}
                 </patientDataContext.Provider>}
-        </Drawer>}
+        </UserTheme></Drawer>}
     </HashMatch>
 }
 
@@ -80,10 +83,9 @@ const FullMeasure = ({patient, measure, icon, latest, data, title, graphProps}) 
     }}>
         <div style={{textAlign: "center", flex: 1}}>
             <div style={{fontSize: 12}}>{title}&nbsp;<FontAwesomeIcon icon={icon}/></div>
-            <div style={{
+            <div className={latest && !latest.is_valid ? 'error-text' : undefined} style={{
                 userSelect: "none",
                 fontSize: 14,
-                color: latest && !latest.is_valid ? 'red' : undefined
             }}>
                 {(latest && latest.value) || '-'}
             </div>

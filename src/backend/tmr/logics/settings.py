@@ -122,3 +122,5 @@ def settings() -> Settings:
 
 
 current_settings = LocalProxy(settings)
+
+user_settings = MongoClient("mongo").app.settings

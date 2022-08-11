@@ -371,12 +371,12 @@ class FakeMain(object):
         if chameleon_id:
             patients = {chameleon_id}
         elif department and wing:
-            patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 5)]
+            patients = [p for p in self._get_patients(department, wing)]
         else:
             raise ValueError()
         for patient in patients:
             with self.session() as session:
-                session.execute(sql_statements.execute_set_patient_admission.format(patient))
+                session.execute(sql_statements.execute_set_patient_admission.format(patient, random.randint(0, 5)))
                 session.commit()
 
     async def admit_patients(self, department):

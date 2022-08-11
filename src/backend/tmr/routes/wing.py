@@ -1,8 +1,7 @@
 import requests
 from fastapi import APIRouter, Depends
 
-from ..logics.auth import manager
-from ..logics.notifications import load_notification
+from .auth import manager
 
 wing_router = APIRouter()
 
@@ -15,7 +14,8 @@ def get_wing_details(department: str, wing: str, _=Depends(manager)) -> dict:
 
 @wing_router.get("/{wing}/notifications")
 def wing_notifications(department: str, wing: str, _=Depends(manager)) -> dict:
-    return load_notification(department, wing)
+    res = requests.get(f"http://medical-dal/medical-dal/departments/{department}/wings/{wing}/notifications").json()
+    return res
 
 
 @wing_router.get("/{wing}/beds/{bed}")

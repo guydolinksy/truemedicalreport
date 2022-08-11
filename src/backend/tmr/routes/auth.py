@@ -7,7 +7,8 @@ from fastapi import Depends, APIRouter, Body
 from fastapi_login import LoginManager
 from fastapi_login.exceptions import InvalidCredentialsException
 from starlette.responses import Response
-from .settings import Settings, settings, current_settings, LDAP
+
+from ..logics.settings import Settings, settings, current_settings, LDAP, user_settings
 
 logger = logbook.Logger(__name__)
 auth_router = APIRouter()
@@ -78,4 +79,14 @@ async def test_ldap_settings(_=Depends(manager), args=Body(...)):
 
 @auth_router.get('/user')
 def get_user(user=Depends(manager)):
-    return dict(user=user['username'], canChangePassword=user['source'] == 'local', admin=user['source'] == 'local')
+    settings_ = user_settings.find_one({'user': user['username']}) or {}
+    return dict(
+        user=dict(
+            user=user['username'],
+            canChangePassword=user['source'] == 'local',
+            admin=user['source'] == 'local'
+        ),
+        userSettings=dict(
+            theme=settings_.get('display', {}).get('theme', 'light-theme')
+        )
+    )

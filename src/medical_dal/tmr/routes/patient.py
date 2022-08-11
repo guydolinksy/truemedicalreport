@@ -35,5 +35,7 @@ async def update_patient_by_id(patient: str, update_object: dict,
 @subscribe('.'.join([Patient.__name__, 'admission']))
 async def on_admission_change(data: dict):
     key, old, new = data['key'], data['old'], data['new']
-    await notify(Admission.__name__, data['old'])
-    await notify(Admission.__name__, data['new'])
+    if old:
+        await notify(Admission.__name__, old)
+    if new:
+        await notify(Admission.__name__, new)

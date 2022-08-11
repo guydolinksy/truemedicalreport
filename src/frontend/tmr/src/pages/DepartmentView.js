@@ -2,8 +2,8 @@ import React from 'react';
 import {Department} from "../components/Department";
 import {Layout} from 'antd';
 import {MainMenu} from "../components/MainMenu";
-import {LoginRequired} from "../components/LoginContext";
 import {useParams} from "react-router";
+import {LoginRequired} from "../components/LoginContext";
 
 const {Header, Content} = Layout;
 

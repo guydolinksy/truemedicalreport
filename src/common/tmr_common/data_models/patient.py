@@ -27,9 +27,9 @@ class BasicMedical(BaseModel):
 
 
 class ExternalPatient(BaseModel):
-    external_id: str
-    id_: str
-    esi: ESIScore
+    external_id: Optional[str]
+    id_: Optional[str]
+    esi: ESIScore = ESIScore()
     name: Optional[str]
     arrival: Optional[str]
     age: Optional[str]
@@ -79,11 +79,11 @@ class AwaitingTypes(Enum):
 
 
 class InternalPatient(BaseModel):
-    severity: Severity
+    severity: Severity =Severity()
     awaiting: Dict[str, Dict[str, Awaiting]] = {}
     flagged: bool
-    warnings: Dict[str, PatientWarning]
-    measures: Measures
+    warnings: Dict[str, PatientWarning] = {}
+    measures: Measures = Measures()
 
     class Config:
         orm_mode = True

@@ -6,7 +6,7 @@ import {ArrowLeftOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
 import {createContext} from "./DataContext";
 import {useLocation, useNavigate} from "react-router";
 import {HashMatch} from "./HashMatch";
-import { useMatomo } from '@datapunt/matomo-tracker-react'
+import {useMatomo} from '@datapunt/matomo-tracker-react'
 
 import Moment from "react-moment";
 import {value} from "lodash/seq";
@@ -23,37 +23,21 @@ export const patientDataContext = createContext({
 
 const Measure = ({patient, measure, value, icon, title}) => {
     const navigate = useNavigate();
-    const { trackEvent } = useMatomo()
+    const {trackEvent} = useMatomo()
 
     return <div onClick={patient && value ? e => {
         navigate(`#info#${patient}#measures#${measure}`);
-        trackEvent({ category: 'patient-'+measure, action: 'click-event' });
+        trackEvent({category: 'patient-' + measure, action: 'click-event'});
         e.stopPropagation();
     } : null}>
         <div style={{fontSize: 12}}>{title}&nbsp;<FontAwesomeIcon icon={icon}/></div>
-        <div style={{userSelect: "none", fontSize: 14, color: value && !value.is_valid ? 'red' : undefined}}>
+        <div className={value && !value.is_valid ? 'error-text' : undefined} style={{userSelect: "none", fontSize: 14}}>
             {value ? value.value : '-'}
         </div>
     </div>
 };
 
 
-export const severityBorderColor = {
-    1: "#d32029",
-    2: "#d87a16",
-    3: "#d8bd14",
-    4: "#8bbb11",
-    5: "#49aa19",
-    [undefined]: "#d9d9d9",
-}
-export const severityColor = {
-    1: "#431418",
-    2: "#441d12",
-    3: "#443b11",
-    4: "#2e3c10",
-    5: "#1d3712",
-    [undefined]: "#1a1a1a",
-}
 const PatientAge = ({patient}) => {
     const {value, loading} = useContext(patientDataContext.context);
     const genderedAge = {
@@ -71,33 +55,32 @@ export const PatientStatus = ({patient, style}) => {
     const navigate = useNavigate();
     const {value, loading} = useContext(patientDataContext.context);
     const {minutes} = useTime({});
-    const [arrivalColor, setArrivalColor] = useState(undefined);
-    const { trackEvent } = useMatomo()
-    const innerStyle = {
-        userSelect: "none",
-        padding: 20,
-        backgroundColor: severityColor[value.severity.value],
-        cursor: "pointer",
-        textAlign: "center",
-        ...style
-    };
+    const [arrivalClass, setArrivalClass] = useState(undefined);
+    const {trackEvent} = useMatomo()
 
     useEffect(() => {
         if (moment().subtract(2, "hours").isAfter(value.arrival))
-            setArrivalColor('red')
+            setArrivalClass('warn-text')
     }, [minutes]);
 
     return loading ? <Spin/> : <div
-        style={innerStyle}
+        className={`severity-background severity-${value.severity.value || 0}`}
+        style={{
+            userSelect: "none",
+            padding: 20,
+            cursor: "pointer",
+            textAlign: "center",
+            ...style
+        }}
         onClick={e => {
             navigate(`#info#${patient}#basic#complaint`);
-            trackEvent({ category: 'patient-complaint', action: 'click-event' });
+            trackEvent({category: 'patient-complaint', action: 'click-event'});
             e.stopPropagation();
         }}>
         <div><Tooltip overlay={'תלונה עיקרית'}>{value.complaint}</Tooltip>
             &nbsp;-&nbsp;
             <Tooltip overlay={'זמן מקבלה'}>
-                <Moment style={{"color": arrivalColor}} interval={1000} durationFromNow format={'h:mm'}
+                <Moment className={arrivalClass} interval={1000} durationFromNow format={'h:mm'}
                         date={value.arrival}/>
 
             </Tooltip></div>
@@ -107,21 +90,20 @@ export const PatientStatus = ({patient, style}) => {
 }
 export const PatientWarning = ({patient, warning, index, style}) => {
     const navigate = useNavigate();
-    const { trackEvent } = useMatomo()
-    return <div
-        style={{
-            userSelect: "none",
-            padding: 20,
-            backgroundColor: severityColor[warning.severity.value],
-            cursor: patient ? "pointer" : undefined,
-            textAlign: "center",
-            ...style
-        }}
-        onClick={patient ? e => {
-            navigate(`#info#${patient}#basic#warning-${index}`);
-            trackEvent({ category: 'patient-alert', action: 'click-event' });
-            e.stopPropagation();
-        } : null}>
+    const {trackEvent} = useMatomo()
+    return <div className={`severity-background severity-${warning.severity.value || 0}`}
+                style={{
+                    userSelect: "none",
+                    padding: 20,
+                    cursor: patient ? "pointer" : undefined,
+                    textAlign: "center",
+                    ...style
+                }}
+                onClick={patient ? e => {
+                    navigate(`#info#${patient}#basic#warning-${index}`);
+                    trackEvent({category: 'patient-alert', action: 'click-event'});
+                    e.stopPropagation();
+                } : null}>
         <FontAwesomeIcon icon={faWarning}/>&nbsp;{warning.content}
     </div>
 }
@@ -194,12 +176,12 @@ const PatientInner = ({patient, avatar, style}) => {
     const {hash} = useLocation();
     const navigate = useNavigate();
     const {value, update, loading} = useContext(patientDataContext.context);
-    const { trackEvent } = useMatomo();
+    const {trackEvent} = useMatomo();
 
     let text = value.warnings.length || <Tooltip overlay={'סימון דגל'}>
         {<FlagFilled onClick={e => {
             update(['flagged'], !value.flagged);
-            trackEvent({ category: 'patient-flagged', action: 'click-event' });
+            trackEvent({category: 'patient-flagged', action: 'click-event'});
             e.stopPropagation();
         }}/>}
     </Tooltip>
@@ -209,11 +191,10 @@ const PatientInner = ({patient, avatar, style}) => {
         <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
             paddingRight: -4, paddingLeft: -4, animation: matched ? `highlight-${match[0]} 1s ease-out` : undefined
         }} title={<PatientHeader patient={patient} avatar={avatar}/>} style={{
-            margin: 0, maxWidth: 400, minWidth: 300, borderStyle: patient ? "solid" : "dotted",
-            borderColor: severityBorderColor[value.severity.value], ...style
-        }} hoverable onClick={() => {
+            margin: 0, maxWidth: 400, minWidth: 300, borderStyle: patient ? "solid" : "dotted", ...style
+        }} className={`severity-border severity-${value.severity.value || 0}`} hoverable onClick={() => {
             navigate(`#info#${patient}#basic`);
-            trackEvent({ category: 'patient', action: 'click-event' });
+            trackEvent({category: 'patient', action: 'click-event'});
         }} extra={<PatientAwaiting/>} actions={patientMeasures(patient, value.measures)}>
             <div style={style}>
                 <Badge.Ribbon text={text}
@@ -243,9 +224,8 @@ export const Patient = ({patient, loading, avatar, style, onError}) => {
             <div style={{
                 userSelect: "none",
                 padding: 20,
-                backgroundColor: '#1a1a1a',
                 textAlign: "center", ...style
-            }}>
+            }} className={'severity-0 severity-background'}>
                 {content}
             </div>
         </div>
@@ -257,5 +237,8 @@ export const Patient = ({patient, loading, avatar, style, onError}) => {
     }} onError={onError}>
         {data => data.loading || loading ? placeholder(<Spin size={"small"}/>) :
             <PatientInner patient={patient} avatar={avatar} style={style}/>}
-    </patientDataContext.Provider> : placeholder('מיטה ריקה')
+    </patientDataContext.Provider> : placeholder(<>
+        <div>מיטה</div>
+        <div>פנוייה</div>
+    </>)
 };

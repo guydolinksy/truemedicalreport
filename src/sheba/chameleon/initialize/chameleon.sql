@@ -1117,7 +1117,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE PROCEDURE [dbo].[faker_RoomPlacementPatient_admission](@medical_record int)
+CREATE PROCEDURE [dbo].[faker_RoomPlacementPatient_admission](@medical_record int, @should_move int)
 AS
 Begin
     declare @bed_id as int;
@@ -1139,30 +1139,35 @@ Begin
                           on rp.Medical_Record = ev.id
                               and ev.id = @medical_record)
         begin
-            update [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient]
-            set [End_Date]=GETDATE()
-            where Medical_Record = @medical_record
-              and End_Date is null;
+            if @should_move = 0
+                begin
+                    update [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient]
+                    set [End_Date]=GETDATE()
+                    where Medical_Record = @medical_record
+                      and End_Date is null;
 
-            select top 1 @bed_id = fb.row_id
-            from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
-                     join [chameleon_db].[dbo].[Emergency_visits] ev
-                          on ev.DepartmentWing = fb.room
-            where ev.id = @medical_record
-              and row_id not in (select rpp.bed_id
-                                 from [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient] rpp
-                                          join [chameleon_db].[dbo].[Emergency_visits] ev
-                                               on ev.id = rpp.Medical_Record
-                                 where rpp.unit = @department
-                                   and rpp.Room = @room_num
-                                   and rpp.start_date is not null
-                                   and rpp.end_date is null
-                                   and rpp.bed_id is not null
-                                   and ev.DepartmentWingDischarge is null)
-            order by newid();
-
-            insert into [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient]
-            values (GETUTCDATE(), null, @department, @bed_id, @medical_record, @room_num);
+                    select top 1 @bed_id = fb.row_id
+                    from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
+                             join [chameleon_db].[dbo].[Emergency_visits] ev
+                                  on ev.DepartmentWing = fb.room
+                    where ev.id = @medical_record
+                      and row_id not in (select rpp.bed_id
+                                         from [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient] rpp
+                                                  join [chameleon_db].[dbo].[Emergency_visits] ev
+                                                       on ev.id = rpp.Medical_Record
+                                         where rpp.unit = @department
+                                           and rpp.Room = @room_num
+                                           and rpp.start_date is not null
+                                           and rpp.end_date is null
+                                           and rpp.bed_id is not null
+                                           and ev.DepartmentWingDischarge is null)
+                    order by newid();
+                    if @bed_id is not null
+                        begin
+                            insert into [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient]
+                            values (GETUTCDATE(), null, @department, @bed_id, @medical_record, @room_num);
+                        end
+                end
         end
     else
         begin
@@ -1176,8 +1181,11 @@ Begin
                                    and rpp.end_date is null
                                    and rpp.start_date is not null)
             order by newid();
-            insert into [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient]
-            values (GETUTCDATE(), null, @department, @bed_id, @medical_record, @room_num);
+            if @bed_id is not null
+                begin
+                    insert into [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient]
+                    values (GETUTCDATE(), null, @department, @bed_id, @medical_record, @room_num);
+                end
         end
 end
 GO

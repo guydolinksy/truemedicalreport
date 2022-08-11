@@ -114,7 +114,7 @@ async def generate_doctor_visits(department: Departments, dal: FakeMain = Depend
 
 
 @faker_router.on_event('startup')
-@repeat_every(seconds=120, wait_first=True, logger=logger)
+@repeat_every(seconds=60, wait_first=True, logger=logger)
 @inject_dependencies(department=Departments.er)
 @faker_router.post("/room_placements", status_code=201)
 async def generate_room_placements(department: Departments, dal: FakeMain = Depends(FakeMain)):

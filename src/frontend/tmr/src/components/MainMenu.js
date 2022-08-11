@@ -10,9 +10,9 @@ export const MainMenu = () => {
     const navigate = useNavigate();
     const {pathname} = useLocation();
     return <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
-        <Menu mode={"horizontal"} selectedKeys={pathname.split('/').slice(1, 2)}
-              items={[{key: '', label: 'תמ״ר'}]} onClick={() => navigate('/')}/>
-        <Menu mode={"horizontal"} selectedKeys={pathname.split('/').slice(1, 2)}
+        <Menu theme={"dark"} mode={"horizontal"} selectedKeys={pathname.split('/').slice(1, 2)}
+              items={[{key: '', label: 'תמ״ר'}]} onClick={() => navigate('/')} style={{flex: "1 0 0px"}}/>
+        <Menu theme={"dark"} mode={"horizontal"} selectedKeys={pathname.split('/').slice(1, 2)}
               items={(user && user.admin) ? [{key: 'settings', label: <SettingOutlined/>}] : []}
               onClick={() => navigate('/settings')}/>
     </div>
