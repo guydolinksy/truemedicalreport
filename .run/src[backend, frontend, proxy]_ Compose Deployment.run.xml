@@ -1,0 +1,31 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="src[backend, medical-dal, frontend, proxy, ingress, sqlpad, broadcast-redis, chameleon, arc_db]: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+    <deployment type="docker-compose.yml">
+      <settings>
+        <option name="envFilePath" value="" />
+        <option name="commandLineOptions" value="--build" />
+        <option name="secondarySourceFiles">
+          <list>
+            <option value="src/docker-compose.sheba.yml" />
+            <option value="src/docker-compose.sheba.faker.yml" />
+          </list>
+        </option>
+        <option name="services">
+          <list>
+            <option value="backend" />
+            <option value="medical-dal" />
+            <option value="frontend" />
+            <option value="proxy" />
+            <option value="ingress" />
+            <option value="sqlpad" />
+            <option value="broadcast-redis" />
+            <option value="chameleon" />
+            <option value="arc_db" />
+          </list>
+        </option>
+        <option name="sourceFilePath" value="src/docker-compose.yml" />
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>
