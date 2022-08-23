@@ -285,13 +285,14 @@ class MedicalDal:
         self.db.patients.update_one({"external_id": patient}, {"$set": {"treatment_decision": decision.dict()}},
                                     upsert=True)
 
-    async def upsert_nurse_remarks(self,patient_id,nurse_remarks:str):
+    async def upsert_nurse_remarks(self, patient_id, nurse_remark: str):
         res = self.db.patients.find_one({"external_id": patient_id})
         if not res:
             logger.error(f'upsert nurse remarks Patient {patient_id} Not Found')
             return
-        patient=Patient(**res)
-        await self.update_basic_medical_add_nurse_remarks(patient,nurse_remarks)
+        print(res)
+        patient = Patient(**res)
+        await self.update_basic_medical_add_nurse_remarks(patient, nurse_remark)
         await self.update_awaiting(patient, AwaitingTypes.nurse, 'exam', patient.awaiting_nurse(patient, True))
 
     async def upsert_basic_medical(self, patient_id, basic_medical: BasicMedical):
@@ -317,47 +318,51 @@ class MedicalDal:
         }])
         return [WaitForDoctor(to=data['_id'], count=data['sum']) for data in waiting]
 
-
-    def get_people_amount_waiting_doctor(self,department,wing) -> int:
+    def get_people_amount_waiting_doctor(self, department, wing) -> int:
         res = self.db.patients.aggregate(
-        [{"$match": {"awaiting.doctor.exam.completed": False,'admission.department': department, 'admission.wing': wing}},
-        {"$count": "count"}])
-        response_list=list(res)
+            [{"$match": {"awaiting.doctor.exam.completed": False, 'admission.department': department,
+                         'admission.wing': wing}},
+             {"$count": "count"}])
+        response_list = list(res)
         if response_list:
             return response_list[0]["count"]
-        else :
+        else:
             return 0
 
-    def get_people_amount_waiting_nurse(self,department,wing) -> int:
+    def get_people_amount_waiting_nurse(self, department, wing) -> int:
         res = self.db.patients.aggregate(
-        [{"$match": {"awaiting.nurse.exam.completed": False,'admission.department': department, 'admission.wing': wing}},
-        {"$count": "count"}])
-        response_list=list(res)
+            [{"$match": {"awaiting.nurse.exam.completed": False, 'admission.department': department,
+                         'admission.wing': wing}},
+             {"$count": "count"}])
+        response_list = list(res)
         if response_list:
             return response_list[0]["count"]
-        else :
+        else:
             return 0
 
-    def get_people_amount_waiting_labs(self,department,wing)->int:
+    def get_people_amount_waiting_labs(self, department, wing) -> int:
         count = 0
-        for labs in self.db.patients.find({'admission.department': department, 'admission.wing': wing}, {"awaiting.laboratory": 1, "_id": 0}):
+        for labs in self.db.patients.find({'admission.department': department, 'admission.wing': wing},
+                                          {"awaiting.laboratory": 1, "_id": 0}):
             if "False" in str(labs):
                 count = count + 1
         return count
 
-    def get_people_amount_waiting_imaging(self,department,wing)->int:
+    def get_people_amount_waiting_imaging(self, department, wing) -> int:
         count = 0
-        for image in self.db.patients.find({'admission.department': department, 'admission.wing': wing}, {"awaiting.imaging": 1, "_id": 0}):
+        for image in self.db.patients.find({'admission.department': department, 'admission.wing': wing},
+                                           {"awaiting.imaging": 1, "_id": 0}):
             if "False" in str(image):
                 count = count + 1
         return count
-    def get_people_amount_waiting_referrals(self,department,wing)->int:
+
+    def get_people_amount_waiting_referrals(self, department, wing) -> int:
         count = 0
-        for referral in self.db.patients.find({'admission.department': department, 'admission.wing': wing}, {"awaiting.referral": 1, "_id": 0}):
+        for referral in self.db.patients.find({'admission.department': department, 'admission.wing': wing},
+                                              {"awaiting.referral": 1, "_id": 0}):
             if "False" in str(referral):
                 count = count + 1
         return count
-
 
     @staticmethod
     async def notify_admission(admission: Admission):
@@ -384,7 +389,7 @@ class MedicalDal:
         updated.warnings += warnings
         await self.update_patient_by_id(patient.oid, updated.dict(include={'warnings'}))
 
-    async def update_basic_medical_add_nurse_remarks(self, patient: Patient, nurse_remarks:str) -> None:
-        updated = patient.copy()
-        updated.basic_medical.nurse_description=nurse_remarks
-        await self.update_patient_by_id(patient.oid, updated.dict(include={'nurse_remarks'}))
+    async def update_basic_medical_add_nurse_remarks(self, patient: Patient, nurse_remarks: str) -> None:
+        # TODO: need to make sure basic_medical is initlized before trying to set nurse_description
+        patient.basic_medical.nurse_description = nurse_remarks
+        await self.update_patient_by_id(patient.oid, patient.dict(include={'nurse_remarks'}))

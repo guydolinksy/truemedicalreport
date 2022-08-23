@@ -9,7 +9,7 @@ from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.image import Image
 from tmr_common.data_models.labs import Laboratory
 from tmr_common.data_models.measures import Measure
-from tmr_common.data_models.patient import ExternalPatient, BasicMedical
+from tmr_common.data_models.patient import ExternalPatient, BasicMedical, NurseRemark
 from tmr_common.data_models.wing import WingOverview
 from tmr_common.data_models.treatment_decision import TreatmentDecision
 from .wing import wing_router
@@ -103,11 +103,11 @@ async def update_basic_medical(department: str, basic_medicals: Dict[str, BasicM
 
 
 @department_router.post("/{department}/nurse_remarks")
-async def update_nurse_remarks(department: str, nurse_remarks: Dict[str, str] = Body(...),
+async def update_nurse_remarks(department: str, remarks: Dict[str, NurseRemark] = Body(...),
                                dal: MedicalDal = Depends(medical_dal)):
-    for patient_id, nurse_remark in nurse_remarks.items():
+    for patient_id, nurse_remark in remarks.items():
         print(f'pid:{patient_id} , nurse remark :{nurse_remark}')
-        await dal.upsert_nurse_remarks(patient_id, nurse_remarks)
+        await dal.upsert_nurse_remarks(patient_id, remarks)
 
 
 @department_router.get("/{department}/{wing}/waiting_labs", tags=["Department"], response_model=int,
@@ -143,6 +143,7 @@ def get_department_people_amount_waiting_imaging(department: str, wing: str,
 def get_department_people_amount_waiting_referrals(department: str, wing: str,
                                                    dal: MedicalDal = Depends(medical_dal)) -> int:
     return dal.get_people_amount_waiting_referrals(department, wing)
+
 
 @department_router.post("/{department}/decisions", status_code=http.HTTPStatus.OK)
 async def update_treatment_decisions(department: str,

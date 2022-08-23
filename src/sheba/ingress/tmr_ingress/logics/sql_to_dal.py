@@ -9,7 +9,7 @@ from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import Session
 from ..utils import sql_statements
 
-from tmr_common.data_models.patient import BasicMedical
+from tmr_common.data_models.patient import BasicMedical,NurseRemark
 from ..models.arc_patient import ARCPatient
 from ..models.chameleon_referrals import ChameleonReferrals
 from ..models.chameleon_main import ChameleonMain, Departments
@@ -19,6 +19,7 @@ from ..models.chameleon_measurements import ChameleonMeasurements
 from ..models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
 
 from tmr_common.data_models.treatment_decision import TreatmentDecision
+
 logger = logbook.Logger(__name__)
 
 
@@ -102,9 +103,10 @@ class SqlToDal(object):
             infos = {}
             with self.session() as session:
                 for free_text in session.query(ChameleonMedicalText).filter(ChameleonMedicalText.medical_text_code.in_([
-                    FreeTextCodes.DOCTOR_VISIT.value, FreeTextCodes.NURSE_SUMMARY.value
+                    FreeTextCodes.DOCTOR_VISIT.value
                 ])):
                     free_text.update_basic_medical(infos.setdefault(free_text.patient_id, BasicMedical()))
+                    print(infos[0])
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/basic_medical',
                                 json={'basic_medicals': {patient: infos[patient].dict() for patient in infos}})
             res.raise_for_status()
@@ -148,7 +150,8 @@ class SqlToDal(object):
             with self.session() as session:
                 result = session.execute(sql_statements.query_nurse_remarks.format(department.value))
                 for row in result:
-                    remarks[str(row[0])] = str(row[1])
+
+                    remarks[row[0]] = NurseRemark(description=row[1]).dict()
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/nurse_remarks',
                                 json=remarks)
             res.raise_for_status()
