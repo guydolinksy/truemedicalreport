@@ -12,9 +12,11 @@ class Departments(Enum):
 
 
 class ARCPatient(Base):
-    __tablename__ = "patients"
 
-    patient_id = Column("id", Integer(), primary_key=True)
+    __tablename__ = "patients"
+    __table_args__ = {"schema": "ris"}
+
+    patient_id = Column("patient_id", Integer(), primary_key=True)
     first_name = Column("first_name", String(30))
     last_name = Column("last_name", String(30))
     gender = Column("gender", VARCHAR(100))

@@ -14,6 +14,7 @@ class Departments(Enum):
 
 class ChameleonMain(Base):
     __tablename__ = "Emergency_visits"
+    __table_args__ = {"schema": "dw"}
 
     patient_id = Column("id", Integer(), primary_key=True)
     unit = Column("DepartmentName", VARCHAR(200))

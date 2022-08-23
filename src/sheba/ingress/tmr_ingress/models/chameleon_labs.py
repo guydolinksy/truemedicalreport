@@ -9,6 +9,7 @@ Base = declarative_base()
 
 class ChameleonLabs(Base):
     __tablename__ = "lab_results"
+    __table_args__ = {"schema": "dw"}
 
     patient_id = Column("id", Integer(), primary_key=True)
     order_date = Column("OrderDate", DateTime(), primary_key=True)

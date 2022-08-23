@@ -7,6 +7,7 @@ from .base import Base
 
 class ChameleonReferrals(Base):
     __tablename__ = "referrals"
+    __table_args__ = {"schema": "dw"}
 
     referral_code = Column("ReferralCode", Integer(), primary_key=True)
     patient_id = Column("id", Integer())

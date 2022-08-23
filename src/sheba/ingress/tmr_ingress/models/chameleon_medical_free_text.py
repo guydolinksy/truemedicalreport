@@ -21,6 +21,8 @@ class Units(Enum):
 
 class ChameleonMedicalText(Base):
     __tablename__ = "medical_free_text"
+    __table_args__ = {"schema": "dw"}
+
     row_id = Column("Row_ID", BigInteger(), primary_key=True)
     patient_id = Column("Id", BigInteger())
     medical_record = Column("Medical_Record", BigInteger())
