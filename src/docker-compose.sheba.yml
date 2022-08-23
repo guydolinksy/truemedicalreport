@@ -35,3 +35,4 @@ services:
       - "8030:80"
     depends_on:
       - chameleon
+      - arc_db

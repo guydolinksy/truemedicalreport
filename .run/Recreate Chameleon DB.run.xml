@@ -13,6 +13,7 @@
         <option name="services">
           <list>
             <option value="chameleon" />
+            <option value="arc_db" />
           </list>
         </option>
         <option name="sourceFilePath" value="src/docker-compose.yml" />
