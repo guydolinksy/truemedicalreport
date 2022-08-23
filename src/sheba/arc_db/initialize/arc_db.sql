@@ -276,3 +276,159 @@ use [master]
 GO
 GRANT IMPERSONATE ANY LOGIN TO [arc_cham_login]
 GO
+USE [master]
+GO
+EXEC master.dbo.sp_addlinkedserver @server = N'sbwnd81c', @srvproduct=N'SQL Server'
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'collation compatible', @optvalue=N'false'
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'data access', @optvalue=N'true'
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'dist', @optvalue=N'false'
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'pub', @optvalue=N'false'
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'rpc', @optvalue=N'true'
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'rpc out', @optvalue=N'true'
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'sub', @optvalue=N'false'
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'connect timeout', @optvalue=N'0'
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'collation name', @optvalue=null
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'lazy schema validation', @optvalue=N'false'
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'query timeout', @optvalue=N'0'
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'use remote collation', @optvalue=N'true'
+GO
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'remote proc transaction promotion', @optvalue=N'true'
+GO
+USE [master]
+GO
+EXEC master.dbo.sp_addlinkedsrvlogin @rmtsrvname = N'sbwnd81c', @locallogin = N'sa', @useself = N'True'
+GO
+USE [master]
+GO
+EXEC master.dbo.sp_addlinkedsrvlogin @rmtsrvname = N'sbwnd81c', @locallogin = N'arc_cham_login', @useself = N'True'
+GO
+USE [master]
+GO
+EXEC master.dbo.sp_addlinkedsrvlogin @rmtsrvname = N'sbwnd81c', @locallogin = NULL , @useself = N'False'
+GO
+USE [dwh]
+/****** Object:  StoredProcedure [dbo].[faker_ResponsibleDoctor]    Script Date: 23/06/2022 10:09:29 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
+	AS
+	Begin
+	if exists (select * from [sbwnd81c].[chameleon].[dbo].[ResponsibleDoctor] rd where rd.medical_record=@medical_record and rd.delete_date is null)
+		begin
+			update [sbwnd81c].[chameleon].[dbo].[ResponsibleDoctor] set  delete_date= GETDATE() where medical_record=@medical_record and delete_date is null;
+			insert into [sbwnd81c].[chameleon].[dbo].[ResponsibleDoctor] values(
+			(select top 1 fwd.code from (select top 1 id,DepartmentWing from [dwh].[dw].[Emergency_visits] where id=@medical_record order by DepartmentAdmission desc) ev
+			join [sbwnd81c].[chameleon].[dbo].[faker_wing_Doctor] as fwd on fwd.DepartmentWing=ev.DepartmentWing
+			left join [sbwnd81c].[chameleon].[dbo].[ResponsibleDoctor] as rd on rd.doctor = fwd.code
+			group by  fwd.code
+			order by count(*) asc),@medical_record,null);
+		end
+	else
+		begin
+			insert into [sbwnd81c].[chameleon].[dbo].[ResponsibleDoctor] values(
+			(select top 1 fwd.code from (select top 1 id,DepartmentWing from [dwh].[dw].[Emergency_visits] where id=@medical_record order by DepartmentAdmission desc) ev
+			join [sbwnd81c].[chameleon].[dbo].[faker_wing_Doctor] as fwd on fwd.DepartmentWing=ev.DepartmentWing
+			left join [sbwnd81c].[chameleon].[dbo].[ResponsibleDoctor] as rd on rd.doctor = fwd.code
+			group by  fwd.code
+			order by count(*) asc),@medical_record,null);
+		end
+	end
+GO
+USE [dwh]
+/****** Object:  StoredProcedure [dbo].[faker_RoomPlacmentPatient_admission]    Script Date: 13/07/2022 15:32:00 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[faker_RoomPlacmentPatient_admission](@medical_record int)
+	AS
+	Begin
+	declare @bed_id as int;
+	declare @exists as varchar(50);
+	declare @room_num as int;
+	select @exists = ev.DepartmentCode, @room_num=rd.Room_Code from dwh.dw.Emergency_visits ev
+	join  [sbwnd81c].[chameleon].[dbo].[RoomDetails rd] on rd.Room_Name=ev.DepartmentWing where ev.id=@medical_record;
+	if exists ( select ev.DepartmentName from  [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient]  rp join dwh.dw.Emergency_visits ev on rp.Medical_Record=ev.id and ev.id=@medical_record)
+		begin
+			update  [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] set [End_Date]=GETDATE() where Medical_Record=@medical_record and End_Date is null;
+			if @exists='1184000'
+				begin
+					select  top 1 @bed_id=fb.row_id  from [sbwnd81c].[chameleon].[dbo].[faker_beds] fb
+					join [dwh].[dw].[Emergency_visits] ev on ev.DepartmentWing=fb.room and ev.id=@medical_record
+					where row_id not in (select bed_id from [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is null and rpp.start_date is not null)
+					order by newid();
+					insert into  [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_id,@medical_record ,@room_num);
+				end
+		end
+	else
+		begin
+			select  top 1 @bed_id=fb.row_id  from [sbwnd81c].[chameleon].[dbo].[faker_beds] fb
+			join [dwh].[dw].[Emergency_visits] ev on ev.DepartmentWing=fb.room and ev.id=@medical_record
+			where row_id not in (select bed_id from [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is null and rpp.start_date is not null)
+			order by newid();
+			insert into  [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_id,@medical_record ,@room_num);
+		end
+	end
+GO
+USE [dwh]
+/****** Object:  StoredProcedure [dbo].[faker_RoomPlacmentPatient_dismission]    Script Date: 23/06/2022 10:09:29 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+	create procedure [dwh].[dbo].[faker_RoomPlacmentPatient_dismission](@medical_record nvarchar(50))
+	AS
+	Begin
+	update [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] set end_date = GETUTCDATE() where [Medical_Record]=@medical_record and end_date is null;
+	end
+GO
+USE [dwh]
+/****** Object:  StoredProcedure [dbo].[faker_decision]    Script Date: 04/07/2022 21:16:23 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[faker_decision](@medical_record nvarchar(50))
+	AS
+	Begin
+	declare @decision as int;
+	declare @unit_hosp as int;
+	if exists (select * from [sbwnd81c].[chameleon].[dbo].[AdmissionTreatmentDecision] atd where atd.medical_record=@medical_record and atd.delete_date is null)
+		begin
+			update [sbwnd81c].[chameleon].[dbo].[AdmissionTreatmentDecision] set delete_date= getdate() where medical_record=@medical_record and delete_date is null;
+		end
+	if (select top 1  count(*)*100/ sum(count(*)) over() as ratio from [sbwnd81c].[chameleon].[dbo].[AdmissionTreatmentDecision] a
+		left join [dwh].[dbo].[faker_answer_HospUnit] f on a.Hosp_Unit=f.name and a.Delete_Date is null
+		group by (case when f.name is null then 0 else 1 end )
+		order by (case when f.name is null then 0 else 1 end ) ) <30
+		begin
+		-- insert release
+		insert into [sbwnd81c].[chameleon].[dbo].[AdmissionTreatmentDecision]
+		values(2,null,null,@medical_record);
+		end
+	else
+		begin
+		-- insert hosp
+		select top 1 @decision=hu.decision ,@unit_hosp=hu.name
+		from [sbwnd81c].[chameleon].[dbo].faker_answer_HospUnit hu
+		where hu.decision=1 order by newid();
+
+		insert into [sbwnd81c].[chameleon].[dbo].[AdmissionTreatmentDecision]
+		values( @decision,@unit_hosp,null,@medical_record);
+		end
+	end
+GO
