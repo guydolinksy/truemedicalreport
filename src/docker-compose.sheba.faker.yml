@@ -11,7 +11,7 @@ services:
       context: ./
       dockerfile: sheba/faker/Dockerfile
     environment:
-      - "CHAMELEON_CONNECTION_STRING=mssql+pyodbc://sa:Password123@arc_db:1433/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"
+      - "CHAMELEON_CONNECTION_STRING=mssql+pyodbc://sa:Password123@sbwnd167f:1433/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"
     volumes:
       - "./common/tmr_common:/opt/common/tmr_common"
       - "./sheba/ingress/tmr_ingress:/opt/ingress/tmr_ingress"
@@ -24,7 +24,7 @@ services:
 
   ingress:
     environment:
-      - "CHAMELEON_CONNECTION_STRING=mssql+pyodbc://sa:Password123@arc_db:1433/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"
+      - "CHAMELEON_CONNECTION_STRING=mssql+pyodbc://sa:Password123@sbwnd167f:1433/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"
     depends_on:
       - arc_db
       - chameleon
@@ -37,6 +37,7 @@ services:
       - faker
 
   arc_db:
+    hostname: sbwnd167f
     build:
       context: ./
       dockerfile: sheba/arc_db/Dockerfile
@@ -45,7 +46,7 @@ services:
     environment:
       - "MSSQL_TCP_PORT=1433"
       - "SA_PASSWORD=Password123"
-      - "TZ=${TZ}"
+      - "TZ=UTC"
     ports:
       - "1433:1433"
 
@@ -57,8 +58,8 @@ services:
     volumes:
       - "./sheba/chameleon/initialize:/opt/chameleon/initialize"
     environment:
-      - "MSSQL_TCP_PORT=1434"
+      - "MSSQL_TCP_PORT=1433"
       - "SA_PASSWORD=Password123"
-      - "TZ=${TZ}"
+      - "TZ=UTC"
     ports:
-      - "1434:1434"
+      - "1434:1433"
