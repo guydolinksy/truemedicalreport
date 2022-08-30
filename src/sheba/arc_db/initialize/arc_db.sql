@@ -319,12 +319,12 @@ GO
 EXEC master.dbo.sp_addlinkedsrvlogin @rmtsrvname = N'sbwnd81c', @locallogin = NULL , @useself = N'False'
 GO
 USE [dwh]
-/****** Object:  StoredProcedure [dbo].[faker_ResponsibleDoctor]    Script Date: 23/06/2022 10:09:29 ******/
+/****** Object:  StoredProcedure [dw].[faker_ResponsibleDoctor]    Script Date: 23/06/2022 10:09:29 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-create procedure [dbo].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
+create procedure [dw].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
 	AS
 	Begin
 	if exists (select * from [sbwnd81c].[chameleon].[dbo].[ResponsibleDoctor] rd where rd.medical_record=@medical_record and rd.delete_date is null)
@@ -349,19 +349,19 @@ create procedure [dbo].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
 	end
 GO
 USE [dwh]
-/****** Object:  StoredProcedure [dbo].[faker_RoomPlacmentPatient_admission]    Script Date: 13/07/2022 15:32:00 ******/
+/****** Object:  StoredProcedure [dw].[faker_RoomPlacmentPatient_admission]    Script Date: 13/07/2022 15:32:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE PROCEDURE [dbo].[faker_RoomPlacmentPatient_admission](@medical_record int)
+CREATE PROCEDURE [dw].[faker_RoomPlacmentPatient_admission](@medical_record int)
 	AS
 	Begin
 	declare @bed_id as int;
 	declare @exists as varchar(50);
 	declare @room_num as int;
 	select @exists = ev.DepartmentCode, @room_num=rd.Room_Code from dwh.dw.Emergency_visits ev
-	join  [sbwnd81c].[chameleon].[dbo].[RoomDetails rd] on rd.Room_Name=ev.DepartmentWing where ev.id=@medical_record;
+	join  [sbwnd81c].[chameleon].[dbo].[RoomDetails] rd on rd.Room_Name=ev.DepartmentWing where ev.id=@medical_record;
 	if exists ( select ev.DepartmentName from  [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient]  rp join dwh.dw.Emergency_visits ev on rp.Medical_Record=ev.id and ev.id=@medical_record)
 		begin
 			update  [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] set [End_Date]=GETDATE() where Medical_Record=@medical_record and End_Date is null;
@@ -385,7 +385,7 @@ CREATE PROCEDURE [dbo].[faker_RoomPlacmentPatient_admission](@medical_record int
 	end
 GO
 USE [dwh]
-/****** Object:  StoredProcedure [dbo].[faker_RoomPlacmentPatient_dismission]    Script Date: 23/06/2022 10:09:29 ******/
+/****** Object:  StoredProcedure [dw].[faker_RoomPlacmentPatient_dismission]    Script Date: 23/06/2022 10:09:29 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -397,12 +397,12 @@ GO
 	end
 GO
 USE [dwh]
-/****** Object:  StoredProcedure [dbo].[faker_decision]    Script Date: 04/07/2022 21:16:23 ******/
+/****** Object:  StoredProcedure [dw].[faker_decision]    Script Date: 04/07/2022 21:16:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-create procedure [dbo].[faker_decision](@medical_record nvarchar(50))
+create procedure [dw].[faker_decision](@medical_record nvarchar(50))
 	AS
 	Begin
 	declare @decision as int;
