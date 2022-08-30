@@ -8,6 +8,6 @@ query_patient_admission = """
 
 """
 
-query_nurse_remarks = """select ev.id,tc.remarks from chameleon_db.dbo.Emergency_visits ev left join sbwnd81c_chameleon.dbo.TreatmentCause tc
+query_nurse_remarks = """select ev.id,tc.remarks,tc.Entry_Date from chameleon_db.dbo.Emergency_visits ev left join sbwnd81c_chameleon.dbo.TreatmentCause tc
 on ev.id=tc.Medical_Record and tc.delete_date is null and ev.DepartmentWingDischarge is null
 where ev.DepartmentCode= {} """

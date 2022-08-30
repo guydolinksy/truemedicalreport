@@ -344,6 +344,7 @@ create TABLE [dbo].[TreatmentCause]
 (
     [remarks]        [nvarchar](500) NULL,
     [Medical_Record] [int]           NULL,
+    [Entry_Date] [datetime],
     [delete_date]  [datetime]
 ) ON [PRIMARY]
 GO
@@ -1483,7 +1484,7 @@ create procedure [dbo].[proc_faker_nurse_remarks](@medical_record nvarchar(50))
 			and nr.MainCause=@mainCause
 			group by nr.remarks
 			order by count(*);
-			insert into  [sbwnd81c_chameleon].dbo.TreatmentCause values(@remarks,@medical_record,null);
+			insert into  [sbwnd81c_chameleon].dbo.TreatmentCause values(@remarks,@medical_record,getdate(),null);
 		end
 	end
 GO
