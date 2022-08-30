@@ -385,18 +385,6 @@ CREATE PROCEDURE [dw].[faker_RoomPlacmentPatient_admission](@medical_record int)
 	end
 GO
 USE [dwh]
-/****** Object:  StoredProcedure [dw].[faker_RoomPlacmentPatient_dismission]    Script Date: 23/06/2022 10:09:29 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-	create procedure [dwh].[dbo].[faker_RoomPlacmentPatient_dismission](@medical_record nvarchar(50))
-	AS
-	Begin
-	update [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] set end_date = GETUTCDATE() where [Medical_Record]=@medical_record and end_date is null;
-	end
-GO
-USE [dwh]
 /****** Object:  StoredProcedure [dw].[faker_decision]    Script Date: 04/07/2022 21:16:23 ******/
 SET ANSI_NULLS ON
 GO
