@@ -28,7 +28,7 @@ class WingOverview(Wing):
 
 
 class WingFilter(BaseModel):
-    key: str
+    value: str
     title: str
     children: List[Any] = list()
 
@@ -44,17 +44,11 @@ class WingFilters(BaseModel):
         orm_mode = True
 
 
-class WingStatus(BaseModel):
-    filters: WingFilters
-    notifications: List[PatientNotifications]
-
-    class Config:
-        orm_mode = True
-
-
 class WingSummary(Wing):
     patients: List[Patient]
     details: Wing
+    filters: WingFilters
+    notifications: List[PatientNotifications]
 
     class Config:
         orm_mode = True

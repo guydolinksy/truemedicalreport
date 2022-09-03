@@ -15,12 +15,6 @@ def get_wing_details(department: str, wing: str, _=Depends(manager)) -> dict:
     return res
 
 
-@wing_router.get("/{wing}/status")
-def wing_status(department: str, wing: str, _=Depends(manager)) -> dict:
-    res = requests.get(f"http://medical-dal/medical-dal/departments/{department}/wings/{wing}/status").json()
-    return res
-
-
 @wing_router.get("/{wing}/beds/{bed}")
 def get_patient_by_bed(department: str, wing: str, bed: str) -> dict:
     res = requests.get(f"http://medical-dal/medical-dal/departments/{department}/wings/{wing}/beds/{bed}").json()

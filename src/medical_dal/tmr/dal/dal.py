@@ -56,6 +56,13 @@ class MedicalDal:
         return patients
 
     def get_wing_filters(self, department: str, wing: str) -> WingFilters:
+        names = {
+            AwaitingTypes.doctor.value: 'צוות רפואי',
+            AwaitingTypes.nurse.value: 'צוות סיעודי',
+            AwaitingTypes.imaging.value: 'הדמיות',
+            AwaitingTypes.laboratory.value: 'מעבדות',
+            AwaitingTypes.referral.value: 'הפניות',
+        }
         res = {}
         patients = self.get_wing_patients(department, wing)
         for patient in patients:
@@ -68,12 +75,16 @@ class MedicalDal:
         awaiting_total = set(p for keys in res.values() for l in keys.values() for p in l)
         return WingFilters(
             tree=[
-                WingFilter(key='awaiting', title=f'({len(awaiting_total)}) ממתינים עבור:', children=[WingFilter(
-                    key=awaiting, title=f'({len(set(p for l in keys.values() for p in l))}) {awaiting}',
-                    children=[WingFilter(
-                        key='.'.join([awaiting, key]), title=f'({len(keys[key])}) {key}') for key in keys]
-                ) for awaiting, keys in res.items()]),
-                WingFilter(key='not-awaiting', title=f'({len(patients) - len(awaiting_total)}) לא מתינים'),
+                WingFilter(
+                    value='awaiting', title=f'({len(awaiting_total)}) ממתינים.ות', children=[WingFilter(
+                        value=awaiting, title=f'({len(set(p for l in keys.values() for p in l))}) {names[awaiting]}',
+                        children=[WingFilter(
+                            value='.'.join([awaiting, key]), title=f'({len(keys[key])}) {key}'
+                        ) for key in keys]
+                    ) for awaiting, keys in res.items()]
+                ), WingFilter(
+                    value='not-awaiting', title=f'({len(patients) - len(awaiting_total)}) לא ממתינים.ות'
+                ),
             ],
             mapping=dict(
                 [

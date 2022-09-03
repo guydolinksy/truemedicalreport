@@ -27,7 +27,7 @@ export const useLocalStorage = (key, defaultValue) => {
         event.newValue = JSON.stringify(value);
         window.dispatchEvent(event);
         localStorage.setItem(key, JSON.stringify(value));
-    }, [key, value]);
+    }, [key, JSON.stringify(value)]);
 
     return [value, setValue];
 };

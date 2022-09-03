@@ -1,12 +1,9 @@
-from typing import List, Any, Dict
-
 import logbook
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
 
 from tmr_common.data_models.bed import Bed
-from tmr_common.data_models.patient import PatientNotifications
-from tmr_common.data_models.wing import Wing, WingSummary, WingStatus
+from tmr_common.data_models.wing import WingSummary
 from ..dal.dal import MedicalDal
 
 logger = logbook.Logger(__name__)
@@ -18,27 +15,13 @@ def medical_dal() -> MedicalDal:
 
 
 @wing_router.get("/{wing}", response_model=WingSummary, response_model_exclude_unset=True, tags=["Wing"])
-def get_wing_details(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> dict:
-    patients = dal.get_wing_patients(department, wing)
-    details = dal.get_wing(department, wing)
-    return WingSummary(patients=patients, details=details).dict(exclude_unset=True)
-
-
-# TODO move logic to backend service after it works
-@wing_router.get("/{wing}/status", response_model=WingStatus)
-def wing_status(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> WingStatus:
-    res = WingStatus(
+def get_wing_details(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> WingSummary:
+    return WingSummary(
+        patients=dal.get_wing_patients(department, wing),
+        details=dal.get_wing(department, wing),
         filters=dal.get_wing_filters(department, wing),
         notifications=dal.get_wing_notifications(department, wing)
     )
-    logger.debug(res)
-    return res
-
-
-@wing_router.get("/{wing}/details", response_model=Wing, response_model_exclude_unset=True, tags=["Wing"])
-def wing_details(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> Wing:
-    res = dal.get_wing(department, wing)
-    return Wing(oid=res["_id"]["$oid"], **res)
 
 
 @wing_router.get("/{wing}/beds/{bed}", response_model=Bed, tags=["Wing"])

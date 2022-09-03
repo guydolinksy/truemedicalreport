@@ -1,20 +1,6 @@
 import React, {useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {
-    Badge,
-    Card,
-    Col,
-    Collapse,
-    Divider,
-    Empty,
-    Input,
-    Layout,
-    List,
-    Menu,
-    Radio,
-    Row,
-    Space,
-    Spin,
-    Tree,
+    Badge, Card, Col, Collapse, Divider, Empty, Input, Layout, List, Menu, Radio, Row, Space, Spin, TreeSelect,
     Typography
 } from 'antd';
 import {Patient} from "./Patient";
@@ -26,7 +12,7 @@ import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
-import {PushpinOutlined, SettingOutlined, UserOutlined} from "@ant-design/icons";
+import {PushpinOutlined, UserOutlined} from "@ant-design/icons";
 import {Link} from "react-router-dom";
 import Moment from "react-moment";
 
@@ -38,9 +24,9 @@ const {Paragraph} = Typography;
 const {Search} = Input;
 const {Content, Sider} = Layout;
 const wingDataContext = createContext(null);
-const statusDataContext = createContext(null);
 
 const highlighter = new Highlighter('root');
+const {SHOW_PARENT} = TreeSelect;
 const {Panel} = Collapse;
 const {Item} = List;
 const badgeClass = {
@@ -48,11 +34,25 @@ const badgeClass = {
     2: 'status-badge status-warn',
     3: 'status-badge status-success',
 }
-const WingStatusInner = ({wingName}) => {
+const WingLayout = ({department, wing, details, onError}) => {
+    return <Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
+        {(details.rows || []).map((row, i) => <Row key={i} style={row} wrap={false}>
+            {(details.columns || []).map((column, j) =>
+                details.beds[i][j] === null ? <div key={`filler-${j}`} style={column}/> :
+                    <Bed key={`bed-${details.beds[i][j]}`} style={column} admission={{
+                        department: department,
+                        wing: wing,
+                        bed: details.beds[i][j]
+                    }} onError={onError}/>
+            )}
+        </Row>)}
+    </Card>
+}
+const WingStatus = () => {
     const navigate = useNavigate();
     const [openKeys, setOpenKeys] = useState([]);
     const [search, setSearch] = useState('');
-    const {value, lastMessage} = useContext(statusDataContext.context);
+    const {value, lastMessage} = useContext(wingDataContext.context);
 
     const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'location');
 
@@ -76,6 +76,8 @@ const WingStatusInner = ({wingName}) => {
         })
     }, [openKeys, navigate]);
 
+    const [selectedFilters, setSelectedFilters] = useLocalStorage('selectedFilters', []);
+
     return <div style={{
         display: "flex",
         flexDirection: "column",
@@ -90,11 +92,14 @@ const WingStatusInner = ({wingName}) => {
             overflowY: "hidden",
         }}>
             <Collapse>
-                <Panel key={'basic'} showArrow={false} extra={<SettingOutlined/>} header={wingName}>
+                <Panel key={'basic'} header={value.details.name}>
                     <Paragraph>
                         סנן לפי:
                     </Paragraph>
-                    <Tree treeData={value.filters.tree} checkable selectable={false} defaultExpandAll/>
+                    <TreeSelect treeData={value.filters.tree} showSearch style={{width: '100%'}} value={selectedFilters}
+                                dropdownStyle={{maxHeight: 400, overflow: 'auto'}} placeholder="סינון מטופלים.ות:"
+                                allowClear multiple treeDefaultExpandAll onChange={setSelectedFilters} treeCheckable
+                                showCheckedStrategy={SHOW_PARENT}/>
                     <Divider/>
                     <Paragraph>
                         מיין לפי:
@@ -172,27 +177,6 @@ const WingStatusInner = ({wingName}) => {
         ]} onClick={() => navigate('/')}/>
     </div>
 };
-const WingStatus = ({department, wing, wingName, onError}) => {
-    const statusURI = `/api/departments/${department}/wings/${wing}/status`;
-
-    return <statusDataContext.Provider url={statusURI} defaultValue={{}} onError={onError}>
-        {({loading}) => loading ? <Spin/> : <WingStatusInner wingName={wingName}/>}
-    </statusDataContext.Provider>;
-}
-const WingLayout = ({department, wing, details, onError}) => {
-    return <Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
-        {(details.rows || []).map((row, i) => <Row key={i} style={row} wrap={false}>
-            {(details.columns || []).map((column, j) =>
-                details.beds[i][j] === null ? <div key={`filler-${j}`} style={column}/> :
-                    <Bed key={`bed-${details.beds[i][j]}`} style={column} admission={{
-                        department: department,
-                        wing: wing,
-                        bed: details.beds[i][j]
-                    }} onError={onError}/>
-            )}
-        </Row>)}
-    </Card>
-}
 const Patients = ({patients, onError}) => {
     return <Card key={'overflow'} style={{width: '100%', flex: '1'}}>
         {patients.length ? <div style={{
@@ -210,13 +194,15 @@ const sortFunctions = {
     name: (i, j) => i.name.localeCompare(j.name),
     severity: (i, j) => i.severity.value - j.severity.value,
     arrival: (i, j) => moment(i.arrival).isAfter(j.arrival) ? 1 : -1,
+    location: (i, j) => moment(i.arrival).isAfter(j.arrival) ? 1 : -1,
     [undefined]: (i, j) => moment(i.arrival).isAfter(j.arrival) ? 1 : -1
 }
-const WingInner = ({department, wing, onError}) => {
+const WingInner = ({department, wing}) => {
     const navigate = useNavigate();
     const {value, flush} = useContext(wingDataContext.context);
 
     const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'location');
+    const [selectedFilters, setSelectedFilters] = useLocalStorage('selectedFilters', []);
 
     const onInfoError = useCallback(() => {
         flush(true)
@@ -232,15 +218,17 @@ const WingInner = ({department, wing, onError}) => {
         return totalWidth - siderWidth - value.details.columns.reduce((s, c) => s + c.minWidth, 0) < buffer;
     }, [totalWidth, value, siderWidth]);
 
-    const allPatients = value.patients.sort(sortFunctions[wingSortKey]);
-    const unassignedPatients = allPatients.filter(({oid, admission}) => !admission.bed);
+    const allPatients = value.patients.filter(({oid}) => !selectedFilters.length || selectedFilters.find(
+        filter => value.filters.mapping[filter].includes(oid)
+    )).sort(sortFunctions[wingSortKey]);
+    const unassignedPatients = allPatients.filter(({admission}) => !admission.bed);
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
-            <WingStatus department={department} wing={wing} wingName={value.details.name} onError={onError}/>
+            <WingStatus/>
         </Sider>
         <Content className={'content'} style={{overflowY: "auto"}}>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
-                {isForceTabletMode || wingSortKey !== 'location' ?
+                {isForceTabletMode || wingSortKey !== 'location' || selectedFilters.length ?
                     <Patients key={'patients'} patients={allPatients} onError={flush}/> : [
                         <WingLayout key={'wing'} department={department} wing={wing} details={value.details}
                                     onError={flush}/>,
@@ -255,7 +243,9 @@ const WingInner = ({department, wing, onError}) => {
 export const Wing = ({department, wing, onError}) => {
     const uri = `/api/departments/${department}/wings/${wing}`;
 
-    return <wingDataContext.Provider url={uri} defaultValue={{patients: [], details: {}}} onError={onError}>
+    return <wingDataContext.Provider url={uri} defaultValue={
+        {patients: [], details: {}, filters: {mapping: {}, filters: []}, notifications: []}
+    } onError={onError}>
         {({loading}) => loading ? <Spin/> : <WingInner department={department} wing={wing} onError={onError}/>}
     </wingDataContext.Provider>
 }

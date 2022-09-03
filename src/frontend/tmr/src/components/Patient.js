@@ -122,7 +122,13 @@ const patientMeasures = (patient, measures) => {
 }
 
 const PatientAwaiting = () => {
-    const AWAITING = ['doctor', 'nurse', 'laboratory', 'imaging', 'referral']
+    const AWAITING = [
+        'laboratory',
+        'imaging',
+        'referral',
+        'nurse',
+        'doctor',
+    ]
     const {loading, value} = useContext(patientDataContext.context);
 
     if (loading)
