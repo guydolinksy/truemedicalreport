@@ -1,270 +1,86 @@
 USE [master]
 GO
-/****** Object:  Database [chameleon_db]    Script Date: 13/04/2022 0:44:08 ******/
-create DATABASE [chameleon_db]
+/****** Object:  Database [chameleon]    Script Date: 12/06/2022 1:01:52 ******/
+create DATABASE [chameleon]
     CONTAINMENT = NONE
     ON PRIMARY
-    ( NAME = N'chameleon_db', FILENAME = N'/var/opt/mssql/data/chameleon_db.mdf' , SIZE = 8192 KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536 KB )
+    ( NAME = N'chameleon', FILENAME = N'/var/opt/mssql/data/chameleon.mdf' , SIZE = 8192 KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536 KB )
     LOG ON
-    ( NAME = N'chameleon_db_log', FILENAME = N'/var/opt/mssql/data/chameleon_db_log.ldf' , SIZE = 8192 KB , MAXSIZE = 2048 GB , FILEGROWTH = 65536 KB )
+    ( NAME = N'chameleon_log', FILENAME = N'/var/opt/mssql/data/chameleon_log.ldf' , SIZE = 8192 KB , MAXSIZE = 2048 GB , FILEGROWTH = 65536 KB )
     COLLATE Hebrew_CI_AS
 GO
-alter database [chameleon_db] SET COMPATIBILITY_LEVEL = 150
+alter database [chameleon] SET COMPATIBILITY_LEVEL = 150
 GO
 IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
     begin
-        EXEC [chameleon_db].[dbo].[sp_fulltext_database] @action = 'enable'
+        EXEC [chameleon].[dbo].[sp_fulltext_database] @action = 'enable'
     end
 GO
-ALTER DATABASE [chameleon_db] SET ANSI_NULL_DEFAULT OFF
+ALTER DATABASE [chameleon] SET ANSI_NULL_DEFAULT OFF
 GO
-alter database [chameleon_db] SET ANSI_NULLS OFF
+alter database [chameleon] SET ANSI_NULLS OFF
 GO
-alter database [chameleon_db] SET ANSI_PADDING OFF
+alter database [chameleon] SET ANSI_PADDING OFF
 GO
-alter database [chameleon_db] SET ANSI_WARNINGS OFF
+alter database [chameleon] SET ANSI_WARNINGS OFF
 GO
-alter database [chameleon_db] SET ARITHABORT OFF
+alter database [chameleon] SET ARITHABORT OFF
 GO
-alter database [chameleon_db] SET AUTO_CLOSE OFF
+alter database [chameleon] SET AUTO_CLOSE OFF
 GO
-alter database [chameleon_db] SET AUTO_SHRINK OFF
+alter database [chameleon] SET AUTO_SHRINK OFF
 GO
-alter database [chameleon_db] SET AUTO_UPDATE_STATISTICS ON
+alter database [chameleon] SET AUTO_UPDATE_STATISTICS ON
 GO
-alter database [chameleon_db] SET CURSOR_CLOSE_ON_COMMIT OFF
+alter database [chameleon] SET CURSOR_CLOSE_ON_COMMIT OFF
 GO
-alter database [chameleon_db] SET CURSOR_DEFAULT GLOBAL
+alter database [chameleon] SET CURSOR_DEFAULT GLOBAL
 GO
-alter database [chameleon_db] SET CONCAT_NULL_YIELDS_NULL OFF
+alter database [chameleon] SET CONCAT_NULL_YIELDS_NULL OFF
 GO
-alter database [chameleon_db] SET NUMERIC_ROUNDABORT OFF
+alter database [chameleon] SET NUMERIC_ROUNDABORT OFF
 GO
-alter database [chameleon_db] SET QUOTED_IDENTIFIER OFF
+alter database [chameleon] SET QUOTED_IDENTIFIER OFF
 GO
-alter database [chameleon_db] SET RECURSIVE_TRIGGERS OFF
+alter database [chameleon] SET RECURSIVE_TRIGGERS OFF
 GO
-alter database [chameleon_db] SET DISABLE_BROKER
+alter database [chameleon] SET DISABLE_BROKER
 GO
-alter database [chameleon_db] SET AUTO_UPDATE_STATISTICS_ASYNC OFF
+alter database [chameleon] SET AUTO_UPDATE_STATISTICS_ASYNC OFF
 GO
-alter database [chameleon_db] SET DATE_CORRELATION_OPTIMIZATION OFF
+alter database [chameleon] SET DATE_CORRELATION_OPTIMIZATION OFF
 GO
-alter database [chameleon_db] SET TRUSTWORTHY OFF
+alter database [chameleon] SET TRUSTWORTHY OFF
 GO
-alter database [chameleon_db] SET ALLOW_SNAPSHOT_ISOLATION OFF
+alter database [chameleon] SET ALLOW_SNAPSHOT_ISOLATION OFF
 GO
-alter database [chameleon_db] SET PARAMETERIZATION SIMPLE
+alter database [chameleon] SET PARAMETERIZATION SIMPLE
 GO
-alter database [chameleon_db] SET READ_COMMITTED_SNAPSHOT OFF
+alter database [chameleon] SET READ_COMMITTED_SNAPSHOT OFF
 GO
-alter database [chameleon_db] SET HONOR_BROKER_PRIORITY OFF
+alter database [chameleon] SET HONOR_BROKER_PRIORITY OFF
 GO
-alter database [chameleon_db] SET RECOVERY FULL
+alter database [chameleon] SET RECOVERY FULL
 GO
-alter database [chameleon_db] SET MULTI_USER
+alter database [chameleon] SET MULTI_USER
 GO
-alter database [chameleon_db] SET PAGE_VERIFY CHECKSUM
+alter database [chameleon] SET PAGE_VERIFY CHECKSUM
 GO
-alter database [chameleon_db] SET DB_CHAINING OFF
+alter database [chameleon] SET DB_CHAINING OFF
 GO
-alter database [chameleon_db] SET FILESTREAM ( NON_TRANSACTED_ACCESS = OFF )
+alter database [chameleon] SET FILESTREAM ( NON_TRANSACTED_ACCESS = OFF )
 GO
-alter database [chameleon_db] SET TARGET_RECOVERY_TIME = 60 SECONDS
+alter database [chameleon] SET TARGET_RECOVERY_TIME = 60 SECONDS
 GO
-alter database [chameleon_db] SET DELAYED_DURABILITY = DISABLED
+alter database [chameleon] SET DELAYED_DURABILITY = DISABLED
 GO
-alter database [chameleon_db] SET ACCELERATED_DATABASE_RECOVERY = OFF
+alter database [chameleon] SET ACCELERATED_DATABASE_RECOVERY = OFF
 GO
-EXEC sys.sp_db_vardecimal_storage_format N'chameleon_db', N'ON'
+EXEC sys.sp_db_vardecimal_storage_format N'chameleon', N'ON'
 GO
-alter database [chameleon_db] SET QUERY_STORE = OFF
+alter database [chameleon] SET QUERY_STORE = OFF
 GO
-USE [chameleon_db]
-GO
-/****** Object:  Table [dbo].[patients]    Script Date: 13/04/2022 0:44:08 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-create TABLE [dbo].[patients]
-(
-    [id]         [int] IDENTITY (1,1) NOT NULL,
-    [first_name] [varchar](200)       NULL,
-    [last_name]  [varchar](200)       NULL,
-    [gender]     [varchar](2)         NULL,
-    [birth_date] [datetime]           NULL,
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[Emergency_visits]    Script Date: 13/04/2022 0:44:08 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-create TABLE [dbo].[Emergency_visits]
-(
-    [id]                      [int] IDENTITY (1,1) NOT NULL,
-    [DepartmentName]          [varchar](200)       NULL,
-    [DepartmentWing]          [varchar](200)       NULL,
-    [DepartmentAdmission]     [datetime]           NULL,
-    [DepartmentWingDischarge] [datetime]           NULL,
-    [MainCause]               [varchar](200)       NULL,
-    [esi]                     [int]                NULL,
-    [DepartmentCode]          [int]                NULL,
-    --[medical_record]      [int]                NULL,
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[measurements]    Script Date: 13/04/2022 0:44:08 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-create TABLE [dbo].[measurements]
-(
-    [id]             [varchar](250) NOT NULL,
-    [entry_time]     [datetime]     NULL,
-    [ParameterCode]  [int]          NOT NULL,
-    [Parameter_Name] [varchar](200) NULL,
-    [Result]         [float]        NULL,
-    [Min_Value]      [float]        NULL,
-    [Max_Value]      [float]        NULL,
-) ON [PRIMARY]
-GO
-create TABLE [dbo].[Imaging]
-(
-    [sps_key]              [int] IDENTITY (1,1) NOT NULL,
-    [id]                   [int]                NOT NULL,
-    [OrderDate]            [datetime]           NOT NULL,
-    [OrderedProcedureType] [varchar](100)       NOT NULL,
-    [ProcedureStatus]      [varchar](100)       NOT NULL,
-    [Interpretation]       [varchar](300)       NULL,
-)
-GO
-create TABLE [dbo].[lab_results]
-(
-    [id]             int            NOT NULL,
-    [TestCode]       [int]          NOT NULL,
-    [TestName]       [varchar](150) NULL,
-    [result]         [varchar](60)  NULL,
-    [NormMinimum]    [float]        NULL,
-    [NormMaximum]    [float]        NULL,
-    [OrderDate]      [datetime]     NOT NULL,
-    [collectiondate] [datetime]     NULL,
-    [ResultTime]     [datetime]     NULL,
-)
-GO
-create TABLE [dbo].[medical_free_text]
-(
-    [Row_ID]           [BIGINT] IDENTITY (1,1) PRIMARY KEY,
-    [Id]               [BIGINT]       NULL,
-    [Medical_Record]   [BIGINT]       NULL,
-    [DocumentingDate]  [DATE]         NULL,
-    [DocumentingTime]  [DATETIME]     NULL,
-    [unit_name]        [VARCHAR](80)  NULL,
-    [Unit]             [BIGINT]       NULL,
-    [Description_code] [BIGINT]       NULL,
-    [Description]      [VARCHAR](500) NULL,
-    [Description_Text] [VARCHAR](MAX) NULL,
-    [DocumentingUser]  [BIGINT]       NULL,
-    [source]           [VARCHAR](25)  NULL,
-    /*date of insert the row to ARC db*/
-    [insert_date]      [DATETIME]     NULL
-)
-GO
-create TABLE [dbo].[referrals]
-(
-    [ReferralCode]  [int] IDENTITY (1,1) NOT NULL,
-    [id]            [int]                NOT NULL,
-    [DoctorName]    [varchar](50)        NULL,
-    [OrderDate]     [datetime]           NULL,
-    [CompletedDate] [datetime]           NULL,
-) ON [PRIMARY]
-GO
-
-alter database [chameleon_db] SET READ_WRITE
-USE [master]
-GO
-/****** Object:  Database [sbwnd81c_chameleon]    Script Date: 12/06/2022 1:01:52 ******/
-create DATABASE [sbwnd81c_chameleon]
-    CONTAINMENT = NONE
-    ON PRIMARY
-    ( NAME = N'sbwnd81c_chameleon', FILENAME = N'/var/opt/mssql/data/sbwnd81c_chameleon.mdf' , SIZE = 8192 KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536 KB )
-    LOG ON
-    ( NAME = N'sbwnd81c_chameleon_log', FILENAME = N'/var/opt/mssql/data/sbwnd81c_chameleon_log.ldf' , SIZE = 8192 KB , MAXSIZE = 2048 GB , FILEGROWTH = 65536 KB )
-    COLLATE Hebrew_CI_AS
-GO
-alter database [sbwnd81c_chameleon] SET COMPATIBILITY_LEVEL = 150
-GO
-IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
-    begin
-        EXEC [sbwnd81c_chameleon].[dbo].[sp_fulltext_database] @action = 'enable'
-    end
-GO
-ALTER DATABASE [sbwnd81c_chameleon] SET ANSI_NULL_DEFAULT OFF
-GO
-alter database [sbwnd81c_chameleon] SET ANSI_NULLS OFF
-GO
-alter database [sbwnd81c_chameleon] SET ANSI_PADDING OFF
-GO
-alter database [sbwnd81c_chameleon] SET ANSI_WARNINGS OFF
-GO
-alter database [sbwnd81c_chameleon] SET ARITHABORT OFF
-GO
-alter database [sbwnd81c_chameleon] SET AUTO_CLOSE OFF
-GO
-alter database [sbwnd81c_chameleon] SET AUTO_SHRINK OFF
-GO
-alter database [sbwnd81c_chameleon] SET AUTO_UPDATE_STATISTICS ON
-GO
-alter database [sbwnd81c_chameleon] SET CURSOR_CLOSE_ON_COMMIT OFF
-GO
-alter database [sbwnd81c_chameleon] SET CURSOR_DEFAULT GLOBAL
-GO
-alter database [sbwnd81c_chameleon] SET CONCAT_NULL_YIELDS_NULL OFF
-GO
-alter database [sbwnd81c_chameleon] SET NUMERIC_ROUNDABORT OFF
-GO
-alter database [sbwnd81c_chameleon] SET QUOTED_IDENTIFIER OFF
-GO
-alter database [sbwnd81c_chameleon] SET RECURSIVE_TRIGGERS OFF
-GO
-alter database [sbwnd81c_chameleon] SET DISABLE_BROKER
-GO
-alter database [sbwnd81c_chameleon] SET AUTO_UPDATE_STATISTICS_ASYNC OFF
-GO
-alter database [sbwnd81c_chameleon] SET DATE_CORRELATION_OPTIMIZATION OFF
-GO
-alter database [sbwnd81c_chameleon] SET TRUSTWORTHY OFF
-GO
-alter database [sbwnd81c_chameleon] SET ALLOW_SNAPSHOT_ISOLATION OFF
-GO
-alter database [sbwnd81c_chameleon] SET PARAMETERIZATION SIMPLE
-GO
-alter database [sbwnd81c_chameleon] SET READ_COMMITTED_SNAPSHOT OFF
-GO
-alter database [sbwnd81c_chameleon] SET HONOR_BROKER_PRIORITY OFF
-GO
-alter database [sbwnd81c_chameleon] SET RECOVERY FULL
-GO
-alter database [sbwnd81c_chameleon] SET MULTI_USER
-GO
-alter database [sbwnd81c_chameleon] SET PAGE_VERIFY CHECKSUM
-GO
-alter database [sbwnd81c_chameleon] SET DB_CHAINING OFF
-GO
-alter database [sbwnd81c_chameleon] SET FILESTREAM ( NON_TRANSACTED_ACCESS = OFF )
-GO
-alter database [sbwnd81c_chameleon] SET TARGET_RECOVERY_TIME = 60 SECONDS
-GO
-alter database [sbwnd81c_chameleon] SET DELAYED_DURABILITY = DISABLED
-GO
-alter database [sbwnd81c_chameleon] SET ACCELERATED_DATABASE_RECOVERY = OFF
-GO
-EXEC sys.sp_db_vardecimal_storage_format N'sbwnd81c_chameleon', N'ON'
-GO
-alter database [sbwnd81c_chameleon] SET QUERY_STORE = OFF
-GO
-USE [sbwnd81c_chameleon]
+USE [chameleon]
 GO
 /****** Object:  Table [dbo].[AdmissionTreatmentDecision]    Script Date: 12/06/2022 1:01:52 ******/
 SET ANSI_NULLS ON
@@ -343,9 +159,10 @@ SET QUOTED_IDENTIFIER ON
 GO
 create TABLE [dbo].[TreatmentCause]
 (
-    [remarks]        [nvarchar](250) NULL,
-    [Medical_Record] [int]           NULL,
-    [delete_date]    [datetime]
+    [remarks]        [nvarchar](2000) NULL,
+    [Medical_Record] [bigint]         NULL,
+    [Entry_Date]     [datetime]       NULL,
+    [delete_date]    [datetime]       NULL
 ) ON [PRIMARY]
 GO
 /****** Object:  Table [dbo].[Users]    Script Date: 12/06/2022 1:01:52 ******/
@@ -408,8 +225,15 @@ CREATE TABLE [dbo].[faker_beds]
     [row_id]   [int]           NOT NULL
 ) ON [PRIMARY]
 GO
-insert [dbo].[faker_answer_HospUnit] ([decision], [name])
-VALUES (1, N'819000')
+CREATE TABLE [dbo].[MedicalRecords](
+	[Patient] [bigint] NULL,
+	[Medical_Record] [bigint] NULL,
+	[Record_Date] [datetime] NULL,
+    [Unit] [int] NULL,
+	[Delete_Date] [datetime] NULL
+) ON [PRIMARY]
+GO
+insert [dbo].[faker_answer_HospUnit] ([decision], [name]) VALUES (1, N'819000')
 GO
 insert [dbo].[faker_answer_HospUnit] ([decision], [name])
 VALUES (1, N'834000')
@@ -1067,172 +891,98 @@ VALUES (N'אחמד מלמוד', 5),
        (N'אילנית כהן', 7),
        (N'נגב ניצן', 8)
 GO
-/****** Object:  StoredProcedure [dbo].[faker_ResponsibleDoctor]    Script Date: 23/06/2022 10:09:29 ******/
-SET ANSI_NULLS ON
+USE [master]
 GO
-SET QUOTED_IDENTIFIER ON
+alter database [chameleon] SET READ_WRITE
 GO
-create procedure [dbo].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
-AS
-Begin
-    if exists(select *
-              from [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] rd
-              where rd.medical_record = @medical_record
-                and rd.delete_date is null)
-        begin
-            update [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor]
-            set delete_date= GETDATE()
-            where medical_record = @medical_record
-              and delete_date is null;
-            insert into [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor]
-            values ((select top 1 fwd.code
-                     from (select top 1 id, DepartmentWing
-                           from [chameleon_db].[dbo].[Emergency_visits]
-                           where id = @medical_record
-                           order by DepartmentAdmission desc) ev
-                              join [sbwnd81c_chameleon].[dbo].[faker_wing_Doctor] as fwd
-                                   on fwd.DepartmentWing = ev.DepartmentWing
-                              left join [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] as rd on rd.doctor = fwd.code
-                     group by fwd.code
-                     order by count(*) asc), @medical_record, null);
-        end
-    else
-        begin
-            insert into [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor]
-            values ((select top 1 fwd.code
-                     from (select top 1 id, DepartmentWing
-                           from [chameleon_db].[dbo].[Emergency_visits]
-                           where id = @medical_record
-                           order by DepartmentAdmission desc) ev
-                              join [sbwnd81c_chameleon].[dbo].[faker_wing_Doctor] as fwd
-                                   on fwd.DepartmentWing = ev.DepartmentWing
-                              left join [sbwnd81c_chameleon].[dbo].[ResponsibleDoctor] as rd on rd.doctor = fwd.code
-                     group by fwd.code
-                     order by count(*) asc), @medical_record, null);
-        end
-end
-GO
-/****** Object:  StoredProcedure [dbo].[faker_RoomPlacementPatient_admission]    Script Date: 13/07/2022 15:32:00 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [dbo].[faker_RoomPlacementPatient_admission](@medical_record int, @should_move int)
-AS
-Begin
-    declare @bed_id as int;
-    declare @department as int;
-    declare @wing as varchar(50);
-    declare @room_num as int;
-    select @department = ev.DepartmentCode,
-           @wing = ev.DepartmentWing,
-           @room_num = rd.Room_Code
-    from chameleon_db.dbo.Emergency_visits ev
-             join sbwnd81c_chameleon.dbo.RoomDetails rd
-                  on rd.Room_Name = ev.DepartmentWing
-    where ev.id = @medical_record;
 
-    if exists(
-            select ev.DepartmentName
-            from [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient] rp
-                     join chameleon_db.dbo.Emergency_visits ev
-                          on rp.Medical_Record = ev.id
-                              and ev.id = @medical_record)
-        begin
-            if @should_move = 0
-                begin
-                    update [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient]
-                    set [End_Date]=GETDATE()
-                    where Medical_Record = @medical_record
-                      and End_Date is null;
+USE [master]
+GO
+CREATE LOGIN [arc_cham_login] WITH PASSWORD='Password123', DEFAULT_DATABASE=[master], DEFAULT_LANGUAGE=[us_english], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF
+GO
 
-                    select top 1 @bed_id = fb.row_id
-                    from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
-                             join [chameleon_db].[dbo].[Emergency_visits] ev
-                                  on ev.DepartmentWing = fb.room
-                    where ev.id = @medical_record
-                      and row_id not in (select rpp.bed_id
-                                         from [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient] rpp
-                                                  join [chameleon_db].[dbo].[Emergency_visits] ev
-                                                       on ev.id = rpp.Medical_Record
-                                         where rpp.unit = @department
-                                           and rpp.Room = @room_num
-                                           and rpp.start_date is not null
-                                           and rpp.end_date is null
-                                           and rpp.bed_id is not null
-                                           and ev.DepartmentWingDischarge is null)
-                    order by newid();
-                    if @bed_id is not null
-                        begin
-                            insert into [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient]
-                            values (GETUTCDATE(), null, @department, @bed_id, @medical_record, @room_num);
-                        end
-                end
-        end
-    else
-        begin
-            select top 1 @bed_id = fb.row_id
-            from [sbwnd81c_chameleon].[dbo].[faker_beds] fb
-                     join [chameleon_db].[dbo].[Emergency_visits] ev
-                          on ev.DepartmentWing = fb.room and ev.id = @medical_record
-            where row_id not in (select bed_id
-                                 from [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient] rpp
-                                 where rpp.unit = @department
-                                   and rpp.end_date is null
-                                   and rpp.start_date is not null)
-            order by newid();
-            if @bed_id is not null
-                begin
-                    insert into [sbwnd81c_chameleon].[dbo].[RoomPlacementPatient]
-                    values (GETUTCDATE(), null, @department, @bed_id, @medical_record, @room_num);
-                end
-        end
-end
+ALTER SERVER ROLE [sysadmin] ADD MEMBER [arc_cham_login]
 GO
-/****** Object:  StoredProcedure [dbo].[faker_decision]    Script Date: 04/07/2022 21:16:23 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-create procedure [dbo].[faker_decision](@medical_record nvarchar(50))
-AS
-Begin
-    declare @decision as int;
-    declare @unit_hosp as int;
-    if exists(select *
-              from [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision] atd
-              where atd.medical_record = @medical_record
-                and atd.delete_date is null)
-        begin
-            update [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision]
-            set delete_date= getdate()
-            where medical_record = @medical_record
-              and delete_date is null;
-        end
-    if (select top 1 count(*) * 100 / sum(count(*)) over () as ratio
-        from [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision] a
-                 left join [dbo].[faker_answer_HospUnit] f on a.Hosp_Unit = f.name and a.Delete_Date is null
-        group by (case when f.name is null then 0 else 1 end)
-        order by (case when f.name is null then 0 else 1 end)) < 30
-        begin
-            -- insert release
-            insert into [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision]
-            values (2, null, null, @medical_record);
-        end
-    else
-        begin
-            -- insert hosp
-            select top 1 @decision = hu.decision, @unit_hosp = hu.name
-            from [sbwnd81c_chameleon].[dbo].faker_answer_HospUnit hu
-            where hu.decision = 1
-            order by newid();
 
-            insert into [sbwnd81c_chameleon].[dbo].[AdmissionTreatmentDecision]
-            values (@decision, @unit_hosp, null, @medical_record);
-        end
-end
+ALTER SERVER ROLE [serveradmin] ADD MEMBER [arc_cham_login]
+GO
+USE [chameleon]
+GO
+CREATE USER [arc_cham_login] FOR LOGIN [arc_cham_login]
+GO
+USE [chameleon]
+GO
+ALTER ROLE [db_accessadmin] ADD MEMBER [arc_cham_login]
+GO
+USE [chameleon]
+GO
+ALTER ROLE [db_owner] ADD MEMBER [arc_cham_login]
 GO
 USE [master]
 GO
-alter database [sbwnd81c_chameleon] SET READ_WRITE
+CREATE USER [arc_cham_login] FOR LOGIN [arc_cham_login]
+GO
+USE [master]
+GO
+ALTER ROLE [db_accessadmin] ADD MEMBER [arc_cham_login]
+GO
+USE [master]
+GO
+ALTER ROLE [db_owner] ADD MEMBER [arc_cham_login]
+GO
+USE [model]
+GO
+CREATE USER [arc_cham_login] FOR LOGIN [arc_cham_login]
+GO
+USE [model]
+GO
+ALTER ROLE [db_accessadmin] ADD MEMBER [arc_cham_login]
+GO
+USE [model]
+GO
+ALTER ROLE [db_owner] ADD MEMBER [arc_cham_login]
+GO
+USE [msdb]
+GO
+CREATE USER [arc_cham_login] FOR LOGIN [arc_cham_login]
+GO
+USE [msdb]
+GO
+ALTER ROLE [db_accessadmin] ADD MEMBER [arc_cham_login]
+GO
+USE [msdb]
+GO
+ALTER ROLE [db_owner] ADD MEMBER [arc_cham_login]
+GO
+USE [tempdb]
+GO
+CREATE USER [arc_cham_login] FOR LOGIN [arc_cham_login]
+GO
+USE [tempdb]
+GO
+ALTER ROLE [db_accessadmin] ADD MEMBER [arc_cham_login]
+GO
+USE [tempdb]
+GO
+ALTER ROLE [db_owner] ADD MEMBER [arc_cham_login]
+GO
+use [master]
+GO
+GRANT ALTER ANY CONNECTION TO [arc_cham_login]
+GO
+use [master]
+GO
+GRANT ALTER ANY LINKED SERVER TO [arc_cham_login]
+GO
+use [master]
+GO
+GRANT ALTER ANY LOGIN TO [arc_cham_login]
+GO
+use [master]
+GO
+GRANT CONNECT ANY DATABASE TO [arc_cham_login]
+GO
+use [master]
+GO
+GRANT IMPERSONATE ANY LOGIN TO [arc_cham_login]
 GO

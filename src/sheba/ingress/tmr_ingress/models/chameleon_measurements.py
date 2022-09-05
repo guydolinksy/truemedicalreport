@@ -16,6 +16,7 @@ class MeasurementsIds(Enum):
 
 class ChameleonMeasurements(Base):
     __tablename__ = "measurements"
+    __table_args__ = {"schema": "dw"}
 
     patient_id = Column("id", VARCHAR(200), primary_key=True)
     at = Column("entry_time", DateTime(), primary_key=True)

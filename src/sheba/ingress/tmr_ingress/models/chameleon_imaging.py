@@ -8,6 +8,7 @@ from .base import Base
 
 class ChameleonImaging(Base):
     __tablename__ = "Imaging"
+    __table_args__ = {"schema": "dw"}
 
     imaging_id = Column("sps_key", Integer(), primary_key=True)
     patient_id = Column("ID", Integer())

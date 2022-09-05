@@ -33,5 +33,3 @@ services:
       - "sqlpad:/var/lib/sqlpad"
     ports:
       - "8030:80"
-    depends_on:
-      - chameleon

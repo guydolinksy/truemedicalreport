@@ -1,11 +1,11 @@
-execute_set_patient_admission = """execute sbwnd81c_chameleon.dbo.faker_RoomPlacementPatient_admission {}, {}"""
+execute_set_patient_admission = """exec dwh.dw.faker_RoomPlacmentPatient_admission {}"""
 
-execute_set_hospitalize_or_discharge = """execute sbwnd81c_chameleon.dbo.faker_decision {}"""
+execute_set_hospitalized_decision = """exec dwh.dw.faker_decision {}"""
 
-execute_set_responsible_doctor = """execute sbwnd81c_chameleon.dbo.faker_ResponsibleDoctor {}"""
+execute_set_responsible_doctor = """exec dwh.dw.faker_ResponsibleDoctor {}"""
 
-delete_room_placement =""" truncate table sbwnd81c_chameleon.dbo.RoomPlacementPatient"""
+delete_room_placement = """ EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNCATE TABLE  dbo.RoomPlacementPatient' """
 
-delete_admission_treatment = """truncate table sbwnd81c_chameleon.dbo.AdmissionTreatmentDecision"""
+delete_admission_treatment_decision = """EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNCATE TABLE  dbo.AdmissionTreatmentDecision' """
 
-delete_responsible_doctor= """truncate table sbwnd81c_chameleon.dbo.ResponsibleDoctor"""
+delete_responsible_doctor = """EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNCATE TABLE  dbo.ResponsibleDoctor' """
