@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from tmr_common.data_models.notification import ReferralsNotification, NotificationLevel
+from tmr_common.data_models.notification import NotificationLevel, Notification, NotificationType
 
 
 class Referral(BaseModel):
@@ -26,3 +26,16 @@ class Referral(BaseModel):
             message=message,
             level=NotificationLevel.normal
         )
+
+
+class ReferralsNotification(Notification):
+
+    @classmethod
+    def get_id(cls, **kwargs):
+        return {kwargs['type'].value: kwargs['static_id']}
+
+    def __init__(self, **kwargs):
+        kwargs['type'] = NotificationType.referral
+        if 'notification_id' not in kwargs:
+            kwargs['notification_id'] = self.get_id(**kwargs)
+        super(ReferralsNotification, self).__init__(**kwargs)

@@ -56,7 +56,7 @@ export const PatientInfo = ({onError}) => {
                     warnings: [], awaiting: {}, severity: {value: 0, at: null}, flagged: null,
                     id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
                     treatment: {destination: null}, complaint: null, admission: {},
-                    basic_medical: {nurse_description: null}, measures: {
+                    intake: {nurse_description: null}, measures: {
                         temperature: null,
                         blood_pressure: null,
                         saturation: null,
@@ -99,7 +99,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
         if (loading)
             setTitle('')
         else {
-            setTitle(`${value.name} (${value.age || 'גיל לא ידוע'})`);
+            setTitle(`${value.info.name} (${value.info.age || 'גיל לא ידוע'})`);
         }
     }, [value, loading, setTitle]);
     if (loading)
@@ -126,7 +126,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
 
                 <HashMatch match={['info', patient, 'basic', 'nurse-summary']}>{({matched}) =>
                     <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
-                        תיאור צוות סיעודי: {value.basic_medical ? value.basic_medical.nurse_description : undefined}
+                        תיאור צוות סיעודי: {value.intake.nurse_description}
                     </p>}
                 </HashMatch>
             </Panel>

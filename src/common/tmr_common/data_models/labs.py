@@ -3,8 +3,8 @@ from typing import Optional, Dict
 
 from pydantic import BaseModel
 
-from .warnings import PatientWarning
-from .notification import LabsNotification, NotificationLevel
+from tmr_common.data_models.warnings import PatientWarning
+from tmr_common.data_models.notification import NotificationLevel, Notification, NotificationType
 from .severity import Severity
 
 
@@ -65,6 +65,19 @@ class Laboratory(BaseModel):
     class Config:
         orm_mode = True
         use_enum_values = True
+
+
+class LabsNotification(Notification):
+
+    @classmethod
+    def get_id(cls, **kwargs):
+        return {kwargs['type'].value: kwargs['static_id']}
+
+    def __init__(self, **kwargs):
+        kwargs['type'] = NotificationType.lab
+        if 'notification_id' not in kwargs:
+            kwargs['notification_id'] = self.get_id(**kwargs)
+        super(LabsNotification, self).__init__(**kwargs)
 
 
 class LabCategory(BaseModel):

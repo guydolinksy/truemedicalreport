@@ -1,12 +1,14 @@
+import datetime
 from typing import List, Any, Dict
 from typing import Optional
 
 from pydantic import BaseModel
 
-from .patient import Patient, PatientNotifications
+from tmr_common.data_models.notification import Notification, NotificationLevel
+from tmr_common.data_models.patient import Patient
 
 
-class Wing(BaseModel):
+class WingDetails(BaseModel):
     oid: Optional[str]
     name: Optional[str]
     key: Optional[str]
@@ -18,18 +20,18 @@ class Wing(BaseModel):
     class Config:
         orm_mode = True
 
-
-class WingOverview(Wing):
-    patient_count: Optional[int]
-    waiting_patient: Optional[int]
-
-    class Config:
-        orm_mode = True
+    def __init__(self, **kwargs):
+        if '_id' in kwargs:
+            kwargs['oid'] = str(kwargs.pop('_id'))
+        super(WingDetails, self).__init__(**kwargs)
 
 
 class WingFilter(BaseModel):
-    value: str
+    key: str
+    count: int
     title: str
+    icon: str
+    valid: bool = True
     children: List[Any] = list()
 
     class Config:
@@ -37,18 +39,53 @@ class WingFilter(BaseModel):
 
 
 class WingFilters(BaseModel):
-    tree: List[WingFilter]
+    awaiting: List[WingFilter]
+    doctors: List[WingFilter]
     mapping: Dict[str, List[str]]
 
     class Config:
         orm_mode = True
 
 
-class WingSummary(Wing):
+class PatientNotifications(BaseModel):
+    patient: Patient
+
+    notifications: List[Notification]
+
+    at: Optional[str]
+    preview: Optional[str]
+    level: NotificationLevel = NotificationLevel.normal
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+    def __init__(self, **kwargs):
+        if 'at' not in kwargs and kwargs['notifications']:
+            notifications_: List[Notification] = kwargs['notifications']
+            kwargs['at'] = max(notifications_, key=lambda n: datetime.datetime.fromisoformat(n.at)).at
+        if 'level' not in kwargs and kwargs['notifications']:
+            notifications_: List[Notification] = kwargs['notifications']
+            kwargs['level'] = NotificationLevel(min(notifications_, key=lambda n: n.level).level)
+        if 'preview' not in kwargs and kwargs['notifications']:
+            notifications_: List[Notification] = kwargs['notifications']
+            kwargs['preview'] = ', '.join([n.message for n in notifications_])
+        super(PatientNotifications, self).__init__(**kwargs)
+
+
+class Wing(BaseModel):
     patients: List[Patient]
-    details: Wing
+    details: WingDetails
     filters: WingFilters
     notifications: List[PatientNotifications]
+
+    class Config:
+        orm_mode = True
+
+
+class WingSummary(BaseModel):
+    details: WingDetails
+    filters: WingFilters
 
     class Config:
         orm_mode = True

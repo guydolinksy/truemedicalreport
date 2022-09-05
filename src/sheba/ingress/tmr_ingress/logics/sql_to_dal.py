@@ -8,7 +8,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from tmr_common.data_models.esi_score import ESIScore
-from tmr_common.data_models.patient import BasicMedical, ExternalPatient, Admission
+from tmr_common.data_models.patient import Intake, ExternalPatient, Person
+from tmr_common.data_models.admission import Admission
 from tmr_common.data_models.treatment import Treatment
 from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
@@ -59,18 +60,23 @@ class SqlToDal(object):
                 for row in result:
                     patients.append(ExternalPatient(
                         external_id=row["id"],
-                        id_=row["id"],
+                        info=Person(
+                            id_=row["id"],
+                            name=row["full_name"],
+                            gender=row["gender"],
+                            birthdate=utils.datetime_utc_serializer(row["birthdate"]),
+                            age=utils.calculate_patient_age(row["birthdate"]),
+                        ),
                         esi=ESIScore(value=row["esi"], at=row["DepartmentAdmission"].isoformat()),
-                        name=row["full_name"],
-                        arrival=row["DepartmentAdmission"].isoformat(),
-                        gender=row["gender"],
-                        birthdate=utils.datetime_utc_serializer(row["birthdate"]),
-                        age=utils.calculate_patient_age(row["birthdate"]),
-                        complaint=row["MainCause"],
-                        admission=Admission(department=department.name,
-                                            wing=row["DepartmentWing"],
-                                            bed=row["Bed_Name"]),
-                        discharge_time=utils.datetime_utc_serializer(row["DepartmentWingDischarge"]),
+                        admission=Admission(
+                            department=department.name,
+                            wing=row["DepartmentWing"],
+                            bed=row["Bed_Name"],
+                            arrival=row["DepartmentAdmission"].isoformat(),
+                        ),
+                        intake=Intake(
+                            complaint=row["MainCause"],
+                        ),
                     ).dict(exclude_unset=True))
             res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/admissions',
                                 json={'admissions': patients})
@@ -115,7 +121,7 @@ class SqlToDal(object):
         except HTTPError as e:
             logger.exception(f'Could not run labs handler. {e}')
 
-    def update_basic_medical(self, department: Departments):
+    def update_intake(self, department: Departments):
         try:
             logger.debug('Getting free_text for `{}`...', department.name)
             infos = {}
@@ -127,9 +133,9 @@ class SqlToDal(object):
                 ).filter(ChameleonMedicalText.medical_text_code.in_([
                     FreeTextCodes.DOCTOR_VISIT.value, FreeTextCodes.NURSE_SUMMARY.value
                 ])):
-                    free_text.update_basic_medical(infos.setdefault(free_text.patient_id, BasicMedical()))
-            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/basic_medical',
-                                json={'basic_medicals': {patient: infos[patient].dict() for patient in infos}})
+                    free_text.update_intake(infos.setdefault(free_text.patient_id, Intake()))
+            res = requests.post(f'http://medical-dal/medical-dal/departments/{department.name}/intake',
+                                json={'intakes': {patient: infos[patient].dict() for patient in infos}})
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run basic medical handler.')

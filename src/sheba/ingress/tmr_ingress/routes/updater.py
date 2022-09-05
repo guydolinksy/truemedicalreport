@@ -88,9 +88,9 @@ async def update_treatment(department: Departments, dal: SqlToDal = Depends(dal_
 @repeat_every(seconds=60, logger=logger)
 @safe(logger)
 @inject_dependencies(department=Departments.er)
-@updater_router.post("/basic_medical", status_code=http.HTTPStatus.ACCEPTED)
-async def update_basic_medical(department: Departments, dal: SqlToDal = Depends(dal_updater)):
+@updater_router.post("/intake", status_code=http.HTTPStatus.ACCEPTED)
+async def update_intake(department: Departments, dal: SqlToDal = Depends(dal_updater)):
     logger.info("Update Basic Medical Info...")
-    dal.update_basic_medical(department=department)
+    dal.update_intake(department=department)
     logger.info("Done.")
 

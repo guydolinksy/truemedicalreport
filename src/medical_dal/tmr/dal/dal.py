@@ -10,16 +10,16 @@ from bson.objectid import ObjectId
 from pymongo.database import Database
 
 from tmr.routes.websocket import notify, notify_property
-from tmr_common.data_models.aggregate.medical_sum import WaitForDoctor
 from tmr_common.data_models.image import Image, ImagingStatus
 from tmr_common.data_models.labs import Laboratory, LabCategory, StatusInHebrew, LabStatus
 from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures, Latest
 from tmr_common.data_models.notification import Notification
-from tmr_common.data_models.patient import Patient, PatientNotifications, ExternalPatient, InternalPatient, \
-    PatientInfo, Event, Awaiting, AwaitingTypes, BasicMedical
+from tmr_common.data_models.patient import Patient, ExternalPatient, InternalPatient, PatientInfo, Intake
+from tmr_common.data_models.event import Event
+from tmr_common.data_models.awaiting import Awaiting, AwaitingTypes
 from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.treatment import Treatment
-from tmr_common.data_models.wing import WingFilter, WingFilters
+from tmr_common.data_models.wing import WingFilter, WingFilters, PatientNotifications, WingDetails
 from tmr_common.utilities.exceptions import PatientNotFound
 from tmr_common.utilities.websocket import atomic_update
 
@@ -44,11 +44,8 @@ class MedicalDal:
     def get_department_wings(self, department: str) -> dict:
         return json.loads(dumps(self.db.wings.find({"department": department}, {"_id": 1, "key": 1, "name": 1})))
 
-    def get_wing(self, department: str, wing: str) -> dict:
-        return json.loads(dumps(self.db.wings.find_one({"department": department, "key": wing})))
-
-    def get_wing_patient_count(self, department: str, wing: str) -> int:
-        return self.db.patients.count_documents({"admission.department": department, "admission.wing": wing})
+    def get_wing(self, department: str, wing: str) -> WingDetails:
+        return WingDetails(**self.db.wings.find_one({"department": department, "key": wing}))
 
     def get_wing_patients(self, department: str, wing: str) -> List[Patient]:
         patients = [Patient(**patient) for patient in
@@ -59,39 +56,61 @@ class MedicalDal:
         names = {
             AwaitingTypes.doctor.value: 'צוות רפואי',
             AwaitingTypes.nurse.value: 'צוות סיעודי',
-            AwaitingTypes.imaging.value: 'הדמיות',
-            AwaitingTypes.laboratory.value: 'מעבדות',
-            AwaitingTypes.referral.value: 'הפניות',
+            AwaitingTypes.imaging.value: 'בדיקות הדמייה',
+            AwaitingTypes.laboratory.value: 'בדיקות מעבדה',
+            AwaitingTypes.referral.value: 'הפניות וייעוצים',
         }
-        res = {}
+        awaitings, doctors = {}, {}
         patients = self.get_wing_patients(department, wing)
         for patient in patients:
             for awaiting in patient.awaiting:
-                for key in patient.awaiting[awaiting]:
-                    if not patient.awaiting[awaiting][key].completed:
-                        res.setdefault(awaiting, {}).setdefault(patient.awaiting[awaiting][key].awaiting, []).append(
-                            patient.oid
-                        )
-        awaiting_total = set(p for keys in res.values() for l in keys.values() for p in l)
+                for key, data in patient.awaiting[awaiting].items():
+                    if not data.completed:
+                        awaitings.setdefault((awaiting, names[awaiting]), {}).setdefault((data.subtype, data.name),
+                                                                                         []).append(patient.oid)
+            for doctor in patient.treatment.doctors:
+                doctors.setdefault(doctor, []).append(patient.oid)
+        doctor_total = set(p for patients in doctors.values() for p in patients)
+        awaiting_total = set(p for keys in awaitings.values() for l in keys.values() for p in l)
         return WingFilters(
-            tree=[
+            doctors=[
+                        WingFilter(
+                            key='.'.join(['physician', doctor]), count=len(patients), title=doctor, valid=True,
+                            icon='doctor',
+                        ) for doctor, patients in doctors.items()
+                    ] + [
+                        WingFilter(
+                            key='no-physician', count=len(patients) - len(doctor_total), title='ללא רופא.ה מטפל.ת',
+                            valid=False, icon='doctor',
+                        ),
+                    ],
+            awaiting=[
                 WingFilter(
-                    value='awaiting', title=f'({len(awaiting_total)}) ממתינים.ות', children=[WingFilter(
-                        value=awaiting, title=f'({len(set(p for l in keys.values() for p in l))}) {names[awaiting]}',
-                        children=[WingFilter(
-                            value='.'.join([awaiting, key]), title=f'({len(keys[key])}) {key}'
-                        ) for key in keys]
-                    ) for awaiting, keys in res.items()]
+                    key='awaiting', count=len(awaiting_total), title='ממתינים.ות', valid=True, icon='awaiting',
+                    children=[WingFilter(
+                        key=awaiting, count=len(set(p for l in keys.values() for p in l)), icon=awaiting,
+                        title=awaiting_name, valid=True, children=[WingFilter(
+                            key='.'.join([awaiting, key]), count=len(patients), title=key_name, icon=awaiting,
+                            valid=True,
+                        ) for (key, key_name), patients in keys.items()]
+                    ) for (awaiting, awaiting_name), keys in awaitings.items()]
                 ), WingFilter(
-                    value='not-awaiting', title=f'({len(patients) - len(awaiting_total)}) לא ממתינים.ות'
+                    key='not-awaiting', count=len(patients) - len(awaiting_total), title='לא ממתינים.ות',
+                    icon='awaiting', valid=False
                 ),
             ],
             mapping=dict(
                 [
-                    ('.'.join([awaiting, key]), patients) for awaiting, keys in res.items() for key, patients in
-                    keys.items()
+                    ('.'.join([doctor, 'physician']), patients) for doctor, patients in doctors.items()
                 ] + [
-                    (awaiting, list(set(p for l in keys.values() for p in l))) for awaiting, keys in res.items()
+                    ('physician', list(doctor_total)),
+                    ('no-physician', list({p.oid for p in patients} - doctor_total)),
+                ] + [
+                    ('.'.join([awaiting, key]), patients) for (awaiting, awaiting_name), keys in awaitings.items()
+                    for (key, key_name), patients in keys.items()
+                ] + [
+                    (awaiting, list(set(patient for patients in keys.values() for patient in patients)))
+                    for (awaiting, awaiting_name), keys in awaitings.items()
                 ] + [
                     ('awaiting', list(awaiting_total)),
                     ('not-awaiting', list({p.oid for p in patients} - awaiting_total)),
@@ -143,7 +162,7 @@ class MedicalDal:
             measures=[Measure(**d) for d in self.db.measures.find({"patient_id": patient.external_id})]
         )
         labs = [LabCategory(**tube) for tube in self.db.labs.find({"patient_id": patient.external_id})]
-        events = [Event(content='קבלה למחלקה', at=patient.arrival, key='arrival')]
+        events = [Event(content='קבלה למחלקה', at=patient.admission.arrival, key='arrival')]
         return PatientInfo(
             imaging=imaging,
             full_measures=measures,
@@ -237,7 +256,8 @@ class MedicalDal:
                                              {'$set': notification.dict()}, upsert=True)
             await notify('notification', patient.oid)
         updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(imaging_obj.external_id, Awaiting(
-            awaiting=imaging_obj.title,
+            subtype=imaging_obj.title,
+            name=imaging_obj.title,
             since=imaging_obj.at,
             completed=imaging_obj.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value],
             limit=3600,
@@ -276,7 +296,8 @@ class MedicalDal:
 
             logger.debug('%%%%%%%%%%%%%%%% {} {}', patient_id, lab.get_instance_id())
             updated.awaiting.setdefault(AwaitingTypes.laboratory.value, {}).__setitem__(lab.get_instance_id(), Awaiting(
-                awaiting=lab.category,
+                subtype=lab.category,
+                name=lab.category,
                 since=lab.at,
                 completed=lab.status == StatusInHebrew[LabStatus.analyzed.value],
                 limit=3600,
@@ -300,7 +321,8 @@ class MedicalDal:
                                              {'$set': notification.dict()}, upsert=True)
             await notify('notification', patient.oid)
         updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(referral_obj.to, Awaiting(
-            awaiting=referral_obj.to,
+            subtype=referral_obj.to,
+            name=referral_obj.to,
             since=referral_obj.at,
             completed=referral_obj.completed,
             limit=3600,
@@ -323,73 +345,17 @@ class MedicalDal:
             updated.dict(include={'treatment'}, exclude_unset=True)
         )
 
-    async def upsert_basic_medical(self, patient_id: str, basic_medical: BasicMedical):
+    async def upsert_intake(self, patient_id: str, intake: Intake):
         patient = self.get_patient({"external_id": patient_id})
 
         updated = patient.copy()
-        updated.basic_medical = basic_medical
-        if basic_medical.doctor_seen_time:
+        updated.intake = intake
+        if intake.doctor_seen_time:
             updated.awaiting[AwaitingTypes.doctor.value]['exam'].completed = True
-        if basic_medical.nurse_description:
+        if intake.nurse_description:
             updated.awaiting[AwaitingTypes.nurse.value]['exam'].completed = True
 
         await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)},
-            updated.dict(include={'basic_medical', 'awaiting'}, exclude_unset=True)
+            updated.dict(include={'intake', 'awaiting'}, exclude_unset=True)
         )
-
-    def get_waiting_for_doctor_list(self) -> [WaitForDoctor]:
-        waiting = self.db.referrals. \
-            aggregate([{"$match": {"_id": False}}, {
-            "$group": {
-                "_id": "$to",
-                "sum": {"$sum": 1}
-            }
-        }])
-        return [WaitForDoctor(to=data['_id'], count=data['sum']) for data in waiting]
-
-    def get_people_amount_waiting_doctor(self, department, wing) -> int:
-        res = self.db.patients.aggregate(
-            [{"$match": {"awaiting.doctor.exam.completed": False, 'admission.department': department,
-                         'admission.wing': wing}},
-             {"$count": "count"}])
-        response_list = list(res)
-        if response_list:
-            return response_list[0]["count"]
-        else:
-            return 0
-
-    def get_people_amount_waiting_nurse(self, department, wing) -> int:
-        res = self.db.patients.aggregate(
-            [{"$match": {"awaiting.nurse.exam.completed": False, 'admission.department': department,
-                         'admission.wing': wing}},
-             {"$count": "count"}])
-        response_list = list(res)
-        if response_list:
-            return response_list[0]["count"]
-        else:
-            return 0
-
-    def get_people_amount_waiting_labs(self, department, wing) -> int:
-        count = 0
-        for labs in self.db.patients.find({'admission.department': department, 'admission.wing': wing},
-                                          {"awaiting.laboratory": 1, "_id": 0}):
-            if "False" in str(labs):
-                count = count + 1
-        return count
-
-    def get_people_amount_waiting_imaging(self, department, wing) -> int:
-        count = 0
-        for image in self.db.patients.find({'admission.department': department, 'admission.wing': wing},
-                                           {"awaiting.imaging": 1, "_id": 0}):
-            if "False" in str(image):
-                count = count + 1
-        return count
-
-    def get_people_amount_waiting_referrals(self, department, wing) -> int:
-        count = 0
-        for referral in self.db.patients.find({'admission.department': department, 'admission.wing': wing},
-                                              {"awaiting.referral": 1, "_id": 0}):
-            if "False" in str(referral):
-                count = count + 1
-        return count

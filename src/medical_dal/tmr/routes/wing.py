@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from pymongo import MongoClient
 
 from tmr_common.data_models.bed import Bed
-from tmr_common.data_models.wing import WingSummary
+from tmr_common.data_models.wing import Wing
 from ..dal.dal import MedicalDal
 
 logger = logbook.Logger(__name__)
@@ -14,9 +14,9 @@ def medical_dal() -> MedicalDal:
     return MedicalDal(MongoClient("mongo").medical)
 
 
-@wing_router.get("/{wing}", response_model=WingSummary, response_model_exclude_unset=True, tags=["Wing"])
-def get_wing_details(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> WingSummary:
-    return WingSummary(
+@wing_router.get("/{wing}", response_model=Wing, response_model_exclude_unset=True, tags=["Wing"])
+def get_wing(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> Wing:
+    return Wing(
         patients=dal.get_wing_patients(department, wing),
         details=dal.get_wing(department, wing),
         filters=dal.get_wing_filters(department, wing),

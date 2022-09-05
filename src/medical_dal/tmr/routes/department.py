@@ -8,13 +8,14 @@ from pymongo import MongoClient
 from tmr_common.data_models.image import Image
 from tmr_common.data_models.labs import Laboratory
 from tmr_common.data_models.measures import Measure
-from tmr_common.data_models.patient import ExternalPatient, BasicMedical
+from tmr_common.data_models.patient import ExternalPatient, Intake
 from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.treatment import Treatment
-from tmr_common.data_models.wing import WingOverview
+from tmr_common.data_models.department import Department
+from tmr_common.data_models.wing import WingSummary
 from tmr_common.utilities.exceptions import PatientNotFound
 from .wing import wing_router
-from ..dal.dal import MedicalDal, Action
+from ..dal.dal import MedicalDal
 
 department_router = APIRouter()
 
@@ -28,14 +29,13 @@ def medical_dal() -> MedicalDal:
     return MedicalDal(MongoClient("mongo").medical)
 
 
-@department_router.get("/{department}", tags=["Department"], response_model=List[WingOverview],
+@department_router.get("/{department}", tags=["Department"], response_model=Department,
                        response_model_exclude_unset=True)
-def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> List[WingOverview]:
-    return [WingOverview(
-        oid=wing["_id"]["$oid"], **wing,
-        patient_count=dal.get_wing_patient_count(department, wing["key"]),
-        waiting_patient=10,
-    ) for wing in dal.get_department_wings(department)]
+def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> Department:
+    return Department(wings=[WingSummary(
+        details=dal.get_wing(department, wing["key"]),
+        filters=dal.get_wing_filters(department, wing["key"]),
+    ) for wing in dal.get_department_wings(department)])
 
 
 @department_router.post("/{department}/admissions", tags=["Department"])
@@ -89,12 +89,12 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
                 logger.debug('Cannot update patient {} referrals', patient)
 
 
-@department_router.post("/{department}/basic_medical")
-async def update_basic_medical(department: str, basic_medicals: Dict[str, BasicMedical] = Body(..., embed=True),
-                               dal: MedicalDal = Depends(medical_dal)):
-    for patient, basic_medical in basic_medicals.items():
+@department_router.post("/{department}/intake")
+async def update_intake(department: str, intakes: Dict[str, Intake] = Body(..., embed=True),
+                        dal: MedicalDal = Depends(medical_dal)):
+    for patient, intake in intakes.items():
         try:
-            await dal.upsert_basic_medical(patient, basic_medical)
+            await dal.upsert_intake(patient, intake)
         except PatientNotFound:
             logger.debug('Cannot update patient {} basic medical', patient)
 
@@ -107,38 +107,3 @@ async def update_treatments(department: str, treatments: Dict[str, Treatment] = 
             await dal.upsert_treatment(patient, treatments[patient])
         except PatientNotFound:
             logger.debug('Cannot update patient {} treatments', patient)
-
-
-@department_router.get("/{department}/{wing}/waiting_labs", tags=["Department"], response_model=int,
-                       response_model_exclude_unset=True)
-def get_department_people_amount_waiting_labs(department: str, wing: str,
-                                              dal: MedicalDal = Depends(medical_dal)) -> int:
-    return dal.get_people_amount_waiting_labs(department, wing)
-
-
-@department_router.get("/{department}/{wing}/waiting_nurse", tags=["Department"], response_model=int,
-                       response_model_exclude_unset=True)
-def get_department_people_amount_waiting_nurse(department: str, wing: str,
-                                               dal: MedicalDal = Depends(medical_dal)) -> int:
-    return dal.get_people_amount_waiting_nurse(department, wing)
-
-
-@department_router.get("/{department}/{wing}/waiting_doctor", tags=["Department"], response_model=int,
-                       response_model_exclude_unset=True)
-def get_department_people_amount_waiting_doctor(department: str, wing: str,
-                                                dal: MedicalDal = Depends(medical_dal)) -> int:
-    return dal.get_people_amount_waiting_doctor(department, wing)
-
-
-@department_router.get("/{department}/{wing}/waiting_imaging", tags=["Department"], response_model=int,
-                       response_model_exclude_unset=True)
-def get_department_people_amount_waiting_imaging(department: str, wing: str,
-                                                 dal: MedicalDal = Depends(medical_dal)) -> int:
-    return dal.get_people_amount_waiting_imaging(department, wing)
-
-
-@department_router.get("/{department}/{wing}/waiting_referrals", tags=["Department"], response_model=int,
-                       response_model_exclude_unset=True)
-def get_department_people_amount_waiting_referrals(department: str, wing: str,
-                                                   dal: MedicalDal = Depends(medical_dal)) -> int:
-    return dal.get_people_amount_waiting_referrals(department, wing)

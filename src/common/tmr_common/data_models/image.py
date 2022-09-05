@@ -2,7 +2,7 @@ from enum import Enum
 
 from pydantic import BaseModel
 
-from tmr_common.data_models.notification import NotificationLevel, ImagingNotification
+from tmr_common.data_models.notification import NotificationLevel, Notification, NotificationType
 
 
 class ImagingTypes(Enum):
@@ -16,6 +16,19 @@ class ImagingStatus(Enum):
     performed = 'performed'
     analyzed = 'analyzed'
     verified = 'verified'
+
+
+class ImagingNotification(Notification):
+
+    @classmethod
+    def get_id(cls, **kwargs):
+        return {kwargs['type'].value: kwargs['static_id']}
+
+    def __init__(self, **kwargs):
+        kwargs['type'] = NotificationType.imaging
+        if 'notification_id' not in kwargs:
+            kwargs['notification_id'] = self.get_id(**kwargs)
+        super(ImagingNotification, self).__init__(**kwargs)
 
 
 class Image(BaseModel):
@@ -44,7 +57,7 @@ class Image(BaseModel):
 
         super(Image, self).__init__(**kwargs)
 
-    def to_notification(self):
+    def to_notification(self) -> ImagingNotification:
         return ImagingNotification(
             static_id=self.external_id,
             patient_id=self.patient_id,

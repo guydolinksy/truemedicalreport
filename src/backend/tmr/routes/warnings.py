@@ -4,7 +4,8 @@ import logbook
 import requests
 from fastapi import Body
 
-from tmr_common.data_models.patient import Patient, Admission
+from tmr_common.data_models.patient import Patient
+from tmr_common.data_models.admission import Admission
 from tmr_common.utilities.websocket import websocket_subscriber
 from .websocket import notify
 

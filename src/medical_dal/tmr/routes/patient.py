@@ -3,7 +3,8 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
 
-from tmr_common.data_models.patient import Patient, PatientInfo, Admission
+from tmr_common.data_models.patient import Patient, PatientInfo
+from tmr_common.data_models.admission import Admission
 from .websocket import subscribe, notify
 from ..dal.dal import MedicalDal
 

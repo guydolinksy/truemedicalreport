@@ -9,7 +9,6 @@ import {HashMatch} from "./HashMatch";
 import {useMatomo} from '@datapunt/matomo-tracker-react'
 
 import Moment from "react-moment";
-import {value} from "lodash/seq";
 import {CustomIcon} from "./CustomIcon";
 import moment from "moment";
 import {useTime} from 'react-timer-hook';
@@ -45,9 +44,9 @@ const PatientAge = ({patient}) => {
         female: 'בת',
     }
     return !patient || loading ? null : <span>
-        ,&nbsp;{genderedAge[value.gender]}&nbsp;
-        <Tooltip overlay={<Moment date={value.birthdate} format={"DD/MM/YYYY"}/>}>
-            {value.age}
+        ,&nbsp;{genderedAge[value.info.gender]}&nbsp;
+        <Tooltip overlay={<Moment date={value.info.birthdate} format={"DD/MM/YYYY"}/>}>
+            {value.info.age}
         </Tooltip>
     </span>
 }
@@ -59,7 +58,7 @@ export const PatientStatus = ({patient, style}) => {
     const {trackEvent} = useMatomo()
 
     useEffect(() => {
-        if (moment().subtract(2, "hours").isAfter(value.arrival))
+        if (moment().subtract(2, "hours").isAfter(value.admission.arrival))
             setArrivalClass('warn-text')
     }, [minutes]);
 
@@ -77,14 +76,14 @@ export const PatientStatus = ({patient, style}) => {
             trackEvent({category: 'patient-complaint', action: 'click-event'});
             e.stopPropagation();
         }}>
-        <div><Tooltip overlay={'תלונה עיקרית'}>{value.complaint}</Tooltip>
+        <div><Tooltip overlay={'תלונה עיקרית'}>{value.intake.complaint}</Tooltip>
             &nbsp;-&nbsp;
             <Tooltip overlay={'זמן מקבלה'}>
                 <Moment className={arrivalClass} interval={1000} durationFromNow format={'h:mm'}
-                        date={value.arrival}/>
+                        date={value.admission.arrival}/>
 
             </Tooltip></div>
-        <div><ArrowLeftOutlined/>&nbsp;{value.treatment && value.treatment.destination || '(לא הוחלט)'}</div>
+        <div><ArrowLeftOutlined/>&nbsp;{value.treatment.destination || '(לא הוחלט)'}</div>
 
     </div>
 }
@@ -154,13 +153,13 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
         pending = Object.values(awaitings).filter(({completed}) => !completed);
     return <Tooltip key={type} overlay={<div>
         {pending.length > 0 && <b>ממתין.ה עבור (דקות):</b>}
-        {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({awaiting, since}, i) =>
-            <div key={i}>{awaiting} - <Moment interval={1000} durationFromNow format={'h:mm'} date={since}/></div>
+        {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, since}, i) =>
+            <div key={i}>{name} - <Moment interval={1000} durationFromNow format={'h:mm'} date={since}/></div>
         )}
         {pending.length > 0 && completed.length > 0 && <span><br/></span>}
         {completed.length > 0 && <b>הושלמו:</b>}
-        {completed.sort((a, b) => a.since > b.since ? 1 : -1).map(({awaiting, since}, i) =>
-            <div key={i}>{awaiting}</div>
+        {completed.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, since}, i) =>
+            <div key={i}>{name}</div>
         )}
     </div>}>
         <span><CustomIcon status={status} icon={type}/></span>
@@ -172,10 +171,11 @@ const PatientHeader = ({patient, avatar}) => {
     if (!patient)
         return <Button shape={"circle"} type={"text"}>{avatar || <UserOutlined/>}</Button>
     return <span>
-            {avatar || value.admission.bed || <UserOutlined/>}&nbsp;<Tooltip overlay={`ת.ז. ${value.id_ || 'לא ידוע'}`}>
-            {value.name}
-                </Tooltip><PatientAge patient={patient}/>
-                </span>
+        {avatar || value.admission.bed || <UserOutlined/>}&nbsp;<Tooltip
+        overlay={`ת.ז. ${value.info.id_ || 'לא ידוע'}`}>
+            {value.info.name}
+        </Tooltip><PatientAge patient={patient}/>
+    </span>
 }
 const PatientInner = ({patient, avatar, style}) => {
     const ref = useRef(null);

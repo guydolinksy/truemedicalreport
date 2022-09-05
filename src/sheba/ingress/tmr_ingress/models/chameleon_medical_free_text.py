@@ -4,7 +4,7 @@ from enum import Enum
 import pytz
 from sqlalchemy import Column, VARCHAR, DateTime, Date, BigInteger
 
-from tmr_common.data_models.patient import BasicMedical
+from tmr_common.data_models.patient import Intake
 from .base import Base
 
 
@@ -36,9 +36,9 @@ class ChameleonMedicalText(Base):
     # date of inserting the row to ARC db
     insert_date = Column("insert_date", DateTime(), default=datetime.datetime.utcnow())
 
-    def update_basic_medical(self, basic_medical: BasicMedical):
+    def update_intake(self, intake: Intake):
         if self.medical_text_code == FreeTextCodes.NURSE_SUMMARY.value:
-            basic_medical.nurse_description = self.medical_text
-            basic_medical.nurse_seen_time = self.documenting_time.astimezone(pytz.UTC).isoformat()
+            intake.nurse_description = self.medical_text
+            intake.nurse_seen_time = self.documenting_time.astimezone(pytz.UTC).isoformat()
         elif self.medical_text_code == FreeTextCodes.DOCTOR_VISIT.value:
-            basic_medical.doctor_seen_time = self.documenting_time.astimezone(pytz.UTC).isoformat()
+            intake.doctor_seen_time = self.documenting_time.astimezone(pytz.UTC).isoformat()
