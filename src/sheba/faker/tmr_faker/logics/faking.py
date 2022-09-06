@@ -27,7 +27,8 @@ logger = logbook.Logger(__name__)
 class FakeMain(object):
     def __init__(self, connection_string=None):
         connection_string = connection_string or os.getenv('CHAMELEON_CONNECTION_STRING')
-        self._engine = create_engine(connection_string)
+        connect_args = {'autocommit': True}
+        self._engine = create_engine(connection_string, connect_args=connect_args)
         self.faker: Faker = Faker('he-IL')
 
     @contextlib.contextmanager

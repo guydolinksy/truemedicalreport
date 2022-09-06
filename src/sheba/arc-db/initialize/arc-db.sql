@@ -304,7 +304,7 @@ EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'query timeout', 
 GO
 EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'use remote collation', @optvalue=N'true'
 GO
-EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'remote proc transaction promotion', @optvalue=N'true'
+EXEC master.dbo.sp_serveroption @server=N'sbwnd81c', @optname=N'remote proc transaction promotion', @optvalue=N'false'
 GO
 USE [master]
 GO
@@ -349,12 +349,12 @@ create procedure [dw].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
 	end
 GO
 USE [dwh]
-/****** Object:  StoredProcedure [dw].[faker_RoomPlacmentPatient_admission]    Script Date: 13/07/2022 15:32:00 ******/
+/****** Object:  StoredProcedure [dw].[faker_RoomPlacementPatient_admission]    Script Date: 13/07/2022 15:32:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE PROCEDURE [dw].[faker_RoomPlacmentPatient_admission](@medical_record int)
+CREATE PROCEDURE [dw].[faker_RoomPlacementPatient_admission](@medical_record int)
 	AS
 	Begin
 	declare @bed_id as int;
@@ -362,25 +362,25 @@ CREATE PROCEDURE [dw].[faker_RoomPlacmentPatient_admission](@medical_record int)
 	declare @room_num as int;
 	select @exists = ev.DepartmentCode, @room_num=rd.Room_Code from dwh.dw.Emergency_visits ev
 	join  [sbwnd81c].[chameleon].[dbo].[RoomDetails] rd on rd.Room_Name=ev.DepartmentWing where ev.id=@medical_record;
-	if exists ( select ev.DepartmentName from  [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient]  rp join dwh.dw.Emergency_visits ev on rp.Medical_Record=ev.id and ev.id=@medical_record)
+	if exists ( select ev.DepartmentName from  [sbwnd81c].[chameleon].[dbo].[RoomPlacementPatient]  rp join dwh.dw.Emergency_visits ev on rp.Medical_Record=ev.id and ev.id=@medical_record)
 		begin
-			update  [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] set [End_Date]=GETDATE() where Medical_Record=@medical_record and End_Date is null;
+			update  [sbwnd81c].[chameleon].[dbo].[RoomPlacementPatient] set [End_Date]=GETDATE() where Medical_Record=@medical_record and End_Date is null;
 			if @exists='1184000'
 				begin
 					select  top 1 @bed_id=fb.row_id  from [sbwnd81c].[chameleon].[dbo].[faker_beds] fb
 					join [dwh].[dw].[Emergency_visits] ev on ev.DepartmentWing=fb.room and ev.id=@medical_record
-					where row_id not in (select bed_id from [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is null and rpp.start_date is not null)
+					where row_id not in (select bed_id from [sbwnd81c].[chameleon].[dbo].[RoomPlacementPatient] rpp where rpp.unit=1184000 and rpp.end_date is null and rpp.start_date is not null)
 					order by newid();
-					insert into  [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_id,@medical_record ,@room_num);
+					insert into  [sbwnd81c].[chameleon].[dbo].[RoomPlacementPatient]  values (GETUTCDATE(), null,1184000,@bed_id,@medical_record ,@room_num);
 				end
 		end
 	else
 		begin
 			select  top 1 @bed_id=fb.row_id  from [sbwnd81c].[chameleon].[dbo].[faker_beds] fb
 			join [dwh].[dw].[Emergency_visits] ev on ev.DepartmentWing=fb.room and ev.id=@medical_record
-			where row_id not in (select bed_id from [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit=1184000 and rpp.end_date is null and rpp.start_date is not null)
+			where row_id not in (select bed_id from [sbwnd81c].[chameleon].[dbo].[RoomPlacementPatient] rpp where rpp.unit=1184000 and rpp.end_date is null and rpp.start_date is not null)
 			order by newid();
-			insert into  [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient]  values (GETUTCDATE(), null,1184000,@bed_id,@medical_record ,@room_num);
+			insert into  [sbwnd81c].[chameleon].[dbo].[RoomPlacementPatient]  values (GETUTCDATE(), null,1184000,@bed_id,@medical_record ,@room_num);
 		end
 	end
 GO
