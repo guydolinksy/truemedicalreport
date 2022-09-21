@@ -1,6 +1,6 @@
 execute_set_patient_admission = """exec [dwh].[dw].[faker_RoomPlacementPatient_admission] {}, {}"""
 
-execute_set_hospitalized_decision = """exec dwh.dw.faker_decision {}"""
+execute_set_hospitalize_or_discharge = """exec dwh.dw.faker_decision {}"""
 
 execute_set_responsible_doctor = """exec dwh.dw.faker_ResponsibleDoctor {} """
 
