@@ -4,19 +4,13 @@
       <settings>
         <option name="envFilePath" value="" />
         <option name="commandLineOptions" value="--build" />
-        <option name="secondarySourceFiles">
-          <list>
-            <option value="src/docker-compose.sheba.yml" />
-            <option value="src/docker-compose.sheba.faker.yml" />
-          </list>
-        </option>
         <option name="services">
           <list>
             <option value="chameleon" />
             <option value="arc-db" />
           </list>
         </option>
-        <option name="sourceFilePath" value="src/docker-compose.yml" />
+        <option name="sourceFilePath" value="src/dev/sheba/docker-compose.yml" />
         <option name="upForceRecreate" value="true" />
       </settings>
     </deployment>

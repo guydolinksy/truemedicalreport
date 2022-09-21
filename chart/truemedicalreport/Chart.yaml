@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: develop-c082b60
+description: A helm chart for True Medical Report
+name: truemedicalreport
+type: application
+version: 0.1.0

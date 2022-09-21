@@ -1,0 +1,25 @@
+{{ if eq .Values.digest.sheba.input.type "internal" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: '{{ .Release.Name }}-sheba-arc'
+  labels:
+    component: sheba-arc
+    project: tmr
+    release: '{{ .Release.Name }}'
+spec:
+  {{- if .Values.global.debug }}
+  type: NodePort
+  {{- end }}
+  selector:
+    project: tmr
+    component: sheba-arc
+    release: '{{ .Release.Name }}'
+  ports:
+    - protocol: TCP
+      port: 1433
+      targetPort: 1433
+      {{- if .Values.global.debug }}
+      nodePort: {{ .Values.digest.sheba.input.internal.arc.nodePort }}
+      {{- end }}
+{{ end }}

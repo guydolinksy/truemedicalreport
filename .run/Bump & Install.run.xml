@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Bump &amp; Install" type="ShConfigurationType">
+    <option name="SCRIPT_TEXT" value="cat version.txt | awk -F. '/[0-9]+\./{$NF++;print}' OFS=. &gt; tmp.txt; mv tmp.txt version.txt; export TAG=$(cat version.txt); docker-compose -f src/sheba/docker-compose.sheba.yml build; helm upgrade --install tmr chart/truemedicalreport --set global.debug=true --set global.baseDir=$(pwd) --set global.expose.host=localhost --set digest.sheba.input.type=internal --set dal.repository.tag=$TAG --set backend.repository.tag=$TAG --set frontend.repository.tag=$TAG --set digest.sheba.repository.tag=$TAG" />
+    <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+    <option name="SCRIPT_PATH" value="" />
+    <option name="SCRIPT_OPTIONS" value="" />
+    <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+    <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+    <option name="INTERPRETER_PATH" value="/bin/bash" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="EXECUTE_IN_TERMINAL" value="false" />
+    <option name="EXECUTE_SCRIPT_FILE" value="false" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</component>

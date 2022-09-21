@@ -1,0 +1,41 @@
+services:
+  mongo:
+    extends:
+      service: mongo
+      file: ../docker-compose.common.yml
+
+  redis:
+    extends:
+      service: redis
+      file: ../docker-compose.common.yml
+
+  dal:
+    extends:
+      service: dal
+      file: ../docker-compose.common.yml
+
+  backend:
+    extends:
+      service: backend
+      file: ../docker-compose.common.yml
+
+  frontend:
+    extends:
+      service: frontend
+      file: ../docker-compose.common.yml
+
+  digest:
+    build:
+      context: ..
+      dockerfile: sheba/digest/Dockerfile
+    image: "guydo/tmr-sheba-digest:${TAG:-latest}"
+    environment:
+      - 'DAL_URL="http://dal/dal"'
+    secrets:
+      - arc_connection
+    depends_on:
+      - dal
+
+secrets:
+  arc_connection:
+    external: true

@@ -12,6 +12,7 @@ logger = logbook.Logger(__name__)
 
 
 class MeasureTypes(Enum):
+    pain = 'pain'
     pulse = 'pulse'
     temperature = 'temperature'
     saturation = 'saturation'
@@ -41,6 +42,12 @@ class Measure(BaseModel):
         if 'is_valid' not in kwargs:
             kwargs['is_valid'] = kwargs['minimum'] <= kwargs['value'] <= kwargs['maximum']
         super(Measure, self).__init__(**kwargs)
+
+
+class Pain(Measure):
+    def __init__(self, **kwargs):
+        kwargs['type'] = MeasureTypes.pain
+        super(Pain, self).__init__(**kwargs)
 
 
 class Pulse(Measure):
@@ -100,10 +107,22 @@ class Pressure(Measure):
         super(Pressure, self).__init__(**kwargs)
 
 
+class AffectType(Enum):
+    raise_value = 'raise'
+    lower_value = 'lower'
+
+
+class Affect(BaseModel):
+    kind: Optional[AffectType]
+    label: Optional[str]
+    at: Optional[str]
+
+
 class Latest(BaseModel):
     value: Optional[str]
     at: Optional[str]
     is_valid: Optional[bool]
+    affect: Affect = Affect()
 
     @property
     def at_(self):
@@ -111,6 +130,7 @@ class Latest(BaseModel):
 
     class Config:
         orm_mode = True
+        use_enum_values = True
 
 
 class Measures(BaseModel):
@@ -162,6 +182,7 @@ class Measures(BaseModel):
 
     systolic: Latest = Latest()
     diastolic: Latest = Latest()
+    pain: Latest = Latest()
     pulse: Latest = Latest()
     temperature: Latest = Latest()
     saturation: Latest = Latest()
@@ -187,6 +208,7 @@ class Measures(BaseModel):
 class FullMeasures(BaseModel):
     blood_pressure: List[List[float]]
     pulse: List[List[float]]
+    pain: List[List[float]]
     temperature: List[List[float]]
     saturation: List[List[float]]
 
@@ -197,6 +219,8 @@ class FullMeasures(BaseModel):
         res = {}
         for measure in measures or []:
             match measure.type:
+                case MeasureTypes.pain.value:
+                    res.setdefault(MeasureTypes.pain.value, []).append([measure.at_.timestamp(), int(measure.value)])
                 case MeasureTypes.pulse.value:
                     res.setdefault(MeasureTypes.pulse.value, []).append([measure.at_.timestamp(), int(measure.value)])
                 case MeasureTypes.temperature.value:
@@ -221,6 +245,8 @@ class FullMeasures(BaseModel):
                     )
                     diastolic_at = next(diastolic_keys, None)
             kwargs['blood_pressure'] = res.get(MeasureTypes.blood_pressure.value, [])
+        if 'pain' not in kwargs:
+            kwargs['pain'] = res.get(MeasureTypes.pain.value, [])
         if 'pulse' not in kwargs:
             kwargs['pulse'] = res.get(MeasureTypes.pulse.value, [])
         if 'temperature' not in kwargs:

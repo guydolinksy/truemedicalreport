@@ -12,6 +12,7 @@ import {
     faUserNurse,
     faVial,
     faHourglass,
+    faBoltLightning,
     IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -36,6 +37,8 @@ export const CustomIcon = ({status, icon}) => {
         'processing': 'status-color status-neutral',
         'success': 'status-color status-success'
     }[status]
+    if (icon === 'pain')
+        return <FontAwesomeIcon className={className} icon={faBoltLightning}/>
     if (icon === 'pulse')
         return <FontAwesomeIcon className={className} icon={faHeartPulse}/>
     if (icon === 'temperature')

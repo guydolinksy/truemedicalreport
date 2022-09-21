@@ -8,6 +8,7 @@ from pymongo import MongoClient
 from pymongo.collection import Collection
 from werkzeug.local import LocalProxy
 
+from .. import  config
 
 class Connection(object):
     mode = NotImplemented
@@ -107,8 +108,8 @@ class Proxy(object):
 
 
 class Settings(object):
-    def __init__(self, db_url='mongo'):
-        self.db = MongoClient(db_url).app
+    def __init__(self, **connection):
+        self.db = MongoClient(**connection).app
 
         self.users = LocalConnection(self.db.users)
         self.ldap = LDAPConnection(self.db.connections)
@@ -118,9 +119,9 @@ class Settings(object):
 
 
 def settings() -> Settings:
-    return Settings()
+    return Settings(**config.mongo_connection)
 
 
 current_settings = LocalProxy(settings)
 
-user_settings = MongoClient("mongo").app.settings
+user_settings = MongoClient(**config.mongo_connection).app.settings

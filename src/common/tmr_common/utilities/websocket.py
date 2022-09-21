@@ -1,6 +1,5 @@
 import asyncio
 import json
-import traceback
 import typing
 from asyncio import Future, CancelledError
 from collections import defaultdict

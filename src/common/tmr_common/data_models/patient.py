@@ -35,7 +35,7 @@ class ExternalPatient(BaseModel):
 class InternalPatient(BaseModel):
     severity: Severity = Severity()
     awaiting: Dict[str, Dict[str, Awaiting]] = {}
-    flagged: bool
+    flagged: Optional[bool]
     warnings: Dict[str, PatientWarning] = {}
     measures: Measures = Measures()
 
@@ -61,7 +61,7 @@ class InternalPatient(BaseModel):
 
 
 class Patient(ExternalPatient, InternalPatient):
-    oid: str
+    oid: Optional[str]
 
     def __init__(self, **kwargs):
         if '_id' in kwargs:

@@ -23,7 +23,6 @@ def create_app() -> FastAPIOffline:
     app_.include_router(settings_router, prefix="/api/settings")
     app_.include_router(subscriber_router, prefix="/api/subscribe")
 
-
     return app_
 
 

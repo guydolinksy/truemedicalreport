@@ -166,7 +166,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 {value.labs.length ? value.labs.map((lab, i) =>
                     <HashMatch key={i} match={['info', patient, 'labs', `lab-${i}`]}>{({matched}) =>
                         <p style={{animation: matched ? 'highlight 2s ease-out' : undefined}}>
-                            {lab.category} - {lab.status} - <Moment date={lab.at} format={'hh:mm DD/MM'}/>
+                            {lab.category} - {lab.status} - <Moment date={lab.at} format={'HH:mm DD/MM'}/>
                         </p>
                     }</HashMatch>
                 ) : <Empty description={'לא הוזמנו בדיקות מעבדה'}/>}
@@ -191,7 +191,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
             </Panel>
             <Panel key={'story'} header={'סיפור מטופל'}>
                 <Timeline reverse mode={"left"}>{value.events.map(event =>
-                    <Timeline.Item key={event.key} label={<Moment date={event.at} format={'hh:mm DD-MM-YYYY'}/>}>
+                    <Timeline.Item key={event.key} label={<Moment date={event.at} format={'HH:mm DD-MM-YYYY'}/>}>
                         {event.content}
                     </Timeline.Item>
                 )}</Timeline>

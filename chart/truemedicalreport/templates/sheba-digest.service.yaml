@@ -1,0 +1,19 @@
+{{ if eq .Values.digest.type "sheba" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: '{{ .Release.Name }}-sheba-digest'
+  labels:
+    project: tmr
+    component: sheba-digest
+    release: '{{ .Release.Name }}'
+spec:
+  selector:
+    project: tmr
+    component: sheba-digest
+    release: '{{ .Release.Name }}'
+  ports:
+    - protocol: TCP
+      port: {{ .Values.digest.sheba.port }}
+      targetPort: {{ .Values.digest.sheba.port }}
+{{ end }}

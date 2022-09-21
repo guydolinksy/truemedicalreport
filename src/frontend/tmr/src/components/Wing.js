@@ -1,6 +1,21 @@
 import React, {useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {
-    Badge, Card, Col, Collapse, Divider, Empty, Input, Layout, List, Menu, Radio, Row, Select, Space, Spin, TreeSelect,
+    Badge,
+    Card,
+    Col,
+    Collapse,
+    Divider,
+    Empty,
+    Input,
+    Layout,
+    List,
+    Menu,
+    Radio,
+    Row,
+    Select,
+    Space,
+    Spin,
+    Tree,
 } from 'antd';
 import {Patient} from "./Patient";
 import {createContext} from "../hooks/DataContext";
@@ -11,7 +26,7 @@ import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
-import {PushpinOutlined, UserOutlined, FilterOutlined} from "@ant-design/icons";
+import {FilterOutlined, PushpinOutlined, UserOutlined} from "@ant-design/icons";
 import {Link} from "react-router-dom";
 import Moment from "react-moment";
 
@@ -25,7 +40,6 @@ const {Content, Sider} = Layout;
 const wingDataContext = createContext(null);
 
 const highlighter = new Highlighter('root');
-const {SHOW_PARENT} = TreeSelect;
 const {Panel} = Collapse;
 const {Item} = List;
 const badgeClass = {
@@ -47,23 +61,42 @@ const WingLayout = ({department, wing, details, onError}) => {
         </Row>)}
     </Card>
 }
-const WingStatus = () => {
+const WingNotification = ({oid, notification, message, unread, markRead}) => {
+    useEffect(() => {
+        let task = setTimeout(() => markRead(oid, message.static_id), 6000);
+        return () => clearTimeout(task);
+    }, [notification, message, markRead]);
+    return <>
+        <Link to={`#info#${notification.patient.oid}#${message.type}#${message.static_id}`}>
+            {(unread[oid] || []).includes(message.static_id) && <Badge status={'processing'}/>}
+            &nbsp;<span className={message.danger ? 'warn-text' : undefined}>{message.message}</span>
+        </Link>
+        <Moment style={{display: "block"}} date={message.at} format={'HH:mm'}/>
+    </>
+}
+const WingNotifications = () => {
     const navigate = useNavigate();
+    const {value} = useContext(wingDataContext.context);
     const [openKeys, setOpenKeys] = useState([]);
-    const [search, setSearch] = useState('');
-    const {value, lastMessage} = useContext(wingDataContext.context);
+    const [unread, setUnread] = useState({});
 
-    const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'location');
+    const appendUnread = useCallback((oid, messages) => {
+        console.log('UNREAD', oid, messages)
+        setUnread(p => Object.assign({}, p, {[oid]: (p[oid] || []).concat(messages)}));
+    }, [setUnread]);
+    const markRead = useCallback((oid, static_id) => {
+        setUnread(p => Object.assign({}, p, {[oid]: (p[oid] || []).filter(s => s !== static_id)}));
+    }, [setUnread]);
 
+    const [notifications, setNotifications] = useState(null);
     useEffect(() => {
-        highlighter.apply(search)
-    }, [search]);
-
-    useEffect(() => {
-        if (!lastMessage)
-            return;
-        setOpenKeys(prevState => prevState.concat(...JSON.parse(lastMessage.data).openKeys || []));
-    }, [lastMessage]);
+        setNotifications(prevState => Object.assign({}, ...value.notifications.map((n) => {
+            let messages = n.notifications.map(m => m.static_id)
+            if (prevState !== null)
+                appendUnread(n.patient.oid, messages.filter(s => !(prevState[n.patient.oid] || []).includes(s)));
+            return {[n.patient.oid]: messages};
+        })));
+    }, [value.notifications]);
 
     const openChange = useCallback(key => {
         let keys = Array.isArray(key) ? key : [key];
@@ -74,11 +107,69 @@ const WingStatus = () => {
             return keys;
         })
     }, [openKeys, navigate]);
+    if (!value.notifications.length)
+        return <Empty description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/>
+    return <div style={{display: "flex", flexDirection: "column", flex: 1, overflowY: "hidden"}}>
+        <Collapse onChange={openChange} style={{overflowY: "auto", flex: 1}}>
+            {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
+                <div style={{
+                    display: "flex",
+                    flexFlow: "column nowrap",
+                    alignItems: "flex-start",
+                }}>
+                    <div><UserOutlined/>&nbsp;{notification.patient.info.name}</div>
+                    <div style={{
+                        textOverflow: "ellipsis",
+                        fontSize: "10px"
+                    }}>{notification.preview}</div>
+                </div>
+            } extra={
+                <div style={{
+                    display: "flex",
+                    flexFlow: "column nowrap",
+                    alignItems: "flex-end",
+                }}>
+                    <Moment style={{display: "block"}} date={notification.at} format={'HH:mm'}/>
+                    <Space>
+                        {notification.patient.flagged && <PushpinOutlined style={{marginLeft: 0}}/>}
+                        {(unread[notification.patient.oid] || []).length > 0 && <Badge
+                            className={badgeClass[notification.level]}
+                            count={unread[notification.patient.oid].length}
+                            size={"small"}/>}
+                    </Space>
+                </div>
+            }>
+                {notification.notifications.length ? <List>
+                    {notification.notifications.map((message, j) =>
+                        <Item key={`${notification.patient.oid}-${j}`}>
+                            <WingNotification oid={notification.patient.oid} notification={notification}
+                                              message={message} markRead={markRead} unread={unread}/>
+                        </Item>
+                    )}
+                </List> : <Empty description={'אין התרעות חדשות'}/>}
+            </Panel>)}
+        </Collapse>
+    </div>
+}
+
+const WingStatus = () => {
+    const navigate = useNavigate();
+    const [search, setSearch] = useState('');
+    const {value} = useContext(wingDataContext.context);
+
+    const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'location');
+
+    useEffect(() => {
+        highlighter.apply(search)
+    }, [search]);
+
 
     const [selectedAwaiting, setSelectedAwaiting] = useLocalStorage('selectedAwaiting', []);
     const [selectedDoctors, setSelectedDoctors] = useLocalStorage('selectedDoctors', []);
+    const [selectedTreatments, setSelectedTreatments] = useLocalStorage('selectedTreatments', []);
+
     const toTree = filter => ({
-        value: filter.key,
+        key: filter.key,
         title: `(${filter.count}) ${filter.title}`,
         children: (filter.children || []).map(toTree)
     })
@@ -89,94 +180,48 @@ const WingStatus = () => {
         overflowY: "hidden",
         justifyContent: "space-between",
     }}>
-        <div style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            overflowY: "hidden",
-        }}>
-            <Collapse defaultActiveKey={['basic'].concat(openKeys)} onChange={openChange}
-                      style={{overflowY: "auto", flex: 1}}>
-                <Panel key={'basic'} header={value.details.name} extra={<FilterOutlined/>}>
-                    <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
-                            placeholder={'חיפוש:'}/>
-                    <Divider/>
-                    <Select showSearch allowClear mode={"multiple"} placeholder="סינון לפי רופא.ה מטפל.ת:"
-                            style={{width: '100%'}} value={selectedDoctors} onChange={setSelectedDoctors}>
-                        {value.filters.doctors.map(filter => <Option key={filter.key} value={filter.value}>
-                            {filter.title}
-                        </Option>)}
-                    </Select>
-                    <Divider/>
-                    <TreeSelect treeData={value.filters.awaiting.map(toTree)} style={{width: '100%'}} showSearch allowClear
-                                placeholder="סינון לפי המתנה עבור:" treeDefaultExpandAll onChange={setSelectedAwaiting}
-                                value={selectedAwaiting} showCheckedStrategy={SHOW_PARENT} treeCheckable multiple/>
-                    <Divider/>
-                    <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
-                                 buttonStyle={"solid"}
-                                 style={{width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex"}}>
-                        <Radio.Button value={"location"} style={{flex: "1 1 30px", textAlign: "center"}}>
-                            מיקום
-                        </Radio.Button>
-                        <Radio.Button value={"arrival"} style={{flex: "1 1 40px", textAlign: "center"}}>
-                            זמן קבלה
-                        </Radio.Button>
-                        <Radio.Button value={"name"} style={{flex: "1 1 40px", textAlign: "center"}}>
-                            שם מלא
-                        </Radio.Button>
-                        <Radio.Button value={"severity"} style={{flex: "1 1 35px", textAlign: "center"}}>
-                            דחיפות
-                        </Radio.Button>
-                    </Radio.Group>
-                </Panel>
-                {value.notifications.map((notification) =>
-                    <Panel key={notification.patient.oid} showArrow={false} header={
-                        <div style={{
-                            display: "flex",
-                            flexFlow: "column nowrap",
-                            alignItems: "flex-start",
-                        }}>
-                            <div><UserOutlined/>&nbsp;{notification.patient.info.name}</div>
-                            <div style={{
-                                textOverflow: "ellipsis",
-                                fontSize: "10px"
-                            }}>{notification.preview}</div>
-                        </div>
-                    } extra={
-                        <div style={{
-                            display: "flex",
-                            flexFlow: "column nowrap",
-                            alignItems: "flex-end",
-                        }}>
-                            <Moment style={{display: "block"}}
-                                    date={notification.at || notification.patient.admission.arrival}
-                                    format={'hh:mm'}/>
-                            <Space>
-                                {notification.patient.flagged &&
-                                    <PushpinOutlined style={{marginLeft: 0}}/>}
-                                {notification.notifications.length > 0 &&
-                                    <Badge
-                                        className={badgeClass[notification.level]}
-                                        count={notification.notifications.length}
-                                        size={"small"}/>}
-                            </Space>
-                        </div>
-                    }>
-                        {notification.notifications.length ? <List>
-                            {notification.notifications.map((message, j) =>
-                                <Item key={`${notification.patient.oid}-${j}`}>
-                                    <Link to={`#info#${notification.patient.oid}#${message.type}#${message.static_id}`}>
-                                        <span className={message.danger ? 'warn-text' : undefined}>
-                                            {message.message}
-                                        </span>
-                                    </Link>
-                                </Item>
-                            )}
-                        </List> : <Empty description={'אין התרעות חדשות'}/>}
-                    </Panel>
-                )}
-            </Collapse>
-        </div>
+        <Collapse defaultActiveKey={['basic']}>
+            <Panel key={'basic'} header={value.details.name} extra={<FilterOutlined/>}>
+                <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
+                        placeholder={'חיפוש:'}/>
+                <Divider/>
+                <Select showSearch allowClear mode={"multiple"} placeholder="סינון לפי רופא.ה מטפל.ת:"
+                        style={{width: '100%'}} value={selectedDoctors} onChange={setSelectedDoctors}>
+                    {value.filters.doctors.map(filter => <Option key={filter.key} value={filter.value}>
+                        {filter.title}
+                    </Option>)}
+                </Select>
+                <Divider/>
+                <Select showSearch allowClear mode={"multiple"} placeholder="סינון לפי סטטוס החלטה:"
+                        style={{width: '100%'}} value={selectedTreatments} onChange={setSelectedTreatments}>
+                    {value.filters.treatments.map(filter => <Option key={filter.key} value={filter.value}>
+                        {filter.title}
+                    </Option>)}
+                </Select>
+                <Divider/>
+                <Tree treeData={value.filters.awaiting.map(toTree)} style={{width: '100%'}} checkable multiple
+                      placeholder="סינון לפי המתנה עבור:" defaultExpandAll onSelect={setSelectedAwaiting}
+                      selectedKeys={selectedAwaiting}/>
+                <Divider/>
+                <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
+                             buttonStyle={"solid"}
+                             style={{width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex"}}>
+                    <Radio.Button value={"location"} style={{flex: "1 1 30px", textAlign: "center"}}>
+                        מיקום
+                    </Radio.Button>
+                    <Radio.Button value={"arrival"} style={{flex: "1 1 40px", textAlign: "center"}}>
+                        זמן קבלה
+                    </Radio.Button>
+                    <Radio.Button value={"name"} style={{flex: "1 1 40px", textAlign: "center"}}>
+                        שם מלא
+                    </Radio.Button>
+                    <Radio.Button value={"severity"} style={{flex: "1 1 35px", textAlign: "center"}}>
+                        דחיפות
+                    </Radio.Button>
+                </Radio.Group>
+            </Panel>
+        </Collapse>
+        <WingNotifications/>
         <Menu selectable={false} mode={"inline"} style={{userSelect: "none"}} items={[
             {key: 'exit', label: <span><FontAwesomeIcon icon={faRightFromBracket}/>&nbsp;חזרה למחלקה</span>}
         ]} onClick={() => navigate('/')}/>
@@ -209,6 +254,7 @@ const WingInner = ({department, wing}) => {
     const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'location');
     const [selectedAwaiting, setSelectedAwaiting] = useLocalStorage('selectedAwaiting', []);
     const [selectedDoctors, setSelectedDoctors] = useLocalStorage('selectedDoctors', []);
+    const [selectedTreatments, setSelectedTreatments] = useLocalStorage('selectedTreatments', []);
 
     const onInfoError = useCallback(() => {
         flush(true)
@@ -226,6 +272,8 @@ const WingInner = ({department, wing}) => {
 
     const allPatients = value.patients.filter(({oid}) => !selectedAwaiting.length || selectedAwaiting.find(
         filter => value.filters.mapping[filter].includes(oid)
+    )).filter(({oid}) => !selectedTreatments.length || selectedTreatments.find(
+        filter => value.filters.mapping[filter].includes(oid)
     )).filter(({oid}) => !selectedDoctors.length || selectedDoctors.find(
         filter => value.filters.mapping[filter].includes(oid)
     )).sort(sortFunctions[wingSortKey]);
@@ -236,7 +284,7 @@ const WingInner = ({department, wing}) => {
         </Sider>
         <Content className={'content'} style={{overflowY: "auto"}}>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
-                {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedAwaiting.length ?
+                {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedTreatments.length || selectedAwaiting.length ?
                     <Patients key={'patients'} patients={allPatients} onError={flush}/> : [
                         <WingLayout key={'wing'} department={department} wing={wing} details={value.details}
                                     onError={flush}/>,

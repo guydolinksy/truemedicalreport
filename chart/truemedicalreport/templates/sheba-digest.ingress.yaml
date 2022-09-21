@@ -1,0 +1,29 @@
+{{ if eq .Values.digest.type "sheba" }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: '{{ .Release.Name }}-sheba-digest'
+  labels:
+    project: tmr
+    component: sheba-digest
+    release: '{{ .Release.Name }}'
+  annotations:
+    {{- range $k, $v := .Values.digest.sheba.ingress.annotations }}
+    {{ $k }}: {{ $v }}
+    {{- end }}
+spec:
+  {{- if .Values.global.expose.class }}
+  ingressClassName: '{{ .Values.global.expose.class }}'
+  {{- end }}
+  rules:
+    - host: '{{ .Values.global.expose.host }}'
+      http:
+        paths:
+          - path: /digest
+            pathType: Prefix
+            backend:
+              service:
+                name: '{{ .Release.Name }}-sheba-digest'
+                port:
+                  number: {{ .Values.digest.sheba.port }}
+{{ end }}

@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: '{{ .Release.Name }}-frontend'
+  labels:
+    project: tmr
+    component: frontend
+    release: '{{ .Release.Name }}'
+  annotations:
+    {{- range $k, $v := .Values.frontend.ingress.annotations }}
+    {{ $k }}: {{ $v }}
+    {{- end }}
+spec:
+  {{- if .Values.global.expose.class }}
+  ingressClassName: '{{ .Values.global.expose.class }}'
+  {{- end }}
+  rules:
+    - host: '{{ .Values.global.expose.host }}'
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: '{{ .Release.Name }}-frontend'
+                port:
+                  number: {{ .Values.frontend.port }}

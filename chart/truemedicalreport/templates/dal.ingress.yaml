@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: '{{ .Release.Name }}-dal'
+  labels:
+    project: tmr
+    component: dal
+    release: '{{ .Release.Name }}'
+  annotations:
+    {{- range $k, $v := .Values.dal.ingress.annotations }}
+    {{ $k }}: {{ $v }}
+    {{- end }}
+spec:
+  {{- if .Values.global.expose.class }}
+  ingressClassName: '{{ .Values.global.expose.class }}'
+  {{- end }}
+  rules:
+    - host: '{{ .Values.global.expose.host }}'
+      http:
+        paths:
+          - path: /dal
+            pathType: Prefix
+            backend:
+              service:
+                name: '{{ .Release.Name }}-dal'
+                port:
+                  number: {{ .Values.dal.port }}

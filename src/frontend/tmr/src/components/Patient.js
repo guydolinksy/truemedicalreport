@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useRef, useState} from "react";
 import {Badge, Button, Card, Carousel, Space, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faHeart, faHeartPulse, faPercent, faTemperatureHalf, faWarning,} from "@fortawesome/free-solid-svg-icons";
-import {ArrowLeftOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
+import {ArrowLeftOutlined, FlagFilled, UserOutlined, ArrowUpOutlined} from '@ant-design/icons';
 import {createContext} from "../hooks/DataContext";
 import {useLocation, useNavigate} from "react-router";
 import {HashMatch} from "./HashMatch";
@@ -29,9 +29,15 @@ const Measure = ({patient, measure, value, icon, title}) => {
         trackEvent({category: 'patient-' + measure, action: 'click-event'});
         e.stopPropagation();
     } : null}>
-        <div style={{fontSize: 12}}>{title}&nbsp;<FontAwesomeIcon icon={icon}/></div>
+        <div style={{fontSize: 12}}>{title}&nbsp;<CustomIcon icon={icon}/></div>
         <div className={value && !value.is_valid ? 'error-text' : undefined} style={{userSelect: "none", fontSize: 14}}>
             {value ? value.value : '-'}
+            <ArrowUpOutlined/>
+        </div>
+        <div>
+            {value ? <Moment style={{fontSize: 12}} interval={1000} durationFromNow format={'h:mm'} date={value.at}/> : '?'}
+            |
+            {value ? <Moment style={{fontSize: 12}} interval={1000} durationFromNow format={'h:mm'} date={value.at}/> : '?'}
         </div>
     </div>
 };
@@ -45,8 +51,10 @@ const PatientAge = ({patient}) => {
     }
     return !patient || loading ? null : <span>
         ,&nbsp;{genderedAge[value.info.gender]}&nbsp;
-        <Tooltip overlay={<Moment date={value.info.birthdate} format={"DD/MM/YYYY"}/>}>
-            {value.info.age}
+        <Tooltip overlay={
+            value.info.birthdate ? <Moment date={value.info.birthdate} format={"DD/MM/YYYY"}/> : "לא ידוע"
+        }>
+            {value.info.age || "(לא ידוע)"}
         </Tooltip>
     </span>
 }
@@ -109,14 +117,16 @@ export const PatientWarning = ({patient, warning, index, style}) => {
 
 const patientMeasures = (patient, measures) => {
     return [
-        <Measure key={'temperature'} patient={patient} measure={'temperature'} icon={faTemperatureHalf}
+        <Measure key={'temperature'} patient={patient} measure={'temperature'} icon={'temperature'}
                  value={measures && measures.temperature} title={'חום'}/>,
-        <Measure key={'blood_pressure'} patient={patient} measure={'blood_pressure'} icon={faHeart}
+        <Measure key={'blood_pressure'} patient={patient} measure={'blood_pressure'} icon={'bloodPressure'}
                  value={measures && measures.blood_pressure} title={'לחץ דם'}/>,
-        <Measure key={'pulse'} patient={patient} measure={'pulse'} icon={faHeartPulse}
+        <Measure key={'pulse'} patient={patient} measure={'pulse'} icon={'pulse'}
                  value={measures && measures.pulse} title={'דופק'}/>,
-        <Measure key={'saturation'} patient={patient} measure={'saturation'} icon={faPercent}
+        <Measure key={'saturation'} patient={patient} measure={'saturation'} icon={'saturation'}
                  value={measures && measures.saturation} title={'סטורציה'}/>,
+        <Measure key={'pain'} patient={patient} measure={'pain'} icon={'pain'}
+                 value={measures && measures.pain} title={'כאב'}/>,
     ];
 }
 

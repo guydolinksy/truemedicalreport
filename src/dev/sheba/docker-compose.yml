@@ -1,0 +1,140 @@
+volumes:
+  matomo-db:
+  matomo:
+  sqlpad:
+
+
+services:
+  digest:
+    extends:
+      service: digest
+      file: ../../sheba/docker-compose.sheba.yml
+    image: "guydo/tmr-sheba-digest:${TAG:-local}"
+    environment:
+      - 'ARC_CONNECTION="mssql+pyodbc://sa:Password123@sbwnd167f:1433/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"'
+    secrets: []
+    volumes:
+      - "../../common/tmr_common:/opt/common/tmr_common"
+      - "../../sheba/digest/tmr_digest:/opt/digest/tmr_digest"
+    build:
+      target: dev
+    depends_on:
+      - arc-db
+
+  faker:
+    build:
+      target: dev
+      context: ../..
+      dockerfile: dev/sheba/faker/Dockerfile
+    image: "guydo/tmr-sheba-faker:${TAG:-local}"
+    environment:
+      - 'ARC_CONNECTION="mssql+pyodbc://sa:Password123@sbwnd167f:1433/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"'
+    volumes:
+      - "../../common/tmr_common:/opt/common/tmr_common"
+      - "../../sheba/digest/tmr_digest:/opt/digest/tmr_digest"
+      - "./faker/tmr_faker:/opt/faker/tmr_faker"
+    ports:
+      - "8040:80"
+    depends_on:
+      - arc-db
+
+
+  arc-db:
+    hostname: sbwnd167f
+    build:
+      context: ../..
+      dockerfile: dev/sheba/arc-db/Dockerfile
+    image: "guydo/tmr-sheba-arc:${TAG:-local}"
+    volumes:
+      - "./arc-db/initialize:/opt/arc-db/initialize"
+    environment:
+      - "MSSQL_TCP_PORT=1433"
+      - "SA_PASSWORD=Password123"
+      - "TZ=UTC"
+    ports:
+      - "1433:1433"
+    depends_on:
+      - chameleon
+
+  chameleon:
+    hostname: sbwnd81c
+    build:
+      context: ../..
+      dockerfile: dev/sheba/chameleon/Dockerfile
+    image: "guydo/tmr-sheba-chameleon:${TAG:-local}"
+    volumes:
+      - "./chameleon/initialize:/opt/chameleon/initialize"
+    environment:
+      - "MSSQL_TCP_PORT=1433"
+      - "SA_PASSWORD=Password123"
+      - "TZ=UTC"
+    ports:
+      - "1434:1433"
+
+  mongo:
+    extends:
+      service: mongo
+      file: ../docker-compose.yml
+
+  redis:
+    extends:
+      service: redis
+      file: ../docker-compose.yml
+
+  dal:
+    extends:
+      service: dal
+      file: ../docker-compose.yml
+
+  backend:
+    extends:
+      service: backend
+      file: ../docker-compose.yml
+
+  frontend:
+    extends:
+      service: frontend
+      file: ../docker-compose.yml
+
+  proxy:
+    extends:
+      service: proxy
+      file: ../docker-compose.yml
+    volumes:
+      - "./faker/conf.dev/location/:/etc/nginx/location.d/faker/"
+      - "./faker/conf.dev/upstream/:/etc/nginx/upstream.d/faker/"
+      - "./digest/conf.dev/location/:/etc/nginx/location.d/digest/"
+      - "./digest/conf.dev/upstream/:/etc/nginx/upstream.d/digest/"
+    depends_on:
+      - faker
+      - digest
+
+  sqlpad:
+    extends:
+      service: sqlpad
+      file: ../docker-compose.yml
+    volumes:
+      - "sqlpad:/var/lib/sqlpad"
+    links:
+      - "arc-db:arc-db"
+      - "chameleon:chameleon"
+
+  dev:
+    extends:
+      service: dev
+      file: ../docker-compose.yml
+
+  matomo-db:
+    extends:
+      service: matomo-db
+      file: ../docker-compose.yml
+
+  matomo-app:
+    extends:
+      service: matomo-app
+      file: ../docker-compose.yml
+
+  matomo-web:
+    extends:
+      service: matomo-web
+      file: ../docker-compose.yml
