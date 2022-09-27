@@ -18,8 +18,6 @@ services:
       - "../../sheba/digest/tmr_digest:/opt/digest/tmr_digest"
     build:
       target: dev
-    depends_on:
-      - arc-db
 
   faker:
     build:
@@ -35,8 +33,6 @@ services:
       - "./faker/tmr_faker:/opt/faker/tmr_faker"
     ports:
       - "8040:80"
-    depends_on:
-      - arc-db
 
 
   arc-db:
@@ -53,8 +49,6 @@ services:
       - "TZ=UTC"
     ports:
       - "1433:1433"
-    depends_on:
-      - chameleon
 
   chameleon:
     hostname: sbwnd81c
@@ -105,9 +99,6 @@ services:
       - "./faker/conf.dev/upstream/:/etc/nginx/upstream.d/faker/"
       - "./digest/conf.dev/location/:/etc/nginx/location.d/digest/"
       - "./digest/conf.dev/upstream/:/etc/nginx/upstream.d/digest/"
-    depends_on:
-      - faker
-      - digest
 
   sqlpad:
     extends:

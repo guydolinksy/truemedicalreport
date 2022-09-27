@@ -13,9 +13,6 @@ services:
     environment:
       - 'MONGO_CONNECTION={"host": "mongo"}'
       - 'REDIS_CONNECTION="redis://redis/1"'
-    depends_on:
-      - mongo
-      - redis
 
   backend:
     build:
@@ -27,15 +24,10 @@ services:
       - 'REDIS_CONNECTION="redis://redis/0"'
       - 'DAL_URL="http://dal/dal"'
       - 'WS_URL="ws://dal/dal/sync/ws"'
-    depends_on:
-      - mongo
-      - redis
-      - dal
 
   frontend:
     build:
       context: ./
       dockerfile: frontend/Dockerfile
     image: "guydo/tmr-frontend:${TAG:-latest}"
-    depends_on:
-      - backend
+
