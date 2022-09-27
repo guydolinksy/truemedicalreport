@@ -21,3 +21,4 @@ class AwaitingTypes(Enum):
     imaging = "imaging"
     laboratory = "laboratory"
     referral = "referral"
+
