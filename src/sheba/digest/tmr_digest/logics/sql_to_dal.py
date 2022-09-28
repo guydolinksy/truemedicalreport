@@ -183,3 +183,12 @@ class SqlToDal(object):
             logger.exception("No Data Fetched From SQL", e)
         except HTTPError:
             logger.exception('Could not update treatments')
+
+    def update_medicines(self, department: Departments):
+        medicine = {}
+        try:
+            pass
+        except IndexError as e:
+            logger.exception("No Data Fetched From SQL", e)
+        except HTTPError:
+            logger.exception('Could not update treatments')

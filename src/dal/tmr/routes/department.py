@@ -13,6 +13,7 @@ from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.treatment import Treatment
 from tmr_common.data_models.department import Department
 from tmr_common.data_models.wing import WingSummary
+from tmr_common.data_models.medicine import Medicine
 from tmr_common.utilities.exceptions import PatientNotFound
 from .wing import wing_router
 from .. import config
@@ -108,3 +109,13 @@ async def update_treatments(department: str, treatments: Dict[str, Treatment] = 
             await dal.upsert_treatment(patient, treatments[patient])
         except PatientNotFound:
             logger.debug('Cannot update patient {} treatments', patient)
+
+
+@department_router.post("/{department}/medicines")
+async def update_medicines(department: str, medications: Dict[str, List[Medicine]] = Body(...),
+                           dal: MedicalDal = Depends(medical_dal)):
+    for patient in medications:
+        try:
+            await dal.upsert_medicines(patient, medications[patient])
+        except PatientNotFound:
+            logger.debug('Cannot update patient {} medicines', patient)

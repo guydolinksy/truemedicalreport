@@ -94,3 +94,9 @@ async def update_intake(department: Departments, dal: SqlToDal = Depends(dal_upd
     dal.update_intake(department=department)
     logger.info("Done.")
 
+
+@updater_router.post("/medicines")
+async def update_medicines(department: Departments, dal: SqlToDal = Depends(dal_updater)):
+    logger.info("Update medicines info...")
+    dal.update_medicines()
+    logger.debug("Done.")
