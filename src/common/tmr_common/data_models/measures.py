@@ -11,7 +11,7 @@ AbstractSetIntStr, MappingIntStrAny, DictStrAny = Any, Any, Any
 logger = logbook.Logger(__name__)
 
 
-class MeasureTypes(Enum):
+class MeasureType(Enum):
     pain = 'pain'
     pulse = 'pulse'
     temperature = 'temperature'
@@ -28,7 +28,7 @@ class Measure(BaseModel):
     at: str
     minimum: float
     maximum: float
-    type: MeasureTypes
+    type: MeasureType
 
     @property
     def at_(self):
@@ -46,37 +46,37 @@ class Measure(BaseModel):
 
 class Pain(Measure):
     def __init__(self, **kwargs):
-        kwargs['type'] = MeasureTypes.pain
+        kwargs['type'] = MeasureType.pain
         super(Pain, self).__init__(**kwargs)
 
 
 class Pulse(Measure):
     def __init__(self, **kwargs):
-        kwargs['type'] = MeasureTypes.pulse
+        kwargs['type'] = MeasureType.pulse
         super(Pulse, self).__init__(**kwargs)
 
 
 class Temperature(Measure):
     def __init__(self, **kwargs):
-        kwargs['type'] = MeasureTypes.temperature
+        kwargs['type'] = MeasureType.temperature
         super(Temperature, self).__init__(**kwargs)
 
 
 class Saturation(Measure):
     def __init__(self, **kwargs):
-        kwargs['type'] = MeasureTypes.saturation
+        kwargs['type'] = MeasureType.saturation
         super(Saturation, self).__init__(**kwargs)
 
 
 class Systolic(Measure):
     def __init__(self, **kwargs):
-        kwargs['type'] = MeasureTypes.systolic
+        kwargs['type'] = MeasureType.systolic
         super(Systolic, self).__init__(**kwargs)
 
 
 class Diastolic(Measure):
     def __init__(self, **kwargs):
-        kwargs['type'] = MeasureTypes.diastolic
+        kwargs['type'] = MeasureType.diastolic
         super(Diastolic, self).__init__(**kwargs)
 
 
@@ -86,7 +86,7 @@ class Pressure(Measure):
     maximum: str
 
     def __init__(self, systolic: Systolic = None, diastolic: Diastolic = None, **kwargs):
-        kwargs['type'] = MeasureTypes.blood_pressure
+        kwargs['type'] = MeasureType.blood_pressure
         if 'external_id' not in kwargs:
             kwargs['external_id'] = f"{systolic.external_id if systolic else '?'}#" \
                                     f"{diastolic.external_id if diastolic else '?'}"
@@ -107,22 +107,39 @@ class Pressure(Measure):
         super(Pressure, self).__init__(**kwargs)
 
 
-class AffectType(Enum):
+class Effect(Enum):
     raise_value = 'raise'
     lower_value = 'lower'
 
 
-class Affect(BaseModel):
-    kind: Optional[AffectType]
+class ExpectedEffect(BaseModel):
+    measure: MeasureType
+    kind: Effect
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+
+class MeasureEffect(BaseModel):
+    kind: Optional[Effect]
     label: Optional[str]
     at: Optional[str]
+
+    @property
+    def at_(self):
+        return datetime.datetime.fromisoformat(self.at) if self.at else None
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
 
 
 class Latest(BaseModel):
     value: Optional[str]
     at: Optional[str]
     is_valid: Optional[bool]
-    affect: Affect = Affect()
+    effect: MeasureEffect = MeasureEffect()
 
     @property
     def at_(self):
@@ -198,6 +215,19 @@ class Measures(BaseModel):
                 if self.systolic.at_ or self.diastolic.at_ else None
         )
 
+    def get(self, kind: MeasureType):
+        match kind:
+            case MeasureType.pain:
+                return self.pain
+            case MeasureType.pulse:
+                return self.pulse
+            case MeasureType.blood_pressure:
+                return self.blood_pressure
+            case MeasureType.saturation:
+                return self.saturation
+            case MeasureType.temperature:
+                return self.temperature
+
     class Config:
         orm_mode = True
 
@@ -219,38 +249,38 @@ class FullMeasures(BaseModel):
         res = {}
         for measure in measures or []:
             match measure.type:
-                case MeasureTypes.pain.value:
-                    res.setdefault(MeasureTypes.pain.value, []).append([measure.at_.timestamp(), int(measure.value)])
-                case MeasureTypes.pulse.value:
-                    res.setdefault(MeasureTypes.pulse.value, []).append([measure.at_.timestamp(), int(measure.value)])
-                case MeasureTypes.temperature.value:
-                    res.setdefault(MeasureTypes.temperature.value, []).append([measure.at_.timestamp(), measure.value])
-                case MeasureTypes.saturation.value:
-                    res.setdefault(MeasureTypes.saturation.value, []).append(
+                case MeasureType.pain.value:
+                    res.setdefault(MeasureType.pain.value, []).append([measure.at_.timestamp(), int(measure.value)])
+                case MeasureType.pulse.value:
+                    res.setdefault(MeasureType.pulse.value, []).append([measure.at_.timestamp(), int(measure.value)])
+                case MeasureType.temperature.value:
+                    res.setdefault(MeasureType.temperature.value, []).append([measure.at_.timestamp(), measure.value])
+                case MeasureType.saturation.value:
+                    res.setdefault(MeasureType.saturation.value, []).append(
                         [measure.at_.timestamp(), int(measure.value)])
-                case MeasureTypes.systolic.value:
-                    res.setdefault(MeasureTypes.systolic.value, {}).__setitem__(measure.at_.timestamp(),
+                case MeasureType.systolic.value:
+                    res.setdefault(MeasureType.systolic.value, {}).__setitem__(measure.at_.timestamp(),
+                                                                               int(measure.value))
+                case MeasureType.diastolic.value:
+                    res.setdefault(MeasureType.diastolic.value, {}).__setitem__(measure.at_.timestamp(),
                                                                                 int(measure.value))
-                case MeasureTypes.diastolic.value:
-                    res.setdefault(MeasureTypes.diastolic.value, {}).__setitem__(measure.at_.timestamp(),
-                                                                                 int(measure.value))
         if 'blood_pressure' not in kwargs:
-            systolic, diastolic = res.get(MeasureTypes.systolic.value, {}), res.get(MeasureTypes.diastolic.value, {})
+            systolic, diastolic = res.get(MeasureType.systolic.value, {}), res.get(MeasureType.diastolic.value, {})
             diastolic_keys = iter(sorted(diastolic))
             diastolic_at = next(diastolic_keys, None)
             for t in sorted(systolic):
                 while diastolic_at and diastolic_at <= t:
-                    res.setdefault(MeasureTypes.blood_pressure.value, []).append(
+                    res.setdefault(MeasureType.blood_pressure.value, []).append(
                         [diastolic_at, systolic[t], diastolic[diastolic_at]]
                     )
                     diastolic_at = next(diastolic_keys, None)
-            kwargs['blood_pressure'] = res.get(MeasureTypes.blood_pressure.value, [])
+            kwargs['blood_pressure'] = res.get(MeasureType.blood_pressure.value, [])
         if 'pain' not in kwargs:
-            kwargs['pain'] = res.get(MeasureTypes.pain.value, [])
+            kwargs['pain'] = res.get(MeasureType.pain.value, [])
         if 'pulse' not in kwargs:
-            kwargs['pulse'] = res.get(MeasureTypes.pulse.value, [])
+            kwargs['pulse'] = res.get(MeasureType.pulse.value, [])
         if 'temperature' not in kwargs:
-            kwargs['temperature'] = res.get(MeasureTypes.temperature.value, [])
+            kwargs['temperature'] = res.get(MeasureType.temperature.value, [])
         if 'saturation' not in kwargs:
-            kwargs['saturation'] = res.get(MeasureTypes.saturation.value, [])
+            kwargs['saturation'] = res.get(MeasureType.saturation.value, [])
         super(FullMeasures, self).__init__(**kwargs)

@@ -1,8 +1,8 @@
 import React, {useContext, useEffect, useRef, useState} from "react";
 import {Badge, Button, Card, Carousel, Space, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faHeart, faHeartPulse, faPercent, faTemperatureHalf, faWarning,} from "@fortawesome/free-solid-svg-icons";
-import {ArrowLeftOutlined, FlagFilled, UserOutlined, ArrowUpOutlined} from '@ant-design/icons';
+import {faWarning,} from "@fortawesome/free-solid-svg-icons";
+import {ArrowLeftOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
 import {createContext} from "../hooks/DataContext";
 import {useLocation, useNavigate} from "react-router";
 import {HashMatch} from "./HashMatch";
@@ -19,6 +19,7 @@ export const patientDataContext = createContext({
     loading: true,
 });
 
+export const MIN_WIDTH = 400, MAX_WIDTH=500;
 
 const Measure = ({patient, measure, value, icon, title}) => {
     const navigate = useNavigate();
@@ -30,14 +31,15 @@ const Measure = ({patient, measure, value, icon, title}) => {
         e.stopPropagation();
     } : null}>
         <div style={{fontSize: 12}}>{title}&nbsp;<CustomIcon icon={icon}/></div>
-        <div className={value && !value.is_valid ? 'error-text' : undefined} style={{userSelect: "none", fontSize: 14}}>
-            {value ? value.value : '-'}
-            <ArrowUpOutlined/>
+        <div className={(value && !value.is_valid) ? 'error-text' : undefined} style={{userSelect: "none", fontSize: 14}}>
+            {(value && value.value) ? value.value : '-'}
+            {(value && value.effect.kind) && <CustomIcon status={value.is_valid ? 'processing' :  'error'} icon={value.effect.kind}/>}
         </div>
         <div>
-            {value ? <Moment style={{fontSize: 12}} interval={1000} durationFromNow format={'h:mm'} date={value.at}/> : '?'}
-            |
-            {value ? <Moment style={{fontSize: 12}} interval={1000} durationFromNow format={'h:mm'} date={value.at}/> : '?'}
+            {(value && value.value) && <Moment style={{fontSize: 12}} interval={1000} durationFromNow format={'h:mm'} date={value.at}/>}
+            {(value && value.value && value.effect.kind) && '|'}
+            {(value && value.effect.kind) && <Moment style={{fontSize: 12}} interval={1000} durationFromNow format={'h:mm'} date={value.effect.at}/>}
+            {(!value || (!value.value && !value.effect.kind)) && '?'}
         </div>
     </div>
 };
@@ -207,7 +209,7 @@ const PatientInner = ({patient, avatar, style}) => {
         <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
             paddingRight: -4, paddingLeft: -4, animation: matched ? `highlight-${match[0]} 1s ease-out` : undefined
         }} title={<PatientHeader patient={patient} avatar={avatar}/>} style={{
-            margin: 0, maxWidth: 400, minWidth: 300, borderStyle: patient ? "solid" : "dotted", ...style
+            margin: 0, maxWidth: MAX_WIDTH, minWidth: MIN_WIDTH, borderStyle: patient ? "solid" : "dotted", ...style
         }} className={`severity-border severity-${value.severity.value || 0}`} hoverable onClick={() => {
             navigate(`#info#${patient}#basic`);
             trackEvent({category: 'patient', action: 'click-event'});
@@ -231,8 +233,8 @@ export const Patient = ({patient, loading, avatar, style, onError}) => {
         paddingRight: -4, paddingLeft: -4
     }} title={<PatientHeader avatar={avatar || <UserOutlined/>}/>} style={{
         margin: 0,
-        maxWidth: 400,
-        minWidth: 300,
+        maxWidth: MAX_WIDTH,
+        minWidth: MIN_WIDTH,
         borderStyle: patient ? "solid" : "dotted",
         borderColor: "#d9d9d9", ...style
     }} actions={patientMeasures()}>

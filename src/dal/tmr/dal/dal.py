@@ -10,13 +10,14 @@ from bson.objectid import ObjectId
 from pymongo.database import Database
 
 from tmr.routes.websocket import notify, notify_property
+from tmr_common.data_models.awaiting import Awaiting, AwaitingTypes
+from tmr_common.data_models.event import Event
 from tmr_common.data_models.image import Image, ImagingStatus
 from tmr_common.data_models.labs import Laboratory, LabCategory, StatusInHebrew, LabStatus
-from tmr_common.data_models.measures import Measure, MeasureTypes, FullMeasures, Latest
+from tmr_common.data_models.measures import Measure, MeasureType, FullMeasures, Latest, ExpectedEffect, MeasureEffect
+from tmr_common.data_models.medicine import Medicine
 from tmr_common.data_models.notification import Notification
 from tmr_common.data_models.patient import Patient, ExternalPatient, InternalPatient, PatientInfo, Intake
-from tmr_common.data_models.event import Event
-from tmr_common.data_models.awaiting import Awaiting, AwaitingTypes
 from tmr_common.data_models.referrals import Referral
 from tmr_common.data_models.treatment import Treatment
 from tmr_common.data_models.wing import WingFilter, WingFilters, PatientNotifications, WingDetails
@@ -88,16 +89,16 @@ class MedicalDal:
                         ),
                     ],
             treatments=[
-                        WingFilter(
-                            key='.'.join(['treatment', treatment]), count=len(patients), title=treatment, valid=True,
-                            icon='treatment',
-                        ) for treatment, patients in treatments.items()
-                    ] + [
-                        WingFilter(
-                            key='no-treatment', count=len(patients) - len(treatment_total), title='ללא החלטה',
-                            valid=True, icon='treatment',
-                        ),
-                    ],
+                           WingFilter(
+                               key='.'.join(['treatment', treatment]), count=len(patients), title=treatment, valid=True,
+                               icon='treatment',
+                           ) for treatment, patients in treatments.items()
+                       ] + [
+                           WingFilter(
+                               key='no-treatment', count=len(patients) - len(treatment_total), title='ללא החלטה',
+                               valid=True, icon='treatment',
+                           ),
+                       ],
             awaiting=[
                 WingFilter(
                     key='awaiting', count=len(awaiting_total), title='ממתינים.ות', valid=True, icon='awaiting',
@@ -233,27 +234,27 @@ class MedicalDal:
         updated = patient.copy()
         for measure in measures:
             match measure.type:
-                case MeasureTypes.pain.value:
+                case MeasureType.pain.value:
                     if not updated.measures.pain.at_ or measure.at_ > updated.measures.pain.at_:
                         updated.measures.pain = Latest(value=int(measure.value), at=measure.at,
-                                                        is_valid=measure.is_valid)
-                case MeasureTypes.pulse.value:
+                                                       is_valid=measure.is_valid)
+                case MeasureType.pulse.value:
                     if not updated.measures.pulse.at_ or measure.at_ > updated.measures.pulse.at_:
                         updated.measures.pulse = Latest(value=int(measure.value), at=measure.at,
                                                         is_valid=measure.is_valid)
-                case MeasureTypes.temperature.value:
+                case MeasureType.temperature.value:
                     if not updated.measures.temperature.at_ or measure.at_ > updated.measures.temperature.at_:
                         updated.measures.temperature = Latest(value=measure.value, at=measure.at,
                                                               is_valid=measure.is_valid)
-                case MeasureTypes.saturation.value:
+                case MeasureType.saturation.value:
                     if not updated.measures.saturation.at_ or measure.at_ > updated.measures.saturation.at_:
                         updated.measures.saturation = Latest(value=int(measure.value), at=measure.at,
                                                              is_valid=measure.is_valid)
-                case MeasureTypes.systolic.value:
+                case MeasureType.systolic.value:
                     if not updated.measures.systolic.at_ or measure.at_ > updated.measures.systolic.at_:
                         updated.measures.systolic = Latest(value=int(measure.value), at=measure.at,
                                                            is_valid=measure.is_valid)
-                case MeasureTypes.diastolic.value:
+                case MeasureType.diastolic.value:
                     if not updated.measures.diastolic.at_ or measure.at_ > updated.measures.diastolic.at_:
                         updated.measures.diastolic = Latest(value=int(measure.value), at=measure.at,
                                                             is_valid=measure.is_valid)
@@ -381,7 +382,11 @@ class MedicalDal:
             updated.dict(include={'intake', 'awaiting'}, exclude_unset=True)
         )
 
-    async def upsert_medicines(self, patient_id, medicines):
+    async def get_medicine_effects(self) -> Dict[str, List[ExpectedEffect]]:
+        return {medicine['name']: ExpectedEffect(**medicine['effect']) for medicine in self.db.medicine_effects.find()}
+
+    async def upsert_medicines(self, patient_id: str, medicines: List[Medicine]):
+        medicine_effects = await self.get_medicine_effects()
         patient = self.get_patient({"external_id": patient_id})
         updated = patient.copy()
         updated.awaiting.setdefault(AwaitingTypes.nurse.value, {})
@@ -389,8 +394,14 @@ class MedicalDal:
             awaiting_obj = Awaiting(since=medicine.since,
                                     subtype='הוראות פעילות',
                                     name=f"{medicine.label}-{medicine.dosage}",
-                                    completed=medicine.completed,
+                                    completed=bool(medicine.given),
                                     limit=1500)
             updated.awaiting.setdefault(AwaitingTypes.nurse.value, {}).__setitem__(medicine.get_instance_id(),
                                                                                    awaiting_obj)
-        await self.atomic_update_patient({"_id": ObjectId(patient.oid)}, updated.dict(include={'awaiting'}))
+            if medicine.given:
+                for effect in medicine_effects.get(medicine.label, []):
+                    measure = updated.measures.get(effect.measure)
+                    if not measure.effect.at_ or measure.effect.at_ < medicine.given_:
+                        measure.effect = MeasureEffect(kind=effect.kind, label=medicine.description, at=medicine.given)
+
+        await self.atomic_update_patient({"_id": ObjectId(patient.oid)}, updated.dict(include={'awaiting', 'measures'}))

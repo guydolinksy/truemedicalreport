@@ -1,7 +1,6 @@
 import {Patient} from "./Patient";
 import React from "react";
 import {createContext} from "../hooks/DataContext";
-import {Spin} from "antd";
 
 const bedContext = createContext(null);
 

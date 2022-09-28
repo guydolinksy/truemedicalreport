@@ -17,7 +17,7 @@ import {
     Spin,
     Tree,
 } from 'antd';
-import {Patient} from "./Patient";
+import {MIN_WIDTH, Patient} from "./Patient";
 import {createContext} from "../hooks/DataContext";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faRightFromBracket,} from "@fortawesome/free-solid-svg-icons";
@@ -232,10 +232,10 @@ const Patients = ({patients, onError}) => {
         {patients.length ? <div style={{
             display: "grid",
             gridGap: 16,
-            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))"
+            gridTemplateColumns: `repeat(auto-fill, minmax(${MIN_WIDTH}px, 1fr))`
         }}>
             {patients.map(patient => <Patient key={patient.oid} patient={patient.oid}
-                                              style={{flex: '1', minWidth: 300}} onError={onError}/>)}
+                                              style={{flex: '1', minWidth: MIN_WIDTH}} onError={onError}/>)}
         </div> : <Empty description={false} image={Empty.PRESENTED_IMAGE_SIMPLE}/>}
     </Card>
 }

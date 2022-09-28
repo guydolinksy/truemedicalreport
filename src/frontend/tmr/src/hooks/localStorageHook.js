@@ -4,7 +4,7 @@ import {useEffect, useState} from "react";
 export const useLocalStorage = (key, defaultValue) => {
     const [value, setValue] = useState(() => {
             const saved = localStorage.getItem(key);
-            return [null, undefined].includes(saved) && JSON.parse(saved) || defaultValue;
+            return ([null, undefined].includes(saved) && JSON.parse(saved)) || defaultValue;
         }
     );
     useEffect(() => {

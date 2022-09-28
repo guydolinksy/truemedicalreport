@@ -2,7 +2,7 @@ from enum import Enum
 
 import pytz
 from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime
-from tmr_common.data_models.measures import Measure, MeasureTypes
+from tmr_common.data_models.measures import Measure, MeasureType
 from .base import Base
 
 
@@ -33,6 +33,6 @@ class ChameleonMeasurements(Base):
             minimum=self.min_limit,
             maximum=self.max_limit,
             at=self.at.astimezone(pytz.UTC).isoformat(),
-            type=MeasureTypes(MeasurementsIds(self.code).name),
+            type=MeasureType(MeasurementsIds(self.code).name),
             external_id=f'{self.patient_id}#{self.at.astimezone(pytz.UTC).isoformat()}#{self.code}',
         )

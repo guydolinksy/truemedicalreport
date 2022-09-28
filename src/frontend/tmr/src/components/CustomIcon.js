@@ -13,6 +13,8 @@ import {
     faVial,
     faHourglass,
     faBoltLightning,
+    faArrowUp,
+    faArrowDown,
     IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -59,5 +61,9 @@ export const CustomIcon = ({status, icon}) => {
         return <FontAwesomeIcon className={className} icon={faFileMedical}/>
     if (icon === 'awaiting')
         return <FontAwesomeIcon className={className} icon={faHourglass}/>
+    if (icon === 'raise')
+        return <FontAwesomeIcon className={className} icon={faArrowUp}/>
+    if (icon === 'lower')
+        return <FontAwesomeIcon className={className} icon={faArrowDown}/>
     return <span>{icon}</span>
 }
