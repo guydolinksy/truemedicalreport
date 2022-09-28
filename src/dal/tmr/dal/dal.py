@@ -380,3 +380,17 @@ class MedicalDal:
             {"_id": ObjectId(patient.oid)},
             updated.dict(include={'intake', 'awaiting'}, exclude_unset=True)
         )
+
+    async def upsert_medicines(self, patient_id, medicines):
+        patient = self.get_patient({"external_id": patient_id})
+        updated = patient.copy()
+        updated.awaiting.setdefault(AwaitingTypes.nurse.value, {})
+        for medicine in medicines:
+            awaiting_obj = Awaiting(since=medicine.since,
+                                    subtype='הוראות פעילות',
+                                    name=f"{medicine.label}-{medicine.dosage}",
+                                    completed=medicine.completed,
+                                    limit=1500)
+            updated.awaiting.setdefault(AwaitingTypes.nurse.value, {}).__setitem__(medicine.get_instance_id(),
+                                                                                   awaiting_obj)
+        await self.atomic_update_patient({"_id": ObjectId(patient.oid)}, updated.dict(include={'awaiting'}))
