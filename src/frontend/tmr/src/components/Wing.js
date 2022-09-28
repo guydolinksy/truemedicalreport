@@ -200,8 +200,8 @@ const WingStatus = () => {
                 </Select>
                 <Divider/>
                 <Tree treeData={value.filters.awaiting.map(toTree)} style={{width: '100%'}} checkable multiple
-                      placeholder="סינון לפי המתנה עבור:" defaultExpandAll onSelect={setSelectedAwaiting}
-                      selectedKeys={selectedAwaiting}/>
+                      placeholder="סינון לפי המתנה עבור:" defaultExpandAll onCheck={setSelectedAwaiting}
+                      checkedKeys={selectedAwaiting}/>
                 <Divider/>
                 <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
                              buttonStyle={"solid"}
