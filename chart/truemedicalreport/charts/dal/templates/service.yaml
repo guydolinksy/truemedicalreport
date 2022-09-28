@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dal.fullname" . }}
+  labels:
+    {{- include "dal.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.global.servicePort.dal }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "dal.selectorLabels" . | nindent 4 }}

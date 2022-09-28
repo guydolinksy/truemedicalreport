@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "faker.fullname" . }}
+  labels:
+    {{- include "faker.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "faker.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "faker.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "faker.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: 'check-arc'
+          image: {{ $.Values.global.helpers.busybox.image }}
+          command: [ "sh", "-c", "until nc -z {{ .Values.global.fullname.arc }} {{ .Values.global.servicePort.arc }}; do sleep 1; done" ]
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ if .Values.global.devMode.enabled }}dev{{ else }}{{ .Values.image.tag | default .Chart.AppVersion }}{{ end }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: 'ARC_CONNECTION'
+              value: '"mssql+pyodbc://sa:Password123@{{ .Values.global.fullname.arc }}:{{ .Values.global.servicePort.arc }}/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"'
+          {{- if .Values.global.devMode.enabled }}
+          volumeMounts: {{ if not (len .Values.devMappings) }}[ ]{{ end }}
+            {{- range $index, $value := .Values.devMappings }}
+            - name: 'volume-{{ $index }}'
+              mountPath: {{ $value.containerPath }}
+            {{end}}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /faker/docs
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /faker/docs
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- if .Values.global.devMode.enabled }}
+      volumes: {{ if not (len .Values.devMappings) }}[]{{ end }}
+        {{- range $index, $value := .Values.devMappings }}
+        - name: 'volume-{{ $index }}'
+          hostPath:
+            path:  {{ $.Values.global.devMode.baseDir }}/{{ $value.relativePath }}
+            type: DirectoryOrCreate
+        {{end}}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

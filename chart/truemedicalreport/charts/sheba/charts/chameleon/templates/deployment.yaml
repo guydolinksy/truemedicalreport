@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chameleon.fullname" . }}
+  labels:
+    {{- include "chameleon.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "chameleon.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "chameleon.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "chameleon.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ if .Values.global.devMode.enabled }}dev{{ else }}{{ .Values.image.tag | default .Chart.AppVersion }}{{ end }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SA_PASSWORD
+              value: 'Password123'
+          {{- if .Values.global.devMode.enabled }}
+          volumeMounts: {{ if not (len .Values.devMappings) }}[ ]{{ end }}
+            {{- range $index, $value := .Values.devMappings }}
+            - name: 'volume-{{ $index }}'
+              mountPath: {{ $value.containerPath }}
+            {{end}}
+          {{- end }}
+          ports:
+            - name: mssql
+              containerPort: 1433
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: 1433
+          readinessProbe:
+            tcpSocket:
+              port: 1433
+            initialDelaySeconds: 60
+            failureThreshold: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- if .Values.global.devMode.enabled }}
+      volumes: {{ if not (len .Values.devMappings) }}[]{{ end }}
+        {{- range $index, $value := .Values.devMappings }}
+        - name: 'volume-{{ $index }}'
+          hostPath:
+            path:  {{ $.Values.global.devMode.baseDir }}/{{ $value.relativePath }}
+            type: DirectoryOrCreate
+        {{end}}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

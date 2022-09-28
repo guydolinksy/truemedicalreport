@@ -12,7 +12,7 @@ logger = logbook.Logger(__name__)
 
 
 def client() -> MongoClient:
-    return MongoClient(**config.mongo_connection)
+    return MongoClient(config.mongo_connection)
 
 
 @init_router.post("/wings")

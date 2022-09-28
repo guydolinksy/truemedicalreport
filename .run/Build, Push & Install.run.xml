@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Build, Push &amp; Install" type="CompoundRunConfigurationType">
-    <toRun name="Build Prod" type="docker-deploy" />
-    <toRun name="Push" type="ShConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>

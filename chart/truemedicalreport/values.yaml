@@ -1,115 +1,68 @@
-global:
+global: &global
   debug: false
-  baseDir: /path/to/chart/dir/..
-  expose:
-    host: true-medical-report
-    class: nginx
+  devMode:
+    enabled: false
+    baseDir: /path/to/chart/dir/..
+  ingress:
+    className: nginx
+    host: true-medical-report.local
     tls:
       enabled: false
       secretName: tls-tmr-ingress
   helpers:
     busybox:
       image: busybox
+  fullname:
+    mongo: &mongo-fullname tmr-mongodb
+    redis: &redis-fullname tmr-redis
+    dal: &dal-fullname tmr-dal
+    backend: &backend-fullname tmr-backend
+    frontend: &frontend-fullname tmr-frontend
+    digest: &digest-fullname tmr-digest
+  servicePort:
+    mongo: 27017
+    redis: 6379
+    dal: 80
+    backend: 80
+    frontend: 80
+    digest: 80
 dal:
-  port: 80
-  replicas: 1
-  ingress:
-    annotations: {}
-  repository:
-    image: guydo/tmr-dal
-    tag: latest
-  volumeMappings:
-    - relativePath: src/dal/tmr
-      containerPath: /opt/dal/tmr
-    - relativePath: src/common/tmr_common
-      containerPath: /opt/common/tmr_common
+  global:
+    <<: *global
+  fullnameOverride: *dal-fullname
 backend:
-  port: 80
-  replicas: 1
-  ingress:
-    annotations: {}
-  repository:
-    image: guydo/tmr-backend
-    tag: latest
-  volumeMappings:
-    - relativePath: src/dev/config
-      containerPath: /opt/config
-    - relativePath: src/backend/tmr
-      containerPath: /opt/backend/tmr
-    - relativePath: src/common/tmr_common
-      containerPath: /opt/common/tmr_common
+  global:
+    <<: *global
+  fullnameOverride: *backend-fullname
 frontend:
-  port: 3000
-  replicas: 1
-  ingress:
-    annotations: {}
-  repository:
-    image: guydo/tmr-frontend
-    tag: latest
-  volumeMappings:
-    - relativePath: src/frontend/tmr/src
-      containerPath: /opt/frontend/tmr/src
-    - relativePath: src/frontend/tmr/public
-      containerPath: /opt/frontend/tmr/public
-digest:
-  type: sheba
-  sheba:
-    port: 80
-    replicas: 1
-    ingress:
-      annotations: {}
-    repository:
-      image: guydo/tmr-sheba-digest
-      tag: latest
-    volumeMappings:
-      - relativePath: src/sheba/digest/tmr_digest
-        containerPath: /opt/digest/tmr_digest
-      - relativePath: src/common/tmr_common
-        containerPath: /opt/common/tmr_common
-    input:
-      type: external
-      external:
-        secretName: sheba-connections
-      internal:
-        arc:
-          repository:
-            image: guydo/tmr-sheba-arc
-            tag: latest
-          nodePort: 31433
-          volumeMappings:
-            - relativePath: src/dev/sheba/arc-db/initialize
-              containerPath: /opt/arc-db/initialize
-        chameleon:
-          repository:
-            image: guydo/tmr-sheba-chameleon
-            tag: latest
-          nodePort: 31434
-          volumeMappings:
-            - relativePath: src/dev/sheba/chameleon/initialize
-              containerPath: /opt/chameleon/initialize
-        faker:
-          port: 80
-          repository:
-            image: guydo/tmr-sheba-faker
-            tag: latest
-          volumeMappings:
-            - relativePath: src/dev/sheba/faker/tmr_faker
-              containerPath: /opt/faker/tmr_faker
-            - relativePath: src/sheba/digest/tmr_digest
-              containerPath: /opt/digest/tmr_digest
-            - relativePath: src/common/tmr_common
-              containerPath: /opt/common/tmr_common
-mongo:
-  port: 27017
-  replicas: 1
-  repository:
-    image: mongo
-    tag: latest
-  nodePort: 32717
+  global:
+    <<: *global
+  fullnameOverride: *frontend-fullname
+sheba:
+  global:
+    <<: *global
+  fullnameOverride: *digest-fullname
+  enabled: true
+  input:
+    type: internal
+    secretName: ''
+# TODO: migrate to official mongo & redis charts
 redis:
-  port: 6379
-  replicas: 1
-  repository:
-    image: redis
-    tag: latest
-  nodePort: 32679
+  enabled: true
+  fullnameOverride: *redis-fullname
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: false
+  replica:
+    replicaCount: 0
+    persistence:
+      enabled: false
+ingress-nginx:
+  enabled: true
+mongodb:
+  enabled: true
+  fullnameOverride: *mongo-fullname
+  auth:
+    enabled: false

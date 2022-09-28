@@ -1,4 +1,4 @@
-fastapi
+fastapi_offline
 uvicorn==0.17.6
 sqlalchemy
 logbook

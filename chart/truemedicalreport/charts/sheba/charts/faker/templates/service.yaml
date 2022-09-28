@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "faker.fullname" . }}
+  labels:
+    {{- include "faker.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.global.servicePort.faker }}
+      targetPort: {{ .Values.global.servicePort.faker }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "faker.selectorLabels" . | nindent 4 }}

@@ -1,0 +1,12 @@
+global:
+  debug: true
+  devMode:
+    enabled: true
+    baseDir: '/set/to/$(pwd)'
+  ingress:
+    host: localhost
+ingress-nginx:
+  enabled: false
+sheba:
+  input:
+    type: internal

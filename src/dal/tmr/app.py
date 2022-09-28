@@ -5,7 +5,7 @@ from logbook import StreamHandler
 
 
 def create_app() -> FastAPIOffline:
-    app_ = FastAPIOffline(openapi_url='/dal/openapi.json', docs_url='/dal/docs')
+    app_ = FastAPIOffline(openapi_url='/dal/openapi.json', static_url="/dal/static-offline-docs", docs_url='/dal/docs')
 
     StreamHandler(sys.stdout).push_application()
 

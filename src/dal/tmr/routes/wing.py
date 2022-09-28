@@ -12,7 +12,7 @@ wing_router = APIRouter()
 
 
 def medical_dal() -> MedicalDal:
-    return MedicalDal(MongoClient(**config.mongo_connection).medical)
+    return MedicalDal(MongoClient(config.mongo_connection).medical)
 
 
 @wing_router.get("/{wing}", response_model=Wing, response_model_exclude_unset=True, tags=["Wing"])

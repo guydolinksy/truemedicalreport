@@ -108,8 +108,8 @@ class Proxy(object):
 
 
 class Settings(object):
-    def __init__(self, **connection):
-        self.db = MongoClient(**connection).app
+    def __init__(self, connection):
+        self.db = MongoClient(connection).app
 
         self.users = LocalConnection(self.db.users)
         self.ldap = LDAPConnection(self.db.connections)
@@ -119,9 +119,9 @@ class Settings(object):
 
 
 def settings() -> Settings:
-    return Settings(**config.mongo_connection)
+    return Settings(config.mongo_connection)
 
 
 current_settings = LocalProxy(settings)
 
-user_settings = MongoClient(**config.mongo_connection).app.settings
+user_settings = MongoClient(config.mongo_connection).app.settings

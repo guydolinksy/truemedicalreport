@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "sheba.fullname" . }}
+  labels:
+    {{- include "sheba.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.global.servicePort.digest }}
+      targetPort: {{ .Values.global.servicePort.digest }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "sheba.selectorLabels" . | nindent 4 }}

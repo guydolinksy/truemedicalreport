@@ -15,7 +15,7 @@ logger = logbook.Logger(__name__)
 
 # TODO remove duplicate use of dal function
 def medical_dal() -> MedicalDal:
-    return MedicalDal(MongoClient(**config.mongo_connection).medical)
+    return MedicalDal(MongoClient(config.mongo_connection).medical)
 
 
 @patient_router.get("/{patient}", response_model=Patient)
