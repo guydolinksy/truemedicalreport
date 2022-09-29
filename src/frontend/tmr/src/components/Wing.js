@@ -209,10 +209,10 @@ const WingStatus = () => {
                     <Radio.Button value={"location"} style={{flex: "1 1 30px", textAlign: "center"}}>
                         מיקום
                     </Radio.Button>
-                    <Radio.Button value={"arrival"} style={{flex: "1 1 40px", textAlign: "center"}}>
+                    <Radio.Button value={"arrival"} style={{flex: "1 1 50px", textAlign: "center"}}>
                         זמן קבלה
                     </Radio.Button>
-                    <Radio.Button value={"name"} style={{flex: "1 1 40px", textAlign: "center"}}>
+                    <Radio.Button value={"name"} style={{flex: "1 1 50px", textAlign: "center"}}>
                         שם מלא
                     </Radio.Button>
                     <Radio.Button value={"severity"} style={{flex: "1 1 35px", textAlign: "center"}}>
