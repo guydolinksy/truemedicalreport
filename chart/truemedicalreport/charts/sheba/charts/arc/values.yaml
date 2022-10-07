@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: https://hub.docker.com/r/guydo/tmr-sheba-arc
+  repository: hub.docker.com/r/guydo/tmr-sheba-arc
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
