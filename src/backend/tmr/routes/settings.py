@@ -3,18 +3,17 @@ from typing import Dict
 import fastapi
 from fastapi import Depends
 
-from .auth import manager
-from ..logics.settings import user_settings
+from .auth import user_settings
 
 settings_router = fastapi.APIRouter()
 
 
 @settings_router.get('/display')
-async def patient_handler(user=Depends(manager)):
-    return (user_settings.find_one({'user': user['username']}, {'display': 1}) or {}).get('display', {})
+async def get_display_settings(user_settings_=Depends(user_settings)):
+    return getattr(user_settings_, 'display', {})
 
 
 @settings_router.post('/display')
-async def patient_handler(display: Dict, user=Depends(manager)):
-    user_settings.update_one({'user': user['username']}, {'$set': {'display': display}}, upsert=True)
+async def set_display_settings(display: Dict, user_settings_=Depends(user_settings)):
+    user_settings_.display = display
     return True

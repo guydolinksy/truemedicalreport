@@ -46,7 +46,6 @@ sheba:
   input:
     type: internal
     secretName: ''
-# TODO: migrate to official mongo & redis charts
 redis:
   enabled: true
   fullnameOverride: *redis-fullname

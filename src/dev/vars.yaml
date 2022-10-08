@@ -10,3 +10,8 @@ ingress-nginx:
 sheba:
   input:
     type: internal
+mongodb:
+  service:
+    type: NodePort
+    nodePorts:
+      mongodb: 32717

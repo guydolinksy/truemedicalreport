@@ -175,17 +175,20 @@ class MedicalDal:
 
     def get_patient_info(self, patient: dict) -> PatientInfo:
         patient = self.get_patient(patient)
-        imaging = [Image(**res) for res in self.db.imaging.find({"patient_id": patient.external_id})]
-        measures = FullMeasures(
-            measures=[Measure(**d) for d in self.db.measures.find({"patient_id": patient.external_id})]
-        )
-        labs = [LabCategory(**tube) for tube in self.db.labs.find({"patient_id": patient.external_id})]
         events = [Event(content='קבלה למחלקה', at=patient.admission.arrival, key='arrival')]
+        visits = []
         return PatientInfo(
-            imaging=imaging,
-            full_measures=measures,
+            imaging=[Image(**res) for res in self.db.imaging.find({"patient_id": patient.external_id})],
+            full_measures=(FullMeasures(
+                measures=[Measure(**d) for d in self.db.measures.find({"patient_id": patient.external_id})]
+            )),
+            labs=[LabCategory(**tube) for tube in self.db.labs.find({"patient_id": patient.external_id})],
+            notifications=[Notification(oid=str(n.pop("_id")), **n)
+                               for n in self.db.notifications.find({"patient_id": patient.external_id})],
+            referrals=[Referral(oid=str(r.pop("_id")), **r)
+                       for r in self.db.referrals.find({"patient_id": patient.external_id})],
             events=events,
-            labs=labs,
+            visits=visits,
             **patient.dict()
         )
 

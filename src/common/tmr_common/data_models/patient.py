@@ -3,15 +3,15 @@ from typing import Optional, List, Any, Dict
 from pydantic import BaseModel
 
 from tmr_common.data_models.esi_score import ESIScore
+from tmr_common.data_models.measures import Measures, FullMeasures
+from tmr_common.data_models.warnings import PatientWarning
 from .admission import Admission
 from .awaiting import Awaiting, AwaitingTypes
 from .event import Event
 from .image import Image
-from tmr_common.data_models.measures import Measures, FullMeasures
 from .intake import Intake
-from .severity import Severity
 from .labs import LabCategory
-from tmr_common.data_models.warnings import PatientWarning
+from .severity import Severity
 from .treatment import Treatment
 
 
@@ -48,10 +48,12 @@ class InternalPatient(BaseModel):
             severity=Severity(**patient.esi.dict()),
             awaiting={
                 AwaitingTypes.doctor.value: {
-                    'exam': Awaiting(subtype='exam', name='בדיקת צוות רפואי', since=patient.admission.arrival, limit=1500)
+                    'exam': Awaiting(subtype='exam', name='בדיקת צוות רפואי', since=patient.admission.arrival,
+                                     limit=1500)
                 },
                 AwaitingTypes.nurse.value: {
-                    'exam': Awaiting(subtype='exam', name='בדיקת צוות סיעודי', since=patient.admission.arrival, limit=1500)
+                    'exam': Awaiting(subtype='exam', name='בדיקת צוות סיעודי', since=patient.admission.arrival,
+                                     limit=1500)
                 },
             },
             flagged=False,
@@ -67,6 +69,12 @@ class Patient(ExternalPatient, InternalPatient):
         if '_id' in kwargs:
             kwargs['oid'] = str(kwargs.pop('_id'))
         super(Patient, self).__init__(**kwargs)
+
+
+class PatientInfoPlugin(BaseModel):
+    key: str
+    title: str
+    url: str
 
 
 class AggregatePatient(BaseModel):
@@ -86,3 +94,5 @@ class PatientInfo(Patient, AggregatePatient):
     pass
 
 
+class PanelPatient(PatientInfo):
+    plugins: List[PatientInfoPlugin] = []

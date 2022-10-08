@@ -196,6 +196,11 @@ const InternalPatientCard = ({patient, setTitle}) => {
                     </Timeline.Item>
                 )}</Timeline>
             </Panel>
+            {value.plugins.map(({key, title, url}) =>
+                <Panel key={key} header={title}>
+                    <iframe src={url}/>
+                </Panel>
+            )}
             <Panel key={'mortality'} header={'AI חיזוי תמותה'}>
                 <div>סיכון לתמותה בתוך 48 שעות: <b>X3</b> מהאוכלוסיה הכללית!</div>
                 <div>TOP Vectors:
@@ -203,7 +208,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                         ESI (+)
                     </div>
                     <div>
-                        Age(-)
+                        Age (-)
                     </div>
                     <div>
                         Respiratory Rate (++)

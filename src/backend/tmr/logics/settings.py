@@ -2,13 +2,15 @@ from typing import List, Optional
 
 import interruptingcow
 import ldap
+from fastapi import Depends
 from fastapi_login.exceptions import InvalidCredentialsException
 from pydantic import BaseModel
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from werkzeug.local import LocalProxy
 
-from .. import  config
+from .. import config
+
 
 class Connection(object):
     mode = NotImplemented
@@ -92,11 +94,12 @@ class Authentication(object):
 
 
 class Proxy(object):
-    def __init__(self, collection):
+    def __init__(self, collection, query):
         self._collection = collection
+        self._query = query
 
     def __getattr__(self, item):
-        res = self._collection.find_one({}, {item: 1})
+        res = self._collection.find_one(self._query, {item: 1})
         if not res or item not in res:
             raise AttributeError()
         return res[item]
@@ -104,7 +107,7 @@ class Proxy(object):
     def __setattr__(self, key, value):
         if key.startswith('_'):
             return super(Proxy, self).__setattr__(key, value)
-        return self._collection.update_one({}, {'$set': {key: value}}, upsert=True)
+        return self._collection.update_one(self._query, {'$set': {key: value}}, upsert=True)
 
 
 class Settings(object):
@@ -115,13 +118,25 @@ class Settings(object):
         self.ldap = LDAPConnection(self.db.connections)
         self.auth = Authentication([self.users, self.ldap])
 
-        self.general = Proxy(self.db.general)
+        self.general = Proxy(self.db.general, {})
+
+    def for_user(self, username):
+        return Proxy(self.db.settings, {'username': username})
 
 
 def settings() -> Settings:
     return Settings(config.mongo_connection)
 
 
-current_settings = LocalProxy(settings)
+current_settings: LocalProxy[Settings] = LocalProxy(settings)
 
-user_settings = MongoClient(config.mongo_connection).app.settings
+
+def _general_settings() -> Proxy:
+    return current_settings.general
+
+
+current_general_settings: LocalProxy[Proxy] = LocalProxy(_general_settings)
+
+
+def general_settings(settings_=Depends(settings)) -> Proxy:
+    return settings_.general
