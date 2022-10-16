@@ -9,15 +9,15 @@ from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from tmr_common.data_models.image import ImagingTypes, ImagingStatus
-from tmr_common.data_models.labs import LabCategories, LabTestType
-from tmr_common.data_models.notification import NotificationLevel
-from tmr_digest.models.arc_patient import ARCPatient
-from tmr_digest.models.chameleon_imaging import ChameleonImaging
-from tmr_digest.models.chameleon_labs import ChameleonLabs
-from tmr_digest.models.chameleon_main import ChameleonMain, Departments
-from tmr_digest.models.chameleon_measurements import ChameleonMeasurements
-from tmr_digest.models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
+from common.data_models.image import ImagingTypes, ImagingStatus
+from common.data_models.labs import LabCategories, LabTestType
+from common.data_models.notification import NotificationLevel
+from digest.models.arc_patient import ARCPatient
+from digest.models.chameleon_imaging import ChameleonImaging
+from digest.models.chameleon_labs import ChameleonLabs
+from digest.models.chameleon_main import ChameleonMain, Departments
+from digest.models.chameleon_measurements import ChameleonMeasurements
+from digest.models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
 from .. import config
 from ..utils import sql_statements
 

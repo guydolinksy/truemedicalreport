@@ -7,6 +7,9 @@ global:
     host: localhost
 ingress-nginx:
   enabled: false
+  controller:
+    admissionWebhooks:
+      enabled: false
 sheba:
   input:
     type: internal

@@ -70,7 +70,7 @@ affinity: {}
 enabled: true
 
 devMappings:
-  - relativePath: src/backend/tmr
-    containerPath: /opt/backend/tmr
-  - relativePath: src/common/tmr_common
-    containerPath: /opt/common/tmr_common
+  - relativePath: src/backend/backend
+    containerPath: /opt/backend/backend
+  - relativePath: src/common/common
+    containerPath: /opt/common/common

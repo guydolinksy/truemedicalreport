@@ -40,19 +40,19 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ if .Values.global.devMode.enabled }}dev{{ else }}{{ .Values.image.tag | default .Chart.AppVersion }}{{ end }}"
+          image: "{{ .Values.image.repository }}:{{ if .Values.global.devMode.enabled }}{{ .Values.image.tag | default "dev" }}{{ else }}{{ .Values.image.tag | default .Chart.AppVersion }}{{ end }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: 'DAL_CONNECTION'
               value: '"http://{{ .Values.global.fullname.dal }}:{{ .Values.global.servicePort.dal }}/dal"'
             - name: 'ARC_CONNECTION'
-              {{- if eq .Values.input.type "internal" }}
+              {{- if .Values.input.internal.enabled }}
               value: '"mssql+pyodbc://sa:Password123@{{ .Values.global.fullname.arc }}:{{ .Values.global.servicePort.arc }}/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"'
               {{- else }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.input.secretName }}
-                  key: {{ .Values.input.secretKey }}
+                  name: {{ .Values.input.external.secretName }}
+                  key: {{ .Values.input.external.secretKey }}
               {{- end }}
           {{- if .Values.global.devMode.enabled }}
           volumeMounts: {{ if not (len .Values.devMappings) }}[]{{ end }}

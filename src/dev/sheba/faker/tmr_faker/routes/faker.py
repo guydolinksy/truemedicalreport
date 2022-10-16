@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends
 from fastapi_utils.tasks import repeat_every
 
 from tmr_faker.logics.faking import FakeMain
-from tmr_digest.logics.utils import inject_dependencies
-from tmr_digest.models.chameleon_main import Departments
+from digest.logics.utils import inject_dependencies
+from digest.models.chameleon_main import Departments
 
 faker_router = APIRouter()
 

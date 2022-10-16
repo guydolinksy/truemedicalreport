@@ -70,7 +70,7 @@ affinity: {}
 enabled: true
 
 devMappings:
-  - relativePath: src/dal/tmr
-    containerPath: /opt/dal/tmr
-  - relativePath: src/common/tmr_common
-    containerPath: /opt/common/tmr_common
+  - relativePath: src/dal/dal
+    containerPath: /opt/dal/dal
+  - relativePath: src/common/common
+    containerPath: /opt/common/common

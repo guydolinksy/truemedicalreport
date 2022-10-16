@@ -3,6 +3,7 @@
     <deployment type="dockerfile">
       <settings>
         <option name="imageTag" value="guydo/tmr-dal:latest" />
+        <option name="buildCliOptions" value="--no-cache" />
         <option name="buildOnly" value="true" />
         <option name="contextFolderPath" value="src" />
         <option name="showCommandPreview" value="true" />

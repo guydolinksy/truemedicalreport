@@ -6,16 +6,16 @@ RUN echo -n "INPUT ( libldap.so )" > /usr/lib/libldap_r.so
 
 COPY common/requirements.txt /opt/common/requirements.txt
 COPY common/setup.py /opt/common/setup.py
-COPY common/tmr_common/__init__.py /opt/common/tmr_common/__init__.py
+COPY common/common/__init__.py /opt/common/common/__init__.py
 RUN python -m pip install -e /opt/common
 
 COPY backend/requirements.txt /opt/backend/requirements.txt
 COPY backend/setup.py /opt/backend/setup.py
-COPY backend/tmr/__init__.py /opt/backend/tmr/__init__.py
+COPY backend/backend/__init__.py /opt/backend/backend/__init__.py
 RUN python -m pip install -e /opt/backend
 
 ENV DEBUG=1
-CMD python -m tmr
+CMD python -m backend
 
 FROM python:3.10-alpine
 WORKDIR /opt
@@ -25,15 +25,15 @@ RUN echo -n "INPUT ( libldap.so )" > /usr/lib/libldap_r.so
 
 COPY common/requirements.txt /opt/common/requirements.txt
 COPY common/setup.py /opt/common/setup.py
-COPY common/tmr_common/__init__.py /opt/common/tmr_common/__init__.py
+COPY common/common/__init__.py /opt/common/common/__init__.py
 RUN python -m pip install -e /opt/common
 
 COPY backend/requirements.txt /opt/backend/requirements.txt
 COPY backend/setup.py /opt/backend/setup.py
-COPY backend/tmr/__init__.py /opt/backend/tmr/__init__.py
+COPY backend/backend/__init__.py /opt/backend/backend/__init__.py
 RUN python -m pip install -e /opt/backend
 
-COPY common /opt/common
-COPY backend /opt/backend
+COPY common/common /opt/common/common
+COPY backend/backend /opt/backend/backend
 
-CMD uvicorn tmr.app:app --host 0.0.0.0 --port 80
+CMD uvicorn backend.app:app --host 0.0.0.0 --port 80

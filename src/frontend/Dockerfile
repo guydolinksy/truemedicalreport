@@ -1,24 +1,29 @@
-FROM node:18-alpine AS dev
-WORKDIR /opt/frontend/tmr
+FROM node:latest AS dev
+WORKDIR /opt/frontend/frontend
 
-COPY frontend/tmr/package.json /opt/frontend/tmr/package.json
+COPY frontend/frontend/package.json /opt/frontend/frontend/package.json
+COPY frontend/frontend/config-overrides.js /opt/frontend/frontend/config-overrides.js
 RUN npm i
 
 ENV WDS_SOCKET_PORT=80
-ENV NODE_OPTIONS="--openssl-legacy-provider"
-CMD npm start
+CMD npm run start
 
-FROM node:18-alpine AS build
-WORKDIR /opt/frontend/tmr
+FROM node:latest AS build
+WORKDIR /opt/frontend/frontend
 
-COPY frontend/tmr/package.json /opt/frontend/tmr/package.json
+COPY frontend/frontend/package.json /opt/frontend/frontend/package.json
+COPY frontend/frontend/config-overrides.js /opt/frontend/frontend/config-overrides.js
 RUN npm i
 
-COPY frontend/tmr/src /opt/frontend/tmr/src
-COPY frontend/tmr/public /opt/frontend/tmr/public
-RUN npm build
+COPY frontend/frontend/src /opt/frontend/frontend/src
+COPY frontend/frontend/public /opt/frontend/frontend/public
 
-FROM nginx:latest
-COPY --from=build /opt/frontend/tmr/build /opt/frontend
+ENV NODE_OPTIONS="--openssl-legacy-provider"
+RUN npm run build
 
+FROM busybox:latest
+WORKDIR /opt/static
 
+COPY --from=build /opt/frontend/frontend/build /opt/static
+
+CMD ["busybox", "httpd", "-f", "-v", "-p", "80"]

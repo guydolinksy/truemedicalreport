@@ -11,13 +11,13 @@ RUN apk add --allow-untrusted mssql-tools18_18.0.1.1-1_amd64.apk
 
 COPY common/setup.py /opt/common/
 COPY common/requirements.txt /opt/common/
-COPY common/tmr_common/__init__.py /opt/common/tmr_common/
+COPY common/common/__init__.py /opt/common/common/
 
 RUN python -m pip install -e /opt/common
 
 COPY sheba/digest/setup.py /opt/digest/
 COPY sheba/digest/requirements.txt /opt/digest/
-COPY sheba/digest/tmr_digest/__init__.py /opt/digest/tmr_digest/
+COPY sheba/digest/digest/__init__.py /opt/digest/digest/
 RUN python -m pip install -e /opt/digest
 
 COPY dev/sheba/faker/setup.py /opt/faker/
@@ -27,7 +27,7 @@ RUN python -m pip install -e /opt/faker
 
 
 COPY common /opt/common
-COPY sheba/digest/tmr_digest /opt/digest/tmr_digest
+COPY sheba/digest/digest /opt/digest/digest
 COPY dev/sheba/faker/tmr_faker /opt/faker/tmr_faker
 
 ENV DEBUG=1

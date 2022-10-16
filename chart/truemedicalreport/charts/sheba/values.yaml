@@ -70,15 +70,17 @@ affinity: {}
 enabled: false
 
 devMappings:
-  - relativePath: src/sheba/digest/tmr_digest
-    containerPath: /opt/digest/tmr_digest
-  - relativePath: src/common/tmr_common
-    containerPath: /opt/common/tmr_common
+  - relativePath: src/sheba/digest/digest
+    containerPath: /opt/digest/digest
+  - relativePath: src/common/common
+    containerPath: /opt/common/common
 
 input:
-  type: internal
-  secretName: ''
-  secretKey: ''
+  internal:
+    enabled: true
+  external:
+    secretName: ''
+    secretKey: ''
 
 global: &global
   fullname:

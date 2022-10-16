@@ -72,7 +72,7 @@ enabled: false
 devMappings:
   - relativePath: src/dev/sheba/faker/tmr_faker
     containerPath: /opt/faker/tmr_faker
-  - relativePath: src/sheba/digest/tmr_digest
-    containerPath: /opt/digest/tmr_digest
-  - relativePath: src/common/tmr_common
-    containerPath: /opt/common/tmr_common
+  - relativePath: src/sheba/digest/digest
+    containerPath: /opt/digest/digest
+  - relativePath: src/common/common
+    containerPath: /opt/common/common

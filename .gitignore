@@ -130,6 +130,6 @@ dmypy.json
 
 # PyCharm
 .idea/
-src/frontend/tmr/package-lock.json
+src/frontend/frontend/package-lock.json
 
 .DS_Store

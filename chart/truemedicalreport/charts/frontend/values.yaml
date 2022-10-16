@@ -70,7 +70,7 @@ affinity: {}
 enabled: true
 
 devMappings:
-  - relativePath: src/frontend/tmr/src
-    containerPath: /opt/frontend/tmr/src
-  - relativePath: src/frontend/tmr/public
-    containerPath: /opt/frontend/tmr/public
+  - relativePath: src/frontend/frontend/src
+    containerPath: /opt/frontend/frontend/src
+  - relativePath: src/frontend/frontend/public
+    containerPath: /opt/frontend/frontend/public
