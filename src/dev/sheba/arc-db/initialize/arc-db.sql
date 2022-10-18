@@ -365,25 +365,25 @@ Begin
     declare @wing as varchar(50);
     declare @room_num as int;
     select @department = ev.DepartmentCode, @wing = ev.DepartmentWing, @room_num = rd.Room_Code from [dwh].[dw].[Emergency_visits] ev join sbwnd81c.chameleon.dbo.RoomDetails rd on rd.Room_Name = ev.DepartmentWing where ev.id = @medical_record;
-    if exists(select ev.DepartmentName from [sbwnd81c].[chameleon].[dbo].[RoomPlacementPatient] rp join [dwh].[dw].[Emergency_visits] ev on rp.Medical_Record = ev.id and ev.id = @medical_record)
+    if exists(select ev.DepartmentName from [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] rp join [dwh].[dw].[Emergency_visits] ev on rp.Medical_Record = ev.id and ev.id = @medical_record)
     begin
         if @should_move = 0
         begin
-                update [sbwnd81c].[chameleon].[dbo].[RoomPlacementPatient] set [End_Date]=GETDATE() where Medical_Record = @medical_record and End_Date is null;
+                update [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] set [End_Date]=GETDATE() where Medical_Record = @medical_record and End_Date is null;
 
-                select top 1 @bed_id = fb.row_id from [sbwnd81c].[chameleon].[dbo].[faker_beds] fb join [dwh].[dw].[Emergency_visits] ev on ev.DepartmentWing = fb.room where ev.id = @medical_record and row_id not in (select rpp.bed_id from [sbwnd81c].[chameleon].[dbo].[RoomPlacementPatient] rpp join [dwh].[dw].[Emergency_visits] ev on ev.id = rpp.Medical_Record where rpp.unit = @department and rpp.Room = @room_num and rpp.start_date is not null and rpp.end_date is null and rpp.bed_id is not null and ev.DepartmentWingDischarge is null) order by newid();
+                select top 1 @bed_id = fb.row_id from [sbwnd81c].[chameleon].[dbo].[faker_beds] fb join [dwh].[dw].[Emergency_visits] ev on ev.DepartmentWing = fb.room where ev.id = @medical_record and row_id not in (select rpp.bed_id from [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] rpp join [dwh].[dw].[Emergency_visits] ev on ev.id = rpp.Medical_Record where rpp.unit = @department and rpp.Room = @room_num and rpp.start_date is not null and rpp.end_date is null and rpp.bed_id is not null and ev.DepartmentWingDischarge is null) order by newid();
                 if @bed_id is not null
                 begin
-                    insert into [sbwnd81c].[chameleon].[dbo].[RoomPlacementPatient] values (GETUTCDATE(), null, @department, @bed_id, @medical_record, @room_num);
+                    insert into [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] values (GETUTCDATE(), null, @department, @bed_id, @medical_record, @room_num);
                 end
         end
     end
     else
     begin
-        select top 1 @bed_id = fb.row_id from [sbwnd81c].[chameleon].[dbo].[faker_beds] fb join [dwh].[dw].[Emergency_visits] ev on ev.DepartmentWing = fb.room and ev.id = @medical_record where row_id not in (select bed_id from [sbwnd81c].[chameleon].[dbo].[RoomPlacementPatient] rpp where rpp.unit = @department and rpp.end_date is null and rpp.start_date is not null) order by newid();
+        select top 1 @bed_id = fb.row_id from [sbwnd81c].[chameleon].[dbo].[faker_beds] fb join [dwh].[dw].[Emergency_visits] ev on ev.DepartmentWing = fb.room and ev.id = @medical_record where row_id not in (select bed_id from [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] rpp where rpp.unit = @department and rpp.end_date is null and rpp.start_date is not null) order by newid();
         if @bed_id is not null
         begin
-            insert into [sbwnd81c].[chameleon].[dbo].[RoomPlacementPatient] values (GETUTCDATE(), null, @department, @bed_id, @medical_record, @room_num);
+            insert into [sbwnd81c].[chameleon].[dbo].[RoomPlacmentPatient] values (GETUTCDATE(), null, @department, @bed_id, @medical_record, @room_num);
         end
     end
 end

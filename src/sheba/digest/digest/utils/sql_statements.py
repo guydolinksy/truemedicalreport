@@ -1,12 +1,12 @@
 query_treatment = """
 SELECT
-    atd.Medical_Record AS MedicalRecord,
+    ev.Medical_Record AS MedicalRecord,
     de.Answer_Text AS Decision,
     su.Name AS UnitName
 FROM [sbwnd81c].[chameleon].dbo.EmergancyVisits AS ev
-LEFT JOIN [sbwnd81c].[chameleon].dbo.RoomPlacementPatient AS rpp ON ev.Medical_Record = rpp.Medical_Record
-LEFT JOIN [sbwnd81c].[chameleon].dbo.AdmissionTreatmentDecision AS atd ON atd.delete_date is null
-LEFT JOIN [sbwnd81c].[chameleon].dbo.V_TableAnswers AS de ON de.Table_Code = 1092 AND de.Answer_Code = atd.Decision AND atd.Unit = de.Unit
+LEFT JOIN [sbwnd81c].[chameleon].dbo.RoomPlacmentPatient AS rpp ON ev.Medical_Record = rpp.Medical_Record
+LEFT JOIN [sbwnd81c].[chameleon].dbo.AdmissionTreatmentDecision AS atd ON ev.Medical_Record = atd.Medical_Record and atd.delete_date is null
+LEFT JOIN [sbwnd81c].[chameleon].dbo.V_TableAnswers AS de ON de.Table_Code = 1092 AND de.Answer_Code = atd.Decision AND rpp.Unit = de.Unit
 LEFT JOIN [sbwnd81c].[chameleon].dbo.SystemUnits AS su ON atd.Hosp_Unit = su.Unit
 WHERE ev.Delete_Date IS NULL
 AND rpp.End_Date IS NULL
@@ -27,7 +27,7 @@ SELECT
     ev.Admission_Date AS AdmissionDate,
     rpp.End_Date
 FROM [sbwnd81c].[chameleon].dbo.EmergancyVisits AS ev
-LEFT JOIN [sbwnd81c].[chameleon].dbo.RoomPlacementPatient AS rpp ON ev.Medical_Record = rpp.Medical_Record
+LEFT JOIN [sbwnd81c].[chameleon].dbo.RoomPlacmentPatient AS rpp ON ev.Medical_Record = rpp.Medical_Record
 LEFT JOIN [sbwnd81c].[chameleon].dbo.Patients AS pat ON ev.patient = pat.patient
 LEFT JOIN [sbwnd81c].[chameleon].dbo.PersonalDetails AS pd ON pat.patient = pd.patient
 LEFT JOIN [sbwnd81c].[chameleon].dbo.V_TableAnswers AS gen ON gen.Table_Code = 1128 AND gen.Answer_Code = pd.Gender AND gen.Unit IS NULL 

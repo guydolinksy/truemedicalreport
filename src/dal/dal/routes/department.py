@@ -104,11 +104,11 @@ async def update_intake(department: str, intakes: Dict[str, Intake] = Body(..., 
 @department_router.post("/{department}/treatments", status_code=http.HTTPStatus.OK)
 async def update_treatments(department: str, treatments: Dict[str, Treatment] = Body(...),
                             dal: MedicalDal = Depends(medical_dal)):
-    for patient in treatments:
+    for record in treatments:
         try:
-            await dal.upsert_treatment(patient, treatments[patient])
+            await dal.upsert_treatment(record, treatments[record])
         except PatientNotFound:
-            logger.debug('Cannot update patient {} treatments', patient)
+            logger.debug('Cannot update patient {} treatments', record)
 
 
 @department_router.post("/{department}/medicines")

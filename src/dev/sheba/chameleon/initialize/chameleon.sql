@@ -203,12 +203,12 @@ create TABLE [dbo].[RoomDetails]
     [Room_Name] [nvarchar](150) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[RoomPlacementPatient]    Script Date: 23/06/2022 9:09:52 ******/
+/****** Object:  Table [dbo].[RoomPlacmentPatient]    Script Date: 23/06/2022 9:09:52 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-create TABLE [dbo].[RoomPlacementPatient]
+create TABLE [dbo].[RoomPlacmentPatient]
 (
     [Start_Date]     [datetime] NULL,
     [End_Date]       [datetime] NULL,

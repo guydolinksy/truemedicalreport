@@ -4,7 +4,7 @@ execute_set_hospitalize_or_discharge = """exec dwh.dw.faker_decision {}"""
 
 execute_set_responsible_doctor = """exec dwh.dw.faker_ResponsibleDoctor {} """
 
-delete_room_placement = """EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNCATE TABLE  dbo.RoomPlacementPatient' """
+delete_room_placement = """EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNCATE TABLE  dbo.RoomPlacmentPatient' """
 
 delete_admission_treatment_decision = """EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNCATE TABLE  dbo.AdmissionTreatmentDecision' """
 

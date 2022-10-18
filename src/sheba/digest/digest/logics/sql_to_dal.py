@@ -1,6 +1,4 @@
 import contextlib
-import json
-import os
 
 import logbook
 import requests
@@ -10,13 +8,14 @@ from sqlalchemy.orm import Session
 
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
+from common.data_models.measures import Measure, MeasureType
 from common.data_models.patient import Intake, ExternalPatient, Person
 from common.data_models.treatment import Treatment
 from .. import config
 from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
 from ..models.chameleon_main import ChameleonMain, Departments
-from ..models.chameleon_measurements import ChameleonMeasurements
+from ..models.chameleon_measurements import MeasurementsIds, ChameleonMeasurements
 from ..models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes
 from ..models.chameleon_referrals import ChameleonReferrals
 from ..utils import sql_statements, utils
@@ -44,7 +43,6 @@ class SqlToDal(object):
             with self.session() as session:
                 for row in session.execute(sql_statements.query_patient_admission.format(unit=department.value)):
                     patients.append(ExternalPatient(
-
                         external_id=row["Id"],
                         info=Person(
                             id_=row["Id"],
@@ -58,7 +56,7 @@ class SqlToDal(object):
                             at=row["AdmissionDate"].astimezone().isoformat()
                         ),
                         admission=Admission(
-                            department=row["UnitName"],
+                            department=department.name,
                             wing=row["RoomName"],
                             bed=row["BedName"],
                             arrival=row["AdmissionDate"].astimezone().isoformat(),

@@ -31,13 +31,14 @@
     "react-timer-hook": "^3.0.5",
     "react-use-websocket": "^3.0.0",
     "web-vitals": "^2.1.4",
-    "react-app-rewired": "^2.2.1"
+    "react-app-rewired": "^2.2.1",
+    "serve": "^14.0.1"
   },
   "scripts": {
     "start": "CHOKIDAR_USEPOLLING=true PORT=80 react-app-rewired --openssl-legacy-provider start",
     "build": "react-app-rewired --openssl-legacy-provider build",
-    "test": "react-app-rewired  test",
-    "eject": "react-app-rewired  eject"
+    "serve": "serve -s build",
+    "test": "react-app-rewired  test"
   },
   "eslintConfig": {
     "extends": [

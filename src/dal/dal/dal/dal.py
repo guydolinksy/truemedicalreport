@@ -359,8 +359,8 @@ class MedicalDal:
             patient.dict()
         )
 
-    async def upsert_treatment(self, patient_id: str, treatment: Treatment):
-        patient = self.get_patient({"external_id": patient_id})
+    async def upsert_treatment(self, external_id: str, treatment: Treatment):
+        patient = self.get_patient({"external_id": external_id})
 
         updated = patient.copy()
         updated.treatment = treatment
