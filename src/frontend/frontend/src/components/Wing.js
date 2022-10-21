@@ -65,7 +65,7 @@ const WingNotification = ({oid, notification, message, unread, markRead}) => {
     useEffect(() => {
         let task = setTimeout(() => markRead(oid, message.static_id), 6000);
         return () => clearTimeout(task);
-    }, [notification, message, markRead]);
+    }, [oid, notification, message, markRead]);
     return <>
         <Link to={`#info#${notification.patient.oid}#${message.type}#${message.static_id}`}>
             {(unread[oid] || []).includes(message.static_id) && <Badge status={'processing'}/>}
@@ -96,7 +96,7 @@ const WingNotifications = () => {
                 appendUnread(n.patient.oid, messages.filter(s => !(prevState[n.patient.oid] || []).includes(s)));
             return {[n.patient.oid]: messages};
         })));
-    }, [value.notifications]);
+    }, [appendUnread, value.notifications]);
 
     const openChange = useCallback(key => {
         let keys = Array.isArray(key) ? key : [key];
@@ -106,7 +106,7 @@ const WingNotifications = () => {
             prevState.filter(k => !keys.includes(k)).forEach(k => navigate(`#highlight#${k}#close`));
             return keys;
         })
-    }, [openKeys, navigate]);
+    }, [navigate]);
     if (!value.notifications.length)
         return <Empty description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/>
     return <div style={{display: "flex", flexDirection: "column", flex: 1, overflowY: "hidden"}}>

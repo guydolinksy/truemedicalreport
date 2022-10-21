@@ -39,7 +39,7 @@ export const createContext = (defaultValue) => {
 
         useEffect(() => {
             return () => flush.cancel();
-        }, []);
+        }, [flush]);
 
         useEffect(() => {
             const s = Axios.CancelToken.source()

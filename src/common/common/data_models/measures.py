@@ -28,7 +28,7 @@ class MeasureType(Enum):
 
 class Measure(BaseModel):
     external_id: str
-    value: str
+    value: Optional[str]
     is_valid: bool
     at: str
     minimum: Optional[float]
@@ -45,10 +45,10 @@ class Measure(BaseModel):
 
     def __init__(self, **kwargs):
         if 'is_valid' not in kwargs:
-            if kwargs['minimum'] and kwargs['maximum']:
+            if kwargs['minimum'] and kwargs['value'] and kwargs['maximum']:
                 try:
                     kwargs['is_valid'] = kwargs['minimum'] <= float(kwargs['value']) <= kwargs['maximum']
-                except ValueError:
+                except (TypeError, ValueError):
                     kwargs['is_valid'] = False
             else:
                 kwargs['is_valid'] = True

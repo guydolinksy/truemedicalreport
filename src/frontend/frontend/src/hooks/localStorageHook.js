@@ -20,14 +20,15 @@ export const useLocalStorage = (key, defaultValue) => {
             window.removeEventListener("storage", storageEventHandler);
             window.removeEventListener("stored", storageEventHandler);
         }
-    }, []);
+    }, [key, value]);
+    const json = JSON.stringify(value);
     useEffect(() => {
         const event = new Event("stored");
         event.key = key;
         event.newValue = JSON.stringify(value);
         window.dispatchEvent(event);
         localStorage.setItem(key, JSON.stringify(value));
-    }, [key, JSON.stringify(value)]);
+    }, [key, json]);
 
     return [value, setValue];
 };

@@ -37,7 +37,7 @@
   "scripts": {
     "start": "CHOKIDAR_USEPOLLING=true PORT=80 react-app-rewired --openssl-legacy-provider start",
     "build": "react-app-rewired --openssl-legacy-provider build",
-    "serve": "serve -p 80 -s build",
+    "serve": "serve -l tcp://0.0.0.0:80 -s build",
     "test": "react-app-rewired  test"
   },
   "eslintConfig": {

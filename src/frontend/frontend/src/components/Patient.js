@@ -12,6 +12,7 @@ import {CustomIcon} from "./CustomIcon";
 import moment from "moment";
 import {useTime} from 'react-timer-hook';
 import {hashMatchContext} from "./HashMatch";
+import {altContext} from "../hooks/AltContext";
 
 export const patientDataContext = createContext({
     data: {},
@@ -24,6 +25,7 @@ export const MIN_WIDTH = 400, MAX_WIDTH = 500;
 const Measure = ({patient, measure, value, icon, title}) => {
     const navigate = useNavigate();
     const {trackEvent} = useMatomo()
+    const {isAltDown} = useContext(altContext)
 
     return <div onClick={patient && value ? e => {
         navigate(`#info#${patient}#measures#${measure}`);
@@ -33,17 +35,19 @@ const Measure = ({patient, measure, value, icon, title}) => {
         <div style={{fontSize: 12}}>{title}&nbsp;<CustomIcon icon={icon}/></div>
         <div className={(value && !value.is_valid) ? 'error-text' : undefined}
              style={{userSelect: "none", fontSize: 14}}>
-            {(value && value.value) ? value.value : '-'}
+            {(value && value.value) ? value.value : '?'}
             {(value && value.effect.kind) &&
                 <CustomIcon status={value.is_valid ? 'processing' : 'error'} icon={value.effect.kind}/>}
         </div>
         <div>
             {(value && value.value) &&
-                <Moment style={{fontSize: 12}} interval={1000} durationFromNow format={'h:mm'} date={value.at}/>}
+                <Moment style={{fontSize: 12}} interval={1000} durationFromNow={!isAltDown} format={'H:mm'}
+                        date={value.at}/>}
             {(value && value.value && value.effect.kind) && '|'}
             {(value && value.effect.kind) &&
-                <Moment style={{fontSize: 12}} interval={1000} durationFromNow format={'h:mm'} date={value.effect.at}/>}
-            {(!value || (!value.value && !value.effect.kind)) && '?'}
+                <Moment style={{fontSize: 12}} interval={1000} durationFromNow={!isAltDown} format={'H:mm'}
+                        date={value.effect.at}/>}
+            {(!value || (!value.value && !value.effect.kind)) && '-'}
         </div>
     </div>
 };
@@ -67,6 +71,7 @@ const PatientAge = ({patient}) => {
 export const PatientStatus = ({patient, style}) => {
     const navigate = useNavigate();
     const {value, loading} = useContext(patientDataContext.context);
+    const {isAltDown} = useContext(altContext);
     const {minutes} = useTime({});
     const [arrivalClass, setArrivalClass] = useState(undefined);
     const {trackEvent} = useMatomo()
@@ -74,7 +79,7 @@ export const PatientStatus = ({patient, style}) => {
     useEffect(() => {
         if (moment().subtract(2, "hours").isAfter(value.admission.arrival))
             setArrivalClass('warn-text')
-    }, [minutes]);
+    }, [value.admission.arrival, minutes]);
 
     return loading ? <Spin/> : <div
         className={`severity-background severity-${value.severity.value || 0}`}
@@ -93,7 +98,7 @@ export const PatientStatus = ({patient, style}) => {
         <div><Tooltip overlay={'תלונה עיקרית'}>{value.intake.complaint}</Tooltip>
             &nbsp;-&nbsp;
             <Tooltip overlay={'זמן מקבלה'}>
-                <Moment className={arrivalClass} interval={1000} durationFromNow format={'h:mm'}
+                <Moment className={arrivalClass} interval={1000} durationFromNow={!isAltDown} format={'H:mm'}
                         date={value.admission.arrival}/>
 
             </Tooltip></div>
@@ -155,6 +160,8 @@ const PatientAwaiting = () => {
 const PatientAwaitingIcon = ({awaitings, type}) => {
     const [status, setStatus] = useState();
     const {seconds} = useTime({});
+    const {isAltDown} = useContext(altContext);
+
     useEffect(() => {
         if (Object.values(awaitings).some(({since, limit, completed}) =>
             !completed && moment().subtract(limit, "seconds").isAfter(since)))
@@ -164,13 +171,16 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
         else
             setStatus('processing')
 
-    }, [seconds])
+    }, [awaitings, seconds])
+
     let completed = Object.values(awaitings).filter(({completed}) => completed),
         pending = Object.values(awaitings).filter(({completed}) => !completed);
     return <Tooltip key={type} overlay={<div>
         {pending.length > 0 && <b>ממתין.ה עבור (דקות):</b>}
         {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, since}, i) =>
-            <div key={i}>{name} - <Moment interval={1000} durationFromNow format={'h:mm'} date={since}/></div>
+            <div key={i}>
+                {name} - <Moment interval={1000} durationFromNow={!isAltDown} format={'H:mm'} date={since}/>
+            </div>
         )}
         {pending.length > 0 && completed.length > 0 && <span><br/></span>}
         {completed.length > 0 && <b>הושלמו:</b>}

@@ -11,6 +11,7 @@ import {SETTINGS_URL, SettingsView} from "./pages/SettingsView";
 import {useMatomo} from "@datapunt/matomo-tracker-react";
 import {UserTheme} from "./themes/ThemeContext";
 import {HashMatch} from "./components/HashMatch";
+import {AltContextProvider} from "./hooks/AltContext";
 
 
 function App() {
@@ -23,29 +24,31 @@ function App() {
 
     return (
         <ConfigProvider direction={"rtl"}>
-            <div className={"App"} style={{backgroundColor: "#dcdcdc"}} dir={"rtl"}>
-                <Router>
-                    <HashMatch>
-                        <LoginProvider>
-                            {({user}) =>
-                                <UserTheme>
-                                    <Layout style={{height: '100vh'}}>
-                                        <Routes>
-                                            <Route path={LOGIN_URL} element={<LoginView/>}/>
-                                            <Route path={WING_URL} element={<WingView/>}/>
-                                            <Route path={DEPARTMENT_URL} element={<DepartmentView/>}/>
-                                            <Route path={SETTINGS_URL} element={<SettingsView/>}/>
-                                            <Route path={'*'} element={<Navigate to={generatePath(
-                                                DEPARTMENT_URL, {department: (user && user.department) || "er"}
-                                            )}/>}/>
-                                        </Routes>
-                                    </Layout>
-                                </UserTheme>
-                            }
-                        </LoginProvider>
-                    </HashMatch>
-                </Router>
-            </div>
+            <AltContextProvider>
+                <div className={"App"} style={{backgroundColor: "#dcdcdc"}} dir={"rtl"}>
+                    <Router>
+                        <HashMatch>
+                            <LoginProvider>
+                                {({user}) =>
+                                    <UserTheme>
+                                        <Layout style={{height: '100vh'}}>
+                                            <Routes>
+                                                <Route path={LOGIN_URL} element={<LoginView/>}/>
+                                                <Route path={WING_URL} element={<WingView/>}/>
+                                                <Route path={DEPARTMENT_URL} element={<DepartmentView/>}/>
+                                                <Route path={SETTINGS_URL} element={<SettingsView/>}/>
+                                                <Route path={'*'} element={<Navigate to={generatePath(
+                                                    DEPARTMENT_URL, {department: (user && user.department) || "er"}
+                                                )}/>}/>
+                                            </Routes>
+                                        </Layout>
+                                    </UserTheme>
+                                }
+                            </LoginProvider>
+                        </HashMatch>
+                    </Router>
+                </div>
+            </AltContextProvider>
         </ConfigProvider>
     );
 }
