@@ -1,6 +1,7 @@
 import contextlib
 
 import logbook
+import pytz
 import requests
 from requests import HTTPError
 from sqlalchemy import create_engine
@@ -15,7 +16,7 @@ from .. import config
 from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
 from ..models.chameleon_main import ChameleonMain, Departments
-from ..models.chameleon_measurements import MeasurementsIds, ChameleonMeasurements
+from ..models.chameleon_measurements import sheba_measurement_codes
 from ..models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes
 from ..models.chameleon_referrals import ChameleonReferrals
 from ..utils import sql_statements, utils
@@ -53,13 +54,13 @@ class SqlToDal(object):
                         ),
                         esi=ESIScore(
                             value=row["ESI"],
-                            at=row["AdmissionDate"].astimezone().isoformat()
+                            at=utils.datetime_utc_serializer(row["AdmissionDate"]),
                         ),
                         admission=Admission(
                             department=department.name,
                             wing=row["RoomName"],
                             bed=row["BedName"],
-                            arrival=row["AdmissionDate"].astimezone().isoformat(),
+                            arrival=utils.datetime_utc_serializer(row["AdmissionDate"]),
                         ),
                         intake=Intake(
                             complaint=row["MainCause"],
@@ -78,15 +79,17 @@ class SqlToDal(object):
 
             measures = {}
             with self.session() as session:
-                for measurement in session.query(ChameleonMeasurements). \
-                        join(ChameleonMain, ChameleonMeasurements.patient_id == ChameleonMain.patient_id).where(
-                    (ChameleonMain.unit == department.name) &
-                    (ChameleonMain.discharge_time == None)
-                ).order_by(ChameleonMeasurements.at.asc()):
-                    measures.setdefault(measurement.patient_id, []).append(
-                        measurement.to_dal().dict(exclude_unset=True)
-                    )
-
+                for row in session.execute(sql_statements.query_measurements.format(
+                        unit=department.value, codes='({})'.format(','.join(map(str, sheba_measurement_codes)))
+                )):
+                    measures.setdefault(row['MedicalRecord'], []).append(Measure(
+                        value=row['Result'],
+                        minimum=row['MinValue'],
+                        maximum=row['MaxValue'],
+                        at=utils.datetime_utc_serializer(row['At']),
+                        type=sheba_measurement_codes.get(row['Code'], MeasureType.other),
+                        external_id=row['MeasureID'],
+                    ).dict(exclude_unset=True))
             res = requests.post(f'{self.dal_url}/departments/{department.name}/measurements',
                                 json={'measurements': measures})
             res.raise_for_status()

@@ -19,15 +19,20 @@ class MeasureType(Enum):
     systolic = 'systolic'
     diastolic = 'diastolic'
     blood_pressure = 'blood_pressure'
+    weight = 'weight'
+    urine_output = 'urine_output'
+    breaths = 'breaths'
+    enriched_saturation = 'enriched_saturation'
+    other = 'other'
 
 
 class Measure(BaseModel):
     external_id: str
-    value: float
+    value: str
     is_valid: bool
     at: str
-    minimum: float
-    maximum: float
+    minimum: Optional[float]
+    maximum: Optional[float]
     type: MeasureType
 
     @property
@@ -40,7 +45,13 @@ class Measure(BaseModel):
 
     def __init__(self, **kwargs):
         if 'is_valid' not in kwargs:
-            kwargs['is_valid'] = kwargs['minimum'] <= kwargs['value'] <= kwargs['maximum']
+            if kwargs['minimum'] and kwargs['maximum']:
+                try:
+                    kwargs['is_valid'] = kwargs['minimum'] <= float(kwargs['value']) <= kwargs['maximum']
+                except ValueError:
+                    kwargs['is_valid'] = False
+            else:
+                kwargs['is_valid'] = True
         super(Measure, self).__init__(**kwargs)
 
 

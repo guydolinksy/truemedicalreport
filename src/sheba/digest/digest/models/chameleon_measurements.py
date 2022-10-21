@@ -1,18 +1,21 @@
-from enum import Enum
-
 import pytz
 from sqlalchemy import Float, VARCHAR, Integer, Column, DateTime
+
 from common.data_models.measures import Measure, MeasureType
 from .base import Base
 
-
-class MeasurementsIds(Enum):
-    pain = 14
-    pulse = 12
-    temperature = 11
-    saturation = 13
-    systolic = 101
-    diastolic = 102
+sheba_measurement_codes = {
+    1: MeasureType.temperature,
+    3: MeasureType.pulse,
+    4: MeasureType.weight,
+    9: MeasureType.urine_output,
+    12: MeasureType.breaths,
+    13: MeasureType.saturation,
+    23: MeasureType.systolic,
+    24: MeasureType.diastolic,
+    61: MeasureType.pain,
+    542: MeasureType.enriched_saturation,
+}
 
 
 class ChameleonMeasurements(Base):
@@ -33,6 +36,6 @@ class ChameleonMeasurements(Base):
             minimum=self.min_limit,
             maximum=self.max_limit,
             at=self.at.astimezone(pytz.UTC).isoformat(),
-            type=MeasureType(MeasurementsIds(self.code).name),
+            type=sheba_measurement_codes.get(self.code, MeasureType.other).name,
             external_id=f'{self.patient_id}#{self.at.astimezone(pytz.UTC).isoformat()}#{self.code}',
         )

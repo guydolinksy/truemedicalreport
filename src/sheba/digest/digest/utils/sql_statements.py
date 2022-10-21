@@ -4,10 +4,14 @@ SELECT
     de.Answer_Text AS Decision,
     su.Name AS UnitName
 FROM [sbwnd81c].[chameleon].dbo.EmergancyVisits AS ev
-LEFT JOIN [sbwnd81c].[chameleon].dbo.RoomPlacmentPatient AS rpp ON ev.Medical_Record = rpp.Medical_Record
-LEFT JOIN [sbwnd81c].[chameleon].dbo.AdmissionTreatmentDecision AS atd ON ev.Medical_Record = atd.Medical_Record and atd.delete_date is null
-LEFT JOIN [sbwnd81c].[chameleon].dbo.V_TableAnswers AS de ON de.Table_Code = 1092 AND de.Answer_Code = atd.Decision AND rpp.Unit = de.Unit
-LEFT JOIN [sbwnd81c].[chameleon].dbo.SystemUnits AS su ON atd.Hosp_Unit = su.Unit
+LEFT JOIN [sbwnd81c].[chameleon].dbo.RoomPlacmentPatient AS rpp 
+    ON ev.Medical_Record = rpp.Medical_Record
+LEFT JOIN [sbwnd81c].[chameleon].dbo.AdmissionTreatmentDecision AS atd 
+    ON ev.Medical_Record = atd.Medical_Record and atd.delete_date is null
+LEFT JOIN [sbwnd81c].[chameleon].dbo.V_TableAnswers AS de 
+    ON de.Table_Code = 1092 AND de.Answer_Code = atd.Decision AND rpp.Unit = de.Unit
+LEFT JOIN [sbwnd81c].[chameleon].dbo.SystemUnits AS su 
+    ON atd.Hosp_Unit = su.Unit
 WHERE ev.Delete_Date IS NULL
 AND rpp.End_Date IS NULL
 and rpp.Unit = {unit}
@@ -15,7 +19,7 @@ and rpp.Unit = {unit}
 
 query_patient_admission = """
 SELECT
-    pat.Id_Num as Id,
+    ev.Medical_Record as Id,
     CONCAT(pat.First_Name,' ',pat.Last_Name) AS FullName,
     pd.Birth_Date AS BirthDate,
     gen.Answer_Text AS Gender,
@@ -41,4 +45,50 @@ LEFT JOIN [sbwnd81c].[chameleon].dbo.SystemUnits AS su ON su.Unit = ev.Unit
 WHERE ev.Delete_Date IS NULL
 AND rpp.End_Date IS NULL
 and rpp.Unit = {unit}
+"""
+query_measurements = """
+SELECT
+    CONCAT(m.Parameter, '#', m.Monitor_Date) AS MeasureID,
+    ev.Medical_Record AS MedicalRecord,
+    m.Result,
+    mp.Min_Value AS MinValue,
+    mp.Max_Value AS MaxValue,
+    m.Monitor_Date AS At,
+    m.Parameter AS Code
+FROM (
+    SELECT 
+        m.Medical_Record,
+        m.Parameter,
+        m.Monitor_Date,
+        m.Result, 
+        m.Parameter_Value,
+        e.Parameter as EParameter
+    FROM [sbwnd81c].[chameleon].dbo.Monitor AS m
+    LEFT JOIN [sbwnd81c].[chameleon].dbo.Execution AS e
+     ON m.Execution_Row_ID = e.Row_ID AND e.Delete_Date IS NULL
+    UNION ALL 
+    SELECT 
+        m.Medical_Record,
+        m.Parameter,
+        m.Monitor_Date,
+        COALESCE(dpt.Parameter_Translation, m.Result) AS Result, 
+        NULL,
+        NULL
+    FROM [sbwnd81c].[Devices].dbo.DeviceMonitor AS m
+    LEFT JOIN [sbwnd81c].[chameleon].dbo.MedicalRecords AS mr
+     ON m.Medical_Record = mr.Medical_Record AND mr.Delete_Date IS NULL
+    LEFT JOIN [sbwnd81c].[chameleon].dbo.DevicesPerUnit AS dpu
+     ON mr.Unit = dpu.Unit AND m.Machine = dpu.Dongle_Id AND dpu.Delete_Date IS NULL
+    LEFT JOIN [sbwnd81c].[chameleon].dbo.DeviceParametersTranslate AS dpt
+     ON m.Parameter = dpt.Parameter AND dpu.Device_Code = dpt.Device_Type AND m.Result = dpt.Device_Parameter_Value
+) AS m
+LEFT JOIN [sbwnd81c].[chameleon].dbo.EmergancyVisits AS ev ON m.Medical_Record = ev.Medical_Record
+LEFT JOIN [sbwnd81c].[chameleon].dbo.RoomPlacmentPatient AS rpp ON ev.Medical_Record = rpp.Medical_Record
+LEFT JOIN [sbwnd81c].[chameleon].dbo.MedicalRecords AS mr 
+    ON ev.Medical_Record = mr.Medical_Record AND mr.Delete_Date IS NULL
+LEFT JOIN [sbwnd81c].[chameleon].dbo.MonitoringParameters AS mp ON mp.Row_ID = m.Parameter
+WHERE ev.Delete_Date IS NULL
+AND rpp.End_Date IS NULL
+AND rpp.Unit = {unit}
+AND m.Parameter in {codes}
 """

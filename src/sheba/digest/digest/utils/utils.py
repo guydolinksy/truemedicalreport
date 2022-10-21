@@ -15,7 +15,7 @@ def calculate_patient_age(birthdate) -> str:
 def datetime_utc_serializer(datetime_object):
     serialized: str | None
     try:
-        serialized = datetime_object.astimezone(pytz.UTC).isoformat()
+        serialized = pytz.timezone('Asia/Jerusalem').localize(datetime_object).isoformat()
     except AttributeError:
         serialized = None
     return serialized

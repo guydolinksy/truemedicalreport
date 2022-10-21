@@ -72,7 +72,7 @@ class MedicalDal:
             for doctor in patient.treatment.doctors:
                 doctors.setdefault(doctor, []).append(patient.oid)
             if patient.treatment.destination:
-                doctors.setdefault(patient.treatment.destination, []).append(patient.oid)
+                treatments.setdefault(patient.treatment.destination, []).append(patient.oid)
         doctor_total = set(p for patients in doctors.values() for p in patients)
         treatment_total = set(p for patients in treatments.values() for p in patients)
         awaiting_total = set(p for keys in awaitings.values() for l in keys.values() for p in l)
