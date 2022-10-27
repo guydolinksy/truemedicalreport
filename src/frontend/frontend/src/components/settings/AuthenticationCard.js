@@ -4,7 +4,6 @@ import merge from "lodash/merge";
 import Axios from "axios";
 
 const convertFormToLdapConfig = ({enabled, test_user, test_password, ...settings}) => {
-    delete settings.settings
     return {
         enabled,
         test_user,
@@ -25,37 +24,42 @@ const formatError = (prefix, {status, data}) => {
     return toParagraphs([
         prefix,
         `סטטוס: ${status}`,
-        data.detail ? data.detail : data
+        data.detail || data
     ])
 }
 
 const LDAPAuthentication = () => {
-    const [message, setMessage] = useState(null);
-    const [isError, setIsError] = useState(false);
+    const [message, _setMessage] = useState(null);
+    const [isError, _setIsError] = useState(false);
     const [initialFormValues, setInitialFormValues] = useState({});
     const form = useRef();
 
     const setInfo = (message) => {
-        setMessage(message);
-        setIsError(false);
+        _setMessage(message);
+        _setIsError(false);
     }
 
     const setError = (message) => {
-        setMessage(message);
-        setIsError(true);
+        _setMessage(message);
+        _setIsError(true);
+    }
+
+    const showError = (prefix, error) => {
+        if (Axios.isCancel(error)) {
+            return;
+        }
+
+        setError(formatError(prefix, error.response));
     }
 
     useEffect(() => {
         const s = Axios.CancelToken.source();
+
         Axios.get('/api/auth/ldap', {cancelToken: s.token}).then(response => {
             setInitialFormValues(convertLdapConfigToForm(response.data));
             form.current.resetFields();
-        }).catch(error => {
-            if (Axios.isCancel(error))
-                return;
+        }).catch(error => showError("השליפה של ההגדרות הקיימות של התאמתות LDAP נכשלה", error));
 
-            setError(formatError("השליפה של ההגדרות הקיימות של התאמתות LDAP נכשלה", error.response));
-        });
         return () => s.cancel();
     }, []);
 
@@ -66,12 +70,9 @@ const LDAPAuthentication = () => {
         delete conf.test_user;
         delete conf.test_password;
 
-        Axios.post('/api/auth/ldap', conf).then(() => setInfo("ההגדרות נשמרו!")).catch(error => {
-            if (Axios.isCancel(error)) {
-                return
-            }
-            setError(formatError("השמירה של ההגדרות נכשלה.", error.response));
-        });
+        Axios.post('/api/auth/ldap', conf)
+            .then(() => setInfo("ההגדרות נשמרו!"))
+            .catch(error => showError("השמירה של ההגדרות נכשלה.", error))
     }, []);
 
     const testLdapConfig = useCallback((values) => {
@@ -87,13 +88,7 @@ const LDAPAuthentication = () => {
                 `מנהל: ${response.data.is_admin ? "כן" : "לא"}`,
                 `קבוצות: ${groups}`
                 ]))
-        }).catch(error => {
-            if (Axios.isCancel(error)) {
-                return;
-            }
-
-            setError(formatError("המשתמש לא אומת בהצלחה.", error.response));
-        });
+        }).catch(error => showError("המשתמש לא אומת בהצלחה.", error));
     }, []);
 
     const testLdapConfigGroupsOnly = useCallback((values) => {
@@ -106,19 +101,16 @@ const LDAPAuthentication = () => {
             } else {
                 setInfo("המשתמש לא חבר באף קבוצה.")
             }
-        }).catch(error => {
-            if (Axios.isCancel(error)) {
-                return;
-            }
-
-            setError(formatError("חלה תקלה בעת תשאול קבוצות המשתמש.", error.response));
-        });
+        }).catch(error => showError("חלה תקלה בעת תשאול קבוצות המשתמש.", error));
     }, []);
 
-    return <Form ref={form} name={"ldap"} title={''} onFinish={saveLdapConfig} onValuesChange={() => {
-        setMessage(null)
-    }}
-                 initialValues={initialFormValues}>
+    return <Form ref={form}
+                 name={"ldap"}
+                 title={''}
+                 onFinish={saveLdapConfig}
+                 onValuesChange={() => _setMessage(null)}
+                 initialValues={initialFormValues}
+    >
         {message && <Alert message={message} type={isError ? "error" : "info"} style={{marginBottom: 24}}/>}
         <Form.Item name={"enabled"} label={"חיבור LDAP מאופשר"} valuePropName={"checked"}>
             <Switch/>
