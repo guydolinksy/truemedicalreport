@@ -11,3 +11,4 @@ fastapi-login
 python-ldap
 interruptingcow
 werkzeug
+environs
