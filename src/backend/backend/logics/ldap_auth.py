@@ -1,4 +1,4 @@
-from typing import Optional, Set, Tuple
+from typing import Optional, Set, Tuple, List
 
 import ldap
 import logbook
@@ -51,6 +51,14 @@ class LdapAuth(BaseModel, extra=Extra.forbid):
             assert "settings" in values
 
         return values
+
+    def query_user_groups(self, username: str) -> List[str]:
+        """
+        Just returns the full list of groups the user is a member of. No authentication is done.
+        """
+        connection = self._connect()
+        _, user_groups = self._find_user(connection, username)
+        return list(user_groups)
 
     def auth_with_groups(self, login_source: str, username: str, password: str) -> Optional[User]:
         """

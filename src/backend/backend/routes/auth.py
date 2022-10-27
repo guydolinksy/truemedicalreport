@@ -97,6 +97,17 @@ async def test_ldap_settings(_=Depends(login_manager), args=Body(...)):
         raise UnauthorizedException("Failed to reach the ldap server")
 
 
+@auth_router.post('/ldap/test_get_user_groups')
+async def test_ldap_settings_groups_only(_=Depends(login_manager), args=Body(...)):
+    try:
+        test_user = args.pop("test_user")
+        return {
+            "groups": LdapAuth(**args).query_user_groups(username=test_user)
+        }
+    except (ldap.SERVER_DOWN, TimeoutError):
+        raise UnauthorizedException("Failed to reach the ldap server")
+
+
 @auth_router.get('/user')
 def get_user(user: User = Depends(login_manager), user_settings_=Depends(user_settings)):
     return dict(

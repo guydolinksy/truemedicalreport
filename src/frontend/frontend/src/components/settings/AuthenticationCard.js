@@ -96,6 +96,25 @@ const LDAPAuthentication = () => {
         });
     }, []);
 
+    const testLdapConfigGroupsOnly = useCallback((values) => {
+        let conf = convertFormToLdapConfig(values)
+        delete conf.test_password;  // The user is not authenticated when just checking their groups
+
+        Axios.post('/api/auth/ldap/test_get_user_groups', conf).then((response) => {
+            if (response.data.groups) {
+                setInfo(toParagraphs([`המשתמש חבר בקבוצות הבאות:`].concat(response.data.groups)))
+            } else {
+                setInfo("המשתמש לא חבר באף קבוצה.")
+            }
+        }).catch(error => {
+            if (Axios.isCancel(error)) {
+                return;
+            }
+
+            setError(formatError("חלה תקלה בעת תשאול קבוצות המשתמש.", error.response));
+        });
+    }, []);
+
     return <Form ref={form} name={"ldap"} title={''} onFinish={saveLdapConfig} onValuesChange={() => {
         setMessage(null)
     }}
@@ -147,6 +166,9 @@ const LDAPAuthentication = () => {
         </Form.Item>
         <Form.Item>
             <Space>
+                <Form.Item>
+                    <Button onClick={() => testLdapConfigGroupsOnly(form.current.getFieldValue())}>בדיקת קבוצות (ללא אימות)</Button>
+                </Form.Item>
                 <Form.Item>
                     <Button onClick={() => testLdapConfig(form.current.getFieldValue())}>בדיקת חיבור</Button>
                 </Form.Item>
