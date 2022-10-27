@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="frontend" type="js.build_tools.npm">
+    <package-json value="$PROJECT_DIR$/src/frontend/frontend/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="start" />
+    </scripts>
+    <node-interpreter value="project" />
+    <package-manager value="npm" />
+    <envs>
+      <env name="NODE_OPTIONS" value="--openssl-legacy-provider" />
+      <env name="REACT_APP_TMR_PROXY_BACKEND_TO_PORT" value="8080" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>
