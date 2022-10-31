@@ -170,7 +170,7 @@ class SqlToDal(object):
         except HTTPError:
             logger.exception('Could not run referrals handler.')
 
-    def update_treatment(self, department: Departments):
+    def update_destination(self, department: Departments):
         treatments = {}
         try:
             logger.debug('Getting treatments for `{}`...', department.name)

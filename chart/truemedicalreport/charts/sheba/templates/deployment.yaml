@@ -31,7 +31,7 @@ spec:
         - name: 'check-dal'
           image: {{ $.Values.global.helpers.busybox.image }}
           command: ["sh", "-c", "until nc -z {{ .Values.global.fullname.dal }} {{ .Values.global.servicePort.dal }}; do sleep 1; done"]
-        {{- if eq .Values.input.type "internal" }}
+        {{- if .Values.input.internal.enabled }}
         - name: 'check-arc'
           image: {{ $.Values.global.helpers.busybox.image }}
           command: ["sh", "-c", "until nc -z {{ .Values.global.fullname.arc }} {{ .Values.global.servicePort.arc }}; do sleep 1; done"]

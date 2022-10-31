@@ -44,8 +44,9 @@ sheba:
   fullnameOverride: *digest-fullname
   enabled: true
   input:
-    type: internal
-    secretName: ''
+    external:
+      secretName: ''
+      secretKey: ''
 redis:
   enabled: true
   fullnameOverride: *redis-fullname
