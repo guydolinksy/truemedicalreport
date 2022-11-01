@@ -6,6 +6,8 @@ COPY frontend/frontend/config-overrides.js /opt/frontend/frontend/config-overrid
 RUN npm i
 
 ENV WDS_SOCKET_PORT=80
+ENV PORT=80
+ENV NODE_OPTIONS="--openssl-legacy-provider"
 CMD npm run start
 
 FROM node:latest

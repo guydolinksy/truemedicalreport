@@ -1,45 +1,45 @@
 from typing import List, Optional
 
 import interruptingcow
-import ldap
 from fastapi import Depends
 from fastapi_login.exceptions import InvalidCredentialsException
-from pydantic import BaseModel
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from werkzeug.local import LocalProxy
 
+from .ldap_auth import LdapAuth
+from .user import User
 from .. import config
 
 
-class Connection(object):
-    mode = NotImplemented
-
-    def __contains__(self, item):
+class Connection:
+    def register(self, username: str, password: str) -> None:
         raise NotImplementedError
 
-    def __setitem__(self, key, value):
+    def login(self, username: str, password: str) -> Optional[User]:
         raise NotImplementedError
-
-    def connect(self, username, password):
-        return (username, password) in self
 
 
 class LocalConnection(Connection):
     mode = 'local'
 
-    def __init__(self, collection):
+    def __init__(self, collection: Collection) -> None:
         self.collection = collection
 
-    def __contains__(self, item):
-        username, password = item
-        return self.collection.find_one({'username': username, 'password': password})
+    def register(self, username: str, password: str) -> None:
+        self.collection.update_one({'username': username}, {'$set': {'password': password}}, upsert=True)
 
-    def __getitem__(self, key):
-        return self.collection.find_one({'username': key}, {'password': 0})
+    def login(self, username: str, password: str) -> Optional[User]:
+        if self.collection.find_one({'username': username, 'password': password}):
+            return User(
+                username=username,
+                source=self.mode,
+                is_admin=True,  # local users are always considered to be admins
+                groups=[]
+            )
 
-    def __setitem__(self, key, value):
-        self.collection.update_one({'username': key}, {'$set': {'password': value}}, upsert=True)
+    def has_user(self, username: str) -> bool:
+        return bool(self.collection.find_one({'username': username}))
 
 
 class LDAPConnection(Connection):
@@ -49,46 +49,41 @@ class LDAPConnection(Connection):
         self.collection = collection
 
     @property
-    def settings(self):
-        res = self.collection.find_one({'type': 'ldap'})
-        return LDAP(**(res or {}))
+    def settings(self) -> LdapAuth:
+        if res := self.collection.find_one({'type': self.mode}):
+            del res["_id"]
+            del res["type"]
+            return LdapAuth(**res)
 
-    @settings.setter
-    def settings(self, value):
-        self.collection.update_one({'type': 'ldap'}, {'$set': value})
+        return LdapAuth(enabled=False)
 
-    def __contains__(self, item):
-        if not self.settings.enabled:
-            return False
+    def update_settings(self, new_settings: dict) -> None:
+        try:
+            LdapAuth(**new_settings)
+        except Exception:
+            raise Exception("The new settings are invalid")
 
-        username, password = item
+        self.collection.replace_one({'type': self.mode}, {
+            "type": self.mode,
+            **new_settings
+        }, upsert=True)
 
+    def register(self, username: str, password: str) -> None:
+        raise Exception("Registering users with LDAP is not supported")
+
+    def login(self, username: str, password: str) -> Optional[User]:
         with interruptingcow.timeout(seconds=5, exception=TimeoutError):
-            connection = ldap.initialize(self.settings.connection)
-            return connection.bind_s(self.settings.user_dn.format(username), password)
-
-    def __setitem__(self, key, value):
-        raise NotImplementedError
-
-
-class LDAP(BaseModel):
-    enabled: bool = False
-    connection: Optional[str]
-    user_dn: Optional[str]
-    bind_dn: Optional[str]
-    bind_password: Optional[str]
-    admin_ou: Optional[str]
-    users_ou: Optional[str]
+            return self.settings.auth_with_groups(login_source=self.mode, username=username, password=password)
 
 
 class Authentication(object):
     def __init__(self, connections: List[Connection]):
         self.connections = connections
 
-    def connect(self, username, password):
+    def login(self, username: str, password: str) -> User:
         for c in self.connections:
-            if c.connect(username, password):
-                return c.mode
+            if user := c.login(username, password):
+                return user
         else:
             raise InvalidCredentialsException
 
@@ -114,9 +109,9 @@ class Settings(object):
     def __init__(self, connection):
         self.db = MongoClient(connection).app
 
-        self.users = LocalConnection(self.db.users)
+        self.local_users = LocalConnection(self.db.users)
         self.ldap = LDAPConnection(self.db.connections)
-        self.auth = Authentication([self.users, self.ldap])
+        self.auth = Authentication([self.local_users, self.ldap])
 
         self.general = Proxy(self.db.general, {})
 
