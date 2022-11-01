@@ -1,7 +1,9 @@
-import os
-
+import environs
 import uvicorn
 
-debug = bool(os.getenv('DEBUG'))
+env = environs.Env()
 
-uvicorn.run("backend.app:app", host="0.0.0.0", port=80, debug=debug)
+debug = env.bool("TMR_BACKEND_DEBUG")
+port = env.int("TMR_BACKEND_PORT", 8080)
+
+uvicorn.run("backend.app:app", host="0.0.0.0", port=port, debug=debug)

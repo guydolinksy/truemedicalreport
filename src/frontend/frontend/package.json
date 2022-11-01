@@ -35,7 +35,7 @@
     "serve": "^14.0.1"
   },
   "scripts": {
-    "start": "CHOKIDAR_USEPOLLING=true PORT=80 react-app-rewired --openssl-legacy-provider start",
+    "start": "CHOKIDAR_USEPOLLING=true react-app-rewired --openssl-legacy-provider start",
     "build": "react-app-rewired --openssl-legacy-provider build",
     "serve": "serve -l tcp://0.0.0.0:80 -s build",
     "test": "react-app-rewired  test"
@@ -57,5 +57,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "http-proxy-middleware": "^2.0.6"
   }
 }
