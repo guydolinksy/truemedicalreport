@@ -5,15 +5,15 @@ import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
+from common.data_models.department import Department
 from common.data_models.image import Image
 from common.data_models.labs import Laboratory
 from common.data_models.measures import Measure
+from common.data_models.medicine import Medicine
 from common.data_models.patient import ExternalPatient, Intake
 from common.data_models.referrals import Referral
 from common.data_models.treatment import Treatment
-from common.data_models.department import Department
 from common.data_models.wing import WingSummary
-from common.data_models.medicine import Medicine
 from common.utilities.exceptions import PatientNotFound
 from .wing import wing_router
 from .. import config
@@ -84,11 +84,13 @@ async def update_labs(labs: Dict[str, List[Laboratory]] = Body(..., embed=True),
 async def update_referrals(department: str, referrals: Dict[str, List[Referral]] = Body(..., embed=True),
                            dal: MedicalDal = Depends(medical_dal)):
     for patient in referrals:
-        for referral in referrals[patient]:
-            try:
-                await dal.upsert_referral(referral_obj=referral)
-            except PatientNotFound:
-                logger.debug('Cannot update patient {} referrals', patient)
+        try:
+            updated = {referral.external_id: referral for referral in referrals[patient]}
+            existing = {referral.external_id: referral for referral in dal.get_patient_referrals(patient)}
+            for referral in set(updated) | set(existing):
+                await dal.upsert_referral(previous=existing.get(referral), referral=updated.get(referral))
+        except PatientNotFound:
+            logger.debug('Cannot update patient {} referrals', patient)
 
 
 @department_router.post("/{department}/intake")

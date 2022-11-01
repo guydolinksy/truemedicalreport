@@ -1,9 +1,13 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 from common.data_models.notification import NotificationLevel, Notification, NotificationType
 
 
 class Referral(BaseModel):
+    oid: Optional[str]
+
     patient_id: str
 
     external_id: str
@@ -13,6 +17,11 @@ class Referral(BaseModel):
 
     class Config:
         orm_mode = True
+
+    def __init__(self, **kwargs):
+        if '_id' in kwargs:
+            kwargs['oid'] = str(kwargs.pop('_id'))
+        super(Referral, self).__init__(**kwargs)
 
     def to_notification(self):
         message = "הפנייה ל"

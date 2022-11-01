@@ -12,14 +12,15 @@ LEFT JOIN [sbwnd81c].[chameleon].dbo.V_TableAnswers AS de
     ON de.Table_Code = 1092 AND de.Answer_Code = atd.Decision AND rpp.Unit = de.Unit
 LEFT JOIN [sbwnd81c].[chameleon].dbo.SystemUnits AS su 
     ON atd.Hosp_Unit = su.Unit
-WHERE ev.Delete_Date IS NULL
-AND rpp.End_Date IS NULL
-and rpp.Unit = {unit}
+WHERE 
+    ev.Delete_Date IS NULL
+    AND rpp.End_Date IS NULL
+    AND rpp.Unit = {unit}
  """
 
 query_patient_admission = """
 SELECT
-    ev.Medical_Record as Id,
+    ev.Medical_Record as MedicalRecord,
     CONCAT(pat.First_Name,' ',pat.Last_Name) AS FullName,
     pd.Birth_Date AS BirthDate,
     gen.Answer_Text AS Gender,
@@ -42,9 +43,10 @@ LEFT JOIN [sbwnd81c].[chameleon].dbo.V_TableAnswers AS mc ON mc.Table_Code = 119
 LEFT JOIN [sbwnd81c].[chameleon].dbo.RoomDetails AS rd ON rd.Room_Code = rpp.Room AND rd.Unit = rpp.Unit
 LEFT JOIN [sbwnd81c].[chameleon].dbo.RoomBeds AS rb ON rb.Row_ID = rpp.Bed_ID
 LEFT JOIN [sbwnd81c].[chameleon].dbo.SystemUnits AS su ON su.Unit = ev.Unit
-WHERE ev.Delete_Date IS NULL
-AND rpp.End_Date IS NULL
-and rpp.Unit = {unit}
+WHERE 
+    ev.Delete_Date IS NULL
+    AND rpp.End_Date IS NULL
+    AND rpp.Unit = {unit}
 """
 query_measurements = """
 SELECT
@@ -87,8 +89,55 @@ LEFT JOIN [sbwnd81c].[chameleon].dbo.RoomPlacmentPatient AS rpp ON ev.Medical_Re
 LEFT JOIN [sbwnd81c].[chameleon].dbo.MedicalRecords AS mr 
     ON ev.Medical_Record = mr.Medical_Record AND mr.Delete_Date IS NULL
 LEFT JOIN [sbwnd81c].[chameleon].dbo.MonitoringParameters AS mp ON mp.Row_ID = m.Parameter
-WHERE ev.Delete_Date IS NULL
-AND rpp.End_Date IS NULL
-AND rpp.Unit = {unit}
-AND m.Parameter in {codes}
+WHERE 
+    ev.Delete_Date IS NULL
+    AND rpp.End_Date IS NULL
+    AND rpp.Unit = {unit}
+    AND m.Parameter IN {codes}
+"""
+
+query_images = """
+SELECT
+    ato.Order_Number AS OrderNumber,
+    dates.Order_Date AS OrderDate,
+    mr.Medical_Record AS MedicalRecord,
+    [at].Name as TestName,
+    ato.Order_Status as OrderStatus,
+    atd.Result,
+    atd.Panic
+FROM [Chameleon].[dbo].[AuxiliaryTestOrders] AS ato
+JOIN [Chameleon].[dbo].[AuxTests] AS [at] ON ato.Test = [at].Code
+JOIN [Chameleon].[dbo].[MedicalRecords] AS mr ON ato.Patient = mr.Patient
+JOIN [Chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON mr.medical_record = rpp.Medical_record
+JOIN (
+    SELECT MIN(Test_date) AS Order_Date, Order_Number
+    from Chameleon.dbo.AuxiliaryTestOrders GROUP BY Order_Number
+    ) AS dates ON dates.Order_Number = ato.Order_Number
+LEFT OUTER JOIN  [Chameleon].[dbo].[AuxiliaryTestDates] atd 
+    ON ato.Accession_Number = atd.Accession_Number AND atd.Delete_Date IS NULL
+WHERE 
+    ato.Delete_Date IS NULL
+    AND ato.Test_Date > rpp.Start_Date 
+    AND rpp.End_Date IS NULL 
+    AND rpp.Unit = {unit} 
+"""
+
+query_refferals = """
+SELECT
+    rd.[Row_Id] AS ReferralId,
+    rd.[Medical_Record] AS MedicalRecord,
+    rd.[Entry_Date] AS ReferralDate,
+    u.Medical_License AS MedicalLicense,
+    u.Title,
+    u.First_Name AS FirstName,
+    u.Last_Name AS LastName
+FROM [Chameleon].[dbo].[ResponsibleDoctor] AS rd
+JOIN [Chameleon].[dbo].[Users] AS u ON rd.Doctor = u.Code
+JOIN [Chameleon].[dbo].[MedicalRecords] AS mr ON rd.Medical_Record = mr.Medical_Record
+JOIN [Chameleon].[dbo].[patients] AS pat ON pat.Patient = mr.Patient
+JOIN [Chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON mr.Medical_Record = rpp.Medical_Record
+WHERE
+    rd.Delete_Date IS NULL
+    AND rpp.End_Date IS NULL
+    AND mr.Unit = {unit}
 """

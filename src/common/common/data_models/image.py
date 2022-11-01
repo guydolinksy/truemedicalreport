@@ -16,6 +16,7 @@ class ImagingStatus(Enum):
     performed = 'performed'
     analyzed = 'analyzed'
     verified = 'verified'
+    cancelled = 'cancelled'
 
 
 class ImagingNotification(Notification):

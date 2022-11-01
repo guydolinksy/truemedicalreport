@@ -9,7 +9,6 @@ from bson.json_util import dumps
 from bson.objectid import ObjectId
 from pymongo.database import Database
 
-from ..routes.websocket import notify, notify_property
 from common.data_models.awaiting import Awaiting, AwaitingTypes
 from common.data_models.event import Event
 from common.data_models.image import Image, ImagingStatus
@@ -23,6 +22,7 @@ from common.data_models.treatment import Treatment
 from common.data_models.wing import WingFilter, WingFilters, PatientNotifications, WingDetails
 from common.utilities.exceptions import PatientNotFound
 from common.utilities.websocket import atomic_update
+from ..routes.websocket import notify, notify_property
 
 logger = logbook.Logger(__name__)
 
@@ -40,6 +40,16 @@ class MedicalDal:
     @property
     def atomic_update_patient(self):
         return atomic_update(klass=Patient, collection=self.db.patients,
+                             notify=notify, notify_property=notify_property)
+
+    @property
+    def atomic_update_referral(self):
+        return atomic_update(klass=Referral, collection=self.db.referrals,
+                             notify=notify, notify_property=notify_property)
+
+    @property
+    def atomic_update_notification(self):
+        return atomic_update(klass=Notification, collection=self.db.notifications,
                              notify=notify, notify_property=notify_property)
 
     def get_department_wings(self, department: str) -> dict:
@@ -184,7 +194,7 @@ class MedicalDal:
             )),
             labs=[LabCategory(**tube) for tube in self.db.labs.find({"patient_id": patient.external_id})],
             notifications=[Notification(oid=str(n.pop("_id")), **n)
-                               for n in self.db.notifications.find({"patient_id": patient.external_id})],
+                           for n in self.db.notifications.find({"patient_id": patient.external_id})],
             referrals=[Referral(oid=str(r.pop("_id")), **r)
                        for r in self.db.referrals.find({"patient_id": patient.external_id})],
             events=events,
@@ -334,30 +344,56 @@ class MedicalDal:
             updated.dict(include={'awaiting', 'warnings'}, exclude_unset=True)
         )
 
-    async def upsert_referral(self, referral_obj: Referral):
-        patient = self.get_patient({"external_id": referral_obj.patient_id})
+    async def upsert_referral(self, patient_id, previous: Referral, referral: Referral):
+        if previous and not referral:
+            updated_referral = previous.copy()
+            updated_referral.completed = True
+            await self.atomic_update_referral(
+                {"_id": ObjectId(previous.oid)},
+                updated_referral.dict(exclude_unset=True),
+            )
+            notification = updated_referral.to_notification()
+            await self.atomic_update_notification(
+                {"notification_id": notification.notification_id},
+                notification.dict(exclude_unset=True),
+            )
+            patient = self.get_patient({"external_id": patient_id})
+            updated = patient.copy()
+            updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(updated_referral.to, Awaiting(
+                subtype=updated_referral.to,
+                name=updated_referral.to,
+                since=updated_referral.at,
+                completed=updated_referral.completed,
+                limit=3600,
+            ))
+            await self.atomic_update_patient(
+                {"_id": ObjectId(patient.oid)},
+                updated.dict(include={'awaiting'}, exclude_unset=True),
+            )
 
-        updated = patient.copy()
-        self.db.referrals.update_one({"external_id": referral_obj.external_id},
-                                     {'$set': referral_obj.dict()}, upsert=True)
-        if referral_obj.completed:
-            notification = referral_obj.to_notification()
-            self.db.notifications.update_one({"notification_id": notification.notification_id},
-                                             {'$set': notification.dict()}, upsert=True)
-            await notify('notification', patient.oid)
-        updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(referral_obj.to, Awaiting(
-            subtype=referral_obj.to,
-            name=referral_obj.to,
-            since=referral_obj.at,
-            completed=referral_obj.completed,
-            limit=3600,
-        ))
-
-        await self.atomic_update_patient(
-            {"_id": ObjectId(patient.oid)},
-            updated.dict(include={'awaiting'}, exclude_unset=True),
-            patient.dict()
-        )
+        elif previous and referral:
+            await self.atomic_update_referral(
+                {"_id": ObjectId(previous.oid)},
+                referral.dict(exclude_unset=True),
+            )
+        elif not previous and referral:
+            await self.atomic_update_referral(
+                {"external_id": referral.external_id},
+                referral.dict(exclude_unset=True),
+            )
+            patient = self.get_patient({"external_id": patient_id})
+            updated_referral = patient.copy()
+            updated_referral.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(referral.to, Awaiting(
+                subtype=referral.to,
+                name=referral.to,
+                since=referral.at,
+                completed=referral.completed,
+                limit=3600,
+            ))
+            await self.atomic_update_patient(
+                {"_id": ObjectId(patient.oid)},
+                updated_referral.dict(include={'awaiting'}, exclude_unset=True),
+            )
 
     async def upsert_treatment(self, external_id: str, treatment: Treatment):
         patient = self.get_patient({"external_id": external_id})

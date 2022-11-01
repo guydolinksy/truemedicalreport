@@ -9,19 +9,40 @@ from sqlalchemy.orm import Session
 
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
+from common.data_models.image import ImagingStatus, Image
 from common.data_models.measures import Measure, MeasureType
+from common.data_models.notification import NotificationLevel
 from common.data_models.patient import Intake, ExternalPatient, Person
+from common.data_models.referrals import Referral
 from common.data_models.treatment import Treatment
 from .. import config
-from ..models.chameleon_imaging import ChameleonImaging
 from ..models.chameleon_labs import ChameleonLabs
 from ..models.chameleon_main import ChameleonMain, Departments
 from ..models.chameleon_measurements import sheba_measurement_codes
 from ..models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes
-from ..models.chameleon_referrals import ChameleonReferrals
 from ..utils import sql_statements, utils
 
 logger = logbook.Logger(__name__)
+
+SHEBA_IMAGING_STATUS = {
+    103: ImagingStatus.performed,  # הסתיימה
+    106: ImagingStatus.ordered,  # שובץ
+    108: ImagingStatus.performed,  # לא פוענח
+    109: ImagingStatus.performed,  # לא פוענח
+    111: ImagingStatus.analyzed,  # פוענח
+    112: ImagingStatus.analyzed,  # הוקלד
+    114: ImagingStatus.verified,  # אושרר
+    119: ImagingStatus.ordered,  # הפנייה חדשה
+    120: ImagingStatus.cancelled,  # בוטל ע"י טכנאי
+    122: ImagingStatus.cancelled,  # הפנייה נדחתה
+    125: ImagingStatus.ordered,  # הפנייה אושרה
+    127: ImagingStatus.analyzed,  # הפנייה לאישור
+}
+
+SHEBA_IMAGING_LEVEL = {
+    0: NotificationLevel.normal,
+    1: NotificationLevel.panic,
+}
 
 
 class SqlToDal(object):
@@ -44,9 +65,9 @@ class SqlToDal(object):
             with self.session() as session:
                 for row in session.execute(sql_statements.query_patient_admission.format(unit=department.value)):
                     patients.append(ExternalPatient(
-                        external_id=row["Id"],
+                        external_id=row["MedicalRecord"],
                         info=Person(
-                            id_=row["Id"],
+                            id_=row["MedicalRecord"],
                             name=row["FullName"],
                             gender='male' if row["Gender"] == 'זכר' else 'female',
                             birthdate=utils.datetime_utc_serializer(row["BirthDate"]),
@@ -101,15 +122,18 @@ class SqlToDal(object):
             logger.debug('Getting imaging for `{}`...', department.name)
             imaging = {}
             with self.session() as session:
-                for image in session.query(ChameleonImaging). \
-                        join(ChameleonMain, ChameleonImaging.patient_id == ChameleonMain.patient_id). \
-                        where(
-                    (ChameleonMain.unit == department.name) &
-                    (ChameleonMain.discharge_time == None)
-                ).order_by(ChameleonImaging.order_date.desc()):
-                    imaging.setdefault(image.patient_id, []).append(image.to_dal().dict(exclude_unset=True))
-            res = requests.post(f'{self.dal_url}/departments/{department.name}/imaging',
-                                json={'images': imaging})
+                for row in session.execute(sql_statements.query_images.format(unit=department.value)):
+                    imaging.setdefault(row['MedicalRecord'], []).append(Image(
+                        external_id=row['OrderNumber'],
+                        patient_id=row['MedicalRecord'],
+                        at=row['OrderDate'].astimezone(pytz.UTC).isoformat(),
+                        title=row['TestName'],
+                        status=SHEBA_IMAGING_STATUS.get(row['OrderStatus']),
+                        interpretation=row['Result'],
+                        level=SHEBA_IMAGING_LEVEL.get(row['Panic'], NotificationLevel.normal),
+                        link='https://localhost/',
+                    ).dict(exclude_unset=True))
+            res = requests.post(f'{self.dal_url}/departments/{department.name}/imaging', json={'images': imaging})
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run imaging handler.')
@@ -156,14 +180,23 @@ class SqlToDal(object):
         try:
             logger.debug('Getting referrals for `{}`...', department.name)
             referrals = {}
+            treatments = {}
             with self.session() as session:
-                for referral in session.query(ChameleonReferrals). \
-                        join(ChameleonMain, ChameleonReferrals.patient_id == ChameleonMain.patient_id). \
-                        where(
-                    (ChameleonMain.unit == department.name) &
-                    (ChameleonMain.discharge_time == None)
-                ).order_by(ChameleonReferrals.order_date.desc()):
-                    referrals.setdefault(referral.patient_id, []).append(referral.to_dal().dict(exclude_unset=True))
+                for row in session.execute(sql_statements.query_refferals.format(unit=department.value)):
+                    if row['MedicalLicense']:
+                        treatments.setdefault(row['MedicalRecord'], Treatment()).doctors.append(
+                            f'{row["Title"]} {row["FirstName"]} {row["LastName"]} (מ.ר. {row["MedicalLicense"]})'
+                        )
+                    else:
+                        referrals.setdefault(row['MedicalRecord'], []).append(Referral(
+                            external_id=row['ReferralId'],
+                            patient_id=row['MedicalRecord'],
+                            at=row['ReferralDate'].astimezone(pytz.UTC).isoformat(),
+                            to=row['LastName'],
+                        ).dict(exclude_unset=True))
+            res = requests.post(f'{self.dal_url}/departments/{department.name}/treatments',
+                                json={record: treatments[record].dict(exclude_unset=True) for record in treatments})
+            res.raise_for_status()
             res = requests.post(f'{self.dal_url}/departments/{department.name}/referrals',
                                 json={'referrals': referrals})
             res.raise_for_status()
