@@ -10,7 +10,11 @@ export const createContext = (defaultValue) => {
     const Provider = ({url, updateURL, socketURL, defaultValue = undefined, onError, ...props}) => {
         const [counter, setCounter] = useState(0);
         const [{loading, value}, setValue] = useState({loading: true, value: defaultValue});
-        const {lastMessage} = useWebSocket(`ws://${window.location.host}/api/sync/ws`,
+
+        // When the website is served over HTTPs, the browser blocks non-TLS websocket connections.
+        const websocketScheme = window.location.protocol.startsWith("https") ? "wss" : "ws";
+
+        const {lastMessage} = useWebSocket(`${websocketScheme}://${window.location.host}/api/sync/ws`,
             {
                 queryParams: {key: socketURL || url},
                 retryOnError: true,
@@ -90,4 +94,3 @@ export const createContext = (defaultValue) => {
 
     return {withData: withData, Provider: Provider, context: context}
 }
-
