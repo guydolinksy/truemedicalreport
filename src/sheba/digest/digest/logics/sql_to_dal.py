@@ -160,17 +160,17 @@ class SqlToDal(object):
             logger.debug('Getting free_text for `{}`...', department.name)
             infos = {}
             with self.session() as session:
-                for free_text in session.query(ChameleonMedicalText). \
-                        join(ChameleonMain, ChameleonMedicalText.patient_id == ChameleonMain.patient_id).where(
-                    (ChameleonMain.unit == department.name) &
-                    (ChameleonMain.discharge_time == None)
-                ).filter(ChameleonMedicalText.medical_text_code.in_([
-                    FreeTextCodes.DOCTOR_VISIT.value, FreeTextCodes.NURSE_SUMMARY.value
-                ])):
-                    free_text.update_intake(infos.setdefault(free_text.patient_id, Intake()))
+                for row in session.execute(sql_statements.query_intake.format(unit=department.value)):
+                    if row['TextCode'] == FreeTextCodes.DOCTOR_VISIT.value:
+                        intake = infos.setdefault(row['MedicalRecord'], Intake())
+                        intake.nurse_description = row['MedicalText']
+                        intake.nurse_seen_time = row['DocumentingTime'].astimezone(pytz.UTC).isoformat()
+                    elif row['TextCode'] == FreeTextCodes.NURSE_SUMMARY.value:
+                        intake = infos.setdefault(row['MedicalRecord'], Intake())
+                        intake.doctor_seen_time = row['DocumentingTime'].astimezone(pytz.UTC).isoformat()
             res = requests.post(
                 f'{self.dal_url}/departments/{department.name}/intake',
-                json={'intakes': {patient: infos[patient].dict(exclude_unset=True) for patient in infos}}
+                json={'intakes': {record: infos[record].dict(exclude_unset=True) for record in infos}}
             )
             res.raise_for_status()
         except HTTPError:

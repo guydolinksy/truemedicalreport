@@ -141,3 +141,18 @@ WHERE
     AND rpp.End_Date IS NULL
     AND mr.Unit = {unit}
 """
+
+query_intake = """
+SELECT
+    d.Field AS TextCode,
+    d.[Medical_Record] AS MedicalRecord,
+    d.[Description_Text] AS MedicalText,
+    d.[Entry_Date] AS DocumentingTime
+FROM [Chameleon].[dbo].[Descriptions] AS d
+JOIN [Chameleon].[dbo].[MedicalRecords] AS mr ON d.Medical_Record = mr.Medical_Record
+JOIN [Chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON mr.Medical_Record = rpp.Medical_Record
+WHERE
+    d.Delete_Date IS NULL
+    AND rpp.End_Date IS NULL
+    AND mr.Unit = {unit}
+"""
