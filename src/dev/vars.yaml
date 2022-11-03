@@ -12,7 +12,8 @@ ingress-nginx:
       enabled: false
 sheba:
   input:
-    type: internal
+    internal:
+      enabled: true
 mongodb:
   service:
     type: NodePort

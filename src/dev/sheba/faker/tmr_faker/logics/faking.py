@@ -12,12 +12,12 @@ from sqlalchemy.orm import Session
 from common.data_models.image import ImagingTypes, ImagingStatus
 from common.data_models.labs import LabCategories, LabTestType
 from common.data_models.notification import NotificationLevel
-from digest.models.arc_patient import ARCPatient
-from digest.models.chameleon_imaging import ChameleonImaging
-from digest.models.chameleon_labs import ChameleonLabs
-from digest.models.chameleon_main import ChameleonMain, Departments
-from digest.models.chameleon_measurements import ChameleonMeasurements
-from digest.models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
+# from digest.models.arc_patient import ARCPatient
+# from digest.models.chameleon_imaging import ChameleonImaging
+# from digest.models.chameleon_labs import ChameleonLabs
+# from digest.models.chameleon_main import ChameleonMain, Departments
+# from digest.models.chameleon_measurements import ChameleonMeasurements
+# from digest.models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
 from .. import config
 from ..utils import sql_statements
 
@@ -25,10 +25,10 @@ logger = logbook.Logger(__name__)
 
 
 class FakeMain(object):
-    def __init__(self, arc_connection=None):
-        arc_connection = arc_connection or config.arc_connection
+    def __init__(self, chameleon_connection=None):
+        chameleon_connection = chameleon_connection or config.chameleon_connection
         connect_args = {'autocommit': True}
-        self._engine = create_engine(arc_connection, connect_args=connect_args)
+        self._engine = create_engine(chameleon_connection, connect_args=connect_args)
         self.faker: Faker = Faker('he-IL')
 
     @contextlib.contextmanager

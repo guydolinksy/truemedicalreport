@@ -54,6 +54,7 @@ class Image(BaseModel):
                 ImagingStatus.performed: 'בוצע',
                 ImagingStatus.analyzed: 'פוענח',
                 ImagingStatus.verified: 'אושרר',
+                ImagingStatus.cancelled: 'בוטל',
             }[kwargs['status']]
 
         super(Image, self).__init__(**kwargs)

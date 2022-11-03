@@ -84,18 +84,12 @@ input:
 
 global: &global
   fullname:
-    arc: &arc-fullname tmr-sheba-arc
     chameleon: &chameleon-fullname sbwnd81c
     faker: &faker-fullname tmr-sheba-faker
   servicePort:
-    arc: 1433
     chameleon: 1433
     faker: 80
 
-arc:
-  global:
-    <<: *global
-  fullnameOverride: *arc-fullname
 chameleon:
   global:
     <<: *global

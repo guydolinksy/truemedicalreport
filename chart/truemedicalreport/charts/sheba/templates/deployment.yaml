@@ -32,9 +32,9 @@ spec:
           image: {{ $.Values.global.helpers.busybox.image }}
           command: ["sh", "-c", "until nc -z {{ .Values.global.fullname.dal }} {{ .Values.global.servicePort.dal }}; do sleep 1; done"]
         {{- if .Values.input.internal.enabled }}
-        - name: 'check-arc'
+        - name: 'check-chameleon'
           image: {{ $.Values.global.helpers.busybox.image }}
-          command: ["sh", "-c", "until nc -z {{ .Values.global.fullname.arc }} {{ .Values.global.servicePort.arc }}; do sleep 1; done"]
+          command: ["sh", "-c", "until nc -z {{ .Values.global.fullname.chameleon }} {{ .Values.global.servicePort.chameleon }}; do sleep 1; done"]
         {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -45,9 +45,9 @@ spec:
           env:
             - name: 'DAL_CONNECTION'
               value: '"http://{{ .Values.global.fullname.dal }}:{{ .Values.global.servicePort.dal }}/dal"'
-            - name: 'ARC_CONNECTION'
+            - name: 'CHAMELEON_CONNECTION'
               {{- if .Values.input.internal.enabled }}
-              value: '"mssql+pyodbc://sa:Password123@{{ .Values.global.fullname.arc }}:{{ .Values.global.servicePort.arc }}/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"'
+              value: '"mssql+pyodbc://sa:Password123@{{ .Values.global.fullname.chameleon }}:{{ .Values.global.servicePort.chameleon }}/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"'
               {{- else }}
               valueFrom:
                 secretKeyRef:

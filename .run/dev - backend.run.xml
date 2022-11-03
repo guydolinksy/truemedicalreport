@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="dev - backend" type="docker-deploy" factoryName="dockerfile" folderName="build" singleton="false" server-name="Docker">
+  <configuration default="false" name="dev - backend" type="docker-deploy" factoryName="dockerfile" folderName="dev" singleton="false" server-name="Docker">
     <deployment type="dockerfile">
       <settings>
         <option name="imageTag" value="guydo/tmr-backend:dev" />

@@ -28,9 +28,9 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
-        - name: 'check-arc'
+        - name: 'check-chameleon'
           image: {{ $.Values.global.helpers.busybox.image }}
-          command: [ "sh", "-c", "until nc -z {{ .Values.global.fullname.arc }} {{ .Values.global.servicePort.arc }}; do sleep 1; done" ]
+          command: [ "sh", "-c", "until nc -z {{ .Values.global.fullname.chameleon }} {{ .Values.global.servicePort.chameleon }}; do sleep 1; done" ]
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -38,8 +38,8 @@ spec:
           image: "{{ .Values.image.repository }}:{{ if .Values.global.devMode.enabled }}{{ .Values.image.tag | default "dev" }}{{ else }}{{ .Values.image.tag | default .Chart.AppVersion }}{{ end }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: 'ARC_CONNECTION'
-              value: '"mssql+pyodbc://sa:Password123@{{ .Values.global.fullname.arc }}:{{ .Values.global.servicePort.arc }}/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"'
+            - name: 'CHAMELEON_CONNECTION'
+              value: '"mssql+pyodbc://sa:Password123@{{ .Values.global.fullname.chameleon }}:{{ .Values.global.servicePort.chameleon }}/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"'
           {{- if .Values.global.devMode.enabled }}
           volumeMounts: {{ if not (len .Values.devMappings) }}[ ]{{ end }}
             {{- range $index, $value := .Values.devMappings }}

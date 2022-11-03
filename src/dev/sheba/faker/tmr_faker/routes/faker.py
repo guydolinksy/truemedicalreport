@@ -4,7 +4,7 @@ from fastapi_utils.tasks import repeat_every
 
 from tmr_faker.logics.faking import FakeMain
 from digest.logics.utils import inject_dependencies
-from digest.models.chameleon_main import Departments
+from digest.logics.sql_to_dal import Departments
 
 faker_router = APIRouter()
 

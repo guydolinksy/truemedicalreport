@@ -1,4 +1,5 @@
 import contextlib
+from enum import Enum
 
 import logbook
 import pytz
@@ -10,16 +11,13 @@ from sqlalchemy.orm import Session
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
 from common.data_models.image import ImagingStatus, Image
+from common.data_models.labs import Laboratory, LabStatus, CategoriesInHebrew
 from common.data_models.measures import Measure, MeasureType
 from common.data_models.notification import NotificationLevel
 from common.data_models.patient import Intake, ExternalPatient, Person
 from common.data_models.referrals import Referral
 from common.data_models.treatment import Treatment
 from .. import config
-from ..models.chameleon_labs import ChameleonLabs
-from ..models.chameleon_main import ChameleonMain, Departments
-from ..models.chameleon_measurements import sheba_measurement_codes
-from ..models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes
 from ..utils import sql_statements, utils
 
 logger = logbook.Logger(__name__)
@@ -46,11 +44,11 @@ SHEBA_IMAGING_LEVEL = {
 
 
 class SqlToDal(object):
-    def __init__(self, arc_connection=None, dal_url=None):
+    def __init__(self, chameleon_connection=None, dal_url=None):
         self.dal_url = dal_url or config.dal_url
 
-        arc_connection = arc_connection or config.arc_connection
-        self._engine = create_engine(arc_connection)
+        chameleon_connection = chameleon_connection or config.chameleon_connection
+        self._engine = create_engine(chameleon_connection)
 
     @contextlib.contextmanager
     def session(self):
@@ -143,12 +141,25 @@ class SqlToDal(object):
             logger.debug('Getting labs for `{}`...', department.name)
             labs = {}
             with self.session() as session:
-                for lab_data in session.query(ChameleonLabs). \
-                        join(ChameleonMain, ChameleonLabs.patient_id == ChameleonMain.patient_id).where(
-                    (ChameleonMain.unit == department.name) &
-                    (ChameleonMain.discharge_time == None)
-                ).order_by(ChameleonLabs.patient_id):
-                    labs.setdefault(lab_data.patient_id, []).append(lab_data.to_initial_dal().dict(exclude_unset=True))
+                for row in session.execute(sql_statements.query_labs.format(unit=department.value)):
+                    at = row["OrderDate"].astimezone(pytz.UTC).isoformat()
+                    labs.setdefault(row['MedicalRecord'], []).append(Laboratory(
+                        patient_id=row['MedicalRecord'],
+                        external_id=f'{row["MedicalRecord"]}#{at}#{row["TestCode"]}',
+                        at=at,
+                        test_type_id=row["TestCode"],
+                        test_type_name=row["TestName"],
+                        category_id=int(str(row["TestCode"])[0:4]),
+                        category_name=CategoriesInHebrew[int(str(row["TestCode"])[0:4])],
+                        test_tube_id=9,
+                        panic_min_warn_bar=None,
+                        min_warn_bar=row["NormMinimum"],
+                        max_warn_bar=row["NormMaximum"],
+                        panic_max_warn_bar=None,
+                        status=(LabStatus.ordered if row["collectiondate"] is None else
+                                LabStatus.collected if row["ResultTime"] is None else
+                                LabStatus.analyzed)
+                    ).dict(exclude_unset=True))
             res = requests.post(f'{self.dal_url}/departments/{department.name}/labs',
                                 json={"labs": labs})
             res.raise_for_status()
@@ -163,11 +174,11 @@ class SqlToDal(object):
                 for row in session.execute(sql_statements.query_intake.format(unit=department.value)):
                     if row['TextCode'] == FreeTextCodes.DOCTOR_VISIT.value:
                         intake = infos.setdefault(row['MedicalRecord'], Intake())
-                        intake.nurse_description = row['MedicalText']
-                        intake.nurse_seen_time = row['DocumentingTime'].astimezone(pytz.UTC).isoformat()
+                        intake.doctor_seen_time = row['DocumentingTime'].astimezone(pytz.UTC).isoformat()
                     elif row['TextCode'] == FreeTextCodes.NURSE_SUMMARY.value:
                         intake = infos.setdefault(row['MedicalRecord'], Intake())
-                        intake.doctor_seen_time = row['DocumentingTime'].astimezone(pytz.UTC).isoformat()
+                        intake.nurse_description = row['MedicalText']
+                        intake.nurse_seen_time = row['DocumentingTime'].astimezone(pytz.UTC).isoformat()
             res = requests.post(
                 f'{self.dal_url}/departments/{department.name}/intake',
                 json={'intakes': {record: infos[record].dict(exclude_unset=True) for record in infos}}
@@ -226,3 +237,27 @@ class SqlToDal(object):
             logger.exception("No Data Fetched From SQL", e)
         except HTTPError:
             logger.exception('Could not update treatments')
+
+
+sheba_measurement_codes = {
+    1: MeasureType.temperature,
+    3: MeasureType.pulse,
+    4: MeasureType.weight,
+    9: MeasureType.urine_output,
+    12: MeasureType.breaths,
+    13: MeasureType.saturation,
+    23: MeasureType.systolic,
+    24: MeasureType.diastolic,
+    61: MeasureType.pain,
+    542: MeasureType.enriched_saturation,
+}
+
+
+class Departments(Enum):
+    er = '1184000'
+
+
+class FreeTextCodes(Enum):
+    DOCTOR_VISIT = 1
+    DOCTOR_SUMMARY = 889
+    NURSE_SUMMARY = 901

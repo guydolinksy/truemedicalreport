@@ -4,9 +4,8 @@ import logbook
 from fastapi import APIRouter, Depends
 from fastapi_utils.tasks import repeat_every
 
-from ..logics.sql_to_dal import SqlToDal
+from ..logics.sql_to_dal import SqlToDal, Departments
 from ..logics.utils import inject_dependencies, safe
-from ..models.chameleon_main import Departments
 
 updater_router = APIRouter()
 
