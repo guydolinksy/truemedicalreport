@@ -42,6 +42,29 @@ SHEBA_IMAGING_LEVEL = {
     1: NotificationLevel.panic,
 }
 
+SHEBA_MEASUREMENT_CODES = {
+    1: MeasureType.temperature,
+    3: MeasureType.pulse,
+    4: MeasureType.weight,
+    9: MeasureType.urine_output,
+    12: MeasureType.breaths,
+    13: MeasureType.saturation,
+    23: MeasureType.systolic,
+    24: MeasureType.diastolic,
+    61: MeasureType.pain,
+    542: MeasureType.enriched_saturation,
+}
+
+
+class Departments(Enum):
+    er = '1184000'
+
+
+class FreeTextCodes(Enum):
+    DOCTOR_VISIT = 1
+    DOCTOR_SUMMARY = 889
+    NURSE_SUMMARY = 901
+
 
 class SqlToDal(object):
     def __init__(self, chameleon_connection=None, dal_url=None):
@@ -99,14 +122,14 @@ class SqlToDal(object):
             measures = {}
             with self.session() as session:
                 for row in session.execute(sql_statements.query_measurements.format(
-                        unit=department.value, codes='({})'.format(','.join(map(str, sheba_measurement_codes)))
+                        unit=department.value, codes='({})'.format(','.join(map(str, SHEBA_MEASUREMENT_CODES)))
                 )):
                     measures.setdefault(row['MedicalRecord'], []).append(Measure(
                         value=row['Result'],
                         minimum=row['MinValue'],
                         maximum=row['MaxValue'],
                         at=utils.datetime_utc_serializer(row['At']),
-                        type=sheba_measurement_codes.get(row['Code'], MeasureType.other),
+                        type=SHEBA_MEASUREMENT_CODES.get(row['Code'], MeasureType.other),
                         external_id=row['MeasureID'],
                     ).dict(exclude_unset=True))
             res = requests.post(f'{self.dal_url}/departments/{department.name}/measurements',
@@ -237,27 +260,3 @@ class SqlToDal(object):
             logger.exception("No Data Fetched From SQL", e)
         except HTTPError:
             logger.exception('Could not update treatments')
-
-
-sheba_measurement_codes = {
-    1: MeasureType.temperature,
-    3: MeasureType.pulse,
-    4: MeasureType.weight,
-    9: MeasureType.urine_output,
-    12: MeasureType.breaths,
-    13: MeasureType.saturation,
-    23: MeasureType.systolic,
-    24: MeasureType.diastolic,
-    61: MeasureType.pain,
-    542: MeasureType.enriched_saturation,
-}
-
-
-class Departments(Enum):
-    er = '1184000'
-
-
-class FreeTextCodes(Enum):
-    DOCTOR_VISIT = 1
-    DOCTOR_SUMMARY = 889
-    NURSE_SUMMARY = 901
