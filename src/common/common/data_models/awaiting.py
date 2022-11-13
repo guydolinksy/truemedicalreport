@@ -4,10 +4,10 @@ from pydantic import BaseModel
 
 
 class Awaiting(BaseModel):
-    subtype: str
-    name: str
-    since: str
-    limit: int
+    subtype: str = 'u'
+    name: str = 'u'
+    since: str = ''
+    limit: int = 30
     completed: bool = False
 
     class Config:

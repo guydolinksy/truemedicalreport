@@ -112,6 +112,7 @@ class SqlToDal(object):
                                 json={'admissions': patients})
             res.raise_for_status()
 
+            return {'admissions': patients}
         except HTTPError:
             logger.exception('Could not run admissions handler.')
 
@@ -135,6 +136,7 @@ class SqlToDal(object):
             res = requests.post(f'{self.dal_url}/departments/{department.name}/measurements',
                                 json={'measurements': measures})
             res.raise_for_status()
+            return {'measurements': measures}
         except HTTPError:
             logger.exception('Could not run measurements handler.')
 
@@ -149,13 +151,14 @@ class SqlToDal(object):
                         patient_id=row['MedicalRecord'],
                         at=row['OrderDate'].astimezone(pytz.UTC).isoformat(),
                         title=row['TestName'],
-                        status=SHEBA_IMAGING_STATUS.get(row['OrderStatus']),
+                        status=SHEBA_IMAGING_STATUS.get(row['OrderStatus'], ImagingStatus.unknown),
                         interpretation=row['Result'],
                         level=SHEBA_IMAGING_LEVEL.get(row['Panic'], NotificationLevel.normal),
                         link='https://localhost/',
                     ).dict(exclude_unset=True))
             res = requests.post(f'{self.dal_url}/departments/{department.name}/imaging', json={'images': imaging})
             res.raise_for_status()
+            return {'images': imaging}
         except HTTPError:
             logger.exception('Could not run imaging handler.')
 
@@ -179,36 +182,53 @@ class SqlToDal(object):
                         min_warn_bar=row["NormMinimum"],
                         max_warn_bar=row["NormMaximum"],
                         panic_max_warn_bar=None,
-                        status=(LabStatus.ordered if row["collectiondate"] is None else
-                                LabStatus.collected if row["ResultTime"] is None else
-                                LabStatus.analyzed)
+                        # status=(LabStatus.ordered if row["collectiondate"] is None else
+                        #         LabStatus.collected if row["ResultTime"] is None else
+                        #         LabStatus.analyzed)
+                        status=(LabStatus.ordered if row["ResultTime"] is None else LabStatus.analyzed)
+
                     ).dict(exclude_unset=True))
             res = requests.post(f'{self.dal_url}/departments/{department.name}/labs',
                                 json={"labs": labs})
             res.raise_for_status()
+            return {"labs": labs}
         except HTTPError as e:
             logger.exception(f'Could not run labs handler. {e}')
 
-    def update_intake(self, department: Departments):
+    def update_doctor_intake(self, department: Departments):
         try:
-            logger.debug('Getting free_text for `{}`...', department.name)
+            logger.debug('Getting doctor intake for `{}`...', department.name)
             infos = {}
             with self.session() as session:
-                for row in session.execute(sql_statements.query_intake.format(unit=department.value)):
-                    if row['TextCode'] == FreeTextCodes.DOCTOR_VISIT.value:
-                        intake = infos.setdefault(row['MedicalRecord'], Intake())
-                        intake.doctor_seen_time = row['DocumentingTime'].astimezone(pytz.UTC).isoformat()
-                    elif row['TextCode'] == FreeTextCodes.NURSE_SUMMARY.value:
-                        intake = infos.setdefault(row['MedicalRecord'], Intake())
-                        intake.nurse_description = row['MedicalText']
-                        intake.nurse_seen_time = row['DocumentingTime'].astimezone(pytz.UTC).isoformat()
+                for row in session.execute(sql_statements.query_doctor_intake.format(unit=department.value)):
+                    intake = infos.setdefault(row['MedicalRecord'], Intake())
+                    intake.doctor_seen_time = row['DocumentingTime'].astimezone(pytz.UTC).isoformat()
             res = requests.post(
                 f'{self.dal_url}/departments/{department.name}/intake',
                 json={'intakes': {record: infos[record].dict(exclude_unset=True) for record in infos}}
             )
             res.raise_for_status()
+            return {'intakes': {record: infos[record].dict(exclude_unset=True) for record in infos}}
         except HTTPError:
-            logger.exception('Could not run basic medical handler.')
+            logger.exception('Could not run doctor intake handler.')
+
+    def update_nurse_intake(self, department: Departments):
+        try:
+            logger.debug('Getting nurse intake for `{}`...', department.name)
+            infos = {}
+            with self.session() as session:
+                for row in session.execute(sql_statements.query_nurse_intake.format(unit=department.value)):
+                    intake = infos.setdefault(row['MedicalRecord'], Intake())
+                    intake.nurse_description = row['MedicalText']
+                    intake.nurse_seen_time = row['DocumentingTime'].astimezone(pytz.UTC).isoformat()
+            res = requests.post(
+                f'{self.dal_url}/departments/{department.name}/intake',
+                json={'intakes': {record: infos[record].dict(exclude_unset=True) for record in infos}}
+            )
+            res.raise_for_status()
+            return {'intakes': {record: infos[record].dict(exclude_unset=True) for record in infos}}
+        except HTTPError:
+            logger.exception('Could not run nurse intake handler.')
 
     def update_referrals(self, department: Departments):
         try:
@@ -234,6 +254,8 @@ class SqlToDal(object):
             res = requests.post(f'{self.dal_url}/departments/{department.name}/referrals',
                                 json={'referrals': referrals})
             res.raise_for_status()
+            return {'treatments': {record: treatments[record].dict(exclude_unset=True) for record in treatments},
+                    'referrals': referrals}
         except HTTPError:
             logger.exception('Could not run referrals handler.')
 
@@ -247,6 +269,7 @@ class SqlToDal(object):
                         Treatment(destination=row["UnitName"] or row["Decision"]).dict(exclude_unset=True)
             res = requests.post(f'{self.dal_url}/departments/{department.name}/treatments', json=treatments)
             res.raise_for_status()
+            return {'treatments': treatments}
         except IndexError as e:
             logger.exception("No Data Fetched From SQL", e)
         except HTTPError:
@@ -255,7 +278,7 @@ class SqlToDal(object):
     def update_medicines(self, department: Departments):
         medicine = {}
         try:
-            pass
+            return {'medicines': medicine}
         except IndexError as e:
             logger.exception("No Data Fetched From SQL", e)
         except HTTPError:

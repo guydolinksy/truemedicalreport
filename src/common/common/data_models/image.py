@@ -17,6 +17,7 @@ class ImagingStatus(Enum):
     analyzed = 'analyzed'
     verified = 'verified'
     cancelled = 'cancelled'
+    unknown = 'unknown'
 
 
 class ImagingNotification(Notification):
@@ -55,6 +56,7 @@ class Image(BaseModel):
                 ImagingStatus.analyzed: 'פוענח',
                 ImagingStatus.verified: 'אושרר',
                 ImagingStatus.cancelled: 'בוטל',
+                ImagingStatus.unknown: 'לא ידוע',
             }[kwargs['status']]
 
         super(Image, self).__init__(**kwargs)

@@ -359,13 +359,15 @@ class MedicalDal:
             )
             patient = self.get_patient({"external_id": patient_id})
             updated = patient.copy()
-            updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(updated_referral.to, Awaiting(
-                subtype=updated_referral.to,
-                name=updated_referral.to,
-                since=updated_referral.at,
-                completed=updated_referral.completed,
-                limit=3600,
-            ))
+            updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
+                f'referral#{updated_referral.at}', Awaiting(
+                    subtype=updated_referral.to,
+                    name=updated_referral.to,
+                    since=updated_referral.at,
+                    completed=updated_referral.completed,
+                    limit=3600,
+                )
+            )
             await self.atomic_update_patient(
                 {"_id": ObjectId(patient.oid)},
                 updated.dict(include={'awaiting'}, exclude_unset=True),
@@ -382,17 +384,19 @@ class MedicalDal:
                 referral.dict(exclude_unset=True),
             )
             patient = self.get_patient({"external_id": patient_id})
-            updated_referral = patient.copy()
-            updated_referral.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(referral.to, Awaiting(
-                subtype=referral.to,
-                name=referral.to,
-                since=referral.at,
-                completed=referral.completed,
-                limit=3600,
-            ))
+            updated = patient.copy()
+            updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
+                f'referral#{referral.at}', Awaiting(
+                    subtype=referral.to,
+                    name=referral.to,
+                    since=referral.at,
+                    completed=referral.completed,
+                    limit=3600,
+                )
+            )
             await self.atomic_update_patient(
                 {"_id": ObjectId(patient.oid)},
-                updated_referral.dict(include={'awaiting'}, exclude_unset=True),
+                updated.dict(include={'awaiting'}, exclude_unset=True),
             )
 
     async def upsert_treatment(self, external_id: str, treatment: Treatment):

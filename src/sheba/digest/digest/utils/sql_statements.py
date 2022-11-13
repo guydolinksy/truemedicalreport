@@ -143,18 +143,30 @@ WHERE
 """
 
 query_labs = """
-    patient_id = Column("id", Integer(), primary_key=True)
-    order_date = Column("OrderDate", DateTime(), primary_key=True)
-    test_type_id = Column("TestCode", Integer(), primary_key=True)
-    test_type_name = Column("TestName", VARCHAR(100))
-    result = Column("result", VARCHAR(100))
-    min_warn_bar = Column("NormMinimum", Float())
-    max_warn_bar = Column("NormMaximum", Float())
-    collection_date = Column("collectiondate", DateTime())
-    result_time = Column("ResultTime", DateTime())
-    """+"""
+select 
+ev.Medical_Record AS MedicalRecord,
+labr.test_code AS TestCode,
+lhs.Name AS Category, 
+labr.Test_Name AS TestName,
+concat(labr.Result,' ',labr.Units)  AS Result,
+labr.Norm_Minimum AS NormMinimum,
+labr.Norm_Maximum AS NormMaximum,
+labr.Result_Date AS OrderDate,
+labr.Result_Entry_Date AS ResultTime
+from sbwnd81c.Results.dbo.LabResults AS labr
+INNER JOIN sbwnd81c.chameleon.dbo.LabHeadlinesSort AS lhs ON lhs.Code = labr.Heading
+INNER JOIN sbwnd81c.chameleon.dbo.emergancyvisits AS ev ON ev.patient = labr.Patient and ev.admission_date > GETDATE()-3
+WHERE ev.Delete_Date  IS NULL
+AND ev.Release_Time  IS NULL
+AND labr.Delete_Date IS NULL
+and ev.unit = {unit}
+and  labr.patient not like '999%'
+and ev.admission_date > GETDATE()-3
+and labr.Result_Entry_Date >= ev.admission_date
+"""
+
+query_doctor_intake = """
 SELECT
-    d.Field AS TextCode,
     d.[Medical_Record] AS MedicalRecord,
     d.[Description_Text] AS MedicalText,
     d.[Entry_Date] AS DocumentingTime
@@ -163,21 +175,21 @@ JOIN [Chameleon].[dbo].[MedicalRecords] AS mr ON d.Medical_Record = mr.Medical_R
 JOIN [Chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON mr.Medical_Record = rpp.Medical_Record
 WHERE
     d.Delete_Date IS NULL
+    AND d.Field = 1
     AND rpp.End_Date IS NULL
     AND mr.Unit = {unit}
 """
 
-query_intake = """
+query_nurse_intake = """
 SELECT
-    d.Field AS TextCode,
-    d.[Medical_Record] AS MedicalRecord,
-    d.[Description_Text] AS MedicalText,
-    d.[Entry_Date] AS DocumentingTime
-FROM [Chameleon].[dbo].[Descriptions] AS d
-JOIN [Chameleon].[dbo].[MedicalRecords] AS mr ON d.Medical_Record = mr.Medical_Record
+    tc.[Medical_Record] AS MedicalRecord,
+    tc.Remarks AS MedicalText,
+    tc.[Entry_Date] AS DocumentingTime
+FROM [Chameleon].[dbo].[TreatmentCause] AS tc
+JOIN [Chameleon].[dbo].[MedicalRecords] AS mr ON tc.Medical_Record = mr.Medical_Record
 JOIN [Chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON mr.Medical_Record = rpp.Medical_Record
 WHERE
-    d.Delete_Date IS NULL
+    tc.Delete_Date IS NULL
     AND rpp.End_Date IS NULL
     AND mr.Unit = {unit}
 """

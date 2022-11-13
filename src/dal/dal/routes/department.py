@@ -88,7 +88,11 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
             updated = {referral.external_id: referral for referral in referrals[patient]}
             existing = {referral.external_id: referral for referral in dal.get_patient_referrals(patient)}
             for referral in set(updated) | set(existing):
-                await dal.upsert_referral(previous=existing.get(referral), referral=updated.get(referral))
+                await dal.upsert_referral(
+                    patient_id=patient,
+                    previous=existing.get(referral),
+                    referral=updated.get(referral)
+                )
         except PatientNotFound:
             logger.debug('Cannot update patient {} referrals', patient)
 

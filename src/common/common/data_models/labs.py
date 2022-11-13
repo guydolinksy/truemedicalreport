@@ -13,6 +13,7 @@ class LabCategories(Enum):
     gases = 1020
     biochemistry = 1050
     coagulation = 1080
+    unknown = 1201
 
 
 class LabStatus(Enum):
@@ -26,6 +27,7 @@ CategoriesInHebrew = {
     LabCategories.gases.value: "בדיקת גזים",
     LabCategories.biochemistry.value: "ביוכימיה",
     LabCategories.coagulation.value: "תפקודי קרישה",
+    LabCategories.unknown.value: "אחר",
 }
 
 StatusInHebrew = {
