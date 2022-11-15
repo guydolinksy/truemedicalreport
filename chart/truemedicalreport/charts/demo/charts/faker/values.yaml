@@ -1,11 +1,11 @@
-# Default values for demo-db.
+# Default values for faker.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: guydo/tmr-sheba-chameleon
+  repository: guydo/tmr-demo-faker
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -36,6 +36,12 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+ingress:
+  enabled: true
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -64,7 +70,9 @@ affinity: {}
 enabled: false
 
 devMappings:
-  - relativePath: src/dev/sheba/chameleon/initialize
-    containerPath: /opt/chameleon/initialize
-
-dependencies: []
+  - relativePath: src/dev/demo/faker/tmr_faker
+    containerPath: /opt/faker/tmr_faker
+  - relativePath: src/demo/digest/digest
+    containerPath: /opt/digest/digest
+  - relativePath: src/common/common
+    containerPath: /opt/common/common

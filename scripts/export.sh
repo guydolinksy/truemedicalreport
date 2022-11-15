@@ -1,1 +1,1 @@
- docker save guydo/tmr-{backend,frontend,dal,sheba-digest}:latest guydo/tmr-{backend,frontend,dal,sheba-digest,sheba-arc,sheba-chameleon,sheba-faker}:dev > images.docker
+ docker save guydo/tmr-{backend,frontend,dal,sheba-digest}:latest guydo/tmr-{backend,frontend,dal,sheba-digest}:dev > images.docker

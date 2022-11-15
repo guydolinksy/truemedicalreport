@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: guydo/tmr-sheba-chameleon
+  repository: guydo/tmr-demo-demo-db
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -64,7 +64,7 @@ affinity: {}
 enabled: false
 
 devMappings:
-  - relativePath: src/dev/sheba/chameleon/initialize
-    containerPath: /opt/chameleon/initialize
+  - relativePath: src/dev/demo/demo-db/initialize
+    containerPath: /opt/demo-db/initialize
 
 dependencies: []

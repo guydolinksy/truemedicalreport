@@ -38,11 +38,16 @@ frontend:
   global:
     <<: *global
   fullnameOverride: *frontend-fullname
-sheba:
+demo:
   global:
     <<: *global
   fullnameOverride: *digest-fullname
   enabled: true
+sheba:
+  global:
+    <<: *global
+  fullnameOverride: *digest-fullname
+  enabled: false
   input:
     external:
       secretName: ''
