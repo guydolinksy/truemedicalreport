@@ -60,10 +60,12 @@ spec:
             httpGet:
               path: /dal/docs
               port: http
+            failureThreshold: 10
           readinessProbe:
             httpGet:
               path: /dal/docs
               port: http
+            failureThreshold: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- if .Values.global.devMode.enabled }}
