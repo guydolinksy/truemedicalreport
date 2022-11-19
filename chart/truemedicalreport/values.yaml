@@ -42,7 +42,7 @@ demo:
   global:
     <<: *global
   fullnameOverride: *digest-fullname
-  enabled: true
+  enabled: false
 sheba:
   global:
     <<: *global

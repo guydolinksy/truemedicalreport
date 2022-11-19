@@ -10,12 +10,19 @@ ingress-nginx:
   controller:
     admissionWebhooks:
       enabled: false
-sheba:
-  input:
-    internal:
-      enabled: true
 mongodb:
   service:
     type: NodePort
     nodePorts:
       mongodb: 32717
+
+# Note, these two are mutually exclusive.
+# set either sheba.enable / demo.enable to true, NOT BOTH.
+sheba:
+  enabled: false  # This...
+  input:
+    internal:
+      enabled: true
+
+demo:
+  enabled: true  # ...or this. but not both
