@@ -1,7 +1,9 @@
-import os
-
+import environs
 import uvicorn
 
-debug = bool(os.getenv('DEBUG'))
+env = environs.Env()
 
-uvicorn.run("dal.app:app", host="0.0.0.0", port=80, debug=debug)
+debug = env.bool('DEBUG')
+port = env.int("DAL_PORT", 80)
+
+uvicorn.run("dal.app:app", host="0.0.0.0", port=port, debug=debug)
