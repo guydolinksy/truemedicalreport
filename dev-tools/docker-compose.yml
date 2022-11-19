@@ -11,8 +11,9 @@ services:
     volumes:
       - mongo-data:/data/db
 
-  chameleon-db:  # Stand in for the real DBs
-    hostname: sbwn81c
+  chameleon-sheba:  # Stand in for the real DBs
+    profiles:
+      - sheba
     build:
       dockerfile: dev/sheba/chameleon/Dockerfile
       context: ../src
@@ -24,6 +25,22 @@ services:
       - "TZ=UTC"
     ports:
       - "1433:1433"
+
+  chameleon-demo: # Stand in for the real DBs
+    profiles:
+      - demo
+    build:
+      dockerfile: dev/demo/demo-db/Dockerfile
+      context: ../src
+    volumes:
+      - "./dev/demo/demo-db/initialize:/opt/dmo-db/initialize"
+    environment:
+      - "MSSQL_TCP_PORT=1433"
+      - "SA_PASSWORD=Password123"
+      - "TZ=UTC"
+    ports:
+      - "1433:1433"
+
 
 volumes:
   mongo-data:
