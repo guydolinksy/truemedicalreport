@@ -52,8 +52,10 @@ spec:
               value: '"http://{{ .Values.global.fullname.dal }}:{{ .Values.global.servicePort.dal }}/dal"'
             - name: 'SYNC_CONNECTION'
               value: '"ws://{{ .Values.global.fullname.dal }}:{{ .Values.global.servicePort.dal }}/dal/sync/ws"'
-            - name: 'TMR_BACKEND_PORT'
+            - name: 'PORT'
               value: '80'
+            - name: 'DEBUG'
+              value: {{ if .Values.global.devMode.enabled }} '1' {{ else }} '0' {{ end }}
           {{- if .Values.global.devMode.enabled }}
           volumeMounts: {{ if not (len .Values.devMappings) }}[]{{ end }}
             {{- range $index, $value := .Values.devMappings }}

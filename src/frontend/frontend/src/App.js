@@ -11,7 +11,7 @@ import {SETTINGS_URL, SettingsView} from "./pages/SettingsView";
 import {useMatomo} from "@datapunt/matomo-tracker-react";
 import {UserTheme} from "./themes/ThemeContext";
 import {HashMatch} from "./components/HashMatch";
-import {AltContextProvider} from "./hooks/AltContext";
+import {TimeContextProvider} from "./components/RelativeTime";
 
 
 function App() {
@@ -24,7 +24,7 @@ function App() {
 
     return (
         <ConfigProvider direction={"rtl"}>
-            <AltContextProvider>
+            <TimeContextProvider>
                 <div className={"App"} style={{backgroundColor: "#dcdcdc"}} dir={"rtl"}>
                     <Router>
                         <HashMatch>
@@ -48,7 +48,7 @@ function App() {
                         </HashMatch>
                     </Router>
                 </div>
-            </AltContextProvider>
+            </TimeContextProvider>
         </ConfigProvider>
     );
 }

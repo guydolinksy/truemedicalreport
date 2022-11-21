@@ -12,3 +12,4 @@ logbook
 websockets
 fastapi-login
 werkzeug
+environs

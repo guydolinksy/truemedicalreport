@@ -12,7 +12,7 @@ import {CustomIcon} from "./CustomIcon";
 import moment from "moment";
 import {useTime} from 'react-timer-hook';
 import {hashMatchContext} from "./HashMatch";
-import {altContext} from "../hooks/AltContext";
+import {RelativeTime} from "./RelativeTime"
 
 export const patientDataContext = createContext({
     data: {},
@@ -25,7 +25,6 @@ export const MIN_WIDTH = 400, MAX_WIDTH = 500;
 const Measure = ({patient, measure, value, icon, title}) => {
     const navigate = useNavigate();
     const {trackEvent} = useMatomo()
-    const {isAltDown} = useContext(altContext)
 
     return <div onClick={patient && value ? e => {
         navigate(`#info#${patient}#measures#${measure}`);
@@ -40,13 +39,9 @@ const Measure = ({patient, measure, value, icon, title}) => {
                 <CustomIcon status={value.is_valid ? 'processing' : 'error'} icon={value.effect.kind}/>}
         </div>
         <div>
-            {(value && value.value) &&
-                <Moment style={{fontSize: 12}} interval={1000} durationFromNow={!isAltDown} format={'H:mm'}
-                        date={value.at}/>}
+            {(value && value.value) && <RelativeTime style={{fontSize: 12}} date={value.at}/>}
             {(value && value.value && value.effect.kind) && '|'}
-            {(value && value.effect.kind) &&
-                <Moment style={{fontSize: 12}} interval={1000} durationFromNow={!isAltDown} format={'H:mm'}
-                        date={value.effect.at}/>}
+            {(value && value.effect.kind) && <RelativeTime style={{fontSize: 12}} date={value.effect.at}/>}
             {(!value || (!value.value && !value.effect.kind)) && '-'}
         </div>
     </div>
@@ -71,7 +66,6 @@ const PatientAge = ({patient}) => {
 export const PatientStatus = ({patient, style}) => {
     const navigate = useNavigate();
     const {value, loading} = useContext(patientDataContext.context);
-    const {isAltDown} = useContext(altContext);
     const {minutes} = useTime({});
     const [arrivalClass, setArrivalClass] = useState(undefined);
     const {trackEvent} = useMatomo()
@@ -98,9 +92,7 @@ export const PatientStatus = ({patient, style}) => {
         <div><Tooltip overlay={'תלונה עיקרית'}>{value.intake.complaint}</Tooltip>
             &nbsp;-&nbsp;
             <Tooltip overlay={'זמן מקבלה'}>
-                <Moment className={arrivalClass} interval={1000} durationFromNow={!isAltDown} format={'H:mm'}
-                        date={value.admission.arrival}/>
-
+                <RelativeTime className={arrivalClass} date={value.admission.arrival}/>
             </Tooltip></div>
         <div><ArrowLeftOutlined/>&nbsp;{value.treatment.destination || '(לא הוחלט)'}</div>
 
@@ -160,7 +152,6 @@ const PatientAwaiting = () => {
 const PatientAwaitingIcon = ({awaitings, type}) => {
     const [status, setStatus] = useState();
     const {seconds} = useTime({});
-    const {isAltDown} = useContext(altContext);
 
     useEffect(() => {
         if (Object.values(awaitings).some(({since, limit, completed}) =>
@@ -179,7 +170,7 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
         {pending.length > 0 && <b>ממתין.ה עבור (דקות):</b>}
         {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, since}, i) =>
             <div key={i}>
-                {name} - <Moment interval={1000} durationFromNow={!isAltDown} format={'H:mm'} date={since}/>
+                {name} - <RelativeTime date={since}/>
             </div>
         )}
         {pending.length > 0 && completed.length > 0 && <span><br/></span>}
