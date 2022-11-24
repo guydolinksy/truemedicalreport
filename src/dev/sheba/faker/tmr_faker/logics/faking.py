@@ -37,40 +37,31 @@ class FakeMain(object):
             yield session
 
     wings = {'אגף B1', 'אגף B2', 'אגף B3', 'אגף הולכים', 'חדר הלם'}
-
-    def _admit_patient(self, department: Departments, wing):
+    department = {'Name': '', 'id': '1184000'}
+    def _admit_patient(self, department, wing):
         patient_id = f'{self.faker.pyint(min_value=1, max_value=999999999)}'
-        p = ARCPatient()
-        p.patient_id = patient_id
-        p.gender = 'M' if random.randint(0, 1) else 'F'
-        if p.gender == 'M':
-            p.first_name, p.last_name = self.faker.last_name_male(), self.faker.first_name_male()
-        elif p.gender == 'F':
-            p.first_name, p.last_name = self.faker.last_name_female(), self.faker.first_name_female()
+        patient_id = patient_id
+        gender = 'M' if random.randint(0, 1) else 'F'
+        if gender == 'M':
+            first_name, last_name = self.faker.last_name_male(), self.faker.first_name_male()
+        elif gender == 'F':
+            first_name, last_name = self.faker.last_name_female(), self.faker.first_name_female()
         if random.randint(0, 100) > 5:
-            p.birthdate = datetime.datetime.combine(self.faker.date_of_birth(), datetime.time()).astimezone(pytz.UTC)
-
-        with self.session() as session:
-            session.add(p)
-            session.commit()
-
-        o = ChameleonMain()
-        o.patient_id = patient_id
-        o.unit = department.name
-        o.unit_wing = wing
-        # o.bed_num = random.choice(list(self.wings[wing] - self.get_used_beds(wing)))
-        o.arrival = self.faker.past_datetime('-30m').astimezone(pytz.UTC)
-
-        o.main_cause = random.choice([
+            birthdate = datetime.datetime.combine(self.faker.date_of_birth(), datetime.time()).astimezone(pytz.UTC)
+        arrival = self.faker.past_datetime('-30m').astimezone(pytz.UTC)
+        main_cause = random.choice([
             'קוצר נשימה', 'כאבים בחזה', 'סחרחורות', 'חבלת ראש', 'חבלת פנים', 'חבלה בגפיים',
             'בחילות ו/או הקאות', 'כאב ראש', 'כאב בטן', 'לאחר התעלפות'
         ])
-        o.esi = random.choice([1, 2, 3, 4])
+        esi = random.choice([1, 2, 3, 4])
 
         with self.session() as session:
-            session.add(o)
+            session.execute(sql_statements.insert_admit_patient.format(ev_MedicalRecord=patient_id, Gender=gender,
+                                                                        First_Name=first_name, Last_Name=last_name,
+                                                                        Birth_Date=birthdate, UnitName=department["Name"],
+                                                                        Wing=wing, Admission_Date=arrival,
+                                                                        MainCause=main_cause, ESI=esi))
             session.commit()
-
         return patient_id
 
     def _discharge_patient(self, chameleon_id):
@@ -82,8 +73,10 @@ class FakeMain(object):
             patient.discharge_time = datetime.datetime.now()
             session.commit()
 
-    def _get_patients(self, department: Departments, wing):
+    def _get_patients(self, department, wing):
         with self.session() as session:
+            result = [i[0] for i in session.execute(sql_statements.select_patients_list.format())]
+
             result = {patient.patient_id for patient in session.query(ChameleonMain).filter(
                 (ChameleonMain.unit == department.name) &
                 (ChameleonMain.unit_wing == wing) &

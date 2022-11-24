@@ -9,3 +9,9 @@ delete_room_placement = """EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNCATE 
 delete_admission_treatment_decision = """EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNCATE TABLE  dbo.AdmissionTreatmentDecision' """
 
 delete_responsible_doctor = """EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNCATE TABLE  dbo.ResponsibleDoctor' """
+
+insert_admit_patient = """insert into DemoDB.dbo.patient_info_plus
+(ev_MedicalRecord,Gender,First_Name,Last_Name,Birth_Date,UnitName,Wing,Admission_Date,MainCause,ESI)
+values({ev_MedicalRecord},{Gender},{First_Name},{Last_Name},{Birth_Date},{UnitName},{Wing}
+,{Admission_Date},{MainCause},{ESI}) """
+
