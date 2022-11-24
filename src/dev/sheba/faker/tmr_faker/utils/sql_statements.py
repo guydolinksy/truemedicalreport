@@ -24,3 +24,12 @@ AND p.Delete_Date IS NULL"""
 update_discharge_patient = """ Update DemoDB.dbo.patient_info_plus 
 set End_Date= getdate() 
 WHERE ev_MedicalRecord={ev_MedicalRecord} and End_Date is null """
+
+insert_measurements = """INSERT INTO  DemoDB.dbo.measurements (ev_MedicalRecord,m.Device_monitor_date,
+m.Device_monitor_Parameter,m.Faker_Name,m.Monitoring_Min_Value,m.Monitoring_Max_Value,m.Device_monitor_result ) 
+values({ev_MedicalRecord},'{Device_monitor_date}',{Device_monitor_Parameter},'{Faker_Name}',{Monitoring_Min_Value},
+{Monitoring_Max_Value},'{Device_monitor_result}') """
+
+insert_images = """INSERT INTO DemoDB.dbo.images(ev_MedicalRecord,TestOrders_Test_Date,AuxTest_Name,
+TestOrders_Order_Status) VALUES({ev_MedicalRecord},'{TestOrders_Test_Date}','{AuxTest_Name}',
+{TestOrders_Order_Status}) """
