@@ -12,6 +12,15 @@ delete_responsible_doctor = """EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNC
 
 insert_admit_patient = """insert into DemoDB.dbo.patient_info_plus
 (ev_MedicalRecord,Gender,First_Name,Last_Name,Birth_Date,UnitName,Wing,Admission_Date,MainCause,ESI)
-values({ev_MedicalRecord},{Gender},{First_Name},{Last_Name},{Birth_Date},{UnitName},{Wing}
-,{Admission_Date},{MainCause},{ESI}) """
+values({ev_MedicalRecord},'{Gender}','{First_Name}','{Last_Name}','{Birth_Date}','{UnitName}','{Wing}'
+,'{Admission_Date}','{MainCause}','{ESI}') """
 
+select_patients_list = """ SELECT distinct p.ev_MedicalRecord FROM DemoDB.dbo.patient_info_plus p
+WHERE UnitName='{UnitName}'
+AND Wing='{unit_wing}'
+AND p.End_Date IS NULL
+AND p.Delete_Date IS NULL"""
+
+update_discharge_patient = """ Update DemoDB.dbo.patient_info_plus 
+set End_Date= getdate() 
+WHERE ev_MedicalRecord={ev_MedicalRecord} and End_Date is null """

@@ -38,6 +38,7 @@ class FakeMain(object):
 
     wings = {'אגף B1', 'אגף B2', 'אגף B3', 'אגף הולכים', 'חדר הלם'}
     department = {'Name': '', 'id': '1184000'}
+
     def _admit_patient(self, department, wing):
         patient_id = f'{self.faker.pyint(min_value=1, max_value=999999999)}'
         patient_id = patient_id
@@ -57,31 +58,23 @@ class FakeMain(object):
 
         with self.session() as session:
             session.execute(sql_statements.insert_admit_patient.format(ev_MedicalRecord=patient_id, Gender=gender,
-                                                                        First_Name=first_name, Last_Name=last_name,
-                                                                        Birth_Date=birthdate, UnitName=department["Name"],
-                                                                        Wing=wing, Admission_Date=arrival,
-                                                                        MainCause=main_cause, ESI=esi))
+                                                                       First_Name=first_name, Last_Name=last_name,
+                                                                       Birth_Date=birthdate,
+                                                                       UnitName=department["Name"],
+                                                                       Wing=wing, Admission_Date=arrival,
+                                                                       MainCause=main_cause, ESI=esi))
             session.commit()
         return patient_id
 
     def _discharge_patient(self, chameleon_id):
         with self.session() as session:
-            patient = session.query(ChameleonMain).where(
-                (ChameleonMain.patient_id == chameleon_id) &
-                (ChameleonMain.discharge_time == None)
-            ).first()
-            patient.discharge_time = datetime.datetime.now()
+            session.execute(sql_statements.update_discharge_patient.format(ev_MedicalRecord=chameleon_id))
             session.commit()
 
     def _get_patients(self, department, wing):
         with self.session() as session:
-            result = [i[0] for i in session.execute(sql_statements.select_patients_list.format())]
-
-            result = {patient.patient_id for patient in session.query(ChameleonMain).filter(
-                (ChameleonMain.unit == department.name) &
-                (ChameleonMain.unit_wing == wing) &
-                (ChameleonMain.discharge_time == None)
-            )}
+            result = [i[0] for i in session.execute(sql_statements.select_patients_list. \
+                                                    format(UnitName=department["Name"], unit_wing=wing))]
             return result
 
     def _generate_measurements(self, chameleon_id=None, department=None, wing=None):
