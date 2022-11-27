@@ -12,12 +12,12 @@ class ImagingTypes(Enum):
 
 
 class ImagingStatus(Enum):
-    ordered = 'ordered'
-    performed = 'performed'
-    analyzed = 'analyzed'
-    verified = 'verified'
-    cancelled = 'cancelled'
-    unknown = 'unknown'
+    ordered = 1
+    performed = 2
+    analyzed = 3
+    verified = 4
+    cancelled = 5
+    unknown = 6
 
 
 class ImagingNotification(Notification):

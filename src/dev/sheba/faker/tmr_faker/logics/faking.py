@@ -257,9 +257,12 @@ class FakeMain(object):
             description = f'{type_name[type_]} {location}'
             status = random.choice(list(ImagingStatus)).value
             level = random.choice(list(NotificationLevel)).value
+            order_number = random.randint(1000000000000, 9999999999999)
             # link = self.faker.url()
             with self.session() as session:
-                session.execute(sql_statements.insert_images.format( ev_MedicalRecord=patient_id, TestOrders_Test_Date=order_date, AuxTest_Name=description))
+                session.execute(sql_statements.insert_images.format( ev_MedicalRecord=patient_id, TestOrders_Test_Date=order_date,
+                                                                     AuxTest_Name=description,TestDates_Panic =level,
+                                                                     TestOrders_Order_Num=order_number,TestOrders_Order_Status=status))
                 session.commit()
 
     def _generate_labs(self, chameleon_id=None, department=None, wing=None):
@@ -277,29 +280,28 @@ class FakeMain(object):
             order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC)
             collection_date = self.faker.date_time_between_dates('-10m', '-8m').astimezone(pytz.UTC)
             for test_type_id, test_type_name in enumerate(LabTestType[category]):
-                lab_result = ChameleonLabs()
-                lab_result.patient_id = patient
-                lab_result.order_date = order_date
-                lab_result.test_type_id = f'{category.value}{test_type_id:04}'
-                # lab_result.test_tube_id = random.randint(1, 3)
-                lab_result.test_type_name = test_type_name
-                lab_result.min_warn_bar = self.faker.pyfloat(min_value=20.0,
+                patient_id = patient
+                order_date = order_date
+                test_type_id = f'{category.value}{test_type_id:04}'
+                # test_tube_id = random.randint(1, 3)
+                test_type_name = test_type_name
+                min_warn_bar = self.faker.pyfloat(min_value=20.0,
                                                              max_value=40.0, right_digits=2)
-                lab_result.panic_min_warn_bar = self.faker.pyfloat(min_value=0.0,
+                panic_min_warn_bar = self.faker.pyfloat(min_value=0.0,
                                                                    max_value=39.9, right_digits=2)
-                lab_result.max_warn_bar = self.faker.pyfloat(min_value=80.0,
+                max_warn_bar = self.faker.pyfloat(min_value=80.0,
                                                              max_value=100.0, right_digits=2)
-                lab_result.panic_max_warn_bar = self.faker.pyfloat(min_value=100.0,
+                panic_max_warn_bar = self.faker.pyfloat(min_value=100.0,
                                                                    max_value=130.0, right_digits=2)
 
                 if step > 30:
-                    lab_result.collection_date = collection_date
+                    collection_date = collection_date
                     if step > 65:
                         if random.randint(0, 1):
-                            lab_result.result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC)
-                            lab_result.result = self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2)
+                            result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC)
+                            result = self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2)
                 with self.session() as session:
-                    session.add(copy.deepcopy(lab_result))
+                    session.execute(sql_statements.insert_labs.format(ev_MedicalRecord=patient_id,LR_Test_code=,Lab_Headline_Name=,LR_Test_Name=,LR_Result=,LR_Norm_Minimum=,LR_Norm_Maximum=,LR_Result_Date=,LR_Result_Entry_Date=,LR_Units=))
                     session.commit()
 
     def _generate_referrals_dates(self, chameleon_id=None, department=None, wing=None):

@@ -9,11 +9,11 @@ from .severity import Severity
 
 
 class LabCategories(Enum):
-    completeBloodCount = 1001
-    gases = 1020
-    biochemistry = 1050
-    coagulation = 1080
-    unknown = 1201
+    completeBloodCount = "ספירת תאים"
+    gases = "בדיקת גזים"
+    biochemistry = "ביוכימיה cבדם"
+    coagulation = "תפקודי קרישה"
+    unknown = "אחר"
 
 
 class LabStatus(Enum):
@@ -22,13 +22,13 @@ class LabStatus(Enum):
     analyzed = 3
 
 
-CategoriesInHebrew = {
-    LabCategories.completeBloodCount.value: "ספירת תאים",
-    LabCategories.gases.value: "בדיקת גזים",
-    LabCategories.biochemistry.value: "ביוכימיה",
-    LabCategories.coagulation.value: "תפקודי קרישה",
-    LabCategories.unknown.value: "אחר",
-}
+# CategoriesInHebrew = {
+#     LabCategories.completeBloodCount.value: "ספירת תאים",
+#     LabCategories.gases.value: "בדיקת גזים",
+#     LabCategories.biochemistry.value: "ביוכימיה",
+#     LabCategories.coagulation.value: "תפקודי קרישה",
+#     LabCategories.unknown.value: "אחר",
+# }
 
 StatusInHebrew = {
     LabStatus.ordered.value: "הוזמן",

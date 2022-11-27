@@ -8,6 +8,7 @@ class NotificationLevel(Enum):
     panic = 1
     # abnormal = 2
     normal = 0
+    unknown = None
 
 class NotificationType(Enum):
     lab = 'labs'
