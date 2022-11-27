@@ -30,6 +30,11 @@ m.Device_monitor_Parameter,m.Faker_Name,m.Monitoring_Min_Value,m.Monitoring_Max_
 values({ev_MedicalRecord},'{Device_monitor_date}',{Device_monitor_Parameter},'{Faker_Name}',{Monitoring_Min_Value},
 {Monitoring_Max_Value},'{Device_monitor_result}') """
 
-insert_images = """INSERT INTO DemoDB.dbo.images(ev_MedicalRecord,TestOrders_Test_Date,AuxTest_Name,
-TestOrders_Order_Status) VALUES({ev_MedicalRecord},'{TestOrders_Test_Date}','{AuxTest_Name}',
-{TestOrders_Order_Status}) """
+insert_images = """INSERT INTO DemoDB.dbo.images(ev_MedicalRecord,TestOrders_Test_Date,AuxTest_Name, 
+TestOrders_Order_Status,TestDates_Panic,TestOrders_Order_Num,TestOrders_Order_Status) VALUES({ev_MedicalRecord},'{TestOrders_Test_Date}',
+'{AuxTest_Name}', {TestOrders_Order_Status},{TestDates_Panic},'{TestOrders_Order_Num}',{TestOrders_Order_Status}) """
+
+insert_labs = """INSERT INTO DemoDB.dbo.Labs (ev_MedicalRecord,LR_Test_code,Lab_Headline_Name,LR_Test_Name,LR_Result,
+LR_Units,LR_Norm_Minimum,LR_Norm_Maximum,LR_Result_Date,LR_Result_Entry_Date) values({ev_MedicalRecord},
+{LR_Test_code},'{Lab_Headline_Name}','{LR_Test_Name}','{LR_Result}','{LR_Units}','{LR_Norm_Minimum}',
+'{LR_Norm_Maximum}','{LR_Result_Date}','{LR_Result_Entry_Date}') """
