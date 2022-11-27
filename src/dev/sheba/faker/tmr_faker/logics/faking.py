@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from common.data_models.image import ImagingTypes, ImagingStatus
-from common.data_models.labs import LabCategories, LabTestType
+from common.data_models.labs import LabCategories, LabTestType, CategoriesInHebrew
 from common.data_models.notification import NotificationLevel
 # from digest.models.arc_patient import ARCPatient
 # from digest.models.chameleon_imaging import ChameleonImaging
@@ -102,8 +102,10 @@ class FakeMain(object):
             with self.session() as session:
                 session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=patient_id,
                                                                           Device_monitor_date=at,
-                                                                          Device_monitor_Parameter=code, Faker_Name=name,
-                                                                          Monitoring_Min_Value=min_limit, Monitoring_Max_Value=max_limit,
+                                                                          Device_monitor_Parameter=code,
+                                                                          Faker_Name=name,
+                                                                          Monitoring_Min_Value=min_limit,
+                                                                          Monitoring_Max_Value=max_limit,
                                                                           Device_monitor_result=m_value))
                 session.commit()
 
@@ -128,8 +130,10 @@ class FakeMain(object):
             with self.session() as session:
                 session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=patient_id,
                                                                           Device_monitor_date=at,
-                                                                          Device_monitor_Parameter=code, Faker_Name=name,
-                                                                          Monitoring_Min_Value=min_limit, Monitoring_Max_Value=max_limit,
+                                                                          Device_monitor_Parameter=code,
+                                                                          Faker_Name=name,
+                                                                          Monitoring_Min_Value=min_limit,
+                                                                          Monitoring_Max_Value=max_limit,
                                                                           Device_monitor_result=m_value))
                 session.commit()
 
@@ -150,8 +154,10 @@ class FakeMain(object):
             with self.session() as session:
                 session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=patient_id,
                                                                           Device_monitor_date=at,
-                                                                          Device_monitor_Parameter=code, Faker_Name=name,
-                                                                          Monitoring_Min_Value=min_limit, Monitoring_Max_Value=max_limit,
+                                                                          Device_monitor_Parameter=code,
+                                                                          Faker_Name=name,
+                                                                          Monitoring_Min_Value=min_limit,
+                                                                          Monitoring_Max_Value=max_limit,
                                                                           Device_monitor_result=m_value))
                 session.commit()
 
@@ -168,7 +174,7 @@ class FakeMain(object):
                 m_value = self.faker.pyint(min_value=355, max_value=min_limit * 10) / 10.
             elif 11 <= prob < 91:
                 m_value = self.faker.pyint(min_value=min_limit * 10,
-                                                     max_value=max_limit * 10) / 10.
+                                           max_value=max_limit * 10) / 10.
             elif 91 <= prob < 98:
                 m_value = self.faker.pyint(min_value=max_limit * 10, max_value=410) / 10.
             elif 98 <= prob < 101:
@@ -177,8 +183,10 @@ class FakeMain(object):
             with self.session() as session:
                 session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=patient_id,
                                                                           Device_monitor_date=at,
-                                                                          Device_monitor_Parameter=code, Faker_Name=name,
-                                                                          Monitoring_Min_Value=min_limit, Monitoring_Max_Value=max_limit,
+                                                                          Device_monitor_Parameter=code,
+                                                                          Faker_Name=name,
+                                                                          Monitoring_Min_Value=min_limit,
+                                                                          Monitoring_Max_Value=max_limit,
                                                                           Device_monitor_result=m_value))
                 session.commit()
 
@@ -227,13 +235,17 @@ class FakeMain(object):
             with self.session() as session:
                 session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=systolic_patient_id,
                                                                           Device_monitor_date=systolic_at,
-                                                                          Device_monitor_Parameter=systolic_code, Faker_Name=systolic_name,
-                                                                          Monitoring_Min_Value=systolic_min_limit, Monitoring_Max_Value=systolic_max_limit,
+                                                                          Device_monitor_Parameter=systolic_code,
+                                                                          Faker_Name=systolic_name,
+                                                                          Monitoring_Min_Value=systolic_min_limit,
+                                                                          Monitoring_Max_Value=systolic_max_limit,
                                                                           Device_monitor_result=systolic_value))
                 session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=diastolic_patient_id,
                                                                           Device_monitor_date=diastolic_at,
-                                                                          Device_monitor_Parameter=diastolic_code, Faker_Name=diastolic_name,
-                                                                          Monitoring_Min_Value=diastolic_min_limit, Monitoring_Max_Value=diastolic_max_limit,
+                                                                          Device_monitor_Parameter=diastolic_code,
+                                                                          Faker_Name=diastolic_name,
+                                                                          Monitoring_Min_Value=diastolic_min_limit,
+                                                                          Monitoring_Max_Value=diastolic_max_limit,
                                                                           Device_monitor_result=diastolic_value))
                 session.commit()
 
@@ -253,16 +265,18 @@ class FakeMain(object):
                 ImagingTypes.ultrasound.value: 'US',
                 ImagingTypes.xray.value: 'צילום'
             }
-            location = random.choice(['ראש', 'אגן', 'בית החזה בשכיבה/ישיבה', 'מוח','בטן','עמוד שדרה'])
+            location = random.choice(['ראש', 'אגן', 'בית החזה בשכיבה/ישיבה', 'מוח', 'בטן', 'עמוד שדרה'])
             description = f'{type_name[type_]} {location}'
             status = random.choice(list(ImagingStatus)).value
             level = random.choice(list(NotificationLevel)).value
             order_number = random.randint(1000000000000, 9999999999999)
             # link = self.faker.url()
             with self.session() as session:
-                session.execute(sql_statements.insert_images.format( ev_MedicalRecord=patient_id, TestOrders_Test_Date=order_date,
-                                                                     AuxTest_Name=description,TestDates_Panic =level,
-                                                                     TestOrders_Order_Num=order_number,TestOrders_Order_Status=status))
+                session.execute(
+                    sql_statements.insert_images.format(ev_MedicalRecord=patient_id, TestOrders_Test_Date=order_date,
+                                                        AuxTest_Name=description, TestDates_Panic=level,
+                                                        TestOrders_Order_Num=order_number,
+                                                        TestOrders_Order_Status=status))
                 session.commit()
 
     def _generate_labs(self, chameleon_id=None, department=None, wing=None):
@@ -277,22 +291,23 @@ class FakeMain(object):
             if step < 10:
                 continue
             category = random.choice(list(LabCategories))
+            h_category = CategoriesInHebrew[category]
             order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC)
             collection_date = self.faker.date_time_between_dates('-10m', '-8m').astimezone(pytz.UTC)
+            order_number = random.randint(100000000, 999999999)
             for test_type_id, test_type_name in enumerate(LabTestType[category]):
                 patient_id = patient
                 order_date = order_date
-                test_type_id = f'{category.value}{test_type_id:04}'
-                # test_tube_id = random.randint(1, 3)
+                # test_type_id = f'{category.value}{test_type_id:04}'
                 test_type_name = test_type_name
                 min_warn_bar = self.faker.pyfloat(min_value=20.0,
-                                                             max_value=40.0, right_digits=2)
+                                                  max_value=40.0, right_digits=2)
                 panic_min_warn_bar = self.faker.pyfloat(min_value=0.0,
-                                                                   max_value=39.9, right_digits=2)
+                                                        max_value=39.9, right_digits=2)
                 max_warn_bar = self.faker.pyfloat(min_value=80.0,
-                                                             max_value=100.0, right_digits=2)
+                                                  max_value=100.0, right_digits=2)
                 panic_max_warn_bar = self.faker.pyfloat(min_value=100.0,
-                                                                   max_value=130.0, right_digits=2)
+                                                        max_value=130.0, right_digits=2)
 
                 if step > 30:
                     collection_date = collection_date
@@ -301,7 +316,12 @@ class FakeMain(object):
                             result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC)
                             result = self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2)
                 with self.session() as session:
-                    session.execute(sql_statements.insert_labs.format(ev_MedicalRecord=patient_id,LR_Test_code=,Lab_Headline_Name=,LR_Test_Name=,LR_Result=,LR_Norm_Minimum=,LR_Norm_Maximum=,LR_Result_Date=,LR_Result_Entry_Date=,LR_Units=))
+                    session.execute(
+                        sql_statements.insert_labs.format(ev_MedicalRecord=patient_id, LR_Test_code=order_number,
+                                                          Lab_Headline_Name=h_category, LR_Test_Name=test_type_name,
+                                                          LR_Result=result, LR_Norm_Minimum=min_warn_bar,
+                                                          LR_Norm_Maximum=max_warn_bar, LR_Result_Date=order_date,
+                                                          LR_Result_Entry_Date=result_time, LR_Units=None))
                     session.commit()
 
     def _generate_referrals_dates(self, chameleon_id=None, department=None, wing=None):
