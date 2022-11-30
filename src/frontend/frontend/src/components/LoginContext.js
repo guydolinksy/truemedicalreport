@@ -122,9 +122,22 @@ export const LoginForm = () => {
                                        name="login"
                                        onFinish={onFinish}
                                        onValuesChange={() => setError(null)}>
-            <Form.Item name="username" label="שם משתמש" rules={[{required: true, message: 'נדרש שם משתמש'}]}
+            <Form.Item name="username"
+                       label="שם משתמש"
+                       rules={[{required: true, message: 'נדרש שם משתמש'}]}
                        {...credsErrorProps}>
-                <Input prefix={<UserOutlined/>} autoComplete={"username"}  placeholder={"שם משתמש"}/>
+                <Input prefix={<UserOutlined/>}
+                       autoComplete={"username"}
+                       placeholder={"שם משתמש"}
+                       onChange={(e) => {
+                           if (e.target.value === "admin") {
+                               // Disable LDAP when logging in as admin.
+                               // Just helps the user a bit...
+                               setUsingLdapAuth(false);
+                           }
+                        }
+                       }
+                />
             </Form.Item>
             <Form.Item name={"password"} label={"סיסמה"} rules={[{required: true, message: 'נדרשת סיסמה'}]}
                        {...credsErrorProps}>

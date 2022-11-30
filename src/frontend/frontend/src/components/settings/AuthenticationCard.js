@@ -1,20 +1,6 @@
 import {Alert, Button, Card, Form, Input, Space, Switch} from "antd";
 import React, {useCallback, useEffect, useRef, useState} from "react";
-import merge from "lodash/merge";
 import Axios from "axios";
-
-const convertFormToLdapConfig = ({enabled, test_user, test_password, ...settings}) => {
-    return {
-        enabled,
-        test_user,
-        test_password,
-        settings
-    }
-}
-
-const convertLdapConfigToForm = ({settings, ...rest}) => {
-    return merge(settings, rest);
-}
 
 const toParagraphs = (items) => {
     return items.map((item, index) => <p key={index}>{item}</p>)
@@ -56,27 +42,44 @@ const LDAPAuthentication = () => {
         const s = Axios.CancelToken.source();
 
         Axios.get('/api/auth/ldap', {cancelToken: s.token}).then(response => {
-            setInitialFormValues(convertLdapConfigToForm(response.data));
+            setInitialFormValues(response.data);
             form.current.resetFields();
         }).catch(error => showError("השליפה של ההגדרות הקיימות של התאמתות LDAP נכשלה", error));
 
         return () => s.cancel();
     }, []);
 
-    const saveLdapConfig = useCallback((values) => {
-        let conf = convertFormToLdapConfig(values);
-
-        // these are not stored; the API will refuse to store the LDAP config if these are passed.
-        delete conf.test_user;
-        delete conf.test_password;
-
+    const saveLdapConfig = useCallback(({test_user, test_password, ...conf}) => {
         Axios.post('/api/auth/ldap', conf)
             .then(() => setInfo("ההגדרות נשמרו!"))
             .catch(error => showError("השמירה של ההגדרות נכשלה.", error))
     }, []);
 
-    const testLdapConfig = useCallback((values) => {
-        Axios.post('/api/auth/ldap/test', convertFormToLdapConfig(values)).then((response) => {
+    const [missingTestUser, setMissingTestUser] = useState(false);
+    const [missingTestPassword, setMissingTestPassword] = useState(false);
+
+    const testLdapConfig = useCallback(({test_user, test_password, ...conf}) => {
+        let missingInput = false;
+
+        if (!test_user) {
+            setMissingTestUser(true);
+            missingInput = true;
+        }
+
+        if (!test_password) {
+            setMissingTestPassword(true);
+            missingInput = true;
+        }
+
+        if (missingInput) {
+            return;
+        }
+
+        Axios.post('/api/auth/ldap/test', {
+            test_user,
+            test_password,
+            ...conf
+        }).then((response) => {
             let groups = "המשתמש לא חבר באף קבוצה."
             if (response.data.groups) {
                 groups = response.data.groups.join(" | ")
@@ -91,11 +94,16 @@ const LDAPAuthentication = () => {
         }).catch(error => showError("המשתמש לא אומת בהצלחה.", error));
     }, []);
 
-    const testLdapConfigGroupsOnly = useCallback((values) => {
-        let conf = convertFormToLdapConfig(values)
-        delete conf.test_password;  // The user is not authenticated when just checking their groups
+    const testLdapConfigGroupsOnly = useCallback(({test_user, test_password, ...conf}) => {
+        if (!test_user) {
+            setMissingTestUser(true);
+            return;
+        }
 
-        Axios.post('/api/auth/ldap/test_get_user_groups', conf).then((response) => {
+        Axios.post('/api/auth/ldap/test_get_user_groups', {
+            test_user,
+            ...conf,
+        }).then((response) => {
             if (response.data.groups) {
                 setInfo(toParagraphs([`המשתמש חבר בקבוצות הבאות:`].concat(response.data.groups)))
             } else {
@@ -103,6 +111,9 @@ const LDAPAuthentication = () => {
             }
         }).catch(error => showError("חלה תקלה בעת תשאול קבוצות המשתמש.", error));
     }, []);
+
+    const testUserErrorProps = missingTestUser ? {hasFeedback: true, validateStatus: "error", help: "נדרש שם משתמש לבדיקה"}: {};
+    const testPasswordErrorProps = missingTestPassword ? {hasFeedback: true, validateStatus: "error", help: "נדרשת סיסמה למשתמש הבדיקה"}: {};
 
     return <Form ref={form}
                  name={"ldap"}
@@ -138,7 +149,7 @@ const LDAPAuthentication = () => {
         <Form.Item name={"bind_password"} label={"סיסמה לחיבור"} rules={[
             {required: true, message: 'יש להזין סיסמה לחיבור'}
         ]}>
-            <Input placeholder={"סיסמה לחיבור"} autoComplete={"off"}/>
+            <Input.Password placeholder={"סיסמה לחיבור"} autoComplete={"off"}/>
         </Form.Item>
         <Form.Item name={"admin_group_dn"} label={"קבוצת מנהלים"} rules={[
             {required: true, message: 'יש להזין DN לקבוצת מנהלים'}
@@ -150,11 +161,17 @@ const LDAPAuthentication = () => {
         ]}>
             <Input placeholder={"user group name (OU)"} autoComplete={"off"}/>
         </Form.Item>
-        <Form.Item name={"test_user"} label={"משתמש לבדיקה"}>
+        <Form.Item name={"test_user"}
+                   label={"משתמש לבדיקה"}
+                   onChange={() => setMissingTestUser(false)}
+                   {...testUserErrorProps}>
             <Input placeholder={"משתמש לבדיקה"} autoComplete={"off"}/>
         </Form.Item>
-        <Form.Item name={"test_password"} label={"סיסמה לבדיקה"}>
-            <Input placeholder={"סיסמה לבדיקה"} autoComplete={"off"}/>
+        <Form.Item name={"test_password"}
+                   label={"סיסמה לבדיקה"}
+                   onChange={() => setMissingTestPassword(false)}
+                   {...testPasswordErrorProps}>
+            <Input.Password placeholder={"סיסמה לבדיקה"} autoComplete={"off"} />
         </Form.Item>
         <Form.Item>
             <Space>
