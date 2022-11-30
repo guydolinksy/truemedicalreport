@@ -4,7 +4,7 @@ import {useLocation, useNavigate} from "react-router";
 import {Navigate} from "react-router-dom";
 import {useMatomo} from '@datapunt/matomo-tracker-react'
 
-import {Button, Form, Input, Spin} from 'antd';
+import {Button, Checkbox, Space, Form, Input, Spin} from 'antd';
 import {LockOutlined, UserOutlined} from "@ant-design/icons";
 import {LightTheme} from "../themes/ThemeContext";
 
@@ -69,48 +69,79 @@ export const LoginForm = () => {
     const navigate = useNavigate();
     const {search} = useLocation();
     const {user, checkUser, loadingUser} = useContext(loginContext);
-    const [error, setError] = useState(false);
+    const [error, setError] = useState(null);
 
-    const loginErrorProps = {hasFeedback: true, validateStatus: "error", help: "שם המשתמש והסיסמה אינם תואמים."};
+    const [usingLdapAuth, setUsingLdapAuth] = useState(true);
 
     const onFinish = useCallback((values) => {
-        Axios.post('/api/auth/token', values).then(() => checkUser()).catch(error => {
-            if (Axios.isCancel(error))
+        Axios.post('/api/auth/token', {
+            ...values,
+            authProviderName: usingLdapAuth ? "ldap" : "local"
+        }).then(() => checkUser()).catch(error => {
+            if (Axios.isCancel(error)) {
                 return;
-            setError(true);
+            }
+
+            let message = "חלה תקלה לא צפויה בזמן ניסיון ההתחברות";
+            let incorrectCredentials = false;
+
+            if (error.response.status === 504) {
+                message = "השרת אינו זמין"
+            } else if (error.response.status === 401) {
+                message = "שם המשתמש או הסיסמא לא נכונים."
+                incorrectCredentials = true;
+            }
+
+            // TODO: parse message from the backend, if any.
+
+            setError({
+                message,
+                incorrectCredentials
+            });
         });
-    }, [checkUser]);
+    }, [checkUser, usingLdapAuth]);
 
     useEffect(() => {
-        if (!user)
+        if (!user) {
             return;
+        }
 
         let next = (new URLSearchParams(search)).get('next');
         navigate(next ? decodeURIComponent(next) : '/');
     }, [user, search, navigate])
 
 
+    const credsErrorProps = (error && error.incorrectCredentials) ? {hasFeedback: true, validateStatus: "error"} : {};
+    const errorMsgProps = (error && error.message) ? {hasFeedback: true, validateStatus: "error", help: error.message}: {};
+
     return <>
         <Suspense fallback={<span/>}>
             <LightTheme/>
         </Suspense>
-        {loadingUser ? <Spin/> : <Form name={"login"} onFinish={onFinish} onValuesChange={() => setError(false)}>
-            <Form.Item name={"username"} label={"שם משתמש"} rules={[{required: true, message: 'נדרש שם משתמש'}]}
-                       {...(error ? loginErrorProps : {})}>
-                <Input prefix={<UserOutlined/>} autoComplete={"username"}
-                       placeholder={"שם משתמש"}/>
+        {loadingUser ? <Spin/> : <Form layout="vertical"
+                                       name="login"
+                                       onFinish={onFinish}
+                                       onValuesChange={() => setError(null)}>
+            <Form.Item name="username" label="שם משתמש" rules={[{required: true, message: 'נדרש שם משתמש'}]}
+                       {...credsErrorProps}>
+                <Input prefix={<UserOutlined/>} autoComplete={"username"}  placeholder={"שם משתמש"}/>
             </Form.Item>
             <Form.Item name={"password"} label={"סיסמה"} rules={[{required: true, message: 'נדרשת סיסמה'}]}
-                       {...(error ? loginErrorProps : {})}>
+                       {...credsErrorProps}>
                 <Input
-                    prefix={<LockOutlined/>}
-                    type={"password"} autoComplete={"current-password"}
-                    placeholder={"סיסמה"}/>
+                    prefix={<LockOutlined/>} type={"password"} autoComplete={"current-password"}  placeholder={"סיסמה"}/>
             </Form.Item>
-            <Form.Item>
-                <Button type={"primary"} htmlType={"submit"}>
-                    התחבר.י
-                </Button>
+            <Form.Item {...errorMsgProps} >
+                <Space direction="horizontal" size={15}>
+                    <Button type={"primary"} htmlType={"submit"}>התחבר.י</Button>
+                    <Space direction="horizontal" size={0}>
+                        <Checkbox checked={usingLdapAuth}
+                                  disabled={false}
+                                  onChange={(e) => setUsingLdapAuth(e.target.checked)}>
+                            משתמש ארגוני
+                        </Checkbox>
+                    </Space>
+                </Space>
             </Form.Item>
         </Form>}
     </>
