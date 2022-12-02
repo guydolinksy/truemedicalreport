@@ -71,7 +71,16 @@ export const LoginForm = () => {
     const {user, checkUser, loadingUser} = useContext(loginContext);
     const [error, setError] = useState(null);
 
+    const [checkingLdapAvailability, setCheckingLdapAvailability] = useState(true);
     const [usingLdapAuth, setUsingLdapAuth] = useState(true);
+    const [isLdapEnabled, setLdapEnabled] = useState(true);
+
+    useEffect(() => {
+        Axios.get("/api/auth/ldap-status").then(response => {
+            setLdapEnabled(response.data.enabled)
+            setCheckingLdapAvailability(false);
+        })
+    })
 
     const onFinish = useCallback((values) => {
         Axios.post('/api/auth/token', {
@@ -118,7 +127,7 @@ export const LoginForm = () => {
         <Suspense fallback={<span/>}>
             <LightTheme/>
         </Suspense>
-        {loadingUser ? <Spin/> : <Form layout="vertical"
+        {(loadingUser || checkingLdapAvailability) ? <Spin/> : <Form layout="vertical"
                                        name="login"
                                        onFinish={onFinish}
                                        onValuesChange={() => setError(null)}>
@@ -148,8 +157,8 @@ export const LoginForm = () => {
                 <Space direction="horizontal" size={15}>
                     <Button type={"primary"} htmlType={"submit"}>התחבר.י</Button>
                     <Space direction="horizontal" size={0}>
-                        <Checkbox checked={usingLdapAuth}
-                                  disabled={false}
+                        <Checkbox checked={usingLdapAuth && isLdapEnabled}
+                                  disabled={!isLdapEnabled}
                                   onChange={(e) => setUsingLdapAuth(e.target.checked)}>
                             משתמש ארגוני
                         </Checkbox>

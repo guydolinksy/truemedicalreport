@@ -1,10 +1,13 @@
+from functools import cached_property
 from typing import List, Dict
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from pymongo import MongoClient
+from starlette.status import HTTP_510_NOT_EXTENDED
 from werkzeug.local import LocalProxy
 
-from .auth import AuthProvider, LdapAuthProvider, LocalAuthProvider
+from .auth import AuthProvider
+from .auth.local import LocalAuthProvider
 from .exceptions import UnauthorizedException
 from .user import User
 from .. import config
@@ -22,7 +25,7 @@ class Authentication(object):
 
             return provider
 
-        raise UnauthorizedException(f"Unknown Auth Provider: '{name}'")
+        raise UnauthorizedException(f"Unsupported Auth Provider: '{name}'")
 
     def login(self, provider_name: str, *, username: str, password: str) -> User:
         return self._provider(provider_name).login(username, password)
@@ -48,15 +51,30 @@ class Proxy(object):
 class Settings(object):
     def __init__(self, connection):
         self.db = MongoClient(connection).app
+        self.general = Proxy(self.db.general, {})
 
         self.local_users = LocalAuthProvider(self.db.users)
-        self.ldap = LdapAuthProvider.with_settings_from_mongo(self.db.connections)
-        self.auth = Authentication([self.local_users, self.ldap])
 
-        self.general = Proxy(self.db.general, {})
+        providers = [self.local_users]
+
+        if config.LDAP_SUPPORTED:
+            providers.append(self.ldap)
+
+        self.auth = Authentication(providers)
 
     def for_user(self, username):
         return Proxy(self.db.settings, {'username': username})
+
+    @cached_property
+    def ldap(self) -> "LdapAuthProvider":  # type: ignore
+        if config.LDAP_SUPPORTED:
+            from .auth.ldap import LdapAuthProvider
+            return LdapAuthProvider.with_settings_from_mongo(self.db.connections)
+
+        raise HTTPException(
+            status_code=HTTP_510_NOT_EXTENDED,
+            detail=f"ldap login is not supported."
+        )
 
 
 def settings() -> Settings:

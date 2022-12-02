@@ -8,8 +8,7 @@ from fastapi_login import LoginManager
 from pydantic import ValidationError
 from starlette.responses import Response
 
-from ..logics.auth import LdapAuthProvider
-from ..logics.auth.ldap import LdapSettings
+from .. import config
 from ..logics.exceptions import UnauthorizedException, InvalidSettingsException, BadRequestException
 from ..logics.settings import Settings, settings, current_general_settings, Proxy, current_settings
 from ..logics.user import User
@@ -72,6 +71,19 @@ async def login(
     return True
 
 
+@auth_router.get("/user")
+def get_user(user: User = Depends(login_manager), user_settings_=Depends(user_settings)):
+    return dict(
+        user=dict(
+            user=user.username,
+            canChangePassword=user.auth_provider_name == "local",
+            admin=user.is_admin,
+            groups=user.groups,
+        ),
+        userSettings=dict(theme=getattr(user_settings_, "display", {}).get("theme", "light-theme")),
+    )
+
+
 @auth_router.post("/change-password")
 async def change_password(
     user: User = Depends(login_manager),
@@ -88,6 +100,14 @@ async def change_password(
     return True
 
 
+@auth_router.get("/ldap-status")
+async def get_ldap_status(s: Settings = Depends(settings)) -> dict:
+    return {
+        "enabled": config.LDAP_SUPPORTED and s.ldap.is_enabled(),
+        "supported": config.LDAP_SUPPORTED,
+    }
+
+
 @auth_router.get("/ldap")
 async def get_ldap_settings(_=REQUIRE_ADMIN, s: Settings = Depends(settings)) -> dict:
     return s.ldap.settings.raw
@@ -100,6 +120,8 @@ async def update_ldap_settings(_=REQUIRE_ADMIN, s: Settings = Depends(settings),
 
 @auth_router.post("/ldap/test")
 async def test_ldap_settings(_=REQUIRE_ADMIN, args=Body(...)):
+    from ..logics.auth.ldap import LdapSettings, LdapAuthProvider
+
     test_user = args.pop("test_user")
     test_password = args.pop("test_password")
 
@@ -114,6 +136,8 @@ async def test_ldap_settings(_=REQUIRE_ADMIN, args=Body(...)):
 
 @auth_router.post("/ldap/test_get_user_groups")
 async def test_ldap_settings_groups_only(_=REQUIRE_ADMIN, args=Body(...)):
+    from ..logics.auth.ldap import LdapSettings, LdapAuthProvider
+
     test_user = args.pop("test_user")
 
     try:
@@ -124,16 +148,3 @@ async def test_ldap_settings_groups_only(_=REQUIRE_ADMIN, args=Body(...)):
     provider = LdapAuthProvider.with_constant_settings(_settings)
     groups = provider.query_user_groups(username=test_user)
     return {"groups": groups}
-
-
-@auth_router.get("/user")
-def get_user(user: User = Depends(login_manager), user_settings_=Depends(user_settings)):
-    return dict(
-        user=dict(
-            user=user.username,
-            canChangePassword=user.auth_provider_name == "local",
-            admin=user.is_admin,
-            groups=user.groups,
-        ),
-        userSettings=dict(theme=getattr(user_settings_, "display", {}).get("theme", "light-theme")),
-    )
