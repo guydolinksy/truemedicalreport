@@ -4,13 +4,13 @@
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
-      <env name="DAL_CONNECTION" value="&quot;http://localhost:8081/dal&quot;" />
       <env name="PYTHONUNBUFFERED" value="1" />
+      <env name="DAL_CONNECTION" value="&quot;http://localhost:8081/dal&quot;" />
       <env name="SYNC_CONNECTION" value="&quot;ws://localhost:8081/dal/sync/ws&quot;" />
       <env name="DEBUG" value="0" />
       <env name="PORT" value="8080" />
     </envs>
-    <option name="SDK_HOME" value="$USER_HOME$/.virtualenvs/truemedicalreport/bin/python" />
+    <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />

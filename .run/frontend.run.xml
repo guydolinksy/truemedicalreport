@@ -8,6 +8,7 @@
     <node-interpreter value="project" />
     <package-manager value="npm" />
     <envs>
+      <env name="CHOKIDAR_USEPOLLING" value="true" />
       <env name="NODE_OPTIONS" value="--openssl-legacy-provider" />
       <env name="REACT_APP_TMR_PROXY_BACKEND_TO_PORT" value="8080" />
     </envs>

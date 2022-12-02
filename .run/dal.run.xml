@@ -4,13 +4,13 @@
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
+      <env name="PYTHONUNBUFFERED" value="1" />
       <env name="DAL_PORT" value="8081" />
       <env name="DEBUG" value="1" />
       <env name="MONGO_CONNECTION" value="&quot;mongodb://localhost:27017&quot;" />
-      <env name="PYTHONUNBUFFERED" value="1" />
       <env name="REDIS_CONNECTION" value="&quot;redis://localhost:6379/1&quot;" />
     </envs>
-    <option name="SDK_HOME" value="$USER_HOME$/.virtualenvs/truemedicalreport/bin/python" />
+    <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="TMR Demo" type="CompoundRunConfigurationType">
-    <toRun name="Local for Dev [demo]" type="docker-deploy" />
+    <toRun name="Local for Dev [Demo]" type="docker-deploy" />
     <toRun name="frontend" type="js.build_tools.npm" />
     <toRun name="backend" type="PythonConfigurationType" />
     <toRun name="dal" type="PythonConfigurationType" />
