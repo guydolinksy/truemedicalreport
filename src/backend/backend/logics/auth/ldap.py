@@ -41,6 +41,7 @@ class MongoLdapSettingsLoader(LdapSettingsLoader):
     def set(self, new_settings: dict) -> None:
         LdapSettings.create(new_settings)
         self.collection.replace_one({"type": self.key}, {"type": self.key, **new_settings}, upsert=True)
+        self.get.cache_clear()
 
 
 class ConstantLdapSettingsLoader(LdapSettingsLoader):
