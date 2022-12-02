@@ -1,4 +1,4 @@
-FROM node:latest AS dev
+FROM node:19.2 AS dev
 WORKDIR /opt/frontend/frontend
 
 COPY frontend/frontend/package.json /opt/frontend/frontend/package.json
