@@ -3,6 +3,7 @@ from typing import Optional
 
 import logbook
 from fastapi import Depends, APIRouter, Body
+from fastapi.params import Security
 from fastapi_login import LoginManager
 from pydantic import ValidationError
 from starlette.responses import Response
@@ -12,6 +13,7 @@ from ..logics.auth.ldap import LdapSettings
 from ..logics.exceptions import UnauthorizedException, InvalidSettingsException, BadRequestException
 from ..logics.settings import Settings, settings, current_general_settings, Proxy, current_settings
 from ..logics.user import User
+
 
 logger = logbook.Logger(__name__)
 auth_router = APIRouter()
@@ -25,6 +27,9 @@ def _create_login_manager() -> LoginManager:
 
 
 login_manager = _create_login_manager()
+
+ADMIN_SCOPE = "admin"
+REQUIRE_ADMIN = Security(login_manager, scopes=[ADMIN_SCOPE])
 
 
 @login_manager.user_loader()
@@ -60,7 +65,8 @@ async def login(
         data=dict(
             # The data in sub (JWT "subject") must conform to whatever load_user(...) expects.
             sub=user.dict()
-        )
+        ),
+        scopes=([ADMIN_SCOPE] if user.is_admin else [])
     )
     login_manager.set_cookie(response, access_token)
     return True
@@ -83,17 +89,17 @@ async def change_password(
 
 
 @auth_router.get("/ldap")
-async def get_ldap_settings(_=Depends(login_manager), s: Settings = Depends(settings)) -> dict:
+async def get_ldap_settings(_=REQUIRE_ADMIN, s: Settings = Depends(settings)) -> dict:
     return s.ldap.settings.raw
 
 
 @auth_router.post("/ldap")
-async def update_ldap_settings(_=Depends(login_manager), s: Settings = Depends(settings), values=Body(...)):
+async def update_ldap_settings(_=REQUIRE_ADMIN, s: Settings = Depends(settings), values=Body(...)):
     s.ldap.update_settings(values)
 
 
 @auth_router.post("/ldap/test")
-async def test_ldap_settings(_=Depends(login_manager), args=Body(...)):
+async def test_ldap_settings(_=REQUIRE_ADMIN, args=Body(...)):
     test_user = args.pop("test_user")
     test_password = args.pop("test_password")
 
@@ -107,7 +113,7 @@ async def test_ldap_settings(_=Depends(login_manager), args=Body(...)):
 
 
 @auth_router.post("/ldap/test_get_user_groups")
-async def test_ldap_settings_groups_only(_=Depends(login_manager), args=Body(...)):
+async def test_ldap_settings_groups_only(_=REQUIRE_ADMIN, args=Body(...)):
     test_user = args.pop("test_user")
 
     try:
