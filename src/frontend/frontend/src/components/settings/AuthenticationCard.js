@@ -42,7 +42,13 @@ const LDAPAuthentication = () => {
         const s = Axios.CancelToken.source();
 
         Axios.get('/api/auth/ldap', {cancelToken: s.token}).then(response => {
-            setInitialFormValues(response.data);
+            // Previously, the actual values were in the 'settings' key.
+            // Nowadays, it's flat, but we support the old style for easy upgrade.
+            const { settings, ...rest } = response.data;
+            setInitialFormValues({
+                ...(settings || {}),
+                ...rest
+            });
             form.current.resetFields();
         }).catch(error => showError("השליפה של ההגדרות הקיימות של התאמתות LDAP נכשלה", error));
 

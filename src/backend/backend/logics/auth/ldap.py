@@ -218,6 +218,8 @@ class LdapSettings:
 
     @classmethod
     def create_disabled(cls, raw: Dict[str, Any] = None) -> "LdapSettings":
+        raw = raw or {}
+        raw["enabled"] = False
         return LdapSettings(
             raw=raw or {},
             enabled=False,
