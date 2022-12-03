@@ -1,5 +1,4 @@
 import contextlib
-import functools
 from typing import Tuple, Set, List, Any, Dict
 
 import ldap
@@ -121,7 +120,7 @@ class LdapAuthProvider(AuthProvider):
                 settings.base,
                 ldap.SCOPE_SUBTREE,
                 settings.filter.format(username=username),
-                attrlist=[LDAP_MEMBER_IN_GROUP_ATTRIBUTE]
+                attrlist=[LDAP_MEMBER_IN_GROUP_ATTRIBUTE],
             )
 
         if len(r) == 0:
@@ -182,19 +181,6 @@ class LdapSettings:
     raw: Dict[str, Any]
 
     timeout_seconds: int = 10
-
-    def __hash__(self):
-        items_to_hash = []
-
-        for field in self.__dataclass_fields__.keys():
-            value = getattr(self, field)
-
-            if isinstance(value, dict):
-                items_to_hash.append(frozenset(value.items()))
-            else:
-                items_to_hash.append(value)
-
-        return hash(tuple(items_to_hash))
 
     def connect(self, *, bind: bool = False) -> LDAPObject:
         if not self.enabled:
