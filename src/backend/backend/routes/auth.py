@@ -131,7 +131,7 @@ async def test_ldap_settings(_=REQUIRE_ADMIN, args=Body(...)):
         raise BadRequestException("New setting are invalid")
 
     provider = LdapAuthProvider.with_constant_settings(_settings)
-    return provider.auth_with_groups(username=test_user, password=test_password)
+    return provider.login(username=test_user, password=test_password)
 
 
 @auth_router.post("/ldap/test_get_user_groups")

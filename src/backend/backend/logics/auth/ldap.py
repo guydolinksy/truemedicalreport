@@ -1,6 +1,5 @@
 from typing import Tuple, Set, List, Any, Dict
 
-import interruptingcow
 import ldap
 import logbook
 import pydantic.dataclasses
@@ -85,10 +84,6 @@ class LdapAuthProvider(AuthProvider):
         raise Exception("Registering users with LDAP is not supported")
 
     def login(self, username: str, password: str) -> User:
-        with interruptingcow.timeout(seconds=30, exception=TimeoutError):
-            return self.auth_with_groups(username, password)
-
-    def auth_with_groups(self, username: str, password: str) -> User:
         """
         Verifies the specified user credentials.
         Checks that the user is a member of at least one of the configured groups.
@@ -183,6 +178,8 @@ class LdapSettings:
 
     raw: Dict[str, Any]
 
+    timeout_seconds: int = 10
+
     def __hash__(self):
         items_to_hash = []
 
@@ -202,7 +199,8 @@ class LdapSettings:
 
         try:
             connection = ldap.initialize(self.uri)
-
+            connection.set_option(ldap.OPT_TIMEOUT, self.timeout_seconds)
+            connection.set_option(ldap.OPT_NETWORK_TIMEOUT, self.timeout_seconds)
             if bind:
                 connection.bind_s(self.bind_dn, self.bind_password)
         except ldap.INVALID_CREDENTIALS as e:

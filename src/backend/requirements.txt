@@ -8,7 +8,6 @@ asyncio_redis
 logbook
 websockets
 fastapi-login
-interruptingcow
 werkzeug
 environs
 cachetools
