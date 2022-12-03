@@ -1,0 +1,53 @@
+dn: ou=accounts,dc=hogwarts,dc=ac,dc=uk
+objectClass: organizationalUnit
+objectClass: top
+ou: accounts
+
+dn: uid=harry,ou=accounts,dc=hogwarts,dc=ac,dc=uk
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: posixAccount
+objectClass: simpleSecurityObject
+objectClass: top
+cn: harry
+gidNumber: 1
+homeDirectory: /home/harry
+sn: harry
+uid: harry
+uidNumber: 1
+userPassword: password
+mail: harry@hogwarts.ac.uk
+
+dn: uid=dumbledore,ou=accounts,dc=hogwarts,dc=ac,dc=uk
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: posixAccount
+objectClass: simpleSecurityObject
+objectClass: top
+cn: dumbledore
+gidNumber: 2
+homeDirectory: /home/dumbledore
+sn: dumbledore
+uid: dumbledore
+uidNumber: 2
+userPassword: krembo
+mail: headmaster@hogwarts.ac.uk
+
+dn: ou=groups,dc=hogwarts,dc=ac,dc=uk
+objectClass: organizationalUnit
+objectClass: top
+ou: groups
+
+dn: cn=tmr-admins,ou=groups,dc=hogwarts,dc=ac,dc=uk
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: tmr-admins
+uniqueMember: uid=dumbledore,ou=accounts,dc=hogwarts,dc=ac,dc=uk
+
+dn: cn=tmr-users,ou=groups,dc=hogwarts,dc=ac,dc=uk
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: tmr-users
+uniqueMember: uid=harry,ou=accounts,dc=hogwarts,dc=ac,dc=uk

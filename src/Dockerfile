@@ -8,6 +8,8 @@ COPY dal/requirements.txt /opt/dev/requirements.dal.txt
 RUN python -m pip install -r /opt/dev/requirements.dal.txt
 COPY backend/requirements.txt /opt/dev/requirements.backend.txt
 RUN python -m pip install -r /opt/dev/requirements.backend.txt
+COPY backend/requirements-ldap.txt /opt/dev/requirements-ldap.backend.txt
+RUN python -m pip install -r /opt/dev/requirements-ldap.backend.txt
 COPY sheba/digest/requirements.txt /opt/dev/requirements.digest.txt
 RUN python -m pip install -r /opt/dev/requirements.digest.txt
 
