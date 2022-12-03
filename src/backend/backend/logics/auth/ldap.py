@@ -1,3 +1,5 @@
+import contextlib
+import functools
 from typing import Tuple, Set, List, Any, Dict
 
 import ldap
@@ -88,21 +90,18 @@ class LdapAuthProvider(AuthProvider):
         Verifies the specified user credentials.
         Checks that the user is a member of at least one of the configured groups.
         """
+        settings = self.settings
         user_dn, user_groups = self._find_user(username)
 
-        if self.settings.admin_group_dn in user_groups:
+        if settings.admin_group_dn in user_groups:
             is_admin = True
-        elif self.settings.user_group_dn in user_groups:
+        elif settings.user_group_dn in user_groups:
             is_admin = False
         else:
             raise UnauthorizedException("Provided user is not a member of any authorized group")
 
-        try:
-            self.settings.connect(bind=False).bind_s(user_dn, password)
-        except ldap.INVALID_CREDENTIALS:
-            raise UnauthorizedException(f"Failed to authenticate {user_dn=}")
-        except ldap.LDAPError as e:
-            raise UnauthorizedException("General error while contacting the LDAP server") from e
+        with settings.handle_ldap_exceptions(invalid_credentials_message=f"Failed to authenticate {user_dn=}"):
+            settings.connect(bind=False).bind_s(user_dn, password)
 
         return User(
             username=username,
@@ -115,12 +114,15 @@ class LdapAuthProvider(AuthProvider):
         """
         :return: The user DN and the group DNs the user is a member of.
         """
-        r = self.settings.connect(bind=True).search_s(
-            self.settings.base,
-            ldap.SCOPE_SUBTREE,
-            self.settings.filter.format(username=username),
-            attrlist=[LDAP_MEMBER_IN_GROUP_ATTRIBUTE]
-        )
+        settings = self.settings
+
+        with settings.handle_ldap_exceptions():
+            r = settings.connect(bind=True).search_s(
+                settings.base,
+                ldap.SCOPE_SUBTREE,
+                settings.filter.format(username=username),
+                attrlist=[LDAP_MEMBER_IN_GROUP_ATTRIBUTE]
+            )
 
         if len(r) == 0:
             raise UnauthorizedException(f"Failed to find user {username}")
@@ -163,6 +165,7 @@ class LdapSettings:
     admin_group_dn: Members of this group will be considered admins of this system.
     user_group_dn: Members of this group will be considered regular non-admin users of this system.
 
+    timeout_seconds: Limits the wait time for the LDAP server (initial connection / operations, like search).
 
     raw: Raw settings, as-is from the DB. Used in the UI to enabled changing invalid settings.
     """
@@ -197,20 +200,15 @@ class LdapSettings:
         if not self.enabled:
             raise ValueError("Cannot attempt to connect to the LDAP server when disabled")
 
-        try:
+        with self.handle_ldap_exceptions(invalid_credentials_message=f"Failed to bind using {self.bind_dn=}"):
             connection = ldap.initialize(self.uri)
             connection.set_option(ldap.OPT_TIMEOUT, self.timeout_seconds)
             connection.set_option(ldap.OPT_NETWORK_TIMEOUT, self.timeout_seconds)
+
             if bind:
                 connection.bind_s(self.bind_dn, self.bind_password)
-        except ldap.INVALID_CREDENTIALS as e:
-            raise UnauthorizedException(f"Failed to bind using {self.bind_dn=}") from e
-        except ldap.SERVER_DOWN as e:
-            raise UnauthorizedException(f"Failed to contact the LDAP server at {self.uri}") from e
-        except ldap.LDAPError as e:
-            raise UnauthorizedException(f"Error while contacting/binding to the LDAP server") from e
 
-        return connection
+            return connection
 
     @classmethod
     def create(cls, raw: Dict[str, Any]) -> "LdapSettings":
@@ -245,3 +243,16 @@ class LdapSettings:
             admin_group_dn="",
             user_group_dn="",
         )
+
+    @contextlib.contextmanager
+    def handle_ldap_exceptions(self, *, invalid_credentials_message: str = "Invalid Credentials"):
+        try:
+            yield
+        except (ldap.TIMEOUT, ldap.TIMELIMIT_EXCEEDED) as e:
+            raise UnauthorizedException(f"LDAP server at {self.uri} timed out") from e
+        except ldap.SERVER_DOWN as e:
+            raise UnauthorizedException(f"Failed to contact the LDAP server at {self.uri}") from e
+        except ldap.INVALID_CREDENTIALS as e:
+            raise UnauthorizedException(invalid_credentials_message) from e
+        except ldap.LDAPError as e:
+            raise UnauthorizedException(f"Error while contacting the LDAP server at {self.uri}") from e
