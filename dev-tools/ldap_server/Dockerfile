@@ -16,11 +16,11 @@ COPY ./seed.ldif $bootstrap_dir
 # Server URI:       ldap://localhost:389
 # Base DN:          dc=hogwarts,dc=ac,dc=uk
 # User filter:      uid={username}
-# Auth DN:          cn=admin,dc=hogwarts,dc=ac,dc=uk
-# Auth Password:    admin
+# Bind DN:          cn=admin,dc=hogwarts,dc=ac,dc=uk
+# Bind Password:    admin
 
-# Admin group:      cn=tmr-admins,ou=groups,dc=hogwarts,dc=ac,dc=uk
+# Admin group:      cn=tmr-admins,dc=hogwarts,dc=ac,dc=uk
 # --> dumbledore (password: "krembo" -- get the reference?) is the only member of this group
 
-# Users group:      cn=tmr-users,ou=groups,dc=hogwarts,dc=ac,dc=uk
+# Users group:      cn=tmr-users,dc=hogwarts,dc=ac,dc=uk
 # --> harry (password: "password") is the only member of this group

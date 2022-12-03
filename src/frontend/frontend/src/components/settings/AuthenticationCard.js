@@ -193,7 +193,7 @@ const methods = {
 }
 export const AuthenticationCard = () => {
     const [activeTabKey, setActiveTabKey] = useState('ldap');
-    return <Card title={'הגדרות מערכת'} tabList={[{key: 'ldap', tab: 'ldap'}]} activeTabKey={activeTabKey}
+    return <Card title={'הגדרות מערכת'} tabList={[{key: 'ldap', tab: 'LDAP'}]} activeTabKey={activeTabKey}
                  onTabChange={setActiveTabKey}>
         {methods[activeTabKey]}
     </Card>
