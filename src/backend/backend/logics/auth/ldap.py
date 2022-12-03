@@ -166,7 +166,7 @@ class LdapSettings:
 
     timeout_seconds: Limits the wait time for the LDAP server (initial connection / operations, like search).
 
-    raw: Raw settings, as-is from the DB. Used in the UI to enabled changing invalid settings.
+    raw: Raw settings, as-is from the DB. Used in the UI to enable changing invalid settings.
     """
 
     enabled: bool
