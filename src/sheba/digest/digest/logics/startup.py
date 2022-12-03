@@ -7,7 +7,7 @@ async def init_wings():
     requests.post(f'{config.dal_url}/init/wings', json={'wings':
         [{
             'key': 'אגף B1',
-            'name': 'אגף א׳',
+            'name': 'אגף 1',
             'department': 'er',
             'columns': [
                 {'flex': "4 1 300px", 'minWidth': 300},
@@ -31,7 +31,7 @@ async def init_wings():
             ],
         }, {
             'key': 'אגף B2',
-            'name': 'אגף ב׳',
+            'name': 'אגף 2',
             'department': 'er',
             'columns': [
                 {'flex': "4 1 300px", 'minWidth': 300},
@@ -55,7 +55,7 @@ async def init_wings():
             ],
         }, {
             'key': 'אגף B3',
-            'name': 'אגף ג׳',
+            'name': 'אגף 3',
             'department': 'er',
             'columns': [
                 {'flex': "4 1 300px", 'minWidth': 300},

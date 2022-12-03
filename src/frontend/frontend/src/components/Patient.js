@@ -34,7 +34,7 @@ const Measure = ({patient, measure, value, icon, title}) => {
         <div style={{fontSize: 12}}>{title}&nbsp;<CustomIcon icon={icon}/></div>
         <div className={(value && !value.is_valid) ? 'error-text' : undefined}
              style={{userSelect: "none", fontSize: 14}}>
-            {(value && value.value) ? value.value : '?'}
+            <b>{(value && value.value) ? value.value : '?'}</b>
             {(value && value.effect.kind) &&
                 <CustomIcon status={value.is_valid ? 'processing' : 'error'} icon={value.effect.kind}/>}
         </div>
@@ -94,7 +94,9 @@ export const PatientStatus = ({patient, style}) => {
             <Tooltip overlay={'זמן מקבלה'}>
                 <RelativeTime className={arrivalClass} date={value.admission.arrival}/>
             </Tooltip></div>
-        <div><ArrowLeftOutlined/>&nbsp;{value.treatment.destination || '(לא הוחלט)'}</div>
+        <div><ArrowLeftOutlined/>&nbsp;{
+            value.treatment.destination || <span className={'error-text'}>(לא הוחלט)</span>
+        }</div>
 
     </div>
 }

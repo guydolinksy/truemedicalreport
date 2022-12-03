@@ -10,7 +10,7 @@ spec:
     - port: {{ .Values.global.servicePort.demoDB }}
       targetPort: {{ .Values.global.servicePort.demoDB }}
       {{- if .Values.global.debug }}
-      nodePort: 31433
+      nodePort: 31533
       {{- end }}
       protocol: TCP
       name: mssql
