@@ -41,6 +41,16 @@ services:
     ports:
       - "1433:1433"
 
+  # See the ldap_server Dockerfile for instructions.
+  ldap:
+    profiles:
+      - ldap
+    build:
+      dockerfile: ./Dockerfile
+      context: ./ldap_server
+    ports:
+      - "389:389"
+
 volumes:
   mongo-data:
     name: mongo-data

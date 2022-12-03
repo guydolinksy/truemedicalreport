@@ -13,6 +13,8 @@ from .base import AuthProvider
 from ..exceptions import UnauthorizedException, InvalidSettingsException
 from ..user import User
 
+LDAP_MEMBER_IN_GROUP_ATTRIBUTE = "memberOf"
+
 logger = logbook.Logger("ldap-provider")
 
 
@@ -101,7 +103,7 @@ class LdapAuthProvider(AuthProvider):
             raise UnauthorizedException("Provided user is not a member of any authorized group")
 
         try:
-            self.settings.connection.bind_s(user_dn, password)
+            self.settings.connect(bind=False).bind_s(user_dn, password)
         except ldap.INVALID_CREDENTIALS:
             raise UnauthorizedException(f"Failed to authenticate {user_dn=}")
         except ldap.LDAPError as e:
@@ -118,10 +120,11 @@ class LdapAuthProvider(AuthProvider):
         """
         :return: The user DN and the group DNs the user is a member of.
         """
-        r = self.settings.connection.search_s(
+        r = self.settings.connect(bind=True).search_s(
             self.settings.base,
             ldap.SCOPE_SUBTREE,
             self.settings.filter.format(username=username),
+            attrlist=[LDAP_MEMBER_IN_GROUP_ATTRIBUTE]
         )
 
         if len(r) == 0:
@@ -132,8 +135,8 @@ class LdapAuthProvider(AuthProvider):
 
         user_dn, user_object = r[0]
 
-        if "memberOf" in user_object:
-            groups = set(group_dn.decode() for group_dn in user_object["memberOf"])
+        if LDAP_MEMBER_IN_GROUP_ATTRIBUTE in user_object:
+            groups = set(group_dn.decode() for group_dn in user_object[LDAP_MEMBER_IN_GROUP_ATTRIBUTE])
         else:
             raise UnauthorizedException("User doesn't have a memberOf field; Their groups can't be determined")
 
@@ -193,16 +196,15 @@ class LdapSettings:
 
         return hash(tuple(items_to_hash))
 
-    @property
-    @cached(cache=TTLCache(maxsize=1, ttl=30))
-    def connection(self) -> LDAPObject:
+    def connect(self, *, bind: bool = False) -> LDAPObject:
         if not self.enabled:
             raise ValueError("Cannot attempt to connect to the LDAP server when disabled")
 
-        connection = ldap.initialize(self.uri)
-
         try:
-            connection.bind_s(self.bind_dn, self.bind_password)
+            connection = ldap.initialize(self.uri)
+
+            if bind:
+                connection.bind_s(self.bind_dn, self.bind_password)
         except ldap.INVALID_CREDENTIALS as e:
             raise UnauthorizedException(f"Failed to bind using {self.bind_dn=}") from e
         except ldap.SERVER_DOWN as e:
