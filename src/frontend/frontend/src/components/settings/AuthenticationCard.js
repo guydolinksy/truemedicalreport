@@ -145,7 +145,7 @@ const LDAPAuthentication = () => {
         <Form.Item name={"filter"} label={"פילטר משתמשים"} rules={[
             {required: true, message: 'יש להזין פילטר משתמשים'}
         ]}>
-            <Input placeholder={"sAMAccounrName={username}"} autoComplete={"off"}/>
+            <Input placeholder={"sAMAccountName={username}"} autoComplete={"off"}/>
         </Form.Item>
         <Form.Item name={"bind_dn"} label={"מזהה DN לחיבור"} rules={[
             {required: true, message: 'יש להזין DN משתמש לחיבור'}
