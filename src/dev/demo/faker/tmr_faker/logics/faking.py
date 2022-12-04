@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from common.data_models.image import ImagingTypes, ImagingStatus
-from common.data_models.labs import LabCategories, LabTestType
+from common.data_models.labs import LabCategories, LabTestType, CategoriesInHebrew
 from common.data_models.notification import NotificationLevel
 # from digest.models.arc_patient import ARCPatient
 # from digest.models.chameleon_imaging import ChameleonImaging
@@ -25,10 +25,10 @@ logger = logbook.Logger(__name__)
 
 
 class FakeMain(object):
-    def __init__(self, db_connection=None):
-        db_connection = db_connection or config.db_connection
+    def __init__(self, chameleon_connection=None):
+        chameleon_connection = chameleon_connection or config.chameleon_connection
         connect_args = {'autocommit': True}
-        self._engine = create_engine(db_connection, connect_args=connect_args)
+        self._engine = create_engine(chameleon_connection, connect_args=connect_args)
         self.faker: Faker = Faker('he-IL')
 
     @contextlib.contextmanager
@@ -37,58 +37,44 @@ class FakeMain(object):
             yield session
 
     wings = {'אגף B1', 'אגף B2', 'אגף B3', 'אגף הולכים', 'חדר הלם'}
+    department = {'Name': '', 'id': '1184000'}
 
-    def _admit_patient(self, department: Departments, wing):
+    def _admit_patient(self, department, wing):
         patient_id = f'{self.faker.pyint(min_value=1, max_value=999999999)}'
-        p = ARCPatient()
-        p.patient_id = patient_id
-        p.gender = 'M' if random.randint(0, 1) else 'F'
-        if p.gender == 'M':
-            p.first_name, p.last_name = self.faker.last_name_male(), self.faker.first_name_male()
-        elif p.gender == 'F':
-            p.first_name, p.last_name = self.faker.last_name_female(), self.faker.first_name_female()
+        patient_id = patient_id
+        gender = 'M' if random.randint(0, 1) else 'F'
+        if gender == 'M':
+            first_name, last_name = self.faker.last_name_male(), self.faker.first_name_male()
+        elif gender == 'F':
+            first_name, last_name = self.faker.last_name_female(), self.faker.first_name_female()
         if random.randint(0, 100) > 5:
-            p.birthdate = datetime.datetime.combine(self.faker.date_of_birth(), datetime.time()).astimezone(pytz.UTC)
-
-        with self.session() as session:
-            session.add(p)
-            session.commit()
-
-        o = ChameleonMain()
-        o.patient_id = patient_id
-        o.unit = department.name
-        o.unit_wing = wing
-        # o.bed_num = random.choice(list(self.wings[wing] - self.get_used_beds(wing)))
-        o.arrival = self.faker.past_datetime('-30m').astimezone(pytz.UTC)
-
-        o.main_cause = random.choice([
+            birthdate = datetime.datetime.combine(self.faker.date_of_birth(), datetime.time()).astimezone(pytz.UTC)
+        arrival = self.faker.past_datetime('-30m').astimezone(pytz.UTC)
+        main_cause = random.choice([
             'קוצר נשימה', 'כאבים בחזה', 'סחרחורות', 'חבלת ראש', 'חבלת פנים', 'חבלה בגפיים',
             'בחילות ו/או הקאות', 'כאב ראש', 'כאב בטן', 'לאחר התעלפות'
         ])
-        o.esi = random.choice([1, 2, 3, 4])
+        esi = random.choice([1, 2, 3, 4])
 
         with self.session() as session:
-            session.add(o)
+            session.execute(sql_statements.insert_admit_patient.format(ev_MedicalRecord=patient_id, Gender=gender,
+                                                                       First_Name=first_name, Last_Name=last_name,
+                                                                       Birth_Date=birthdate,
+                                                                       UnitName=department["Name"],
+                                                                       Wing=wing, Admission_Date=arrival,
+                                                                       MainCause=main_cause, ESI=esi))
             session.commit()
-
         return patient_id
 
     def _discharge_patient(self, chameleon_id):
         with self.session() as session:
-            patient = session.query(ChameleonMain).where(
-                (ChameleonMain.patient_id == chameleon_id) &
-                (ChameleonMain.discharge_time == None)
-            ).first()
-            patient.discharge_time = datetime.datetime.now()
+            session.execute(sql_statements.update_discharge_patient.format(ev_MedicalRecord=chameleon_id))
             session.commit()
 
-    def _get_patients(self, department: Departments, wing):
+    def _get_patients(self, department, wing):
         with self.session() as session:
-            result = {patient.patient_id for patient in session.query(ChameleonMain).filter(
-                (ChameleonMain.unit == department.name) &
-                (ChameleonMain.unit_wing == wing) &
-                (ChameleonMain.discharge_time == None)
-            )}
+            result = [i[0] for i in session.execute(sql_statements.select_patients_list. \
+                                                    format(UnitName=department["Name"], unit_wing=wing))]
             return result
 
     def _generate_measurements(self, chameleon_id=None, department=None, wing=None):
@@ -99,136 +85,168 @@ class FakeMain(object):
         else:
             raise ValueError()
         for patient in patients:
-            pain = ChameleonMeasurements()
-            pain.patient_id = patient
-            pain.at = datetime.datetime.utcnow()
-            pain.code = 14
-            pain.name = 'כאב'
-            pain.min_limit = 0
-            pain.max_limit = 5
+            patient_id = patient
+            at = datetime.datetime.utcnow()
+            code = 61
+            name = 'כאב'
+            min_limit = 0
+            max_limit = 5
             prob = random.randint(1, 100)
             if 1 <= prob < 91:
-                pain.value = self.faker.pyint(min_value=pain.min_limit, max_value=pain.max_limit)
+                m_value = self.faker.pyint(min_value=min_limit, max_value=max_limit)
             elif 91 <= prob < 98:
-                pain.value = self.faker.pyint(min_value=pain.max_limit, max_value=8)
+                m_value = self.faker.pyint(min_value=max_limit, max_value=8)
             elif 98 <= prob < 101:
-                pain.value = self.faker.pyint(min_value=8, max_value=10)
-            pain.warnings = self.faker.sentence(nb_words=3)
+                m_value = self.faker.pyint(min_value=8, max_value=10)
+            # pain.warnings = self.faker.sentence(nb_words=3)
             with self.session() as session:
-                session.add(pain)
+                session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=patient_id,
+                                                                          Device_monitor_date=at,
+                                                                          Device_monitor_Parameter=code,
+                                                                          Faker_Name=name,
+                                                                          Monitoring_Min_Value=min_limit,
+                                                                          Monitoring_Max_Value=max_limit,
+                                                                          Device_monitor_result=m_value))
                 session.commit()
 
-            pulse = ChameleonMeasurements()
-            pulse.patient_id = patient
-            pulse.at = datetime.datetime.utcnow()
-            pulse.code = 12
-            pulse.name = 'דופק'
-            pulse.min_limit = self.faker.pyint(min_value=55, max_value=65)
-            pulse.max_limit = self.faker.pyint(min_value=95, max_value=110)
+            patient_id = patient
+            at = datetime.datetime.utcnow()
+            code = 3
+            name = 'דופק'
+            min_limit = self.faker.pyint(min_value=55, max_value=65)
+            max_limit = self.faker.pyint(min_value=95, max_value=110)
             prob = random.randint(1, 100)
             if 1 <= prob < 4:
-                pulse.value = self.faker.pyint(min_value=20, max_value=50)
+                m_value = self.faker.pyint(min_value=20, max_value=50)
             elif 4 <= prob < 11:
-                pulse.value = self.faker.pyint(min_value=50, max_value=pulse.min_limit)
+                m_value = self.faker.pyint(min_value=50, max_value=min_limit)
             elif 11 <= prob < 91:
-                pulse.value = self.faker.pyint(min_value=pulse.min_limit, max_value=pulse.max_limit)
+                m_value = self.faker.pyint(min_value=min_limit, max_value=max_limit)
             elif 91 <= prob < 98:
-                pulse.value = self.faker.pyint(min_value=pulse.max_limit, max_value=115)
+                m_value = self.faker.pyint(min_value=max_limit, max_value=115)
             elif 98 <= prob < 101:
-                pulse.value = self.faker.pyint(min_value=120, max_value=160)
-            pulse.warnings = self.faker.sentence(nb_words=3)
+                m_value = self.faker.pyint(min_value=120, max_value=160)
+            # warnings = self.faker.sentence(nb_words=3)
             with self.session() as session:
-                session.add(pulse)
+                session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=patient_id,
+                                                                          Device_monitor_date=at,
+                                                                          Device_monitor_Parameter=code,
+                                                                          Faker_Name=name,
+                                                                          Monitoring_Min_Value=min_limit,
+                                                                          Monitoring_Max_Value=max_limit,
+                                                                          Device_monitor_result=m_value))
                 session.commit()
 
-            saturation = ChameleonMeasurements()
-            saturation.patient_id = patient
-            saturation.at = datetime.datetime.utcnow()
-            saturation.code = 13
-            saturation.name = 'סטורציה'
-            saturation.min_limit = self.faker.pyint(min_value=87, max_value=93)
-            saturation.max_limit = 100
+            patient_id = patient
+            at = datetime.datetime.utcnow()
+            code = 13
+            name = 'סטורציה'
+            min_limit = self.faker.pyint(min_value=87, max_value=93)
+            max_limit = 100
             prob = random.randint(1, 100)
             if 1 <= prob < 4:
-                saturation.value = self.faker.pyint(min_value=75, max_value=85)
+                m_value = self.faker.pyint(min_value=75, max_value=85)
             elif 4 <= prob < 11:
-                saturation.value = self.faker.pyint(min_value=85, max_value=saturation.min_limit)
+                m_value = self.faker.pyint(min_value=85, max_value=min_limit)
             elif 11 <= prob < 101:
-                saturation.value = self.faker.pyint(min_value=saturation.min_limit, max_value=100)
-            saturation.warnings = self.faker.sentence(nb_words=3)
+                m_value = self.faker.pyint(min_value=min_limit, max_value=100)
+            # warnings = self.faker.sentence(nb_words=3)
             with self.session() as session:
-                session.add(saturation)
+                session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=patient_id,
+                                                                          Device_monitor_date=at,
+                                                                          Device_monitor_Parameter=code,
+                                                                          Faker_Name=name,
+                                                                          Monitoring_Min_Value=min_limit,
+                                                                          Monitoring_Max_Value=max_limit,
+                                                                          Device_monitor_result=m_value))
                 session.commit()
 
-            temperature = ChameleonMeasurements()
-            temperature.patient_id = patient
-            temperature.at = datetime.datetime.utcnow()
-            temperature.code = 11
-            temperature.name = 'טמפ'
-            temperature.min_limit = self.faker.pyint(min_value=356, max_value=361) / 10.
-            temperature.max_limit = self.faker.pyint(min_value=377, max_value=380) / 10.
+            patient_id = patient
+            at = datetime.datetime.utcnow()
+            code = 1
+            name = 'חום'
+            min_limit = self.faker.pyint(min_value=356, max_value=361) / 10.
+            max_limit = self.faker.pyint(min_value=377, max_value=380) / 10.
             prob = random.randint(1, 100)
             if 1 <= prob < 4:
-                temperature.value = self.faker.pyint(min_value=350, max_value=355) / 10.
+                m_value = self.faker.pyint(min_value=350, max_value=355) / 10.
             elif 4 <= prob < 11:
-                temperature.value = self.faker.pyint(min_value=355, max_value=temperature.min_limit * 10) / 10.
+                m_value = self.faker.pyint(min_value=355, max_value=min_limit * 10) / 10.
             elif 11 <= prob < 91:
-                temperature.value = self.faker.pyint(min_value=temperature.min_limit * 10,
-                                                     max_value=temperature.max_limit * 10) / 10.
+                m_value = self.faker.pyint(min_value=min_limit * 10,
+                                           max_value=max_limit * 10) / 10.
             elif 91 <= prob < 98:
-                temperature.value = self.faker.pyint(min_value=temperature.max_limit * 10, max_value=410) / 10.
+                m_value = self.faker.pyint(min_value=max_limit * 10, max_value=410) / 10.
             elif 98 <= prob < 101:
-                temperature.value = self.faker.pyint(min_value=410, max_value=425) / 10.
+                m_value = self.faker.pyint(min_value=410, max_value=425) / 10.
 
             with self.session() as session:
-                session.add(temperature)
+                session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=patient_id,
+                                                                          Device_monitor_date=at,
+                                                                          Device_monitor_Parameter=code,
+                                                                          Faker_Name=name,
+                                                                          Monitoring_Min_Value=min_limit,
+                                                                          Monitoring_Max_Value=max_limit,
+                                                                          Device_monitor_result=m_value))
                 session.commit()
-            systolic, diastolic = ChameleonMeasurements(), ChameleonMeasurements()
-            systolic.patient_id = diastolic.patient_id = patient
-            systolic.at = diastolic.at = datetime.datetime.utcnow()
-            systolic.code, diastolic.code = 101, 102
-            systolic.name, diastolic.name = 'לחץ דם סיסטולי', 'לחץ דם דיאסטולי'
-            systolic.min_limit = self.faker.pyfloat(min_value=90 * 0.9, max_value=90 * 1.1, right_digits=0)
-            systolic.max_limit = self.faker.pyfloat(min_value=120 * 0.9, max_value=120 * 1.1, right_digits=0)
-            diastolic.min_limit = self.faker.pyfloat(min_value=60 * 0.9, max_value=60 * 1.1, right_digits=0)
-            diastolic.max_limit = self.faker.pyfloat(min_value=90 * 0.9, max_value=90 * 1.1, right_digits=0)
-            prob = random.randint(1, 100)
-            if 1 <= prob < 4:
-                systolic.value = self.faker.pyint(min_value=63, max_value=70)
-            elif 4 <= prob < 11:
-                systolic.value = self.faker.pyint(min_value=70, max_value=int(systolic.min_limit))
-            elif 11 <= prob < 91:
-                systolic.value = self.faker.pyint(min_value=int(systolic.min_limit),
-                                                  max_value=int(systolic.max_limit))
-            elif 91 <= prob < 98:
-                systolic.value = self.faker.pyint(min_value=int(systolic.max_limit), max_value=210)
-            elif 98 <= prob < 101:
-                systolic.value = self.faker.pyint(min_value=210, max_value=231)
-            prob = random.randint(1, 100)
-            if 1 <= prob < 4:
-                diastolic.value = self.faker.pyint(min_value=min(36, int(systolic.value - 10)),
-                                                   max_value=min(40, int(systolic.value - 10)))
-            elif 4 <= prob < 11:
-                diastolic.value = self.faker.pyint(min_value=min(40, int(systolic.value - 10)),
-                                                   max_value=min(int(diastolic.min_limit),
-                                                                 int(systolic.value - 10)))
-            elif 11 <= prob < 91:
-                diastolic.value = self.faker.pyint(
-                    min_value=min(int(diastolic.min_limit), int(systolic.value - 10)),
-                    max_value=min(int(diastolic.max_limit), int(systolic.value - 10)))
-            elif 91 <= prob < 98:
-                diastolic.value = self.faker.pyint(
-                    min_value=min(int(diastolic.max_limit), int(systolic.value - 10)),
-                    max_value=min(130, int(systolic.value - 10)))
-            elif 98 <= prob < 101:
-                diastolic.value = self.faker.pyint(min_value=min(130, int(systolic.value - 10)),
-                                                   max_value=min(143, int(systolic.value - 10)))
 
-            systolic.warnings = self.faker.sentence(nb_words=3)
-            diastolic.warnings = self.faker.sentence(nb_words=3)
+            systolic_patient_id = diastolic_patient_id = patient
+            systolic_at = diastolic_at = datetime.datetime.utcnow()
+            systolic_code, diastolic_code = 23, 24
+            systolic_name, diastolic_name = 'לחץ סיסטולי', 'לחץ דיאסטולי'
+            systolic_min_limit = self.faker.pyfloat(min_value=90 * 0.9, max_value=90 * 1.1, right_digits=0)
+            systolic_max_limit = self.faker.pyfloat(min_value=120 * 0.9, max_value=120 * 1.1, right_digits=0)
+            diastolic_min_limit = self.faker.pyfloat(min_value=60 * 0.9, max_value=60 * 1.1, right_digits=0)
+            diastolic_max_limit = self.faker.pyfloat(min_value=90 * 0.9, max_value=90 * 1.1, right_digits=0)
+            prob = random.randint(1, 100)
+            if 1 <= prob < 4:
+                systolic_value = self.faker.pyint(min_value=63, max_value=70)
+            elif 4 <= prob < 11:
+                systolic_value = self.faker.pyint(min_value=70, max_value=int(systolic_min_limit))
+            elif 11 <= prob < 91:
+                systolic_value = self.faker.pyint(min_value=int(systolic_min_limit),
+                                                  max_value=int(systolic_max_limit))
+            elif 91 <= prob < 98:
+                systolic_value = self.faker.pyint(min_value=int(systolic_max_limit), max_value=210)
+            elif 98 <= prob < 101:
+                systolic_value = self.faker.pyint(min_value=210, max_value=231)
+            prob = random.randint(1, 100)
+            if 1 <= prob < 4:
+                diastolic_value = self.faker.pyint(min_value=min(36, int(systolic_value - 10)),
+                                                   max_value=min(40, int(systolic_value - 10)))
+            elif 4 <= prob < 11:
+                diastolic_value = self.faker.pyint(min_value=min(40, int(systolic_value - 10)),
+                                                   max_value=min(int(diastolic_min_limit),
+                                                                 int(systolic_value - 10)))
+            elif 11 <= prob < 91:
+                diastolic_value = self.faker.pyint(
+                    min_value=min(int(diastolic_min_limit), int(systolic_value - 10)),
+                    max_value=min(int(diastolic_max_limit), int(systolic_value - 10)))
+            elif 91 <= prob < 98:
+                diastolic_value = self.faker.pyint(
+                    min_value=min(int(diastolic_max_limit), int(systolic_value - 10)),
+                    max_value=min(130, int(systolic_value - 10)))
+            elif 98 <= prob < 101:
+                diastolic_value = self.faker.pyint(min_value=min(130, int(systolic_value - 10)),
+                                                   max_value=min(143, int(systolic_value - 10)))
+
+            # systolic_warnings = self.faker.sentence(nb_words=3)
+            # diastolic_warnings = self.faker.sentence(nb_words=3)
             with self.session() as session:
-                session.add(systolic)
-                session.add(diastolic)
+                session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=systolic_patient_id,
+                                                                          Device_monitor_date=systolic_at,
+                                                                          Device_monitor_Parameter=systolic_code,
+                                                                          Faker_Name=systolic_name,
+                                                                          Monitoring_Min_Value=systolic_min_limit,
+                                                                          Monitoring_Max_Value=systolic_max_limit,
+                                                                          Device_monitor_result=systolic_value))
+                session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=diastolic_patient_id,
+                                                                          Device_monitor_date=diastolic_at,
+                                                                          Device_monitor_Parameter=diastolic_code,
+                                                                          Faker_Name=diastolic_name,
+                                                                          Monitoring_Min_Value=diastolic_min_limit,
+                                                                          Monitoring_Max_Value=diastolic_max_limit,
+                                                                          Device_monitor_result=diastolic_value))
                 session.commit()
 
     def _generate_imagings(self, chameleon_id=None, department=None, wing=None):
@@ -239,22 +257,26 @@ class FakeMain(object):
         else:
             raise ValueError()
         for patient in patients:
-            im = ChameleonImaging()
-            im.patient_id = patient
-            im.order_date = datetime.datetime.utcnow()
-            im.type_ = random.choice(list(ImagingTypes)).value
+            patient_id = patient
+            order_date = datetime.datetime.utcnow()
+            type_ = random.choice(list(ImagingTypes)).value
             type_name = {
                 ImagingTypes.ct.value: 'CT',
-                ImagingTypes.ultrasound.value: 'אולטרהסאונד',
+                ImagingTypes.ultrasound.value: 'US',
                 ImagingTypes.xray.value: 'צילום'
             }
-            location = random.choice(['ראש', 'אגן', 'חזה', 'בטן'])
-            im.description = f'{type_name[im.type_]} {location}'
-            im.status = random.choice(list(ImagingStatus)).value
-            im.level = random.choice(list(NotificationLevel)).value
-            im.link = self.faker.url()
+            location = random.choice(['ראש', 'אגן', 'בית החזה בשכיבה/ישיבה', 'מוח', 'בטן', 'עמוד שדרה'])
+            description = f'{type_name[type_]} {location}'
+            status = random.choice(list(ImagingStatus)).value
+            level = random.choice(list(NotificationLevel)).value
+            order_number = random.randint(1000000000000, 9999999999999)
+            # link = self.faker.url()
             with self.session() as session:
-                session.add(im)
+                session.execute(
+                    sql_statements.insert_images.format(ev_MedicalRecord=patient_id, TestOrders_Test_Date=order_date,
+                                                        AuxTest_Name=description, TestDates_Panic=level,
+                                                        TestOrders_Order_Num=order_number,
+                                                        TestOrders_Order_Status=status))
                 session.commit()
 
     def _generate_labs(self, chameleon_id=None, department=None, wing=None):
@@ -269,32 +291,37 @@ class FakeMain(object):
             if step < 10:
                 continue
             category = random.choice(list(LabCategories))
+            h_category = CategoriesInHebrew[category]
             order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC)
             collection_date = self.faker.date_time_between_dates('-10m', '-8m').astimezone(pytz.UTC)
+            order_number = random.randint(100000000, 999999999)
             for test_type_id, test_type_name in enumerate(LabTestType[category]):
-                lab_result = ChameleonLabs()
-                lab_result.patient_id = patient
-                lab_result.order_date = order_date
-                lab_result.test_type_id = f'{category.value}{test_type_id:04}'
-                # lab_result.test_tube_id = random.randint(1, 3)
-                lab_result.test_type_name = test_type_name
-                lab_result.min_warn_bar = self.faker.pyfloat(min_value=20.0,
-                                                             max_value=40.0, right_digits=2)
-                lab_result.panic_min_warn_bar = self.faker.pyfloat(min_value=0.0,
-                                                                   max_value=39.9, right_digits=2)
-                lab_result.max_warn_bar = self.faker.pyfloat(min_value=80.0,
-                                                             max_value=100.0, right_digits=2)
-                lab_result.panic_max_warn_bar = self.faker.pyfloat(min_value=100.0,
-                                                                   max_value=130.0, right_digits=2)
+                patient_id = patient
+                order_date = order_date
+                # test_type_id = f'{category.value}{test_type_id:04}'
+                test_type_name = test_type_name
+                min_warn_bar = self.faker.pyfloat(min_value=20.0,
+                                                  max_value=40.0, right_digits=2)
+                panic_min_warn_bar = self.faker.pyfloat(min_value=0.0,
+                                                        max_value=39.9, right_digits=2)
+                max_warn_bar = self.faker.pyfloat(min_value=80.0,
+                                                  max_value=100.0, right_digits=2)
+                panic_max_warn_bar = self.faker.pyfloat(min_value=100.0,
+                                                        max_value=130.0, right_digits=2)
 
                 if step > 30:
-                    lab_result.collection_date = collection_date
+                    collection_date = collection_date
                     if step > 65:
                         if random.randint(0, 1):
-                            lab_result.result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC)
-                            lab_result.result = self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2)
+                            result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC)
+                            result = self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2)
                 with self.session() as session:
-                    session.add(copy.deepcopy(lab_result))
+                    session.execute(
+                        sql_statements.insert_labs.format(ev_MedicalRecord=patient_id, LR_Test_code=order_number,
+                                                          Lab_Headline_Name=h_category, LR_Test_Name=test_type_name,
+                                                          LR_Result=result, LR_Norm_Minimum=min_warn_bar,
+                                                          LR_Norm_Maximum=max_warn_bar, LR_Result_Date=order_date,
+                                                          LR_Result_Entry_Date=result_time, LR_Units=None))
                     session.commit()
 
     def _generate_referrals_dates(self, chameleon_id=None, department=None, wing=None):
