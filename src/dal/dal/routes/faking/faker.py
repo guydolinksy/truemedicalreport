@@ -34,7 +34,7 @@ class MedicalPropertiesProvider(BaseProvider):
         return self.random_element(["male", "female"])
 
     def esi_score(self) -> int:
-        return self.random_element(range(1, 5))  # excluding 5
+        return self.random_int(1, 4)  # inclusive
 
     def medical_complaint(self) -> str:
         return self.random_element(
