@@ -1,8 +1,11 @@
-_ER_DEPARTMENT = "er"
-_WINGS_LAYOUT = {
+import itertools as it
+
+
+ER_DEPARTMENT = "er"
+WINGS_LAYOUT = {
     "אגף B1": {
         "name": "אגף א׳",
-        "department": _ER_DEPARTMENT,
+        "department": ER_DEPARTMENT,
         "columns": [
             {"flex": "4 1 300px", "minWidth": 300},
             {"width": 16, "minWidth": 16},
@@ -33,7 +36,7 @@ _WINGS_LAYOUT = {
     },
     "אגף B2": {
         "name": "אגף ב׳",
-        "department": _ER_DEPARTMENT,
+        "department": ER_DEPARTMENT,
         "columns": [
             {"flex": "4 1 300px", "minWidth": 300},
             {"flex": 1, "minWidth": 32},
@@ -64,7 +67,7 @@ _WINGS_LAYOUT = {
     },
     "אגף B3": {
         "name": "אגף ג׳",
-        "department": _ER_DEPARTMENT,
+        "department": ER_DEPARTMENT,
         "columns": [
             {"flex": "4 1 300px", "minWidth": 300},
             {"flex": 1, "minWidth": 32},
@@ -98,4 +101,14 @@ _WINGS_LAYOUT = {
         ],
     },
 }
-_WING_KEYS = list(_WINGS_LAYOUT.keys())
+WING_KEYS = list(WINGS_LAYOUT.keys())
+ALL_BEDS = list(it.chain.from_iterable([
+    [
+        (wing_key, bed_in_wing)
+        for bed_in_wing
+        in it.chain.from_iterable(wing["beds"])
+        if bed_in_wing
+    ]
+    for wing_key, wing
+    in WINGS_LAYOUT.items()
+]))
