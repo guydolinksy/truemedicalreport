@@ -1,21 +1,14 @@
 import logbook
 from bson import ObjectId
 from fastapi import APIRouter, Depends
-from pymongo import MongoClient
-
 from common.data_models.patient import Patient, PatientInfo
 from common.data_models.admission import Admission
 from .websocket import subscribe, notify
-from .. import config
+from ..clients import medical_dal
 from ..dal.dal import MedicalDal
 
 patient_router = APIRouter(tags=["Patient"])
 logger = logbook.Logger(__name__)
-
-
-# TODO remove duplicate use of dal function
-def medical_dal() -> MedicalDal:
-    return MedicalDal(MongoClient(config.mongo_connection).medical)
 
 
 @patient_router.get("/{patient}", response_model=Patient)

@@ -3,7 +3,6 @@ from typing import List, Dict
 
 import logbook
 from fastapi import APIRouter, Depends, Body
-from pymongo import MongoClient
 
 from common.data_models.department import Department
 from common.data_models.image import Image
@@ -16,7 +15,7 @@ from common.data_models.treatment import Treatment
 from common.data_models.wing import WingSummary
 from common.utilities.exceptions import PatientNotFound
 from .wing import wing_router
-from .. import config
+from ..clients import medical_dal
 from ..dal.dal import MedicalDal
 
 department_router = APIRouter()
@@ -24,11 +23,6 @@ department_router = APIRouter()
 department_router.include_router(wing_router, prefix="/{department}/wings")
 
 logger = logbook.Logger(__name__)
-
-
-# TODO remove duplicate use of dal function
-def medical_dal() -> MedicalDal:
-    return MedicalDal(MongoClient(config.mongo_connection).medical)
 
 
 @department_router.get("/{department}", tags=["Department"], response_model=Department,
@@ -45,8 +39,8 @@ async def update_admissions(department: str, admissions: List[ExternalPatient] =
                             dal: MedicalDal = Depends(medical_dal)):
     updated = {patient.external_id: patient for patient in admissions}
     existing = {patient.external_id: patient for patient in dal.get_department_patients(department)}
-    for patient in set(updated) | set(existing):
-        await dal.upsert_patient(previous=existing.get(patient), patient=updated.get(patient))
+    for patient_external_id in set(updated) | set(existing):
+        await dal.upsert_patient(previous=existing.get(patient_external_id), patient=updated.get(patient_external_id))
 
 
 @department_router.post("/{department}/measurements", tags=["Department"])

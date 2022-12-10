@@ -4,7 +4,7 @@ import logbook
 from fastapi import APIRouter, Depends, Body
 from pymongo import MongoClient
 
-from ..mongo import mongo_client
+from ..clients import mongo_client
 
 init_router = APIRouter()
 

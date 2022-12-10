@@ -1,18 +1,12 @@
 import logbook
 from fastapi import APIRouter, Depends
-from pymongo import MongoClient
-
 from common.data_models.bed import Bed
 from common.data_models.wing import Wing
-from .. import config
+from ..clients import medical_dal
 from ..dal.dal import MedicalDal
 
 logger = logbook.Logger(__name__)
 wing_router = APIRouter()
-
-
-def medical_dal() -> MedicalDal:
-    return MedicalDal(MongoClient(config.mongo_connection).medical)
 
 
 @wing_router.get("/{wing}", response_model=Wing, response_model_exclude_unset=True, tags=["Wing"])
