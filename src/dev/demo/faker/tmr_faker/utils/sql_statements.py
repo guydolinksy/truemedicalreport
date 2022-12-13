@@ -1,19 +1,19 @@
-execute_set_patient_admission = """exec [dwh].[dw].[faker_RoomPlacementPatient_admission] {}, {}"""
+execute_set_patient_admission = """exec [DemoDB].[dbo].[faker_RoomPlacementPatient_admission] {}, {}"""
 
-execute_set_hospitalize_or_discharge = """exec dwh.dw.faker_decision {}"""
+execute_set_hospitalize_or_discharge = """exec DemoDB.dbo.faker_decision {}"""
 
-execute_set_responsible_doctor = """exec dwh.dw.faker_ResponsibleDoctor {} """
+execute_set_responsible_doctor = """exec DemoDB.dbo.faker_ResponsibleDoctor {} """
 
-delete_room_placement = """EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNCATE TABLE  dbo.RoomPlacmentPatient' """
+delete_room_placement = """EXEC DemoDB.dbo.sys.sp_executesql N'TRUNCATE TABLE  dbo.RoomPlacmentPatient' """
 
-delete_admission_treatment_decision = """EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNCATE TABLE  dbo.AdmissionTreatmentDecision' """
+delete_admission_treatment_decision = """EXEC DemoDB.dbo.sys.sp_executesql N'TRUNCATE TABLE  dbo.AdmissionTreatmentDecision' """
 
-delete_responsible_doctor = """EXEC sbwnd81c.chameleon.sys.sp_executesql N'TRUNCATE TABLE  dbo.ResponsibleDoctor' """
+delete_responsible_doctor = """EXEC DemoDB.dbo.sys.sp_executesql N'TRUNCATE TABLE  dbo.ResponsibleDoctor' """
 
 insert_admit_patient = """insert into DemoDB.dbo.patient_info_plus
-(ev_MedicalRecord,Gender,First_Name,Last_Name,Birth_Date,UnitName,Wing,Admission_Date,MainCause,ESI)
-values({ev_MedicalRecord},'{Gender}','{First_Name}','{Last_Name}','{Birth_Date}','{UnitName}','{Wing}'
-,'{Admission_Date}','{MainCause}','{ESI}') """
+(ev_MedicalRecord,Gender,First_Name,Last_Name,Birth_Date,UnitName,RoomName,Admission_Date,MainCause,ESI)
+values({ev_MedicalRecord},'{Gender}',N'{First_Name}',N'{Last_Name}','{Birth_Date}',N'{UnitName}',N'{Wing}'
+,'{Admission_Date}',N'{MainCause}','{ESI}') """
 
 select_patients_list = """ SELECT distinct p.ev_MedicalRecord FROM DemoDB.dbo.patient_info_plus p
 WHERE UnitName='{UnitName}'
@@ -38,3 +38,6 @@ insert_labs = """INSERT INTO DemoDB.dbo.Labs (ev_MedicalRecord,LR_Test_code,Lab_
 LR_Units,LR_Norm_Minimum,LR_Norm_Maximum,LR_Result_Date,LR_Result_Entry_Date) values({ev_MedicalRecord},
 {LR_Test_code},'{Lab_Headline_Name}','{LR_Test_Name}','{LR_Result}','{LR_Units}','{LR_Norm_Minimum}',
 '{LR_Norm_Maximum}','{LR_Result_Date}','{LR_Result_Entry_Date}') """
+
+update_doctor_visit = """ update DemoDB.dbo.patient_info_plus SET Doctor_intake_MedicalText=N'{Doctor_intake_MedicalText}' , Doctor_intake_Time ='{Doctor_intake_Time}' where ev_MedicalRecord= {ev_MedicalRecord}
+and ev_Unit={doc_unit} and Delete_Date is null """
