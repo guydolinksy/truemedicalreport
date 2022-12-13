@@ -37,7 +37,7 @@ class FakeMain(object):
             yield session
 
     wings = {'אגף B1', 'אגף B2', 'אגף B3', 'אגף הולכים', 'חדר הלם'}
-    department = {'Name': '', 'id': '1184000'}
+    department = {'Name': 'המחלקה לרפואה דחופה', 'id': '1184000'}
 
     def _admit_patient(self, department, wing):
         patient_id = f'{self.faker.pyint(min_value=1, max_value=999999999)}'
@@ -391,27 +391,15 @@ class FakeMain(object):
         else:
             raise ValueError()
         for patient in patients:
+            patient_id = patient,
+            documenting_time = datetime.datetime.utcnow(),
+            unit = department["id"],
+            medical_text = "נבדק"
             with self.session() as session:
-                if session.query(ChameleonMedicalText).filter(
-                        (ChameleonMedicalText.patient_id == patient) &
-                        (ChameleonMedicalText.medical_text_code == FreeTextCodes.DOCTOR_VISIT.value)
-                ).first():
-                    continue
-            patient_medical_text = ChameleonMedicalText(
-                patient_id=patient,
-                medical_record=random.randint(0, 500000),
-                documenting_date=datetime.date.today(),
-                documenting_time=datetime.datetime.utcnow(),
-                documenting_user=random.randint(200, 5800),
-                unit_name=Units.ER.name,
-                unit=Units.ER.value,
-                medical_text_code=FreeTextCodes.DOCTOR_VISIT.value,
-                medical_text_title=FreeTextCodes.DOCTOR_VISIT.name,
-                medical_text="נבדק",
-            )
-            with self.session() as session:
-                session.add(patient_medical_text)
-
+                session.execute(
+                    sql_statements.update_doctor_visits.format(ev_MedicalRecord=patient_id,
+                                                               Doctor_intake_MedicalText=medical_text,
+                                                               Doctor_intake_Time=documenting_time, doc_unit=unit))
                 session.commit()
 
     def _generate_room_placements(self, chameleon_id=None, department=None, wing=None):
