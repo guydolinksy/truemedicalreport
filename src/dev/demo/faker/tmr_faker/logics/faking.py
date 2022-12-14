@@ -357,30 +357,7 @@ class FakeMain(object):
             raise ValueError()
         for patient in patients:
             with self.session() as session:
-                if session.query(ChameleonMedicalText).filter(
-                        (ChameleonMedicalText.patient_id == patient) &
-                        (ChameleonMedicalText.medical_text_code == FreeTextCodes.NURSE_SUMMARY.value)
-                ).first():
-                    continue
-            patient_medical_text = ChameleonMedicalText(
-                patient_id=patient,
-                medical_record=random.randint(0, 500000),
-                documenting_date=datetime.date.today(),
-                documenting_time=datetime.datetime.utcnow(),
-                documenting_user=random.randint(200, 5800),
-                unit_name=Units.ER.name,
-                unit=Units.ER.value,
-                medical_text_code=FreeTextCodes.NURSE_SUMMARY.value,
-                medical_text_title=FreeTextCodes.NURSE_SUMMARY.name,
-                medical_text=random.choice([
-                    """ בדרך כלל בריא, חווה כאבים בצד שמאל מאתמול בערב. מלווה בכאבי ראש וסחרחורות לסירוגין""",
-                    """לא מסוגל להזיז את היד, חשש לשבר במפרק כף היד""",
-                    """מתלונן על כאבי גב מזה תקופה ארוכה, לטענתו חווה קשיי בעת מעבר בין ישיבה לעמידה""",
-                ]),
-            )
-            with self.session() as session:
-                session.add(patient_medical_text)
-
+                session.execute(sql_statements.execute_update_nurse_summary.format(patient))
                 session.commit()
 
     def _generate_doctor_visit(self, chameleon_id=None, department=None, wing=None):
@@ -460,13 +437,8 @@ class FakeMain(object):
 
     def clear(self):
         with self.session() as session:
-            session.query(ChameleonMain).delete()
-            session.query(ARCPatient).delete()
-            session.query(ChameleonImaging).delete()
-            session.query(ChameleonLabs).delete()
-            session.query(ChameleonMeasurements).delete()
-            session.query(ChameleonMedicalText).delete()
-            session.execute(sql_statements.delete_admission_treatment_decision)
-            session.execute(sql_statements.delete_responsible_doctor)
-            session.execute(sql_statements.delete_room_placement)
+            session.execute(sql_statements.delete_measurements)
+            session.execute(sql_statements.delete_patient_info_plus)
+            session.execute(sql_statements.delete_labs)
+            session.execute(sql_statements.delete_images)
             session.commit()

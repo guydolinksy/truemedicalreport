@@ -1,6 +1,6 @@
 USE [master]
 GO
-/****** Object:  Database [DemoDB]    Script Date: 13/12/2022 21:04:38 ******/
+/****** Object:  Database [DemoDB]    Script Date: 14/12/2022 18:18:00 ******/
 CREATE DATABASE [DemoDB]
  CONTAINMENT = NONE
  ON  PRIMARY
@@ -82,26 +82,14 @@ ALTER DATABASE [DemoDB] SET QUERY_STORE = OFF
 GO
 USE [DemoDB]
 GO
-/****** Object:  User [arc_cham_login]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  User [arc_cham_login]    Script Date: 14/12/2022 18:18:00 ******/
 CREATE USER [arc_cham_login] FOR LOGIN [arc_cham_login] WITH DEFAULT_SCHEMA=[dbo]
 GO
 ALTER ROLE [db_owner] ADD MEMBER [arc_cham_login]
 GO
 ALTER ROLE [db_accessadmin] ADD MEMBER [arc_cham_login]
 GO
-/****** Object:  Table [dbo].[AdmissionTreatmentDecision]    Script Date: 13/12/2022 21:04:39 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[AdmissionTreatmentDecision](
-	[Decision] [int] NULL,
-	[Hosp_Unit] [int] NULL,
-	[Delete_Date] [datetime] NULL,
-	[Medical_Record] [int] NULL
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[faker_answer_HospUnit]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[faker_answer_HospUnit]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -113,7 +101,7 @@ CREATE TABLE [dbo].[faker_answer_HospUnit](
 	[treatment_decision] [varchar](100) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[faker_beds]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[faker_beds]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -124,7 +112,18 @@ CREATE TABLE [dbo].[faker_beds](
 	[row_id] [int] NOT NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[faker_wing_Doctor]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[faker_nurse_remarks]    Script Date: 14/12/2022 18:18:00 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[faker_nurse_remarks](
+	[MainCause] [nvarchar](200) NULL,
+	[gender] [nvarchar](2) NULL,
+	[remarks] [varchar](500) NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[faker_wing_Doctor]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -134,7 +133,7 @@ CREATE TABLE [dbo].[faker_wing_Doctor](
 	[Code] [nvarchar](150) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[images]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[images]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -150,7 +149,7 @@ CREATE TABLE [dbo].[images](
 	[TestOrders_Delete_Date] [datetime] NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Labs]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[Labs]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -169,7 +168,7 @@ CREATE TABLE [dbo].[Labs](
 	[LR_Delete_Date] [datetime] NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[measurements]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[measurements]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -184,18 +183,7 @@ CREATE TABLE [dbo].[measurements](
 	[Faker_Name] [nvarchar](200) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[MedicalRecords]    Script Date: 13/12/2022 21:04:39 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[MedicalRecords](
-	[Medical_Record] [int] NULL,
-	[Delete_Date] [datetime] NULL,
-	[Unit] [int] NULL
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[patient_info_plus]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[patient_info_plus]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -230,18 +218,7 @@ CREATE TABLE [dbo].[patient_info_plus](
 	[Wing] [nvarchar](100) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ResponsibleDoctor]    Script Date: 13/12/2022 21:04:39 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[ResponsibleDoctor](
-	[Doctor] [nvarchar](150) NULL,
-	[Medical_Record] [int] NULL,
-	[Delete_Date] [datetime] NULL
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[RoomBeds]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[RoomBeds]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -251,7 +228,7 @@ CREATE TABLE [dbo].[RoomBeds](
 	[Bed_Name] [nvarchar](150) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[RoomDetails]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[RoomDetails]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -263,21 +240,7 @@ CREATE TABLE [dbo].[RoomDetails](
 	[Room_Name] [nvarchar](150) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[RoomPlacmentPatient]    Script Date: 13/12/2022 21:04:39 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[RoomPlacmentPatient](
-	[Start_Date] [datetime] NULL,
-	[End_Date] [datetime] NULL,
-	[Unit] [int] NULL,
-	[Bed_ID] [int] NULL,
-	[Medical_Record] [int] NULL,
-	[Room] [int] NULL
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[SystemUnits]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[SystemUnits]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -287,7 +250,7 @@ CREATE TABLE [dbo].[SystemUnits](
 	[Name] [nvarchar](150) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[TableAnswers]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[TableAnswers]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -298,7 +261,7 @@ CREATE TABLE [dbo].[TableAnswers](
 	[Table_Code] [int] NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[TreatmentCause]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[TreatmentCause]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -310,7 +273,7 @@ CREATE TABLE [dbo].[TreatmentCause](
 	[delete_date] [datetime] NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Users]    Script Date: 13/12/2022 21:04:39 ******/
+/****** Object:  Table [dbo].[Users]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -498,6 +461,110 @@ GO
 INSERT [dbo].[faker_beds] ([room], [bed_name], [row_id]) VALUES (N'חדר הלם', N'3', 48)
 GO
 INSERT [dbo].[faker_beds] ([room], [bed_name], [row_id]) VALUES (N'חדר הלם', N'4', 49)
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאב חזה', N'M', N'ידוע על מחלה גרורתית של הערמונית.HCC,יתר לד .מהבוקר לחץ בחזה במנוחה מלווה בקושי בנשימה, ללא צרבצ, ללא הקרנה.')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאב חזה', N'M', N'בשע 12 כאבים בחזה ללא תלונות נוספות במשך 15 שעה אשר חלפו. מדווח על הרגשה טובה')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאב חזה', N'F', N' לדבריה היום בשעה 16:15 הופיעו לחצים בחזה עם הקרנה לשני הידיים מלווה בזיעה. שוללת קושי בנשימה. מציינת כי השבוע לא לקחה אספירין.  קיבלה אספירין 300 מג בלעיסה ואיזוקט 1.25 ופרמין 10 מג')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאב חזה', N'M', N'פנה עקב כאבים בחזה שחלפו.  הקרנה לגב')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאב חזה', N'M', N' ברקע IHD VTN הגיע עם תלונה על כאב בחזה לסירוגין מקרין ליד שמאל חולף ספונטנית')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאב חזה', N'F', N'חולה אונקולוגית עם חולשה וכאבים בחזה')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חבלה/נפילה', N'F', N'מטופת צלולה הובאה על ידי מדא לאחר נפילה טכנית עם חבלה בכפות הרגליים שוללת חבלות נוספות')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חבלה/נפילה', N'M', N' חולה המופיליה  לדבריו לפני שבוע נפילה ללא חבלת ראש מלווה בחבלה באגן ומאז חולשה כללית וקושי בהליכה ')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חבלה/נפילה', N'M', N'נפל נפילה טכנית   לדבריו נחבל בראש ובמרפק ימין   ללא איבוד הכרה , אינו זוכר אם נוטל תרופות לדילול דם ')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חבלה/נפילה', N'M', N'. לדבריו לפני כשעה וחצי נפילה טכנית במדרכה עם חבלת ראש ללא מדללי דם בקבלתו יציב נשימתית')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חבלה/נפילה', N'F', N'חשד לשבר פרק ירך שמאלית-נמצאת בחדר טיפולים-נבצע הכנה לאשפוז מחוסנת ב-2 חיסונים כנגד-COVID 19')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאבי בטן', N'F', N'לדב ריה לאחר ניתוח WHIPPLE OPERATION , כעת הגיעה עקב הפרשה מוגלתית מצלקת ניתוחית')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאבי בטן', N'M', N' הופנה  ממלר"ד אונקולוגי   עקב חולשה  הקאות וחשד  לחסימת  מעי.')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאבי בטן', N'F', N' לדבריה מזה חודש   דימומים  רקטלים   \היום  קרישי  דם  .  כמו  כן  נבדקה על  ידי פרוקטולוג  הורגש  גוש')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאבי בטן', N'M', N'פנה לחדר מיון בשל עליה בתפקודי כבד , כאבים בטן אפיגסטריים מקרינים לגב ,')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאבי בטן', N'M', N'פניה חוזרת למיון עקב כאבי בטן על רקע דלקת במעי, שולל חום')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'קוצר נשימה', N'F', N'ברקע COPD מזה 5 ימים שיעול ליחתי ללא חום, סיימה טיפול ב-LEVOOFLOXACIN, כעת החמרה עם הקוצ"נ.')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'קוצר נשימה', N'F', N'פנתה עקב קוצר נשימה מזה חודש. שוללת כאבים בחזה. ברקע ידוע על HTN, DM, היפרליפידמיה.')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'קוצר נשימה', N'M', N'ברקע IHD COPD סכרת הובא לחדר מיון בשל קוצר נשימה חריף')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'קוצר נשימה', N'F', N' הובאה למיון ע"י נט"ן בשל קוצר נשימה חריף, הזעה וערכי ל"ד גבוהים. הוכנסה לחדר הלם לצורך הערכה וטיפול.')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'קוצר נשימה', N'M', N' ברקע- אי ספיקת לב, לפי דברי בתו, בשבוע האחרון קושי בנשימה, ללא כאב בחזה, ללא שיעול')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חולשה', N'F', N'מזה חודש חולשה כללית, מלווה בתחושת קוצר נשימה קל במאמצים. ללא כאבים בחזה, לא חום')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חולשה', N'F', N'ברקע סכרת פנתה למיון עקב חולשה כללית וסוכר גבוהה בדם')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חולשה', N'M', N'מטופל עם מחלת CA OF COLON META הגיע כעת עקב חולשה ניכרת וקושי במילוי ADL ,ללא סיפור חבלתי  .')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חולשה', N'M', N'מטופל עם פניאומוניה מהקהילה , טופל ברוליד , היום אירוע של PRE SYNCOPE וחולשה כללית ללא סיפור חבלתי  .')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חולשה', N'F', N'לדבריה חולשה כללית מאתמול בבוקר, מלינה על כאבי ראש ולחץ דם גבוה סביב 200 סיסטולי בבית.')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חום', N'M', N', ברקע - GASTRIC CA , היפותירואידיזם')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חום', N'F', N', ברקע: PTC  פנתה למיון עקב חום, מלווה בבחילות, ללא הקאות. מלווה בשיעול.')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חום', N'M', N'רקע אונקולוגי. מזה כיומיים חום עד 39. מלווה בכאבי בטן והקאות.')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חום', N'F', N'לדבריה הגיעה עקב מחלת חום  .   ברקע: CA OF LUNG .')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'חום', N'F', N'ברקע אם נקז של דרכי מרע מלפני שבוע -החלפה -כעת הגיעה עקב חום עד 37.7')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאב גב', N'M', N'פנה בשל החמרה של כאבי גב ')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאב גב', N'M', N'כאבי גב עזים קושי בהליכה לאחר אנלגטיקה  בוצע סיטי פריצות דיסק  הסיטי הוטמע ')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאב גב', N'F', N'כאבי גב  כמה ימים. לפני שבועיים אישפוז באורטופדיה   עברה ניתוח ירכיים עקב שבר פטולוגי. ברקע HTN')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאב גב', N'F', N'חולה עם  מחלה גרורתית  מפושתת מקור לבלב לדבריה כאבים בגב תחתון מקרינים לרגל שמאל')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאב גב', N'M', N'בעברו אונקולוגי. הועבר מברזילי לבקשתו שם אושפז בשל כאבי גב תחתון עם ממצא של פריצת דיסק')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'סחרחורת', N'F', N'פנתה למיון עקב סחרחורת, שמלווה בבחילות , שוללת כאבים בחזה')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'סחרחורת', N'M', N'הובא על ידי מד"א עקב בחילות וסחרחורות. ברקע ידוע על DM.')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'סחרחורת', N'F', N'סחרחורות סיבוביות   בנסיון לקום מהמיטה הקאה אחת ללא מחלות')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'סחרחורת', N'M', N'ברקע חולה אונקולוגי ב 23.8 עבר ניתוח עקב הוצאת גידול מלבלב כעת הגיעה עקב סחרחורות הקאות -ללא חום')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'סחרחורת', N'F', N'ברקע:Digestive System Malignancy: Colon  לדבריה מזה מס" ימים כאבים ביד ימים , סחרחורת  שוללת כאבים בחזה.')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאבי ראש', N'F', N'מזה 3 חודשים סובלת מכאבי ראש אתמול עשתה MRI  כעת הגיעה לצורך המשך בירור')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאבי ראש', N'F', N'פנתה למיון עקב יתר לחץ דם שמלווה בכאבי ראש ובחילות')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאבי ראש', N'F', N'לדבריה מזה הרבה זמן, היום לחץ באזור העורף וכן נימול בפנים, לחץ בלסתות. ברקע גידול בראש עם הגרורות. אמורה לקבל טיפול כמוטרפי')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאבי ראש', N'M', N'נפילה מתוך שינה וחבלת ראש . מאז כאבי ראש וסחרחורות .')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'כאבי ראש', N'M', N'לדבריו מזה שבועיים. לדבריו לראשונה מזה שבועיים, בעמידה ומאמץ אפילו קל מופעיים סחרחורות')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'שבר', N'M', N'לדברי בנו מטופל מעד ונפל נחבל ביד שמאל, נבדק במוקד ובוצע צילום וכן הודגם שבר בשורש כף יד שמאל, ברקע דמנציה')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'שבר', N'M', N' ברקע: הפטיטיס C.  כעת הופנה לאחר נפילה ביום חמישי האחרון עם חבלה במרפק.  בצילום שביצע בקהילה שבר באולנה פרוקסימאלית עם חשד לשבר בראש רדיוס.  בנוסף נפיחות בכף היד.')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'שבר', N'F', N'חבלת כתף  . החליקה נפלה נחבלה בכתף  .  ברקע HTN ')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'שבר', N'F', N'הבוקר גובסה במיון. כעת פנתה בשל כאב באזור הגבס ')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'שבר', N'F', N'חבלת קרסול שמאול  נפיחות כאבים חזקים באזור וחבלת גב . לפני כשעה נפלה. ברקע אוסטאופורוזיס')
+GO
+INSERT [dbo].[faker_nurse_remarks] ([MainCause], [gender], [remarks]) VALUES (N'שבר', N'M', N'נפל בלילה  לאחר סחרחורת  מדווח על חבלת אגן  רגל ימין . ברקע  שרטן מעיים  גרורתי')
 GO
 INSERT [dbo].[faker_wing_Doctor] ([DepartmentWing], [Code]) VALUES (N'אגף הולכים', N'1')
 GO
@@ -777,17 +844,18 @@ INSERT [dbo].[Users] ([usernamenotitle], [Code], [Title], [First_Name], [Last_Na
 GO
 INSERT [dbo].[Users] ([usernamenotitle], [Code], [Title], [First_Name], [Last_Name], [Medical_License], [row_ID]) VALUES (N'נגב ניצן', N'8', N' דר', N'נגב', N' ניצן', 553520, 45)
 GO
-/****** Object:  StoredProcedure [dbo].[faker_decision]    Script Date: 13/12/2022 21:04:42 ******/
+/****** Object:  StoredProcedure [dbo].[faker_decision]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-create procedure [dbo].[faker_decision](@medical_record nvarchar(50))
+
+CREATE   procedure [dbo].[faker_decision](@medical_record nvarchar(50))
 	AS
 	Begin
 	declare @decision as int;
 	declare @unit_hosp as int;
-	if exists (select * from DemoDB.dbo.patient_info_plus p  where p.ev_MedicalRecord=@medical_record and p.Treatmant_Decision is null and p.Treatment_UnitName is null)
+	if exists (select * from DemoDB.dbo.patient_info_plus p  where p.ev_MedicalRecord=@medical_record and p.Treatmant_Decision is null and p.Treatment_UnitName is null and p.End_Date is null)
 		begin
 		if (select top 1  count(*)*100/ sum(count(*)) over() as ratio from DemoDB.dbo.patient_info_plus p
 		--left join DemoDB.dbo.[faker_answer_HospUnit] as f on p.= f.name
@@ -808,15 +876,16 @@ create procedure [dbo].[faker_decision](@medical_record nvarchar(50))
 		end
 	end
 GO
-/****** Object:  StoredProcedure [dbo].[faker_ResponsibleDoctor]    Script Date: 13/12/2022 21:04:42 ******/
+/****** Object:  StoredProcedure [dbo].[faker_ResponsibleDoctor]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-create procedure [dbo].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
+
+CREATE   procedure [dbo].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
 	AS
 	Begin
-	if exists (select * from DemoDB.dbo.patient_info_plus p where p.ev_MedicalRecord=@medical_record and p.delete_date is null and p.ReferralDate is null)
+	if exists (select * from DemoDB.dbo.patient_info_plus p where p.ev_MedicalRecord=@medical_record and p.delete_date is null and p.ReferralDate is null and p.End_Date is null)
 		begin
 		select top 1 u.First_Name,u.Last_Name,u.row_ID,u.Medical_License,u.Title
 		into #temp_ref
@@ -833,12 +902,13 @@ create procedure [dbo].[faker_ResponsibleDoctor](@medical_record nvarchar(50))
 		end
 	end
 GO
-/****** Object:  StoredProcedure [dbo].[faker_RoomPlacementPatient_admission]    Script Date: 13/12/2022 21:04:42 ******/
+/****** Object:  StoredProcedure [dbo].[faker_RoomPlacementPatient_admission]    Script Date: 14/12/2022 18:18:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE PROCEDURE [dbo].[faker_RoomPlacementPatient_admission](@medical_record int, @should_move int)
+
+CREATE   PROCEDURE [dbo].[faker_RoomPlacementPatient_admission](@medical_record int, @should_move int)
 AS
 Begin
     declare @bed_id as varchar(50);
@@ -846,7 +916,7 @@ Begin
     declare @wing as varchar(50);
     declare @room_num as varchar(100);
 	select @department=p.ev_Unit,@wing=p.RoomName from DemoDB.dbo.patient_info_plus p where p.ev_MedicalRecord=@medical_record;
-    if exists(select * from DemoDB.dbo.patient_info_plus p where p.ev_MedicalRecord = @medical_record and p.RoomName is not null and p.Delete_Date is null )
+    if exists(select * from DemoDB.dbo.patient_info_plus p where p.ev_MedicalRecord = @medical_record and p.RoomName is not null and p.Delete_Date is null and p.End_Date is null)
     begin
         if @should_move = 0 and  FLOOR(rand()*4)=0
         begin
@@ -881,6 +951,33 @@ Begin
 end
 
 
+GO
+/****** Object:  StoredProcedure [dbo].[proc_faker_nurse_remarks]    Script Date: 14/12/2022 18:18:00 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+CREATE   procedure [dbo].[proc_faker_nurse_remarks](@medical_record nvarchar(50))
+	AS
+	Begin
+	declare @remarks as varchar(500);
+	declare @gender as varchar(5);
+	declare @mainCause as varchar(50);
+
+	if exists (select * from DemoDB.dbo.patient_info_plus p where ev_MedicalRecord=@medical_record and Nurse_Remarks_Text is null and End_Date is null)
+		begin
+			select @gender=Gender,@mainCause=MainCause from DemoDB.dbo.patient_info_plus where ev_MedicalRecord = @medical_record;
+
+			select top 1 @remarks=nr.remarks from DemoDB.dbo.faker_nurse_remarks nr
+			left join DemoDB.dbo.patient_info_plus p on p.Nurse_Remarks_Text= nr.remarks
+			where nr.gender=@gender and nr.MainCause=@mainCause
+			group by nr.remarks
+			order by count(*);
+			update DemoDB.dbo.patient_info_plus set Nurse_Remarks_Text = @remarks, Nurse_Remarks_Entry_Date = GETDATE() where ev_MedicalRecord= @medical_record and Delete_Date is null;
+		end
+	end
 GO
 USE [master]
 GO
