@@ -12,7 +12,7 @@ AND p.Delete_Date is NULL
 query_patient_admission = """
 SELECT 
 p.ev_MedicalRecord as MedicalRecord,
-p.FullName AS FullName,
+concat(p.First_Name,' ',p.Last_Name ) AS FullName,
 p.Birth_Date AS BirthDate,
 p.Gender AS Gender,
 p.ESI AS ESI,
@@ -42,7 +42,7 @@ join [dbo].[patient_info_plus] p on m.ev_MedicalRecord = p.ev_MedicalRecord
 WHERE p.ev_Unit = {unit}
 AND p.End_Date is NULL
 AND p.Delete_Date is NULL
-AND m.Device_monitor_Parameter IN {codes}
+AND m.Device_monitor_Parameter IN ({codes})
 """
 
 query_images = """
@@ -52,8 +52,8 @@ SELECT
     i.ev_MedicalRecord AS MedicalRecord,
     i.AuxTest_Name as TestName,
     i.TestOrders_Order_Status as OrderStatus,
-    i.TesetDates_Result AS Result,
-    i.TesetDates_Panic AS Panic
+    i.TestDates_Result AS Result,
+    i.TestDates_Panic AS Panic
 FROM images i 
 join [dbo].[patient_info_plus] p on i.ev_MedicalRecord = p.ev_MedicalRecord
 WHERE
