@@ -32,12 +32,13 @@ values({ev_MedicalRecord},'{Device_monitor_date}',{Device_monitor_Parameter},'{F
 
 insert_images = """INSERT INTO DemoDB.dbo.images(ev_MedicalRecord,TestOrders_Test_Date,AuxTest_Name, 
 TestOrders_Order_Status,TestDates_Panic,TestOrders_Order_Num,TestOrders_Order_Status) VALUES({ev_MedicalRecord},'{TestOrders_Test_Date}',
-'{AuxTest_Name}', {TestOrders_Order_Status},{TestDates_Panic},'{TestOrders_Order_Num}',{TestOrders_Order_Status}) """
+N'{AuxTest_Name}', {TestOrders_Order_Status},{TestDates_Panic},'{TestOrders_Order_Num}',{TestOrders_Order_Status}) """
 
 insert_labs = """INSERT INTO DemoDB.dbo.Labs (ev_MedicalRecord,LR_Test_code,Lab_Headline_Name,LR_Test_Name,LR_Result,
 LR_Units,LR_Norm_Minimum,LR_Norm_Maximum,LR_Result_Date,LR_Result_Entry_Date) values({ev_MedicalRecord},
-{LR_Test_code},'{Lab_Headline_Name}','{LR_Test_Name}','{LR_Result}','{LR_Units}','{LR_Norm_Minimum}',
-'{LR_Norm_Maximum}','{LR_Result_Date}','{LR_Result_Entry_Date}') """
+{LR_Test_code},N'{Lab_Headline_Name}',N'{LR_Test_Name}',N'{LR_Result}',N'{LR_Units}',N'{LR_Norm_Minimum}',
+N'{LR_Norm_Maximum}','{LR_Result_Date}','{LR_Result_Entry_Date}') """
 
-update_doctor_visit = """ update DemoDB.dbo.patient_info_plus SET Doctor_intake_MedicalText=N'{Doctor_intake_MedicalText}' , Doctor_intake_Time ='{Doctor_intake_Time}' where ev_MedicalRecord= {ev_MedicalRecord}
+update_doctor_visit = """update DemoDB.dbo.patient_info_plus SET Doctor_intake_MedicalText=N'{
+Doctor_intake_MedicalText}' , Doctor_intake_Time ='{Doctor_intake_Time}' where ev_MedicalRecord= {ev_MedicalRecord} 
 and ev_Unit={doc_unit} and Delete_Date is null """
