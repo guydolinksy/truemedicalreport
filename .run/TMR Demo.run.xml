@@ -5,6 +5,7 @@
     <toRun name="backend" type="PythonConfigurationType" />
     <toRun name="dal" type="PythonConfigurationType" />
     <toRun name="digest [demo]" type="PythonConfigurationType" />
+    <toRun name="faker [demo]" type="PythonConfigurationType" />
     <method v="2" />
   </configuration>
 </component>
