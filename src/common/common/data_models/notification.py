@@ -8,7 +8,8 @@ class NotificationLevel(Enum):
     panic = 1
     # abnormal = 2
     normal = 0
-    unknown = None
+    unknown = -1
+
 
 class NotificationType(Enum):
     lab = 'labs'
@@ -33,5 +34,3 @@ class Notification(BaseModel):
 
     class Config:
         use_enum_values = True
-
-

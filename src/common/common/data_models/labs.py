@@ -41,6 +41,7 @@ LabTestType = {
     LabCategories.gases: ["pCO2", "pO2"],
     LabCategories.biochemistry: ["troponin", "pH"],
     LabCategories.coagulation: ["pt", "ptt", "d-dimer"],
+    LabCategories.unknown: []
 }
 
 

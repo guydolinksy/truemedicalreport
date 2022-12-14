@@ -8,10 +8,12 @@ import pytz
 from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-
+from enum import Enum
 from common.data_models.image import ImagingTypes, ImagingStatus
 from common.data_models.labs import LabCategories, LabTestType, CategoriesInHebrew
 from common.data_models.notification import NotificationLevel
+from tmr_faker.utils import sql_statements
+
 # from digest.models.arc_patient import ARCPatient
 # from digest.models.chameleon_imaging import ChameleonImaging
 # from digest.models.chameleon_labs import ChameleonLabs
@@ -19,25 +21,27 @@ from common.data_models.notification import NotificationLevel
 # from digest.models.chameleon_measurements import ChameleonMeasurements
 # from digest.models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
 from .. import config
-from ..utils import sql_statements
 
 logger = logbook.Logger(__name__)
 
 
+class Departments(Enum):
+    er = '1184000'
+
+
 class FakeMain(object):
     def __init__(self, chameleon_connection=None):
-        chameleon_connection = chameleon_connection or config.chameleon_connection
+        chameleon_connection = chameleon_connection or config.db_connection
         connect_args = {'autocommit': True}
         self._engine = create_engine(chameleon_connection, connect_args=connect_args)
         self.faker: Faker = Faker('he-IL')
+        self.wings = {'אגף B1', 'אגף B2', 'אגף B3', 'אגף הולכים', 'חדר הלם'}
+        self.department = {'name': 'המחלקה לרפואה דחופה', 'id': '1184000'}
 
     @contextlib.contextmanager
     def session(self):
         with Session(self._engine) as session:
             yield session
-
-    wings = {'אגף B1', 'אגף B2', 'אגף B3', 'אגף הולכים', 'חדר הלם'}
-    department = {'Name': 'המחלקה לרפואה דחופה', 'id': '1184000'}
 
     def _admit_patient(self, department, wing):
         patient_id = f'{self.faker.pyint(min_value=1, max_value=999999999)}'
@@ -48,8 +52,11 @@ class FakeMain(object):
         elif gender == 'F':
             first_name, last_name = self.faker.last_name_female(), self.faker.first_name_female()
         if random.randint(0, 100) > 5:
-            birthdate = datetime.datetime.combine(self.faker.date_of_birth(), datetime.time()).astimezone(pytz.UTC)
-        arrival = self.faker.past_datetime('-30m').astimezone(pytz.UTC)
+            birthdate = datetime.datetime.combine(self.faker.date_of_birth(minimum_age=1, maximum_age=45),
+                                                  datetime.time()).astimezone(pytz.UTC).strftime("%Y-%m-%dT%H:%M:%S")
+        else:
+            birthdate = ''
+        arrival = self.faker.past_datetime('-30m').astimezone(pytz.UTC).strftime("%Y-%m-%dT%H:%M:%S")
         main_cause = random.choice([
             'קוצר נשימה', 'כאבים בחזה', 'סחרחורות', 'חבלת ראש', 'חבלת פנים', 'חבלה בגפיים',
             'בחילות ו/או הקאות', 'כאב ראש', 'כאב בטן', 'לאחר התעלפות'
@@ -60,7 +67,7 @@ class FakeMain(object):
             session.execute(sql_statements.insert_admit_patient.format(ev_MedicalRecord=patient_id, Gender=gender,
                                                                        First_Name=first_name, Last_Name=last_name,
                                                                        Birth_Date=birthdate,
-                                                                       UnitName=department["Name"],
+                                                                       UnitName=department.name,
                                                                        Wing=wing, Admission_Date=arrival,
                                                                        MainCause=main_cause, ESI=esi))
             session.commit()
@@ -74,7 +81,7 @@ class FakeMain(object):
     def _get_patients(self, department, wing):
         with self.session() as session:
             result = [i[0] for i in session.execute(sql_statements.select_patients_list. \
-                                                    format(UnitName=department["Name"], unit_wing=wing))]
+                                                    format(UnitName=department.name, unit_wing=wing))]
             return result
 
     def _generate_measurements(self, chameleon_id=None, department=None, wing=None):
@@ -86,7 +93,7 @@ class FakeMain(object):
             raise ValueError()
         for patient in patients:
             patient_id = patient
-            at = datetime.datetime.utcnow()
+            at = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
             code = 61
             name = 'כאב'
             min_limit = 0
@@ -100,8 +107,9 @@ class FakeMain(object):
                 m_value = self.faker.pyint(min_value=8, max_value=10)
             # pain.warnings = self.faker.sentence(nb_words=3)
             with self.session() as session:
+
                 session.execute(sql_statements.insert_measurements.format(ev_MedicalRecord=patient_id,
-                                                                          Device_monitor_date=at,
+                                                                          Device_monitor_date=str(at),
                                                                           Device_monitor_Parameter=code,
                                                                           Faker_Name=name,
                                                                           Monitoring_Min_Value=min_limit,
@@ -110,7 +118,7 @@ class FakeMain(object):
                 session.commit()
 
             patient_id = patient
-            at = datetime.datetime.utcnow()
+            at = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
             code = 3
             name = 'דופק'
             min_limit = self.faker.pyint(min_value=55, max_value=65)
@@ -138,7 +146,7 @@ class FakeMain(object):
                 session.commit()
 
             patient_id = patient
-            at = datetime.datetime.utcnow()
+            at = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
             code = 13
             name = 'סטורציה'
             min_limit = self.faker.pyint(min_value=87, max_value=93)
@@ -162,7 +170,7 @@ class FakeMain(object):
                 session.commit()
 
             patient_id = patient
-            at = datetime.datetime.utcnow()
+            at = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
             code = 1
             name = 'חום'
             min_limit = self.faker.pyint(min_value=356, max_value=361) / 10.
@@ -191,7 +199,7 @@ class FakeMain(object):
                 session.commit()
 
             systolic_patient_id = diastolic_patient_id = patient
-            systolic_at = diastolic_at = datetime.datetime.utcnow()
+            systolic_at = diastolic_at = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
             systolic_code, diastolic_code = 23, 24
             systolic_name, diastolic_name = 'לחץ סיסטולי', 'לחץ דיאסטולי'
             systolic_min_limit = self.faker.pyfloat(min_value=90 * 0.9, max_value=90 * 1.1, right_digits=0)
@@ -258,7 +266,7 @@ class FakeMain(object):
             raise ValueError()
         for patient in patients:
             patient_id = patient
-            order_date = datetime.datetime.utcnow()
+            order_date = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
             type_ = random.choice(list(ImagingTypes)).value
             type_name = {
                 ImagingTypes.ct.value: 'CT',
@@ -283,6 +291,7 @@ class FakeMain(object):
         if chameleon_id:
             patients = {chameleon_id}
         elif department and wing:
+
             patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 5)]
         else:
             raise ValueError()
@@ -291,14 +300,15 @@ class FakeMain(object):
             if step < 10:
                 continue
             category = random.choice(list(LabCategories))
-            h_category = CategoriesInHebrew[category]
-            order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC)
-            collection_date = self.faker.date_time_between_dates('-10m', '-8m').astimezone(pytz.UTC)
+            h_category = CategoriesInHebrew[category.value]
+            order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC).strftime(
+                "%Y-%m-%dT%H:%M:%S")
+            collection_date = self.faker.date_time_between_dates('-10m', '-8m').astimezone(pytz.UTC).strftime(
+                "%Y-%m-%dT%H:%M:%S")
             order_number = random.randint(100000000, 999999999)
-            for test_type_id, test_type_name in enumerate(LabTestType[category]):
+            for test_type_name in LabTestType[category]:
                 patient_id = patient
                 order_date = order_date
-                # test_type_id = f'{category.value}{test_type_id:04}'
                 test_type_name = test_type_name
                 min_warn_bar = self.faker.pyfloat(min_value=20.0,
                                                   max_value=40.0, right_digits=2)
@@ -309,17 +319,20 @@ class FakeMain(object):
                 panic_max_warn_bar = self.faker.pyfloat(min_value=100.0,
                                                         max_value=130.0, right_digits=2)
 
+                result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC).strftime(
+                    "%Y-%m-%dT%H:%M:%S")
+                result = ''
                 if step > 30:
                     collection_date = collection_date
                     if step > 65:
                         if random.randint(0, 1):
-                            result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC)
                             result = self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2)
                 with self.session() as session:
                     session.execute(
                         sql_statements.insert_labs.format(ev_MedicalRecord=patient_id, LR_Test_code=order_number,
                                                           Lab_Headline_Name=h_category, LR_Test_Name=test_type_name,
-                                                          LR_Result=result, LR_Norm_Minimum=min_warn_bar,
+                                                          LR_Result=result,
+                                                          LR_Norm_Minimum=min_warn_bar,
                                                           LR_Norm_Maximum=max_warn_bar, LR_Result_Date=order_date,
                                                           LR_Result_Entry_Date=result_time, LR_Units=None))
                     session.commit()
@@ -332,6 +345,7 @@ class FakeMain(object):
         else:
             raise ValueError()
         for patient in patients:
+            logger.debug(patient)
             with self.session() as session:
                 session.execute(sql_statements.execute_set_responsible_doctor.format(patient))
                 session.commit()
@@ -369,8 +383,8 @@ class FakeMain(object):
             raise ValueError()
         for patient in patients:
             patient_id = patient,
-            documenting_time = datetime.datetime.utcnow(),
-            unit = department["id"],
+            documenting_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"),
+            unit = self.department["name"],
             medical_text = "נבדק"
             with self.session() as session:
                 session.execute(

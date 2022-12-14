@@ -18,7 +18,7 @@ values({ev_MedicalRecord},'{Gender}',N'{First_Name}',N'{Last_Name}','{Birth_Date
 
 select_patients_list = """ SELECT distinct p.ev_MedicalRecord FROM DemoDB.dbo.patient_info_plus p
 WHERE UnitName='{UnitName}'
-AND Wing='{unit_wing}'
+AND RoomName='{unit_wing}'
 AND p.End_Date IS NULL
 AND p.Delete_Date IS NULL"""
 
@@ -32,8 +32,8 @@ values({ev_MedicalRecord},'{Device_monitor_date}',{Device_monitor_Parameter},'{F
 {Monitoring_Max_Value},'{Device_monitor_result}') """
 
 insert_images = """INSERT INTO DemoDB.dbo.images(ev_MedicalRecord,TestOrders_Test_Date,AuxTest_Name, 
-TestOrders_Order_Status,TestDates_Panic,TestOrders_Order_Num,TestOrders_Order_Status) VALUES({ev_MedicalRecord},'{TestOrders_Test_Date}',
-N'{AuxTest_Name}', {TestOrders_Order_Status},{TestDates_Panic},'{TestOrders_Order_Num}',{TestOrders_Order_Status}) """
+TestOrders_Order_Status,TestDates_Panic,TestOrders_Order_Num) VALUES({ev_MedicalRecord},'{TestOrders_Test_Date}',
+N'{AuxTest_Name}', {TestOrders_Order_Status},{TestDates_Panic},'{TestOrders_Order_Num}') """
 
 insert_labs = """INSERT INTO DemoDB.dbo.Labs (ev_MedicalRecord,LR_Test_code,Lab_Headline_Name,LR_Test_Name,LR_Result,
 LR_Units,LR_Norm_Minimum,LR_Norm_Maximum,LR_Result_Date,LR_Result_Entry_Date) values({ev_MedicalRecord},
