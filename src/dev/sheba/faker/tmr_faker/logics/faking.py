@@ -54,13 +54,13 @@ class FakeMain(object):
             'קוצר נשימה', 'כאבים בחזה', 'סחרחורות', 'חבלת ראש', 'חבלת פנים', 'חבלה בגפיים',
             'בחילות ו/או הקאות', 'כאב ראש', 'כאב בטן', 'לאחר התעלפות'
         ])
-        esi = random.choice([1, 2, 3, 4])
+        esi = random.choice([1, 2, 3, 4, 5])
 
         with self.session() as session:
             session.execute(sql_statements.insert_admit_patient.format(ev_MedicalRecord=patient_id, Gender=gender,
                                                                        First_Name=first_name, Last_Name=last_name,
                                                                        Birth_Date=birthdate,
-                                                                       UnitName=department["Name"],
+                                                                       UnitName=department.name,
                                                                        Wing=wing, Admission_Date=arrival,
                                                                        MainCause=main_cause, ESI=esi))
             session.commit()
@@ -74,7 +74,7 @@ class FakeMain(object):
     def _get_patients(self, department, wing):
         with self.session() as session:
             result = [i[0] for i in session.execute(sql_statements.select_patients_list. \
-                                                    format(UnitName=department["Name"], unit_wing=wing))]
+                                                    format(UnitName=department.name, unit_wing=wing))]
             return result
 
     def _generate_measurements(self, chameleon_id=None, department=None, wing=None):
