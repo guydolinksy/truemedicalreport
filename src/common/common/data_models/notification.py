@@ -6,8 +6,9 @@ from pydantic import BaseModel
 
 class NotificationLevel(Enum):
     panic = 1
-    abnormal = 2
-    normal = 3
+    # abnormal = 2
+    normal = 0
+    unknown = -1
 
 
 class NotificationType(Enum):
@@ -33,5 +34,3 @@ class Notification(BaseModel):
 
     class Config:
         use_enum_values = True
-
-

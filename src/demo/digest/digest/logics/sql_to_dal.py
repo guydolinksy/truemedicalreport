@@ -123,7 +123,7 @@ class SqlToDal(object):
             measures = {}
             with self.session() as session:
                 for row in session.execute(sql_statements.query_measurements.format(
-                        unit=department.value, codes='({})'.format(','.join(map(str, DEMO_MEASUREMENT_CODES)))
+                        unit=department.value, codes='{}'.format(','.join(map(str, DEMO_MEASUREMENT_CODES)))
                 )):
                     measures.setdefault(row['MedicalRecord'], []).append(Measure(
                         value=row['Result'],
