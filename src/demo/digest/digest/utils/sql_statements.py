@@ -88,7 +88,8 @@ concat(l.LR_Result,' ',l.LR_Units)  AS Result,
 l.LR_Norm_Minimum AS NormMinimum,
 l.LR_Norm_Maximum AS NormMaximum,
 l.LR_Result_Date AS OrderDate,
-l.LR_Result_Entry_Date AS ResultTime
+l.LR_Result_Entry_Date AS ResultTime,
+l.Panic as Panic
 FROM Labs l 
 join  [dbo].[patient_info_plus] p on l.ev_MedicalRecord = p.ev_MedicalRecord
 WHERE

@@ -165,7 +165,8 @@ CREATE TABLE [dbo].[Labs](
 	[LR_Norm_Maximum] [varchar](150) NULL,
 	[LR_Result_Date] [datetime] NULL,
 	[LR_Result_Entry_Date] [datetime] NULL,
-	[LR_Delete_Date] [datetime] NULL
+	[LR_Delete_Date] [datetime] NULL,
+	[Panic] [bit] NULL
 ) ON [PRIMARY]
 GO
 /****** Object:  Table [dbo].[measurements]    Script Date: 14/12/2022 18:18:00 ******/
