@@ -97,8 +97,8 @@ GO
 CREATE TABLE [dbo].[faker_answer_HospUnit](
 	[decision] [int] NULL,
 	[name] [int] NULL,
-	[unit_name] [varchar](100) NULL,
-	[treatment_decision] [varchar](100) NULL
+	[unit_name] [nvarchar](100) NULL,
+	[treatment_decision] [nvarchar](100) NULL
 ) ON [PRIMARY]
 GO
 /****** Object:  Table [dbo].[faker_beds]    Script Date: 14/12/2022 18:18:00 ******/
@@ -120,7 +120,7 @@ GO
 CREATE TABLE [dbo].[faker_nurse_remarks](
 	[MainCause] [nvarchar](200) NULL,
 	[gender] [nvarchar](2) NULL,
-	[remarks] [varchar](500) NULL
+	[remarks] [nvarchar](4000) NULL
 ) ON [PRIMARY]
 GO
 /****** Object:  Table [dbo].[faker_wing_Doctor]    Script Date: 14/12/2022 18:18:00 ******/
@@ -211,10 +211,10 @@ CREATE TABLE [dbo].[patient_info_plus](
 	[Referral_Title] [nvarchar](100) NULL,
 	[Referral_FirstName] [nvarchar](100) NULL,
 	[Referral_LastName] [nvarchar](100) NULL,
-	[Treatmant_Decision] [varchar](100) NULL,
-	[Treatment_UnitName] [varchar](100) NULL,
-	[First_Name] [varchar](100) NULL,
-	[Last_Name] [varchar](100) NULL,
+	[Treatmant_Decision] [nvarchar](100) NULL,
+	[Treatment_UnitName] [nvarchar](100) NULL,
+	[First_Name] [nvarchar](100) NULL,
+	[Last_Name] [nvarchar](100) NULL,
 	[Wing] [nvarchar](100) NULL
 ) ON [PRIMARY]
 GO
