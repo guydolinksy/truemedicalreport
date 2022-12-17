@@ -40,6 +40,6 @@ LR_Units,LR_Norm_Minimum,LR_Norm_Maximum,LR_Result_Date,LR_Result_Entry_Date) va
 {LR_Test_code},N'{Lab_Headline_Name}',N'{LR_Test_Name}',N'{LR_Result}',N'{LR_Units}',N'{LR_Norm_Minimum}',
 N'{LR_Norm_Maximum}','{LR_Result_Date}','{LR_Result_Entry_Date}') """
 
-update_doctor_visit = """update DemoDB.dbo.patient_info_plus SET Doctor_intake_MedicalText=N'{
-Doctor_intake_MedicalText}' , Doctor_intake_Time ='{Doctor_intake_Time}' where ev_MedicalRecord= {ev_MedicalRecord} 
+update_doctor_visit = """update DemoDB.dbo.patient_info_plus SET Doctor_intake_MedicalText=N'{Doctor_intake_MedicalText}'
+ , Doctor_intake_Time ='{Doctor_intake_Time}' where ev_MedicalRecord= {ev_MedicalRecord} 
 and ev_Unit={doc_unit} and Delete_Date is null AND End_Date IS NULL """
