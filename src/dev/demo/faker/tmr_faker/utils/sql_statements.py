@@ -12,9 +12,9 @@ delete_measurements = """EXEC DemoDB.sys.sp_executesql N' TRUNCATE TABLE  [dbo].
 execute_update_nurse_summary = """execute DemoDB.dbo.proc_faker_nurse_remarks {} """
 
 insert_admit_patient = """insert into DemoDB.dbo.patient_info_plus
-(ev_MedicalRecord,Gender,First_Name,Last_Name,Birth_Date,UnitName,RoomName,Admission_Date,MainCause,ESI)
+(ev_MedicalRecord,Gender,First_Name,Last_Name,Birth_Date,UnitName,RoomName,Admission_Date,MainCause,ESI,ev_Unit)
 values({ev_MedicalRecord},'{Gender}',N'{First_Name}',N'{Last_Name}','{Birth_Date}',N'{UnitName}',N'{Wing}'
-,'{Admission_Date}',N'{MainCause}','{ESI}') """
+,'{Admission_Date}',N'{MainCause}','{ESI}','{ev_Unit}') """
 
 select_patients_list = """ SELECT distinct p.ev_MedicalRecord FROM DemoDB.dbo.patient_info_plus p
 WHERE UnitName='{UnitName}'
