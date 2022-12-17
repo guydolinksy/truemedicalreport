@@ -13,13 +13,6 @@ from common.data_models.image import ImagingTypes, ImagingStatus
 from common.data_models.labs import LabCategories, LabTestType, CategoriesInHebrew
 from common.data_models.notification import NotificationLevel
 from tmr_faker.utils import sql_statements
-
-# from digest.models.arc_patient import ARCPatient
-# from digest.models.chameleon_imaging import ChameleonImaging
-# from digest.models.chameleon_labs import ChameleonLabs
-# from digest.models.chameleon_main import ChameleonMain, Departments
-# from digest.models.chameleon_measurements import ChameleonMeasurements
-# from digest.models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
 from .. import config
 
 logger = logbook.Logger(__name__)
