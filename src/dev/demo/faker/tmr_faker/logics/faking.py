@@ -388,9 +388,9 @@ class FakeMain(object):
             medical_text = "נבדק"
             with self.session() as session:
                 session.execute(
-                    sql_statements.update_doctor_visits.format(ev_MedicalRecord=patient_id,
-                                                               Doctor_intake_MedicalText=medical_text,
-                                                               Doctor_intake_Time=documenting_time, doc_unit=unit))
+                    sql_statements.update_doctor_visit.format(ev_MedicalRecord=patient_id,
+                                                              Doctor_intake_MedicalText=medical_text,
+                                                              Doctor_intake_Time=documenting_time, doc_unit=unit))
                 session.commit()
 
     def _generate_room_placements(self, chameleon_id=None, department=None, wing=None):
