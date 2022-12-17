@@ -62,7 +62,8 @@ class FakeMain(object):
                                                                        Birth_Date=birthdate,
                                                                        UnitName=department.name,
                                                                        Wing=wing, Admission_Date=arrival,
-                                                                       MainCause=main_cause, ESI=esi))
+                                                                       MainCause=main_cause, ESI=esi,
+                                                                       ev_Unit=department.value))
             session.commit()
         return patient_id
 
