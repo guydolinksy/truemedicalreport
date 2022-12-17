@@ -12,9 +12,9 @@ delete_measurements = """EXEC DemoDB.sys.sp_executesql N' TRUNCATE TABLE  [dbo].
 execute_update_nurse_summary = """execute DemoDB.dbo.proc_faker_nurse_remarks {} """
 
 insert_admit_patient = """insert into DemoDB.dbo.patient_info_plus
-(ev_MedicalRecord,Gender,First_Name,Last_Name,Birth_Date,UnitName,RoomName,Admission_Date,MainCause,ESI)
+(ev_MedicalRecord,Gender,First_Name,Last_Name,Birth_Date,UnitName,RoomName,Admission_Date,MainCause,ESI,ev_Unit)
 values({ev_MedicalRecord},'{Gender}',N'{First_Name}',N'{Last_Name}','{Birth_Date}',N'{UnitName}',N'{Wing}'
-,'{Admission_Date}',N'{MainCause}','{ESI}') """
+,'{Admission_Date}',N'{MainCause}','{ESI}','{ev_Unit}') """
 
 select_patients_list = """ SELECT distinct p.ev_MedicalRecord FROM DemoDB.dbo.patient_info_plus p
 WHERE UnitName='{UnitName}'
@@ -36,10 +36,10 @@ TestOrders_Order_Status,TestDates_Panic,TestOrders_Order_Num) VALUES({ev_Medical
 N'{AuxTest_Name}', {TestOrders_Order_Status},{TestDates_Panic},'{TestOrders_Order_Num}') """
 
 insert_labs = """INSERT INTO DemoDB.dbo.Labs (ev_MedicalRecord,LR_Test_code,Lab_Headline_Name,LR_Test_Name,LR_Result,
-LR_Units,LR_Norm_Minimum,LR_Norm_Maximum,LR_Result_Date,LR_Result_Entry_Date) values({ev_MedicalRecord},
+LR_Units,LR_Norm_Minimum,LR_Norm_Maximum,LR_Result_Date,LR_Result_Entry_Date,Panic) values({ev_MedicalRecord},
 {LR_Test_code},N'{Lab_Headline_Name}',N'{LR_Test_Name}',N'{LR_Result}',N'{LR_Units}',N'{LR_Norm_Minimum}',
-N'{LR_Norm_Maximum}','{LR_Result_Date}','{LR_Result_Entry_Date}') """
+N'{LR_Norm_Maximum}','{LR_Result_Date}','{LR_Result_Entry_Date}',{Panic}) """
 
-update_doctor_visit = """update DemoDB.dbo.patient_info_plus SET Doctor_intake_MedicalText=N'{
-Doctor_intake_MedicalText}' , Doctor_intake_Time ='{Doctor_intake_Time}' where ev_MedicalRecord= {ev_MedicalRecord} 
+update_doctor_visit = """update DemoDB.dbo.patient_info_plus SET Doctor_intake_MedicalText=N'{Doctor_intake_MedicalText}'
+ , Doctor_intake_Time ='{Doctor_intake_Time}' where ev_MedicalRecord= {ev_MedicalRecord} 
 and ev_Unit={doc_unit} and Delete_Date is null AND End_Date IS NULL """

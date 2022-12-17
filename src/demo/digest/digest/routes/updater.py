@@ -38,7 +38,7 @@ async def update_measurements(department: Departments, dal: SqlToDal = Depends(d
     logger.debug("Update measures...")
     res = dal.update_measurements(department=department)
     logger.debug("Done.")
-    # return res
+
 
 
 @updater_router.on_event('startup')
@@ -50,7 +50,7 @@ async def update_imagings(department: Departments, dal: SqlToDal = Depends(dal_u
     logger.debug("Update imagings...")
     res = dal.update_imaging(department=department)
     logger.debug("Done.")
-    # return res
+
 
 
 @updater_router.on_event('startup')
@@ -62,11 +62,12 @@ async def update_labs(department: Departments, dal: SqlToDal = Depends(dal_updat
     logger.debug("Update labs...")
     res = dal.update_labs(department=department)
     logger.debug("Done.")
-    # return res
 
 
-@updater_router.on_event('startup')
-@repeat_every(seconds=60, logger=logger)
+
+# TODO  remove this commet to enable referrals faking
+# @updater_router.on_event('startup')
+# @repeat_every(seconds=60, logger=logger)
 @safe(logger)
 @inject_dependencies(department=Departments.er)
 @updater_router.post("/update_referrals", status_code=201)

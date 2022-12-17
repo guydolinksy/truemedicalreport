@@ -13,13 +13,6 @@ from common.data_models.image import ImagingTypes, ImagingStatus
 from common.data_models.labs import LabCategories, LabTestType, CategoriesInHebrew
 from common.data_models.notification import NotificationLevel
 from tmr_faker.utils import sql_statements
-
-# from digest.models.arc_patient import ARCPatient
-# from digest.models.chameleon_imaging import ChameleonImaging
-# from digest.models.chameleon_labs import ChameleonLabs
-# from digest.models.chameleon_main import ChameleonMain, Departments
-# from digest.models.chameleon_measurements import ChameleonMeasurements
-# from digest.models.chameleon_medical_free_text import ChameleonMedicalText, FreeTextCodes, Units
 from .. import config
 
 logger = logbook.Logger(__name__)
@@ -69,7 +62,8 @@ class FakeMain(object):
                                                                        Birth_Date=birthdate,
                                                                        UnitName=department.name,
                                                                        Wing=wing, Admission_Date=arrival,
-                                                                       MainCause=main_cause, ESI=esi))
+                                                                       MainCause=main_cause, ESI=esi,
+                                                                       ev_Unit=department.value))
             session.commit()
         return patient_id
 
@@ -291,7 +285,6 @@ class FakeMain(object):
         if chameleon_id:
             patients = {chameleon_id}
         elif department and wing:
-
             patients = [p for p in self._get_patients(department, wing) if not random.randint(0, 5)]
         else:
             raise ValueError()
@@ -322,11 +315,14 @@ class FakeMain(object):
                 result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC).strftime(
                     "%Y-%m-%dT%H:%M:%S")
                 result = ''
+                panic = 0
                 if step > 30:
                     collection_date = collection_date
                     if step > 65:
                         if random.randint(0, 1):
                             result = self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2)
+                            if step > 90:
+                                panic = 1
                 with self.session() as session:
                     session.execute(
                         sql_statements.insert_labs.format(ev_MedicalRecord=patient_id, LR_Test_code=order_number,
@@ -334,7 +330,7 @@ class FakeMain(object):
                                                           LR_Result=result,
                                                           LR_Norm_Minimum=min_warn_bar,
                                                           LR_Norm_Maximum=max_warn_bar, LR_Result_Date=order_date,
-                                                          LR_Result_Entry_Date=result_time, LR_Units=None))
+                                                          LR_Result_Entry_Date=result_time, LR_Units=None, Panic=panic))
                     session.commit()
 
     def _generate_referrals_dates(self, chameleon_id=None, department=None, wing=None):
@@ -388,9 +384,9 @@ class FakeMain(object):
             medical_text = "נבדק"
             with self.session() as session:
                 session.execute(
-                    sql_statements.update_doctor_visits.format(ev_MedicalRecord=patient_id,
-                                                               Doctor_intake_MedicalText=medical_text,
-                                                               Doctor_intake_Time=documenting_time, doc_unit=unit))
+                    sql_statements.update_doctor_visit.format(ev_MedicalRecord=patient_id,
+                                                              Doctor_intake_MedicalText=medical_text,
+                                                              Doctor_intake_Time=documenting_time, doc_unit=unit))
                 session.commit()
 
     def _generate_room_placements(self, chameleon_id=None, department=None, wing=None):
