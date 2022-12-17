@@ -315,6 +315,7 @@ class FakeMain(object):
                 result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC).strftime(
                     "%Y-%m-%dT%H:%M:%S")
                 result = ''
+                panic = 0
                 if step > 30:
                     collection_date = collection_date
                     if step > 65:
@@ -329,7 +330,7 @@ class FakeMain(object):
                                                           LR_Result=result,
                                                           LR_Norm_Minimum=min_warn_bar,
                                                           LR_Norm_Maximum=max_warn_bar, LR_Result_Date=order_date,
-                                                          LR_Result_Entry_Date=result_time, LR_Units=None,Panic=panic))
+                                                          LR_Result_Entry_Date=result_time, LR_Units=None, Panic=panic))
                     session.commit()
 
     def _generate_referrals_dates(self, chameleon_id=None, department=None, wing=None):
