@@ -94,7 +94,11 @@ export const PatientStatus = ({patient, style}) => {
             <Tooltip overlay={'זמן מקבלה'}>
                 <RelativeTime className={arrivalClass} date={value.admission.arrival}/>
             </Tooltip></div>
-        <div><ArrowLeftOutlined/>&nbsp;{
+        <div>
+        <Tooltip overlay='דחיפות'>
+            <strong>{value.severity.value}&nbsp;</strong>
+        </Tooltip>
+          <ArrowLeftOutlined/>&nbsp;{
             value.treatment.destination || <span className={'error-text'}>(לא הוחלט)</span>
         }</div>
 
