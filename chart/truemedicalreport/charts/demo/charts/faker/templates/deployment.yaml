@@ -39,7 +39,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: 'DB_CONNECTION'
-              value: '"mssql+pyodbc://sa:Password123@{{ .Values.global.fullname.demoDB }}:{{ .Values.global.servicePort.demoDB }}/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"'
+              value: '"mssql+pyodbc://sa:Password123@{{ .Values.global.fullname.demoDB }}:{{ .Values.global.servicePort.demoDB }}/DemoDB?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"'
           {{- if .Values.global.devMode.enabled }}
           volumeMounts: {{ if not (len .Values.devMappings) }}[ ]{{ end }}
             {{- range $index, $value := .Values.devMappings }}

@@ -9,11 +9,11 @@ from .severity import Severity
 
 
 class LabCategories(Enum):
-    completeBloodCount = 1001
-    gases = 1020
-    biochemistry = 1050
-    coagulation = 1080
-    unknown = 1201
+    completeBloodCount = 1
+    gases = 2
+    biochemistry = 3
+    coagulation = 4
+    unknown = 5
 
 
 class LabStatus(Enum):
@@ -23,9 +23,9 @@ class LabStatus(Enum):
 
 
 CategoriesInHebrew = {
-    LabCategories.completeBloodCount.value: "ספירת תאים",
+    LabCategories.completeBloodCount.value: "CBC",
     LabCategories.gases.value: "בדיקת גזים",
-    LabCategories.biochemistry.value: "ביוכימיה",
+    LabCategories.biochemistry.value: "ביוכימיה בדם",
     LabCategories.coagulation.value: "תפקודי קרישה",
     LabCategories.unknown.value: "אחר",
 }
@@ -41,6 +41,7 @@ LabTestType = {
     LabCategories.gases: ["pCO2", "pO2"],
     LabCategories.biochemistry: ["troponin", "pH"],
     LabCategories.coagulation: ["pt", "ptt", "d-dimer"],
+    LabCategories.unknown: []
 }
 
 

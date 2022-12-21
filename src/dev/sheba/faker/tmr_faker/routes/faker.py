@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from fastapi_utils.tasks import repeat_every
 
 from tmr_faker.logics.faking import FakeMain
-from digest.logics.utils import inject_dependencies
+from common.utilities.exceptions import inject_dependencies
 from digest.logics.sql_to_dal import Departments
 
 faker_router = APIRouter()
