@@ -329,7 +329,6 @@ class MedicalDal:
             for key, warning in lab.warnings:
                 updated.warnings.setdefault(key, warning)
 
-            logger.debug('%%%%%%%%%%%%%%%% {} {}', patient_id, lab.get_instance_id())
             updated.awaiting.setdefault(AwaitingTypes.laboratory.value, {}).__setitem__(lab.get_instance_id(), Awaiting(
                 subtype=lab.category,
                 name=lab.category,

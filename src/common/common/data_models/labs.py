@@ -59,6 +59,7 @@ class Laboratory(BaseModel):
     max_warn_bar: Optional[float]
     max_panic_bar: Optional[float]
     result: Optional[float]
+    panic: Optional[bool]
     status: LabStatus
 
     @property

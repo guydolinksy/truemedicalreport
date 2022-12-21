@@ -1,4 +1,4 @@
-FROM python:3.10-alpine AS dev
+FROM python:3.10.8-alpine3.15 AS dev
 
 RUN apk add build-base openldap-dev unixodbc-dev
 RUN echo -n "INPUT ( libldap.so )" > /usr/lib/libldap_r.so

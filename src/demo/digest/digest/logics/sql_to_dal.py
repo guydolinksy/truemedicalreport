@@ -183,6 +183,7 @@ class SqlToDal(object):
                             min_warn_bar=row["NormMinimum"],
                             max_warn_bar=row["NormMaximum"],
                             panic_max_warn_bar=None,
+                            panic=row["Panic"],
                             status=(LabStatus.ordered if row["ResultTime"] is None else LabStatus.analyzed)
 
                         ).dict(exclude_unset=True))

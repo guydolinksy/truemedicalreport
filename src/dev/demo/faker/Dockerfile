@@ -1,4 +1,4 @@
-FROM python:3.10-alpine AS dev
+FROM python:3.10.8-alpine3.15 AS dev
 ENV HOME=/opt
 
 RUN apk add build-base unixodbc unixodbc-dev
