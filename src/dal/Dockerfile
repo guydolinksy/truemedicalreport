@@ -1,4 +1,4 @@
-FROM python:3.10-alpine AS dev
+FROM python:3.10.8-alpine3.15 AS dev
 WORKDIR /opt
 
 RUN apk add build-base openldap-dev
@@ -17,7 +17,7 @@ RUN python -m pip install -e /opt/dal
 ENV DEBUG=1
 CMD python -m dal
 
-FROM python:3.10-alpine
+FROM python:3.10.8-alpine3.15
 WORKDIR /opt
 
 RUN apk add build-base openldap-dev
