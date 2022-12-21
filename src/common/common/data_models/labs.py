@@ -9,11 +9,11 @@ from .severity import Severity
 
 
 class LabCategories(Enum):
-    completeBloodCount = 1
-    gases = 2
-    biochemistry = 3
-    coagulation = 4
-    unknown = 5
+    completeBloodCount = "CBC"
+    gases = "בדיקת גזים"
+    biochemistry = "ביוכימיה בדם"
+    coagulation = "תפקודי קרישה"
+    unknown = "אחר"
 
 
 class LabStatus(Enum):
@@ -51,7 +51,7 @@ class Laboratory(BaseModel):
     at: str
     test_type_id: int
     test_type_name: str
-    category_id: int
+    category_id: str
     category_name: str
     test_tube_id: Optional[int]
     min_panic_bar: Optional[float]

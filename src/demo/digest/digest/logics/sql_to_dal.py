@@ -168,23 +168,26 @@ class SqlToDal(object):
             labs = {}
             with self.session() as session:
                 for row in session.execute(sql_statements.query_labs.format(unit=department.value)):
-                    at = row["OrderDate"].astimezone(pytz.UTC).isoformat()
-                    labs.setdefault(row['MedicalRecord'], []).append(Laboratory(
-                        patient_id=row['MedicalRecord'],
-                        external_id=f'{row["MedicalRecord"]}#{at}#{row["TestCode"]}',
-                        at=at,
-                        test_type_id=row["TestCode"],
-                        test_type_name=row["TestName"],
-                        category_id=int(str(row["TestCode"])[0:4]),
-                        category_name=row["Category"],
-                        test_tube_id=9,
-                        panic_min_warn_bar=None,
-                        min_warn_bar=row["NormMinimum"],
-                        max_warn_bar=row["NormMaximum"],
-                        panic_max_warn_bar=None,
-                        status=(LabStatus.ordered if row["ResultTime"] is None else LabStatus.analyzed)
+                    try:
+                        at = row["OrderDate"].astimezone(pytz.UTC).isoformat()
+                        labs.setdefault(row['MedicalRecord'], []).append(Laboratory(
+                            patient_id=row['MedicalRecord'],
+                            external_id=f'{row["MedicalRecord"]}#{at}#{row["TestCode"]}',
+                            at=at,
+                            test_type_id=row["TestCode"],
+                            test_type_name=row["TestName"],
+                            category_id=CategoriesInHebrew[row["Category"]],
+                            category_name=CategoriesInHebrew[row["Category"]],
+                            test_tube_id=9,
+                            panic_min_warn_bar=None,
+                            min_warn_bar=row["NormMinimum"],
+                            max_warn_bar=row["NormMaximum"],
+                            panic_max_warn_bar=None,
+                            status=(LabStatus.ordered if row["ResultTime"] is None else LabStatus.analyzed)
 
-                    ).dict(exclude_unset=True))
+                        ).dict(exclude_unset=True))
+                    except KeyError as e:
+                        logger.error(f"Lab from category {row['Category']} isn't exists in internal mapping")
             res = requests.post(f'{self.dal_url}/departments/{department.name}/labs',
                                 json={"labs": labs})
             res.raise_for_status()
