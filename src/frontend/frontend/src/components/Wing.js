@@ -229,7 +229,7 @@ const WingStatus = () => {
                     </CheckableTag>)}
                 </div>
                 <Divider />
-                <Tree treeData={value.filters.awaiting.map(toTree)} style={{ width: '100%' }} checkable multiple
+                <Tree treeData={value.filters.awaiting.map(toTree)} style={{ width: '100%' }} checkable multiple defaultExpandedKeys={value.filters.awaiting.map(x => x.key)}
                     placeholder="סינון לפי המתנה עבור:" onCheck={setSelectedAwaiting}
                     checkedKeys={selectedAwaiting} />
                 <Divider />
