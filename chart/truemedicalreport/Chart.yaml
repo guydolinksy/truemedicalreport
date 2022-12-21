@@ -1,0 +1,29 @@
+apiVersion: v2
+appVersion: develop-c082b60
+description: A helm chart for True Medical Report
+name: truemedicalreport
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: ingress-nginx
+    version: 4.2.5
+    repository: https://kubernetes.github.io/ingress-nginx
+    condition: ingress-nginx.enabled
+  - name: mongodb
+    version: 13.1.5
+    repository: https://charts.bitnami.com/bitnami/mongodb
+    condition: mongodb.enabled
+  - name: redis
+    version: 17.1.7
+    repository: https://charts.bitnami.com/bitnami/redis
+    condition: redis.enabled
+
+  # Note - in Helm, all subcharts are enabled by default.
+  # This may be an issue here since the "sheba" and "demo" subchart are in conflict - only one of them
+  # can live at the same time.
+  # Be sure to choose which one to run, see values.yaml.
+  - name: sheba
+    condition: sheba.enabled
+  - name: demo
+    condition: demo.enabled

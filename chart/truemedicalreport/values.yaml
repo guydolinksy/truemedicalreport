@@ -1,0 +1,73 @@
+global: &global
+  debug: false
+  devMode:
+    enabled: false
+    baseDir: /path/to/chart/dir/..
+  ingress:
+    className: nginx
+    host: true-medical-report.local
+    tls:
+      enabled: false
+      secretName: tls-tmr-ingress
+  helpers:
+    busybox:
+      image: busybox
+  fullname:
+    mongo: &mongo-fullname tmr-mongodb
+    redis: &redis-fullname tmr-redis
+    dal: &dal-fullname tmr-dal
+    backend: &backend-fullname tmr-backend
+    frontend: &frontend-fullname tmr-frontend
+    digest: &digest-fullname tmr-digest
+  servicePort:
+    mongo: 27017
+    redis: 6379
+    dal: 80
+    backend: 80
+    frontend: 80
+    digest: 80
+dal:
+  global:
+    <<: *global
+  fullnameOverride: *dal-fullname
+backend:
+  global:
+    <<: *global
+  fullnameOverride: *backend-fullname
+frontend:
+  global:
+    <<: *global
+  fullnameOverride: *frontend-fullname
+demo:
+  global:
+    <<: *global
+  fullnameOverride: *digest-fullname
+  enabled: false
+sheba:
+  global:
+    <<: *global
+  fullnameOverride: *digest-fullname
+  enabled: false
+  input:
+    external:
+      secretName: ''
+      secretKey: ''
+redis:
+  enabled: true
+  fullnameOverride: *redis-fullname
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: false
+  replica:
+    replicaCount: 0
+    persistence:
+      enabled: false
+ingress-nginx:
+  enabled: true
+mongodb:
+  enabled: true
+  fullnameOverride: *mongo-fullname
+  auth:
+    enabled: false

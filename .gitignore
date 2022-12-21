@@ -130,6 +130,17 @@ dmypy.json
 
 # PyCharm
 .idea/
-src/frontend/tmr/package-lock.json
+src/frontend/frontend/package-lock.json
 
+# IntelliJ
+*.iml
+
+# MacOS
 .DS_Store
+
+# asdf-vm
+.tool-versions
+
+# Mongo data volume
+mongo-data
+

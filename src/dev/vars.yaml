@@ -1,0 +1,29 @@
+global:
+  debug: true
+  devMode:
+    enabled: true
+    baseDir: '/set/to/$(pwd)'
+  ingress:
+    host: localhost
+#change this value to true to expose swagger out of kubernetes network
+ingress-nginx:
+  enabled: false
+  controller:
+    admissionWebhooks:
+      enabled: false
+mongodb:
+  service:
+    type: NodePort
+    nodePorts:
+      mongodb: 32717
+
+# Note, these two are mutually exclusive.
+# set either sheba.enable / demo.enable to true, NOT BOTH.
+sheba:
+  enabled: false  # This...
+  input:
+    internal:
+      enabled: true
+
+demo:
+  enabled: true  # ...or this. but not both

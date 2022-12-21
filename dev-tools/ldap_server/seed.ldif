@@ -1,0 +1,25 @@
+dn: uid=harry,dc=hogwarts,dc=ac,dc=uk
+objectClass: inetOrgPerson
+objectClass: simpleSecurityObject
+cn: harry
+sn: potter
+uid: harry
+userPassword: password
+
+dn: uid=dumbledore,dc=hogwarts,dc=ac,dc=uk
+objectClass: inetOrgPerson
+objectClass: simpleSecurityObject
+cn: albus
+sn: dumbledore
+uid: dumbledore
+userPassword: krembo
+
+dn: cn=tmr-admins,dc=hogwarts,dc=ac,dc=uk
+objectClass: groupOfUniqueNames
+cn: tmr-admins
+uniqueMember: uid=dumbledore,dc=hogwarts,dc=ac,dc=uk
+
+dn: cn=tmr-users,dc=hogwarts,dc=ac,dc=uk
+objectClass: groupOfUniqueNames
+cn: tmr-users
+uniqueMember: uid=harry,dc=hogwarts,dc=ac,dc=uk

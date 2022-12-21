@@ -1,0 +1,1 @@
+ docker save guydo/tmr-{backend,frontend,dal,sheba-digest}:latest guydo/tmr-{backend,frontend,dal,sheba-digest}:dev > images.docker

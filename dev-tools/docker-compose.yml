@@ -1,0 +1,60 @@
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo-data:/data/db
+
+  chameleon-sheba:
+    profiles:
+      - sheba
+    build:
+      dockerfile: dev/sheba/chameleon/Dockerfile
+      context: ../src
+    volumes:
+      - chameleon-sheba:/var/opt/mssql
+    environment:
+      - "MSSQL_TCP_PORT=1433"
+      - "SA_PASSWORD=Password123"
+      - "TZ=UTC"
+    ports:
+      - "1433:1433"
+
+  chameleon-demo:
+    profiles:
+      - demo
+    build:
+      dockerfile: dev/demo/demo-db/Dockerfile
+      context: ../src
+    volumes:
+      - chameleon-demo:/var/opt/mssql
+    environment:
+      - "MSSQL_TCP_PORT=1433"
+      - "SA_PASSWORD=Password123"
+      - "TZ=UTC"
+    ports:
+      - "1433:1433"
+
+  # See the ldap_server Dockerfile for instructions.
+  ldap:
+    profiles:
+      - ldap
+    build:
+      dockerfile: ./Dockerfile
+      context: ./ldap_server
+    ports:
+      - "389:389"
+
+volumes:
+  mongo-data:
+    name: mongo-data
+  chameleon-sheba:
+    name: chameleon-sheba
+  chameleon-demo:
+    name: chameleon-demo

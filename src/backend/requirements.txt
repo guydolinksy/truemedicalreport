@@ -1,4 +1,4 @@
-fastapi==0.75.0
+fastapi_offline
 pymongo==4.0.2
 uvicorn==0.17.6
 requests
@@ -8,6 +8,6 @@ asyncio_redis
 logbook
 websockets
 fastapi-login
-python-ldap
-interruptingcow
 werkzeug
+environs
+cachetools

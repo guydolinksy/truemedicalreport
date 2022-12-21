@@ -1,0 +1,5 @@
+
+Congratulations,
+
+True Medical Report is now deployed, though it may take a while to be up and running.
+Visit us at: http{{ if .Values.global.ingress.tls.enabled }}s{{ end }}://{{ .Values.global.ingress.host }}

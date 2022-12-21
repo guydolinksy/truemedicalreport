@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="TMR Demo" type="CompoundRunConfigurationType">
+    <toRun name="frontend" type="js.build_tools.npm" />
+    <toRun name="backend" type="PythonConfigurationType" />
+    <toRun name="dal" type="PythonConfigurationType" />
+    <toRun name="digest [demo]" type="PythonConfigurationType" />
+    <toRun name="faker [demo]" type="PythonConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>
