@@ -5,6 +5,7 @@ global:
     baseDir: '/set/to/$(pwd)'
   ingress:
     host: localhost
+#change this value to true to expose swagger out of kubernetes network
 ingress-nginx:
   enabled: false
   controller:
