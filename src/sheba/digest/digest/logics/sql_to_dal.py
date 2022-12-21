@@ -164,14 +164,15 @@ class SqlToDal(object):
                 for row in session.execute(sql_statements.query_labs.format(unit=department.value)):
                     try:
                         at = row["OrderDate"].astimezone(pytz.UTC).isoformat()
+                        category = row["Category"].strip()
                         labs.setdefault(row['MedicalRecord'], []).append(Laboratory(
                             patient_id=row['MedicalRecord'],
                             external_id=f'{row["MedicalRecord"]}#{at}#{row["TestCode"]}',
                             at=at,
                             test_type_id=row["TestCode"],
                             test_type_name=row["TestName"],
-                            category_id=CategoriesInHebrew[row["Category"]],
-                            category_name=CategoriesInHebrew[row["Category"]],
+                            category_id=CategoriesInHebrew[category],
+                            category_name=CategoriesInHebrew[category],
                             test_tube_id=9,
                             panic_min_warn_bar=None,
                             min_warn_bar=row["NormMinimum"],
@@ -181,7 +182,8 @@ class SqlToDal(object):
 
                         ).dict(exclude_unset=True))
                     except KeyError as e:
-                        logger.error(f"Lab from category {row['Category']} isn't exists in internal mapping")
+                        logger.error(
+                            f"Lab from category {row['Category']} isn't exists in internal mapping - medical record {row['MedicalRecord']}")
             res = requests.post(f'{self.dal_url}/departments/{department.name}/labs',
                                 json={"labs": labs})
             res.raise_for_status()
