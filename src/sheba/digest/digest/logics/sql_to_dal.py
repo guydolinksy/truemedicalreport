@@ -81,7 +81,7 @@ class SqlToDal(object):
                     patients.append(ExternalPatient(
                         external_id=row["MedicalRecord"],
                         info=Person(
-                            id_=row["MedicalRecord"],
+                            id_=row["PatientID"],
                             name=row["FullName"],
                             gender='male' if row["Gender"] == 'זכר' else 'female',
                             birthdate=utils.datetime_utc_serializer(row["BirthDate"]),
