@@ -348,7 +348,7 @@ class MedicalDal:
             updated_referral = previous.copy()
             updated_referral.completed = True
             await self.atomic_update_referral(
-                {"_id": ObjectId(previous.oid)},
+                {"external_id": previous.external_id},
                 updated_referral.dict(exclude_unset=True),
             )
             notification = updated_referral.to_notification()
@@ -374,7 +374,7 @@ class MedicalDal:
 
         elif previous and referral:
             await self.atomic_update_referral(
-                {"_id": ObjectId(previous.oid)},
+                {"external_id": previous.external_id},
                 referral.dict(exclude_unset=True),
             )
         elif not previous and referral:

@@ -6,8 +6,6 @@ from common.data_models.notification import NotificationLevel, Notification, Not
 
 
 class Referral(BaseModel):
-    oid: Optional[str]
-
     patient_id: str
 
     external_id: str
