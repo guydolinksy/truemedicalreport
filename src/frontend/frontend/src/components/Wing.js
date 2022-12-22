@@ -1,39 +1,14 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import {
-    Badge,
-    Card,
-    Col,
-    Collapse,
-    Divider,
-    Empty,
-    Input,
-    Layout,
-    List,
-    Menu,
-    Radio,
-    Row,
-    Select,
-    Space,
-    Spin,
-    Tree,
-    Tag
-} from 'antd';
-import { MIN_WIDTH, Patient } from "./Patient";
-import { createContext } from "../hooks/DataContext";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRightFromBracket, } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router";
-import { PatientInfo } from "./PatientInfo";
+import React, {useCallback, useContext, useEffect, useState} from 'react';
+import {Badge, Card, Collapse, Divider, Empty, Input, Layout, List, Row, Select, Space, Tag} from 'antd';
+import {createContext} from "../hooks/DataContext";
+import {useNavigate} from "react-router";
 import debounce from 'lodash/debounce';
-import { Highlighter } from './Highlighter'
-import { Bed } from "./Bed";
-import { FilterOutlined, PushpinOutlined, UserOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import {Highlighter} from './Highlighter'
+import {Bed} from "./Bed";
+import {FilterOutlined, PushpinOutlined, UserOutlined} from "@ant-design/icons";
+import {Link} from "react-router-dom";
 import Moment from "react-moment";
-
-import { useViewport } from "./UseViewPort";
-import moment from 'moment';
-import { useLocalStorage } from "../hooks/localStorageHook";
+import {useLocalStorage} from "../hooks/localStorageHook";
 
 const { Option } = Select;
 const { Search } = Input;
@@ -188,9 +163,8 @@ const WingStatus = () => {
 
     const filterTagsContainerStyle = {
         display: 'flex',
-        flexWrap: 'wrap',
+        flexWrap: 'nowrap',
         gap: '5px 0',
-        maxHeight: '45px',
         overflow: 'auto',
     }
 
@@ -206,9 +180,9 @@ const WingStatus = () => {
             <Panel key={'basic'} header={value.details.name} extra={<FilterOutlined />}>
                 <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
                     placeholder={'חיפוש:'} />
-                <Divider />
+                <Divider style={{marginTop: 10, marginBottom: 10}}/>
                 <div style={filterTagsContainerStyle}>
-                    <span>סינון לפי רופא.ה מטפל.ת:</span>
+                    <b style={{whiteSpace: "nowrap"}}>מטפל.ת:</b>
                     {value.filters.doctors.map(filter => <CheckableTag
                         key={filter.key}
                         checked={selectedDoctors.indexOf(filter.key) > -1}
@@ -217,9 +191,9 @@ const WingStatus = () => {
                         {filter.title}
                     </CheckableTag>)}
                 </div>
-                <Divider />
+                <Divider style={{marginTop: 10, marginBottom: 10}}/>
                 <div style={filterTagsContainerStyle}>
-                    <span>סינון לפי סטטוס החלטה:</span>
+                    <b style={{whiteSpace: "nowrap"}}>יעד:</b>
                     {value.filters.treatments.map(filter => <CheckableTag
                         key={filter.key}
                         checked={selectedTreatments.indexOf(filter.key) > -1}
@@ -228,25 +202,25 @@ const WingStatus = () => {
                         {filter.title}
                     </CheckableTag>)}
                 </div>
-                <Divider />
+                <Divider style={{marginTop: 10, marginBottom: 10}}/>
                 <Tree treeData={value.filters.awaiting.map(toTree)} style={{ width: '100%' }} checkable multiple defaultExpandedKeys={value.filters.awaiting.map(x => x.key)}
                     placeholder="סינון לפי המתנה עבור:" onCheck={setSelectedAwaiting}
                     checkedKeys={selectedAwaiting} />
-                <Divider />
+                <Divider style={{marginTop: 10, marginBottom: 10}}/>
                 <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
                     buttonStyle={"solid"}
                     style={{ width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex" }}>
                     <Radio.Button value={"location"} style={{ flex: "1 1 30px", textAlign: "center" }}>
-                        מיקום
+                        <span style={{whiteSpace}}>מיקום</span>
                     </Radio.Button>
                     <Radio.Button value={"arrival"} style={{ flex: "1 1 50px", textAlign: "center" }}>
-                        זמן קבלה
+                        <span style={{whiteSpace}}>זמן קבלה</span>
                     </Radio.Button>
                     <Radio.Button value={"name"} style={{ flex: "1 1 50px", textAlign: "center" }}>
-                        שם מלא
+                        <span style={{whiteSpace}}>שם מלא</span>
                     </Radio.Button>
                     <Radio.Button value={"severity"} style={{ flex: "1 1 35px", textAlign: "center" }}>
-                        דחיפות
+                        <span style={{whiteSpace}}>דחיפות</span>
                     </Radio.Button>
                 </Radio.Group>
             </Panel>
@@ -301,11 +275,11 @@ const WingInner = ({ department, wing }) => {
     }, [totalWidth, value, siderWidth]);
 
     const allPatients = value.patients.filter(({ oid }) => !selectedAwaiting.length || selectedAwaiting.find(
-        filter => value.filters.mapping[filter].includes(oid)
+        filter => (value.filters.mapping[filter] || []).includes(oid)
     )).filter(({ oid }) => !selectedTreatments.length || selectedTreatments.find(
-        filter => value.filters.mapping[filter].includes(oid)
+        filter => (value.filters.mapping[filter] || []).includes(oid)
     )).filter(({ oid }) => !selectedDoctors.length || selectedDoctors.find(
-        filter => value.filters.mapping[filter].includes(oid)
+        filter => (value.filters.mapping[filter] || []).includes(oid)
     )).sort(sortFunctions[wingSortKey]);
     const unassignedPatients = allPatients.filter(({ admission }) => !admission.bed);
     return <Layout>
