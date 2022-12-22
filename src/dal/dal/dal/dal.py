@@ -89,25 +89,25 @@ class MedicalDal:
         return WingFilters(
             doctors=[
                         WingFilter(
+                            key='no-physician', count=len(patients) - len(doctor_total), title='ללא',
+                            valid=False, icon='doctor',
+                        ),
+                    ] + [
+                        WingFilter(
                             key='.'.join(['physician', doctor]), count=len(patients), title=doctor, valid=True,
                             icon='doctor',
                         ) for doctor, patients in doctors.items()
-                    ] + [
-                        WingFilter(
-                            key='no-physician', count=len(patients) - len(doctor_total), title='ללא רופא.ה מטפל.ת',
-                            valid=False, icon='doctor',
-                        ),
                     ],
             treatments=[
+                           WingFilter(
+                               key='no-treatment', count=len(patients) - len(treatment_total), title='ללא',
+                               valid=True, icon='treatment',
+                           ),
+                       ] + [
                            WingFilter(
                                key='.'.join(['treatment', treatment]), count=len(patients), title=treatment, valid=True,
                                icon='treatment',
                            ) for treatment, patients in treatments.items()
-                       ] + [
-                           WingFilter(
-                               key='no-treatment', count=len(patients) - len(treatment_total), title='ללא החלטה',
-                               valid=True, icon='treatment',
-                           ),
                        ],
             awaiting=[
                 WingFilter(

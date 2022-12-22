@@ -153,7 +153,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 date={visit.at}/></a>
             </p>)}
         </Panel>}
-        {value.notifications.length > 0 && <Panel key={'important'} header={'עדכונים חשובים'}>
+        {false && value.notifications.length > 0 && <Panel key={'important'} header={'עדכונים חשובים'}>
             {value.notifications.map((notification, i) => <p
                 key={i}>{notification}</p>)}
         </Panel>}
