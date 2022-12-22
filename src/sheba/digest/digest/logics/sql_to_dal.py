@@ -2,7 +2,6 @@ import contextlib
 from enum import Enum
 
 import logbook
-import pytz
 import requests
 from requests import HTTPError
 from sqlalchemy import create_engine
@@ -143,7 +142,7 @@ class SqlToDal(object):
                     imaging.setdefault(row['MedicalRecord'], []).append(Image(
                         external_id=row['OrderNumber'],
                         patient_id=row['MedicalRecord'],
-                        at=row['OrderDate'].astimezone(pytz.UTC).isoformat(),
+                        at=utils.datetime_utc_serializer(row['OrderDate']),
                         title=row['TestName'],
                         status=SHEBA_IMAGING_STATUS.get(row['OrderStatus'], ImagingStatus.unknown),
                         interpretation=row['Result'],
@@ -163,21 +162,20 @@ class SqlToDal(object):
             with self.session() as session:
                 for row in session.execute(sql_statements.query_labs.format(unit=department.value)):
                     try:
-                        at = row["OrderDate"].astimezone(pytz.UTC).isoformat()
+                        at = utils.datetime_utc_serializer(row["OrderDate"])
                         category = row["Category"].strip()
                         labs.setdefault(row['MedicalRecord'], []).append(Laboratory(
                             patient_id=row['MedicalRecord'],
-                            external_id=f'{row["MedicalRecord"]}#{at}#{row["TestCode"]}',
+                            external_id=f'{row["MedicalRecord"]}#{at.replace(":", "-").replace(".", "-")}#{row["TestCode"]}',
                             at=at,
                             test_type_id=row["TestCode"],
                             test_type_name=row["TestName"],
                             category_id=CategoriesInHebrew[category],
                             category_name=CategoriesInHebrew[category],
                             test_tube_id=9,
-                            panic_min_warn_bar=None,
                             min_warn_bar=row["NormMinimum"],
                             max_warn_bar=row["NormMaximum"],
-                            panic_max_warn_bar=None,
+                            panic=row["Panic"],
                             status=(LabStatus.ordered if row["ResultTime"] is None else LabStatus.analyzed)
 
                         ).dict(exclude_unset=True))
@@ -198,8 +196,8 @@ class SqlToDal(object):
             with self.session() as session:
                 for row in session.execute(sql_statements.query_doctor_intake.format(unit=department.value)):
                     intake = infos.setdefault(row['MedicalRecord'], Intake())
-                    intake.doctor_seen_time = row['DocumentingTime'].astimezone(pytz.UTC).isoformat() if row[
-                        'DocumentingTime'] else None
+                    intake.doctor_seen_time = utils.datetime_utc_serializer(row['DocumentingTime']) \
+                        if row['DocumentingTime'] else None
             res = requests.post(
                 f'{self.dal_url}/departments/{department.name}/intake',
                 json={'intakes': {record: infos[record].dict(exclude_unset=True) for record in infos}}
@@ -217,8 +215,8 @@ class SqlToDal(object):
                 for row in session.execute(sql_statements.query_nurse_intake.format(unit=department.value)):
                     intake = infos.setdefault(row['MedicalRecord'], Intake())
                     intake.nurse_description = row['MedicalText']
-                    intake.nurse_seen_time = row['DocumentingTime'].astimezone(pytz.UTC).isoformat() if row[
-                        'DocumentingTime'] else None
+                    intake.nurse_seen_time = utils.datetime_utc_serializer(row['DocumentingTime']) \
+                        if row['DocumentingTime'] else None
             res = requests.post(
                 f'{self.dal_url}/departments/{department.name}/intake',
                 json={'intakes': {record: infos[record].dict(exclude_unset=True) for record in infos}}
@@ -244,7 +242,7 @@ class SqlToDal(object):
                         referrals.setdefault(row['MedicalRecord'], []).append(Referral(
                             external_id=row['ReferralId'],
                             patient_id=row['MedicalRecord'],
-                            at=row['ReferralDate'].astimezone(pytz.UTC).isoformat() if row['ReferralDate'] else None,
+                            at=utils.datetime_utc_serializer(row['ReferralDate']) if row['ReferralDate'] else None,
                             to=row['LastName'],
                         ).dict(exclude_unset=True))
             res = requests.post(f'{self.dal_url}/departments/{department.name}/treatments',

@@ -326,6 +326,7 @@ class MedicalDal:
                 self.db.notifications.update_one({"notification_id": notification.notification_id},
                                                  {'$set': notification.dict()}, upsert=True)
                 await notify('notification', patient.oid)
+
             for key, warning in lab.warnings:
                 updated.warnings.setdefault(key, warning)
 
@@ -348,7 +349,7 @@ class MedicalDal:
             updated_referral = previous.copy()
             updated_referral.completed = True
             await self.atomic_update_referral(
-                {"_id": ObjectId(previous.oid)},
+                {"external_id": previous.external_id},
                 updated_referral.dict(exclude_unset=True),
             )
             notification = updated_referral.to_notification()
@@ -359,7 +360,7 @@ class MedicalDal:
             patient = self.get_patient({"external_id": patient_id})
             updated = patient.copy()
             updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
-                f'referral#{updated_referral.at}', Awaiting(
+                referral.get_instance_id(), Awaiting(
                     subtype=updated_referral.to,
                     name=updated_referral.to,
                     since=updated_referral.at,
@@ -374,7 +375,7 @@ class MedicalDal:
 
         elif previous and referral:
             await self.atomic_update_referral(
-                {"_id": ObjectId(previous.oid)},
+                {"external_id": previous.external_id},
                 referral.dict(exclude_unset=True),
             )
         elif not previous and referral:
@@ -385,7 +386,7 @@ class MedicalDal:
             patient = self.get_patient({"external_id": patient_id})
             updated = patient.copy()
             updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
-                f'referral#{referral.at}', Awaiting(
+                referral.get_instance_id(), Awaiting(
                     subtype=referral.to,
                     name=referral.to,
                     since=referral.at,

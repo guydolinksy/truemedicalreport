@@ -58,10 +58,8 @@ class Laboratory(BaseModel):
     category_id: str
     category_name: str
     test_tube_id: Optional[int]
-    min_panic_bar: Optional[float]
     min_warn_bar: Optional[float]
     max_warn_bar: Optional[float]
-    max_panic_bar: Optional[float]
     result: Optional[float]
     panic: Optional[bool]
     status: LabStatus
@@ -105,7 +103,7 @@ class LabCategory(BaseModel):
         return {'at': self.at, 'category_id': self.category_id}
 
     def get_instance_id(self):
-        return f'{self.category_id}#{self.at.replace(":", "-")}'
+        return f'{self.category_id}#{self.at.replace(":", "-").replace(".", "-")}'
 
     class Config:
         orm_mode = True
@@ -124,11 +122,7 @@ class LabCategory(BaseModel):
     @property
     def warnings(self):
         for cat_id, category_data in self.results.items():
-            message = f"תוצאת {category_data.category_name}-{category_data.test_type_name} חריגה "
-            if category_data.min_panic_bar is not None and category_data.min_panic_bar > category_data.result:
-                message += f"{category_data.min_panic_bar} >> {category_data.result}"
-            elif category_data.max_panic_bar is not None and category_data.max_panic_bar < category_data.result:
-                message += f"{category_data.max_panic_bar} << {category_data.result}"
-            else:
+            message = f"תוצאת {category_data.category_name}-{category_data.test_type_name} חריגה: {category_data.result}"
+            if not category_data.panic:
                 continue
             yield cat_id, PatientWarning(content=message, severity=Severity(value=0, at=category_data.at))

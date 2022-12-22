@@ -23,4 +23,4 @@ class Medicine(BaseModel):
         return f'{self.dosage} {self.label}'
 
     def get_instance_id(self):
-        return f'{self.label}#{self.since.replace(":", "-")}'
+        return f'{self.label}#{self.since.replace(":", "-").replace(".", "-")}'
