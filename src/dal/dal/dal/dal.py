@@ -359,7 +359,7 @@ class MedicalDal:
             patient = self.get_patient({"external_id": patient_id})
             updated = patient.copy()
             updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
-                f'referral#{updated_referral.at}', Awaiting(
+                referral.get_instance_id(), Awaiting(
                     subtype=updated_referral.to,
                     name=updated_referral.to,
                     since=updated_referral.at,
@@ -385,7 +385,7 @@ class MedicalDal:
             patient = self.get_patient({"external_id": patient_id})
             updated = patient.copy()
             updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
-                f'referral#{referral.at}', Awaiting(
+                referral.get_instance_id(), Awaiting(
                     subtype=referral.to,
                     name=referral.to,
                     since=referral.at,

@@ -23,6 +23,9 @@ class Referral(BaseModel):
             kwargs['oid'] = str(kwargs.pop('_id'))
         super(Referral, self).__init__(**kwargs)
 
+    def get_instance_id(self):
+        return f'referral#{self.at.replace(":", "-").replace(".", "-")}'
+
     def to_notification(self):
         message = "הפנייה ל"
         message += self.to
