@@ -186,9 +186,9 @@ const WingStatus = () => {
 
     const filterTagsContainerStyle = {
         display: 'flex',
-        flexWrap: 'nowrap',
+        flexWrap: "wrap",
         gap: '5px 0',
-        overflow: 'auto',
+        justifyContent: "space-between",
     }
 
 
