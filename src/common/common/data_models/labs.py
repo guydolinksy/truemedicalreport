@@ -13,6 +13,8 @@ class LabCategories(Enum):
     gases = "בדיקת גזים"
     biochemistry = "ביוכימיה בדם"
     coagulation = "תפקודי קרישה"
+    microscopy = "Microscopy"
+    therapeutic_drugs = "Therapeutic  Drugs"
     unknown = "אחר"
 
 
@@ -27,6 +29,8 @@ CategoriesInHebrew = {
     LabCategories.gases.value: "בדיקת גזים",
     LabCategories.biochemistry.value: "ביוכימיה בדם",
     LabCategories.coagulation.value: "תפקודי קרישה",
+    LabCategories.microscopy.value: "Microscopy",
+    LabCategories.therapeutic_drugs: "Therapeutic  Drugs",
     LabCategories.unknown.value: "אחר",
 }
 
