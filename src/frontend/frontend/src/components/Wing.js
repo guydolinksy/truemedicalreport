@@ -16,7 +16,9 @@ import {
     Space,
     Spin,
     Tree,
-    Tag
+    Tag,
+    Modal,
+    Tooltip
 } from 'antd';
 import { MIN_WIDTH, Patient } from "./Patient";
 import { createContext } from "../hooks/DataContext";
@@ -27,13 +29,14 @@ import { PatientInfo } from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import { Highlighter } from './Highlighter'
 import { Bed } from "./Bed";
-import { FilterOutlined, PushpinOutlined, UserOutlined } from "@ant-design/icons";
+import { FilterOutlined, InfoCircleOutlined, PushpinOutlined, UserOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import Moment from "react-moment";
 
 import { useViewport } from "./UseViewPort";
 import moment from 'moment';
 import { useLocalStorage } from "../hooks/localStorageHook";
+import { CustomIcon } from './CustomIcon';
 
 const { Option } = Select;
 const { Search } = Input;
@@ -49,6 +52,17 @@ const badgeClass = {
     2: 'status-badge status-warn',
     3: 'status-badge status-success',
 }
+
+const SHOW_ACTIONS = ['not-awaiting', 'doctor.exam', 'nurse.exam', 'imaging', 'laboratory', 'referrals'];
+
+const toActions = filter => [{
+    key: filter.key,
+    icon: filter.icon,
+    count: filter.count,
+    title: filter.title,
+    valid: filter.valid,
+}].concat(...(filter.children || []).map(toActions))
+
 const WingLayout = ({ department, wing, details, onError }) => {
     return <Card key={'grid'} style={{ width: '100%', marginBottom: 16 }}>
         {(details.rows || []).map((row, i) => <Row key={i} style={row} wrap={false}>
@@ -194,6 +208,18 @@ const WingStatus = () => {
         overflow: 'auto',
     }
 
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
+
+
+
 
     return <div style={{
         display: "flex",
@@ -203,7 +229,21 @@ const WingStatus = () => {
         justifyContent: "space-between",
     }}>
         <Collapse defaultActiveKey={['basic']}>
-            <Panel key={'basic'} header={value.details.name} extra={<FilterOutlined />}>
+            <Panel key={'basic'} header={value.details.name} extra={
+                <ul style={{ display: 'flex', gap: '0 5px', margin: 0 }}>
+                    <li>
+                        <Tooltip overlay='נתוני מחלקה'>
+                            <InfoCircleOutlined onClick={(evt) => {
+                                evt.stopPropagation();
+                                showModal();
+                            }} />
+                        </Tooltip>
+                    </li>
+                    <li>
+                        <FilterOutlined />
+                    </li>
+                </ul>
+            }>
                 <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
                     placeholder={'חיפוש:'} />
                 <Divider />
@@ -255,6 +295,22 @@ const WingStatus = () => {
         <Menu selectable={false} mode={"inline"} style={{ userSelect: "none" }} items={[
             { key: 'exit', label: <span><FontAwesomeIcon icon={faRightFromBracket} />&nbsp;חזרה למחלקה</span> }
         ]} onClick={() => navigate('/')} />
+        <Modal title="נתוני מחלקה" open={isModalOpen} onCancel={handleCancel} footer={null} width='fit-content'>
+            <ul style={{ display: 'flex', gap: '0 20px', margin: 0 }}>
+                {
+                    [].concat(...value.filters.awaiting.map(toActions))
+                        .filter(({ key }) => SHOW_ACTIONS.includes(key))
+                        .map(
+                            ({ count, title, icon, valid, key }) => <li key={key} style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: 12 }}>{title}{icon &&
+                                    <span>&nbsp;<CustomIcon status={'processing'} icon={icon} /></span>}</div>
+                                <div className={valid || !count ? undefined : 'error-text'}
+                                    style={{ userSelect: "none", fontSize: 14 }}>{count}</div>
+                            </li>
+                        )
+                }
+            </ul>
+        </Modal>
     </div>
 };
 const Patients = ({ patients, onError }) => {
