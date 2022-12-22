@@ -236,8 +236,9 @@ class SqlToDal(object):
             with self.session() as session:
                 for row in session.execute(sql_statements.query_referrals.format(unit=department.value)):
                     if row['MedicalLicense']:
-                        treatments.setdefault(row['MedicalRecord'], Treatment()).doctors.append(
-                            f'{row["Title"]} {row["FirstName"]} {row["LastName"]} (מ.ר. {row["MedicalLicense"]})'
+                        treatments.setdefault(row['MedicalRecord'], Treatment(doctors=[])).doctors.append(
+                            f'{row["Title"]} {row["FirstName"]} {row["LastName"]}'
+                            # TODO: (מ.ר. {row["MedicalLicense"]})'
                         )
                     else:
                         referrals.setdefault(row['MedicalRecord'], []).append(Referral(
