@@ -1,7 +1,29 @@
-import React, {useCallback, useContext, useEffect, useState} from 'react';
-import {Badge, Card, Collapse, Divider, Empty, Input, Layout, List, Row, Select, Space, Tag} from 'antd';
+import React, {useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import {
+    Badge,
+    Card,
+    Col,
+    Collapse,
+    Divider,
+    Empty,
+    Input,
+    Layout,
+    List,
+    Menu,
+    Radio,
+    Row,
+    Select,
+    Space,
+    Spin,
+    Tag,
+    Tree
+} from 'antd';
+import {MIN_WIDTH, Patient} from "./Patient";
 import {createContext} from "../hooks/DataContext";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faRightFromBracket,} from "@fortawesome/free-solid-svg-icons";
 import {useNavigate} from "react-router";
+import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
@@ -9,60 +31,61 @@ import {FilterOutlined, PushpinOutlined, UserOutlined} from "@ant-design/icons";
 import {Link} from "react-router-dom";
 import Moment from "react-moment";
 import {useLocalStorage} from "../hooks/localStorageHook";
+import moment from "moment";
+import { useViewport } from "./UseViewPort";
 
-const { Option } = Select;
-const { Search } = Input;
-const { Content, Sider } = Layout;
-const { CheckableTag } = Tag;
+const {Search} = Input;
+const {Content, Sider} = Layout;
+const {CheckableTag} = Tag;
 const wingDataContext = createContext(null);
 
 const highlighter = new Highlighter('root');
-const { Panel } = Collapse;
-const { Item } = List;
+const {Panel} = Collapse;
+const {Item} = List;
 const badgeClass = {
     1: 'status-badge status-error',
     2: 'status-badge status-warn',
     3: 'status-badge status-success',
 }
-const WingLayout = ({ department, wing, details, onError }) => {
-    return <Card key={'grid'} style={{ width: '100%', marginBottom: 16 }}>
+const WingLayout = ({department, wing, details, onError}) => {
+    return <Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
         {(details.rows || []).map((row, i) => <Row key={i} style={row} wrap={false}>
             {(details.columns || []).map((column, j) =>
-                details.beds[i][j] === null ? <div key={`filler-${j}`} style={column} /> :
+                details.beds[i][j] === null ? <div key={`filler-${j}`} style={column}/> :
                     <Bed key={`bed-${details.beds[i][j]}`} style={column} admission={{
                         department: department,
                         wing: wing,
                         bed: details.beds[i][j]
-                    }} onError={onError} />
+                    }} onError={onError}/>
             )}
         </Row>)}
     </Card>
 }
-const WingNotification = ({ oid, notification, message, unread, markRead }) => {
+const WingNotification = ({oid, notification, message, unread, markRead}) => {
     useEffect(() => {
         let task = setTimeout(() => markRead(oid, message.static_id), 6000);
         return () => clearTimeout(task);
     }, [oid, notification, message, markRead]);
     return <>
         <Link to={`#info#${notification.patient.oid}#${message.type}#${message.static_id}`}>
-            {(unread[oid] || []).includes(message.static_id) && <Badge status={'processing'} />}
+            {(unread[oid] || []).includes(message.static_id) && <Badge status={'processing'}/>}
             &nbsp;<span className={message.danger ? 'warn-text' : undefined}>{message.message}</span>
         </Link>
-        <Moment style={{ display: "block" }} date={message.at} format={'HH:mm'} />
+        <Moment style={{display: "block"}} date={message.at} format={'HH:mm'}/>
     </>
 }
 const WingNotifications = () => {
     const navigate = useNavigate();
-    const { value } = useContext(wingDataContext.context);
+    const {value} = useContext(wingDataContext.context);
     const [openKeys, setOpenKeys] = useState([]);
     const [unread, setUnread] = useState({});
 
     const appendUnread = useCallback((oid, messages) => {
         console.log('UNREAD', oid, messages)
-        setUnread(p => Object.assign({}, p, { [oid]: (p[oid] || []).concat(messages) }));
+        setUnread(p => Object.assign({}, p, {[oid]: (p[oid] || []).concat(messages)}));
     }, [setUnread]);
     const markRead = useCallback((oid, static_id) => {
-        setUnread(p => Object.assign({}, p, { [oid]: (p[oid] || []).filter(s => s !== static_id) }));
+        setUnread(p => Object.assign({}, p, {[oid]: (p[oid] || []).filter(s => s !== static_id)}));
     }, [setUnread]);
 
     const [notifications, setNotifications] = useState(null);
@@ -71,7 +94,7 @@ const WingNotifications = () => {
             let messages = n.notifications.map(m => m.static_id)
             if (prevState !== null)
                 appendUnread(n.patient.oid, messages.filter(s => !(prevState[n.patient.oid] || []).includes(s)));
-            return { [n.patient.oid]: messages };
+            return {[n.patient.oid]: messages};
         })));
     }, [appendUnread, value.notifications]);
 
@@ -85,16 +108,16 @@ const WingNotifications = () => {
         })
     }, [navigate]);
     if (!value.notifications.length)
-        return <Empty description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-    return <div style={{ display: "flex", flexDirection: "column", flex: 1, overflowY: "hidden" }}>
-        <Collapse onChange={openChange} style={{ overflowY: "auto", flex: 1 }}>
+        return <Empty description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/>
+    return <div style={{display: "flex", flexDirection: "column", flex: 1, overflowY: "hidden"}}>
+        <Collapse onChange={openChange} style={{overflowY: "auto", flex: 1}}>
             {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
                 <div style={{
                     display: "flex",
                     flexFlow: "column nowrap",
                     alignItems: "flex-start",
                 }}>
-                    <div><UserOutlined />&nbsp;{notification.patient.info.name}</div>
+                    <div><UserOutlined/>&nbsp;{notification.patient.info.name}</div>
                     <div style={{
                         textOverflow: "ellipsis",
                         fontSize: "10px"
@@ -106,13 +129,13 @@ const WingNotifications = () => {
                     flexFlow: "column nowrap",
                     alignItems: "flex-end",
                 }}>
-                    <Moment style={{ display: "block" }} date={notification.at} format={'HH:mm'} />
+                    <Moment style={{display: "block"}} date={notification.at} format={'HH:mm'}/>
                     <Space>
-                        {notification.patient.flagged && <PushpinOutlined style={{ marginLeft: 0 }} />}
+                        {notification.patient.flagged && <PushpinOutlined style={{marginLeft: 0}}/>}
                         {(unread[notification.patient.oid] || []).length > 0 && <Badge
                             className={badgeClass[notification.level]}
                             count={unread[notification.patient.oid].length}
-                            size={"small"} />}
+                            size={"small"}/>}
                     </Space>
                 </div>
             }>
@@ -120,10 +143,10 @@ const WingNotifications = () => {
                     {notification.notifications.map((message, j) =>
                         <Item key={`${notification.patient.oid}-${j}`}>
                             <WingNotification oid={notification.patient.oid} notification={notification}
-                                message={message} markRead={markRead} unread={unread} />
+                                              message={message} markRead={markRead} unread={unread}/>
                         </Item>
                     )}
-                </List> : <Empty description={'אין התרעות חדשות'} />}
+                </List> : <Empty description={'אין התרעות חדשות'}/>}
             </Panel>)}
         </Collapse>
     </div>
@@ -132,7 +155,7 @@ const WingNotifications = () => {
 const WingStatus = () => {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
-    const { value } = useContext(wingDataContext.context);
+    const {value} = useContext(wingDataContext.context);
 
     const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'location');
 
@@ -177,9 +200,9 @@ const WingStatus = () => {
         justifyContent: "space-between",
     }}>
         <Collapse defaultActiveKey={['basic']}>
-            <Panel key={'basic'} header={value.details.name} extra={<FilterOutlined />}>
+            <Panel key={'basic'} header={value.details.name} extra={<FilterOutlined/>}>
                 <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
-                    placeholder={'חיפוש:'} />
+                        placeholder={'חיפוש:'}/>
                 <Divider style={{marginTop: 10, marginBottom: 10}}/>
                 <div style={filterTagsContainerStyle}>
                     <b style={{whiteSpace: "nowrap"}}>מטפל.ת:</b>
@@ -203,44 +226,45 @@ const WingStatus = () => {
                     </CheckableTag>)}
                 </div>
                 <Divider style={{marginTop: 10, marginBottom: 10}}/>
-                <Tree treeData={value.filters.awaiting.map(toTree)} style={{ width: '100%' }} checkable multiple defaultExpandedKeys={value.filters.awaiting.map(x => x.key)}
-                    placeholder="סינון לפי המתנה עבור:" onCheck={setSelectedAwaiting}
-                    checkedKeys={selectedAwaiting} />
+                <Tree treeData={value.filters.awaiting.map(toTree)} style={{width: '100%'}} checkable multiple
+                      defaultExpandedKeys={value.filters.awaiting.map(x => x.key)}
+                      placeholder="סינון לפי המתנה עבור:" onCheck={setSelectedAwaiting}
+                      checkedKeys={selectedAwaiting}/>
                 <Divider style={{marginTop: 10, marginBottom: 10}}/>
                 <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
-                    buttonStyle={"solid"}
-                    style={{ width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex" }}>
-                    <Radio.Button value={"location"} style={{ flex: "1 1 30px", textAlign: "center" }}>
-                        <span style={{whiteSpace}}>מיקום</span>
+                             buttonStyle={"solid"}
+                             style={{width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex"}}>
+                    <Radio.Button value={"location"} style={{flex: "1 1 30px", textAlign: "center"}}>
+                        <span style={{whiteSpace: "nowrap"}}>מיקום</span>
                     </Radio.Button>
-                    <Radio.Button value={"arrival"} style={{ flex: "1 1 50px", textAlign: "center" }}>
-                        <span style={{whiteSpace}}>זמן קבלה</span>
+                    <Radio.Button value={"arrival"} style={{flex: "1 1 50px", textAlign: "center"}}>
+                        <span style={{whiteSpace: "nowrap"}}>זמן קבלה</span>
                     </Radio.Button>
-                    <Radio.Button value={"name"} style={{ flex: "1 1 50px", textAlign: "center" }}>
-                        <span style={{whiteSpace}}>שם מלא</span>
+                    <Radio.Button value={"name"} style={{flex: "1 1 50px", textAlign: "center"}}>
+                        <span style={{whiteSpace: "nowrap"}}>שם מלא</span>
                     </Radio.Button>
-                    <Radio.Button value={"severity"} style={{ flex: "1 1 35px", textAlign: "center" }}>
-                        <span style={{whiteSpace}}>דחיפות</span>
+                    <Radio.Button value={"severity"} style={{flex: "1 1 35px", textAlign: "center"}}>
+                        <span style={{whiteSpace: "nowrap"}}>דחיפות</span>
                     </Radio.Button>
                 </Radio.Group>
             </Panel>
         </Collapse>
-        <WingNotifications />
-        <Menu selectable={false} mode={"inline"} style={{ userSelect: "none" }} items={[
-            { key: 'exit', label: <span><FontAwesomeIcon icon={faRightFromBracket} />&nbsp;חזרה למחלקה</span> }
-        ]} onClick={() => navigate('/')} />
+        <WingNotifications/>
+        <Menu selectable={false} mode={"inline"} style={{userSelect: "none"}} items={[
+            {key: 'exit', label: <span><FontAwesomeIcon icon={faRightFromBracket}/>&nbsp;חזרה למחלקה</span>}
+        ]} onClick={() => navigate('/')}/>
     </div>
 };
-const Patients = ({ patients, onError }) => {
-    return <Card key={'overflow'} style={{ width: '100%', flex: '1' }}>
+const Patients = ({patients, onError}) => {
+    return <Card key={'overflow'} style={{width: '100%', flex: '1'}}>
         {patients.length ? <div style={{
             display: "grid",
             gridGap: 16,
             gridTemplateColumns: `repeat(auto-fill, minmax(${MIN_WIDTH}px, 1fr))`
         }}>
             {patients.map(patient => <Patient key={patient.oid} patient={patient.oid}
-                style={{ flex: '1', minWidth: MIN_WIDTH }} onError={onError} />)}
-        </div> : <Empty description={false} image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                              style={{flex: '1', minWidth: MIN_WIDTH}} onError={onError}/>)}
+        </div> : <Empty description={false} image={Empty.PRESENTED_IMAGE_SIMPLE}/>}
     </Card>
 }
 
@@ -251,9 +275,9 @@ const sortFunctions = {
     location: (i, j) => moment(i.admission.arrival).isAfter(j.admission.arrival) ? 1 : -1,
     [undefined]: (i, j) => moment(i.admission.arrival).isAfter(j.admission.arrival) ? 1 : -1
 }
-const WingInner = ({ department, wing }) => {
+const WingInner = ({department, wing}) => {
     const navigate = useNavigate();
-    const { value, flush } = useContext(wingDataContext.context);
+    const {value, flush} = useContext(wingDataContext.context);
 
     const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'location');
     const [selectedAwaiting, setSelectedAwaiting] = useLocalStorage('selectedAwaiting', []);
@@ -274,38 +298,38 @@ const WingInner = ({ department, wing }) => {
         return totalWidth - siderWidth - value.details.columns.reduce((s, c) => s + c.minWidth, 0) < buffer;
     }, [totalWidth, value, siderWidth]);
 
-    const allPatients = value.patients.filter(({ oid }) => !selectedAwaiting.length || selectedAwaiting.find(
+    const allPatients = value.patients.filter(({oid}) => !selectedAwaiting.length || selectedAwaiting.find(
         filter => (value.filters.mapping[filter] || []).includes(oid)
-    )).filter(({ oid }) => !selectedTreatments.length || selectedTreatments.find(
+    )).filter(({oid}) => !selectedTreatments.length || selectedTreatments.find(
         filter => (value.filters.mapping[filter] || []).includes(oid)
-    )).filter(({ oid }) => !selectedDoctors.length || selectedDoctors.find(
+    )).filter(({oid}) => !selectedDoctors.length || selectedDoctors.find(
         filter => (value.filters.mapping[filter] || []).includes(oid)
     )).sort(sortFunctions[wingSortKey]);
-    const unassignedPatients = allPatients.filter(({ admission }) => !admission.bed);
+    const unassignedPatients = allPatients.filter(({admission}) => !admission.bed);
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
-            <WingStatus />
+            <WingStatus/>
         </Sider>
-        <Content className={'content'} style={{ overflowY: "auto" }}>
-            <Col style={{ padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap' }}>
+        <Content className={'content'} style={{overflowY: "auto"}}>
+            <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                 {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedTreatments.length || selectedAwaiting.length ?
-                    <Patients key={'patients'} patients={allPatients} onError={flush} /> : [
+                    <Patients key={'patients'} patients={allPatients} onError={flush}/> : [
                         <WingLayout key={'wing'} department={department} wing={wing} details={value.details}
-                            onError={flush} />,
-                        <Patients key={'patients'} patients={unassignedPatients} onError={flush} />
+                                    onError={flush}/>,
+                        <Patients key={'patients'} patients={unassignedPatients} onError={flush}/>
                     ]}
             </Col>
         </Content>
-        <PatientInfo onError={onInfoError} />
+        <PatientInfo onError={onInfoError}/>
     </Layout>
 };
 
-export const Wing = ({ department, wing, onError }) => {
+export const Wing = ({department, wing, onError}) => {
     const uri = `/api/departments/${department}/wings/${wing}`;
 
     return <wingDataContext.Provider url={uri} defaultValue={
-        { patients: [], details: {}, filters: { mapping: {}, filters: [] }, notifications: [] }
+        {patients: [], details: {}, filters: {mapping: {}, filters: []}, notifications: []}
     } onError={onError}>
-        {({ loading }) => loading ? <Spin /> : <WingInner department={department} wing={wing} onError={onError} />}
+        {({loading}) => loading ? <Spin/> : <WingInner department={department} wing={wing} onError={onError}/>}
     </wingDataContext.Provider>
 }
