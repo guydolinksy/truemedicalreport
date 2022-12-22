@@ -163,7 +163,7 @@ labr.Norm_Minimum AS NormMinimum,
 labr.Norm_Maximum AS NormMaximum,
 labr.Result_Date AS OrderDate,
 labr.Result_Entry_Date AS ResultTime,
-rnc.panic AS panic
+rnc.panic AS Panic
 from Results.dbo.LabResults AS labr
 INNER JOIN chameleon.dbo.LabHeadlinesSort AS lhs ON lhs.Code = labr.Heading
 INNER JOIN chameleon.dbo.emergancyvisits AS ev ON ev.patient = labr.Patient 

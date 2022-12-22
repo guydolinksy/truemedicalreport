@@ -173,10 +173,9 @@ class SqlToDal(object):
                             category_id=CategoriesInHebrew[category],
                             category_name=CategoriesInHebrew[category],
                             test_tube_id=9,
-                            panic_min_warn_bar=None,
                             min_warn_bar=row["NormMinimum"],
                             max_warn_bar=row["NormMaximum"],
-                            panic_max_warn_bar=None,
+                            panic=row["Panic"],
                             status=(LabStatus.ordered if row["ResultTime"] is None else LabStatus.analyzed)
 
                         ).dict(exclude_unset=True))

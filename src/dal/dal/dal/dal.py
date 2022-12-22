@@ -326,6 +326,7 @@ class MedicalDal:
                 self.db.notifications.update_one({"notification_id": notification.notification_id},
                                                  {'$set': notification.dict()}, upsert=True)
                 await notify('notification', patient.oid)
+
             for key, warning in lab.warnings:
                 updated.warnings.setdefault(key, warning)
 
