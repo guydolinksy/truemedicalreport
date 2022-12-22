@@ -10,7 +10,7 @@ COPY common/common/__init__.py /opt/common/common/__init__.py
 RUN python -m pip install -e /opt/common
 
 COPY backend/requirements.txt /opt/backend/requirements.txt
-COPY backend/requirements.txt /opt/backend/requirements-ldap.txt
+COPY backend/requirements-ldap.txt /opt/backend/requirements-ldap.txt
 COPY backend/setup.py /opt/backend/setup.py
 COPY backend/backend/__init__.py /opt/backend/backend/__init__.py
 RUN python -m pip install -e /opt/backend[ldap]
@@ -30,7 +30,7 @@ COPY common/common/__init__.py /opt/common/common/__init__.py
 RUN python -m pip install -e /opt/common
 
 COPY backend/requirements.txt /opt/backend/requirements.txt
-COPY backend/requirements.txt /opt/backend/requirements-ldap.txt
+COPY backend/requirements-ldap.txt /opt/backend/requirements-ldap.txt
 COPY backend/setup.py /opt/backend/setup.py
 COPY backend/backend/__init__.py /opt/backend/backend/__init__.py
 RUN python -m pip install -e /opt/backend[ldap]
