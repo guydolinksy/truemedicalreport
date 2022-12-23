@@ -36,9 +36,8 @@ services:
       - /srv/sentry/postgres:/var/lib/postgresql/data
 
   sentry-base:
-    image: sentry
+    image: getsentry/sentry:20.8.0
     container_name: sentry-base
-    restart: unless-stopped
     depends_on:
       - redis
       - sentry-postgres
@@ -50,10 +49,10 @@ services:
     env_file:
       - sentry.env
     volumes:
-      - /srv/sentry/sentry:/var/lib/sentry/files
+      - sentry-data:/var/lib/sentry
 
   sentry-worker:
-    image: 'sentry:latest'
+    image: getsentry/sentry:20.8.0
     depends_on:
       - sentry-base
     links:
@@ -63,11 +62,10 @@ services:
     env_file:
       - sentry.env
     volumes:
-      - /srv/sentry/sentry:/var/lib/sentry/files
+      - sentry-data:/var/lib/sentry
 
   sentry-cron:
     image: 'sentry:latest'
-    restart: unless-stopped
     depends_on:
       - sentry-base
     links:
@@ -77,7 +75,7 @@ services:
     env_file:
       - sentry.env
     volumes:
-      - /srv/sentry/sentry:/var/lib/sentry/files
+      - sentry-data:/var/lib/sentry
 
   chameleon-demo:
     profiles:
@@ -111,3 +109,5 @@ volumes:
     name: chameleon-sheba
   chameleon-demo:
     name: chameleon-demo
+  sentry-data:
+    name: sentry-data
