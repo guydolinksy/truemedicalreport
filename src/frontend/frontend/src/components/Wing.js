@@ -306,10 +306,12 @@ const WingInner = ({department, wing}) => {
     )).sort(sortFunctions[wingSortKey]);
     const unassignedPatients = allPatients.filter(({admission}) => !admission.bed);
 
-    const patientList = <List>
-        {value.patients.map((i, patient) => <List.Item key={i}>
-            <Button onClick={() => navigate(`#highlight#${patient.oid}#open`)}>{patient.info.name}</Button></List.Item>)}
-    </List>
+    const patientList = <div style={{display: "flex", flexDirection: "column"}}>
+        {value.patients.sort((a, b) => a.info.name.localeCompare(b.info.name)).map((patient, i) =>
+            <Button key={i} onClick={() => navigate(`#highlight#${patient.oid}#open`)}>
+                {patient?.info?.name}
+            </Button>)}
+    </div>
 
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
@@ -317,7 +319,7 @@ const WingInner = ({department, wing}) => {
         </Sider>
         <Content className={'content'} style={{overflowY: "auto"}}>
             <Popover placement={"bottomLeft"} content={patientList} title={"מטופלים.ות:"}>
-                <Button type={"primary"} style={{position: "absolute", top: 0, left: 0}} icon={<RightOutlined />}/>
+                <Button type={"primary"} style={{position: "absolute", top: 0, left: 0, zIndex: 1000}} icon={<RightOutlined />}/>
             </Popover>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                 {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedTreatments.length || selectedAwaiting.length ?
