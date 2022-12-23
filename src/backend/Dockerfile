@@ -1,4 +1,4 @@
-FROM python:3.10-alpine AS dev
+FROM python:3.10.8-alpine3.15 AS dev
 WORKDIR /opt
 
 RUN apk add build-base openldap-dev
@@ -10,7 +10,7 @@ COPY common/common/__init__.py /opt/common/common/__init__.py
 RUN python -m pip install -e /opt/common
 
 COPY backend/requirements.txt /opt/backend/requirements.txt
-COPY backend/requirements.txt /opt/backend/requirements-ldap.txt
+COPY backend/requirements-ldap.txt /opt/backend/requirements-ldap.txt
 COPY backend/setup.py /opt/backend/setup.py
 COPY backend/backend/__init__.py /opt/backend/backend/__init__.py
 RUN python -m pip install -e /opt/backend[ldap]
@@ -18,7 +18,7 @@ RUN python -m pip install -e /opt/backend[ldap]
 ENV DEBUG=1
 CMD python -m backend
 
-FROM python:3.10-alpine
+FROM python:3.10.8-alpine3.15
 WORKDIR /opt
 
 RUN apk add build-base openldap-dev
@@ -30,7 +30,7 @@ COPY common/common/__init__.py /opt/common/common/__init__.py
 RUN python -m pip install -e /opt/common
 
 COPY backend/requirements.txt /opt/backend/requirements.txt
-COPY backend/requirements.txt /opt/backend/requirements-ldap.txt
+COPY backend/requirements-ldap.txt /opt/backend/requirements-ldap.txt
 COPY backend/setup.py /opt/backend/setup.py
 COPY backend/backend/__init__.py /opt/backend/backend/__init__.py
 RUN python -m pip install -e /opt/backend[ldap]

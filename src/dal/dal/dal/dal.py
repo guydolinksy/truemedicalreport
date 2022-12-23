@@ -89,25 +89,25 @@ class MedicalDal:
         return WingFilters(
             doctors=[
                         WingFilter(
+                            key='no-physician', count=len(patients) - len(doctor_total), title='ללא',
+                            valid=False, icon='doctor',
+                        ),
+                    ] + [
+                        WingFilter(
                             key='.'.join(['physician', doctor]), count=len(patients), title=doctor, valid=True,
                             icon='doctor',
                         ) for doctor, patients in doctors.items()
-                    ] + [
-                        WingFilter(
-                            key='no-physician', count=len(patients) - len(doctor_total), title='ללא רופא.ה מטפל.ת',
-                            valid=False, icon='doctor',
-                        ),
                     ],
             treatments=[
+                           WingFilter(
+                               key='no-treatment', count=len(patients) - len(treatment_total), title='ללא',
+                               valid=True, icon='treatment',
+                           ),
+                       ] + [
                            WingFilter(
                                key='.'.join(['treatment', treatment]), count=len(patients), title=treatment, valid=True,
                                icon='treatment',
                            ) for treatment, patients in treatments.items()
-                       ] + [
-                           WingFilter(
-                               key='no-treatment', count=len(patients) - len(treatment_total), title='ללא החלטה',
-                               valid=True, icon='treatment',
-                           ),
                        ],
             awaiting=[
                 WingFilter(
@@ -326,10 +326,10 @@ class MedicalDal:
                 self.db.notifications.update_one({"notification_id": notification.notification_id},
                                                  {'$set': notification.dict()}, upsert=True)
                 await notify('notification', patient.oid)
+
             for key, warning in lab.warnings:
                 updated.warnings.setdefault(key, warning)
 
-            logger.debug('%%%%%%%%%%%%%%%% {} {}', patient_id, lab.get_instance_id())
             updated.awaiting.setdefault(AwaitingTypes.laboratory.value, {}).__setitem__(lab.get_instance_id(), Awaiting(
                 subtype=lab.category,
                 name=lab.category,
@@ -349,7 +349,7 @@ class MedicalDal:
             updated_referral = previous.copy()
             updated_referral.completed = True
             await self.atomic_update_referral(
-                {"_id": ObjectId(previous.oid)},
+                {"external_id": previous.external_id},
                 updated_referral.dict(exclude_unset=True),
             )
             notification = updated_referral.to_notification()
@@ -360,7 +360,7 @@ class MedicalDal:
             patient = self.get_patient({"external_id": patient_id})
             updated = patient.copy()
             updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
-                f'referral#{updated_referral.at}', Awaiting(
+                referral.get_instance_id(), Awaiting(
                     subtype=updated_referral.to,
                     name=updated_referral.to,
                     since=updated_referral.at,
@@ -375,7 +375,7 @@ class MedicalDal:
 
         elif previous and referral:
             await self.atomic_update_referral(
-                {"_id": ObjectId(previous.oid)},
+                {"external_id": previous.external_id},
                 referral.dict(exclude_unset=True),
             )
         elif not previous and referral:
@@ -386,7 +386,7 @@ class MedicalDal:
             patient = self.get_patient({"external_id": patient_id})
             updated = patient.copy()
             updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
-                f'referral#{referral.at}', Awaiting(
+                referral.get_instance_id(), Awaiting(
                     subtype=referral.to,
                     name=referral.to,
                     since=referral.at,

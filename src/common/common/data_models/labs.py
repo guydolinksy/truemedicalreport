@@ -9,11 +9,13 @@ from .severity import Severity
 
 
 class LabCategories(Enum):
-    completeBloodCount = 1
-    gases = 2
-    biochemistry = 3
-    coagulation = 4
-    unknown = 5
+    completeBloodCount = "CBC"
+    gases = "בדיקת גזים"
+    biochemistry = "ביוכימיה בדם"
+    coagulation = "תפקודי קרישה"
+    microscopy = "Microscopy"
+    therapeutic_drugs = "Therapeutic  Drugs"
+    unknown = "אחר"
 
 
 class LabStatus(Enum):
@@ -27,6 +29,8 @@ CategoriesInHebrew = {
     LabCategories.gases.value: "בדיקת גזים",
     LabCategories.biochemistry.value: "ביוכימיה בדם",
     LabCategories.coagulation.value: "תפקודי קרישה",
+    LabCategories.microscopy.value: "Microscopy",
+    LabCategories.therapeutic_drugs: "Therapeutic  Drugs",
     LabCategories.unknown.value: "אחר",
 }
 
@@ -51,14 +55,13 @@ class Laboratory(BaseModel):
     at: str
     test_type_id: int
     test_type_name: str
-    category_id: int
+    category_id: str
     category_name: str
     test_tube_id: Optional[int]
-    min_panic_bar: Optional[float]
     min_warn_bar: Optional[float]
     max_warn_bar: Optional[float]
-    max_panic_bar: Optional[float]
-    result: Optional[float]
+    result: Optional[str]
+    panic: Optional[bool]
     status: LabStatus
 
     @property
@@ -100,30 +103,27 @@ class LabCategory(BaseModel):
         return {'at': self.at, 'category_id': self.category_id}
 
     def get_instance_id(self):
-        return f'{self.category_id}#{self.at.replace(":", "-")}'
+        return f'{self.category_id}#{self.at.replace(":", "-").replace(".", "-")}'
 
     class Config:
         orm_mode = True
         use_enum_values = True
 
     def to_notification(self) -> [LabsNotification]:
+        panic = any(category_data.panic for category_data in self.results.values())
         return LabsNotification(
             static_id=self.get_instance_id(),
             patient_id=self.patient_id,
             at=self.at,
             message=f"התקבלו תוצאות {self.category}",
             link="Add in the future",
-            level=NotificationLevel.normal,
+            level=NotificationLevel.normal if not panic else NotificationLevel.panic,
         )
 
     @property
     def warnings(self):
         for cat_id, category_data in self.results.items():
-            message = f"תוצאת {category_data.category_name}-{category_data.test_type_name} חריגה "
-            if category_data.min_panic_bar is not None and category_data.min_panic_bar > category_data.result:
-                message += f"{category_data.min_panic_bar} >> {category_data.result}"
-            elif category_data.max_panic_bar is not None and category_data.max_panic_bar < category_data.result:
-                message += f"{category_data.max_panic_bar} << {category_data.result}"
-            else:
+            message = f"תוצאת {category_data.category_name}-{category_data.test_type_name} חריגה: {category_data.result}"
+            if not category_data.panic:
                 continue
-            yield cat_id, PatientWarning(content=message, severity=Severity(value=0, at=category_data.at))
+            yield cat_id, PatientWarning(content=message, severity=Severity(value=1, at=category_data.at))

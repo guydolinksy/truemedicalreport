@@ -4,24 +4,27 @@ SELECT
     de.Answer_Text AS Decision,
     su.Name AS UnitName
 FROM [chameleon].[dbo].[EmergancyVisits] AS ev
-LEFT JOIN [chameleon].[dbo].[RoomPlacmentPatient] AS rpp 
+LEFT JOIN [chameleon].[dbo].[RoomPlacmentPatient] AS rpp
     ON ev.Medical_Record = rpp.Medical_Record
-LEFT JOIN [chameleon].[dbo].[AdmissionTreatmentDecision] AS atd 
+LEFT JOIN [chameleon].[dbo].[AdmissionTreatmentDecision] AS atd
     ON ev.Medical_Record = atd.Medical_Record and atd.delete_date is null
-LEFT JOIN [chameleon].[dbo].[V_TableAnswers] AS de 
+LEFT JOIN [chameleon].[dbo].[V_TableAnswers] AS de
     ON de.Table_Code = 1092 AND de.Answer_Code = atd.Decision AND rpp.Unit = de.Unit
-LEFT JOIN [chameleon].[dbo].[SystemUnits] AS su 
+LEFT JOIN [chameleon].[dbo].[SystemUnits] AS su
     ON atd.Hosp_Unit = su.Unit
-WHERE 
+WHERE
     ev.Delete_Date IS NULL
     AND rpp.End_Date IS NULL
     AND rpp.Unit = {unit}
+            AND ev.Release_Time is null
+            AND atd.Delete_Date is null
  """
 
 query_patient_admission = """
 SELECT
     ev.Medical_Record as MedicalRecord,
     CONCAT(pat.First_Name,' ',pat.Last_Name) AS FullName,
+    pat.Id_Num as PatientID,
     pd.Birth_Date AS BirthDate,
     gen.Answer_Text AS Gender,
     esi.Answer_Text AS ESI,
@@ -47,6 +50,7 @@ WHERE
     ev.Delete_Date IS NULL
     AND rpp.End_Date IS NULL
     AND rpp.Unit = {unit}
+	AND ev.Release_Time is null
 """
 query_measurements = """
 SELECT
@@ -94,6 +98,7 @@ WHERE
     AND rpp.End_Date IS NULL
     AND rpp.Unit = {unit}
     AND m.Parameter IN {codes}
+	AND ev.Release_Time is null
 """
 
 query_images = """
@@ -109,6 +114,7 @@ FROM [Chameleon].[dbo].[AuxiliaryTestOrders] AS ato
 JOIN [Chameleon].[dbo].[AuxTests] AS [at] ON ato.Test = [at].Code
 JOIN [Chameleon].[dbo].[MedicalRecords] AS mr ON ato.Patient = mr.Patient
 JOIN [Chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON mr.medical_record = rpp.Medical_record
+JOIN [Chameleon].[dbo].[emergancyvisits] as ev ON ev.Medical_Record= rpp.Medical_Record
 JOIN (
     SELECT MIN(o.Test_date) AS Order_Date, o.Order_Number
     from [Chameleon].[dbo].[AuxiliaryTestOrders] AS o GROUP BY o.Order_Number
@@ -117,13 +123,16 @@ LEFT OUTER JOIN  [Chameleon].[dbo].[AuxiliaryTestDates] atd
     ON ato.Accession_Number = atd.Accession_Number AND atd.Delete_Date IS NULL
 WHERE 
     ato.Delete_Date IS NULL
-    AND ato.Test_Date > rpp.Start_Date 
+    AND ato.Test_Date >= rpp.Start_Date 
     AND rpp.End_Date IS NULL 
-    AND rpp.Unit = {unit} 
+    AND rpp.Unit = {unit}
+	AND ev.Release_Time is null
+	and ev.Delete_Date is null
+	and d.Order_Date <= GETDATE()
 """
 
 query_referrals = """
-SELECT
+            SELECT
     rd.[Row_Id] AS ReferralId,
     rd.[Medical_Record] AS MedicalRecord,
     rd.[Entry_Date] AS ReferralDate,
@@ -133,13 +142,15 @@ SELECT
     u.Last_Name AS LastName
 FROM [Chameleon].[dbo].[ResponsibleDoctor] AS rd
 JOIN [Chameleon].[dbo].[Users] AS u ON rd.Doctor = u.Code
-JOIN [Chameleon].[dbo].[MedicalRecords] AS mr ON rd.Medical_Record = mr.Medical_Record
-JOIN [Chameleon].[dbo].[patients] AS pat ON pat.Patient = mr.Patient
+JOIN [Chameleon].[dbo].[EmergancyVisits] AS mr ON rd.Medical_Record = mr.Medical_Record
 JOIN [Chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON mr.Medical_Record = rpp.Medical_Record
 WHERE
     rd.Delete_Date IS NULL
     AND rpp.End_Date IS NULL
     AND mr.Unit = {unit}
+            AND mr.Release_Time is null
+            AND rd.[Entry_Date] >= mr.Admission_Date
+            AND mr.Delete_Date is null
 """
 
 query_labs = """
@@ -152,18 +163,18 @@ concat(labr.Result,' ',labr.Units)  AS Result,
 labr.Norm_Minimum AS NormMinimum,
 labr.Norm_Maximum AS NormMaximum,
 labr.Result_Date AS OrderDate,
-labr.Result_Entry_Date AS ResultTime
-from sbwnd81c.Results.dbo.LabResults AS labr
-INNER JOIN sbwnd81c.chameleon.dbo.LabHeadlinesSort AS lhs ON lhs.Code = labr.Heading
-INNER JOIN sbwnd81c.chameleon.dbo.emergancyvisits AS ev ON ev.patient = labr.Patient and ev.admission_date > GETDATE()-3
+labr.Result_Entry_Date AS ResultTime,
+rnc.panic AS Panic
+from Results.dbo.LabResults AS labr
+INNER JOIN chameleon.dbo.LabHeadlinesSort AS lhs ON lhs.Code = labr.Heading
+INNER JOIN chameleon.dbo.emergancyvisits AS ev ON ev.patient = labr.Patient 
+LEFT OUTER JOIN  Results.dbo.ResultNotConfirm rnc on rnc.Patient = ev.patient and rnc.entry_date >= ev.admission_date and labr.row_id = rnc.Source_Row_ID
 WHERE ev.Delete_Date  IS NULL
 AND ev.Release_Time  IS NULL
 AND labr.Delete_Date IS NULL
 and ev.unit = {unit}
-and  labr.patient not like '999%'
-and ev.admission_date > GETDATE()-3
-and labr.Result_Entry_Date >= ev.admission_date
-"""
+and ev.admission_date > GETDATE()-7
+and labr.Result_Entry_Date >= ev.admission_date"""
 
 query_doctor_intake = """
 SELECT
@@ -171,25 +182,30 @@ SELECT
     d.[Description_Text] AS MedicalText,
     d.[Entry_Date] AS DocumentingTime
 FROM [Chameleon].[dbo].[Descriptions] AS d
-JOIN [Chameleon].[dbo].[MedicalRecords] AS mr ON d.Medical_Record = mr.Medical_Record
+JOIN [Chameleon].[dbo].[EmergancyVisits] AS mr ON d.Medical_Record = mr.Medical_Record
 JOIN [Chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON mr.Medical_Record = rpp.Medical_Record
 WHERE
     d.Delete_Date IS NULL
     AND d.Field = 1
     AND rpp.End_Date IS NULL
     AND mr.Unit = {unit}
+       AND mr.Delete_Date is null
+       AND mr.Release_Time is null
+       AND d.[Entry_Date] >= mr.Admission_Date
 """
 
 query_nurse_intake = """
-SELECT
+       SELECT
     tc.[Medical_Record] AS MedicalRecord,
     tc.Remarks AS MedicalText,
     tc.[Entry_Date] AS DocumentingTime
 FROM [Chameleon].[dbo].[TreatmentCause] AS tc
-JOIN [Chameleon].[dbo].[MedicalRecords] AS mr ON tc.Medical_Record = mr.Medical_Record
+JOIN [Chameleon].[dbo].[EmergancyVisits] AS mr ON tc.Medical_Record = mr.Medical_Record
 JOIN [Chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON mr.Medical_Record = rpp.Medical_Record
 WHERE
     tc.Delete_Date IS NULL
     AND rpp.End_Date IS NULL
     AND mr.Unit = {unit}
-"""
+       AND mr.Delete_Date is null
+       AND mr.Release_Time is null
+       AND tc.[Entry_Date] >= mr.Admission_Date"""

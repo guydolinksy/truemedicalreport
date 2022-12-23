@@ -153,7 +153,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 date={visit.at}/></a>
             </p>)}
         </Panel>}
-        {value.notifications.length > 0 && <Panel key={'important'} header={'עדכונים חשובים'}>
+        {false && value.notifications.length > 0 && <Panel key={'important'} header={'עדכונים חשובים'}>
             {value.notifications.map((notification, i) => <p
                 key={i}>{notification}</p>)}
         </Panel>}
@@ -186,8 +186,9 @@ const InternalPatientCard = ({patient, setTitle}) => {
             ) : <Empty description={'לא הוזמנו הדמיות'}/>}
         </Panel>
         <Panel key={'referrals'} header={'ייעוץ'}>
-            {value.referrals.length ? value.referrals.map((referral, i) => <p key={i}>{referral}</p>) :
-                <Empty description={'לא נרשמו הפניות'}/>}
+            {value.referrals.length ? value.referrals.map((referral, i) => <p key={i}>
+                    {referral.to} - <Moment date={referral.at} format={'HH:mm DD-MM-YYYY'}/> - {referral.completed ? 'בהמתנה' : 'הושלם'}
+            </p>) : <Empty description={'לא נרשמו הפניות'}/>}
         </Panel>
         <Panel key={'story'} header={'סיפור מטופל'}>
             <Timeline reverse mode={"left"}>{value.events.map(event =>

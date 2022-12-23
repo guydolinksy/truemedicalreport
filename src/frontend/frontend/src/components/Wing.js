@@ -1,6 +1,6 @@
 import React, {useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {
-    Badge,
+    Badge, Button,
     Card,
     Col,
     Collapse,
@@ -9,13 +9,14 @@ import {
     Input,
     Layout,
     List,
-    Menu,
+    Menu, Popover,
     Radio,
     Row,
     Select,
     Space,
     Spin,
-    Tree,
+    Tag,
+    Tree
 } from 'antd';
 import {MIN_WIDTH, Patient} from "./Patient";
 import {createContext} from "../hooks/DataContext";
@@ -26,17 +27,16 @@ import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
-import {FilterOutlined, PushpinOutlined, UserOutlined} from "@ant-design/icons";
+import {FilterOutlined, PushpinOutlined, RightOutlined, UserOutlined} from "@ant-design/icons";
 import {Link} from "react-router-dom";
 import Moment from "react-moment";
-
-import {useViewport} from "./UseViewPort";
-import moment from 'moment';
 import {useLocalStorage} from "../hooks/localStorageHook";
+import moment from "moment";
+import { useViewport } from "./UseViewPort";
 
-const {Option} = Select;
 const {Search} = Input;
 const {Content, Sider} = Layout;
+const {CheckableTag} = Tag;
 const wingDataContext = createContext(null);
 
 const highlighter = new Highlighter('root');
@@ -173,6 +173,24 @@ const WingStatus = () => {
         title: `(${filter.count}) ${filter.title}`,
         children: (filter.children || []).map(toTree)
     })
+
+    const handleDoctorFilterChange = (tag, checked) => {
+        const nextSelectedTags = checked ? [...selectedDoctors, tag] : selectedDoctors.filter((t) => t !== tag);
+        setSelectedDoctors(nextSelectedTags);
+    };
+
+    const handleDecisionStatusFilterChange = (tag, checked) => {
+        const nextSelectedTags = checked ? [...selectedTreatments, tag] : selectedTreatments.filter((t) => t !== tag);
+        setSelectedTreatments(nextSelectedTags);
+    };
+
+    const filterTagsContainerStyle = {
+        display: 'flex',
+        flexWrap: "wrap",
+        gap: '5px 0',
+        justifyContent: "space-between",
+    }
+
     return <div style={{
         display: "flex",
         flexDirection: "column",
@@ -184,39 +202,48 @@ const WingStatus = () => {
             <Panel key={'basic'} header={value.details.name} extra={<FilterOutlined/>}>
                 <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
                         placeholder={'חיפוש:'}/>
-                <Divider/>
-                <Select showSearch allowClear mode={"multiple"} placeholder="סינון לפי רופא.ה מטפל.ת:"
-                        style={{width: '100%'}} value={selectedDoctors} onChange={setSelectedDoctors}>
-                    {value.filters.doctors.map(filter => <Option key={filter.key} value={filter.value}>
+                <Divider style={{marginTop: 10, marginBottom: 10}}/>
+                <div style={filterTagsContainerStyle}>
+                    <b style={{whiteSpace: "nowrap"}}>מטפל.ת:</b>
+                    {value.filters.doctors.map(filter => <CheckableTag
+                        key={filter.key}
+                        checked={selectedDoctors.indexOf(filter.key) > -1}
+                        onChange={(checked) => handleDoctorFilterChange(filter.key, checked)}
+                    >
                         {filter.title}
-                    </Option>)}
-                </Select>
-                <Divider/>
-                <Select showSearch allowClear mode={"multiple"} placeholder="סינון לפי סטטוס החלטה:"
-                        style={{width: '100%'}} value={selectedTreatments} onChange={setSelectedTreatments}>
-                    {value.filters.treatments.map(filter => <Option key={filter.key} value={filter.value}>
+                    </CheckableTag>)}
+                </div>
+                <Divider style={{marginTop: 10, marginBottom: 10}}/>
+                <div style={filterTagsContainerStyle}>
+                    <b style={{whiteSpace: "nowrap"}}>יעד:</b>
+                    {value.filters.treatments.map(filter => <CheckableTag
+                        key={filter.key}
+                        checked={selectedTreatments.indexOf(filter.key) > -1}
+                        onChange={(checked) => handleDecisionStatusFilterChange(filter.key, checked)}
+                    >
                         {filter.title}
-                    </Option>)}
-                </Select>
-                <Divider/>
+                    </CheckableTag>)}
+                </div>
+                <Divider style={{marginTop: 10, marginBottom: 10}}/>
                 <Tree treeData={value.filters.awaiting.map(toTree)} style={{width: '100%'}} checkable multiple
-                      placeholder="סינון לפי המתנה עבור:" defaultExpandAll onCheck={setSelectedAwaiting}
+                      defaultExpandedKeys={value.filters.awaiting.map(x => x.key)}
+                      placeholder="סינון לפי המתנה עבור:" onCheck={setSelectedAwaiting}
                       checkedKeys={selectedAwaiting}/>
-                <Divider/>
+                <Divider style={{marginTop: 10, marginBottom: 10}}/>
                 <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
                              buttonStyle={"solid"}
                              style={{width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex"}}>
                     <Radio.Button value={"location"} style={{flex: "1 1 30px", textAlign: "center"}}>
-                        מיקום
+                        <span style={{whiteSpace: "nowrap"}}>מיקום</span>
                     </Radio.Button>
                     <Radio.Button value={"arrival"} style={{flex: "1 1 50px", textAlign: "center"}}>
-                        זמן קבלה
+                        <span style={{whiteSpace: "nowrap"}}>זמן קבלה</span>
                     </Radio.Button>
                     <Radio.Button value={"name"} style={{flex: "1 1 50px", textAlign: "center"}}>
-                        שם מלא
+                        <span style={{whiteSpace: "nowrap"}}>שם מלא</span>
                     </Radio.Button>
                     <Radio.Button value={"severity"} style={{flex: "1 1 35px", textAlign: "center"}}>
-                        דחיפות
+                        <span style={{whiteSpace: "nowrap"}}>דחיפות</span>
                     </Radio.Button>
                 </Radio.Group>
             </Panel>
@@ -271,18 +298,29 @@ const WingInner = ({department, wing}) => {
     }, [totalWidth, value, siderWidth]);
 
     const allPatients = value.patients.filter(({oid}) => !selectedAwaiting.length || selectedAwaiting.find(
-        filter => value.filters.mapping[filter].includes(oid)
+        filter => (value.filters.mapping[filter] || []).includes(oid)
     )).filter(({oid}) => !selectedTreatments.length || selectedTreatments.find(
-        filter => value.filters.mapping[filter].includes(oid)
+        filter => (value.filters.mapping[filter] || []).includes(oid)
     )).filter(({oid}) => !selectedDoctors.length || selectedDoctors.find(
-        filter => value.filters.mapping[filter].includes(oid)
+        filter => (value.filters.mapping[filter] || []).includes(oid)
     )).sort(sortFunctions[wingSortKey]);
     const unassignedPatients = allPatients.filter(({admission}) => !admission.bed);
+
+    const patientList = <div style={{display: "flex", flexDirection: "column"}}>
+        {value.patients.sort((a, b) => a.info.name.localeCompare(b.info.name)).map((patient, i) =>
+            <Button key={i} onClick={() => navigate(`#highlight#${patient.oid}#open`)}>
+                {patient?.info?.name}
+            </Button>)}
+    </div>
+
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
             <WingStatus/>
         </Sider>
         <Content className={'content'} style={{overflowY: "auto"}}>
+            <Popover placement={"bottomLeft"} content={patientList} title={"מטופלים.ות:"}>
+                <Button type={"primary"} style={{position: "absolute", top: 0, left: 0, zIndex: 1000}} icon={<RightOutlined />}/>
+            </Popover>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                 {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedTreatments.length || selectedAwaiting.length ?
                     <Patients key={'patients'} patients={allPatients} onError={flush}/> : [

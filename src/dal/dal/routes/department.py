@@ -57,6 +57,8 @@ async def update_measurements(measurements: Dict[str, List[Measure]] = Body(...,
             await dal.upsert_measurements(patient_id=patient, measures=measurements[patient])
         except PatientNotFound:
             logger.debug('Cannot update patient {} measurements', patient)
+        except Exception as e:
+            logger.exception(f"update measurements failed - patient {patient} measurements {measurements[patient]}")
 
 
 @department_router.post("/{department}/imaging")
@@ -68,6 +70,8 @@ async def update_imaging(department: str, images: Dict[str, List[Image]] = Body(
                 await dal.upsert_imaging(imaging_obj=image)
             except PatientNotFound:
                 logger.debug('Cannot update patient {} images', patient)
+            except Exception as e:
+                logger.exception(f"update imaging failed - patient {patient} image {image}")
 
 
 @department_router.post("/{department}/labs")
@@ -78,6 +82,8 @@ async def update_labs(labs: Dict[str, List[Laboratory]] = Body(..., embed=True),
             await dal.upsert_labs(patient_id=patient, new_labs=labs[patient])
         except PatientNotFound:
             logger.debug('Cannot update patient {} labs', patient)
+        except Exception as e:
+            logger.exception(f"update labs failed - patient {patient}")
 
 
 @department_router.post("/{department}/referrals")
@@ -95,6 +101,8 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
                 )
         except PatientNotFound:
             logger.debug('Cannot update patient {} referrals', patient)
+        except Exception as e:
+            logger.exception(f"update referrals failed - patient {patient}")
 
 
 @department_router.post("/{department}/intake")
@@ -105,6 +113,8 @@ async def update_intake(department: str, intakes: Dict[str, Intake] = Body(..., 
             await dal.upsert_intake(patient, intake)
         except PatientNotFound:
             logger.debug('Cannot update patient {} intake', patient)
+        except Exception as e:
+            logger.exception(f"update intake failed - intake {intake} patient {patient}")
 
 
 @department_router.post("/{department}/treatments", status_code=http.HTTPStatus.OK)
@@ -115,6 +125,8 @@ async def update_treatments(department: str, treatments: Dict[str, Treatment] = 
             await dal.upsert_treatment(record, treatments[record])
         except PatientNotFound:
             logger.debug('Cannot update patient {} treatments', record)
+        except Exception as e:
+            logger.exception(f"update treatments failed - record {record}")
 
 
 @department_router.post("/{department}/medicines")

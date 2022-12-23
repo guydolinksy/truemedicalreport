@@ -1,4 +1,4 @@
-FROM python:3.10-alpine AS dev
+FROM python:3.10.8-alpine3.15 AS dev
 ENV HOME=/opt
 
 RUN apk add build-base unixodbc unixodbc-dev
@@ -25,7 +25,7 @@ RUN python -m pip install -e /opt/digest
 ENV DEBUG=1
 CMD python -m digest
 
-FROM python:3.10-alpine
+FROM python:3.10.8-alpine3.15
 ENV HOME=/opt
 WORKDIR /opt
 

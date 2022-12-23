@@ -6,8 +6,6 @@ from common.data_models.notification import NotificationLevel, Notification, Not
 
 
 class Referral(BaseModel):
-    oid: Optional[str]
-
     patient_id: str
 
     external_id: str
@@ -22,6 +20,9 @@ class Referral(BaseModel):
         if '_id' in kwargs:
             kwargs['oid'] = str(kwargs.pop('_id'))
         super(Referral, self).__init__(**kwargs)
+
+    def get_instance_id(self):
+        return f'referral#{self.at.replace(":", "-").replace(".", "-")}'
 
     def to_notification(self):
         message = "הפנייה ל"
