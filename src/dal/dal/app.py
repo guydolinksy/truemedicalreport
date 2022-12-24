@@ -24,13 +24,13 @@ def create_app() -> FastAPIOffline:
     from .routes.init import init_router
     from .routes.patient import patient_router
     from .routes.department import department_router
-    from .routes.websocket import websocket_router
+    from .routes.publishing import publish_router
     from .routes.faking import faker_router
 
     app_.include_router(init_router, prefix="/dal/init")
     app_.include_router(patient_router, prefix="/dal/patients")
     app_.include_router(department_router, prefix="/dal/departments")
-    app_.include_router(websocket_router, prefix="/dal/sync")
+    app_.include_router(publish_router, prefix="/dal/publishing")
     app_.include_router(faker_router, prefix="/dal/faker")
 
     return app_

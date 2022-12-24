@@ -8,15 +8,14 @@ export const createContext = (defaultValue) => {
     const context = React.createContext(defaultValue);
 
     const Provider = ({url, updateURL, socketURL, defaultValue = undefined, onError, ...props}) => {
-        const [counter, setCounter] = useState(0);
         const [{loading, value}, setValue] = useState({loading: true, value: defaultValue});
 
         // When the website is served over HTTPs, the browser blocks non-TLS websocket connections.
         const websocketScheme = window.location.protocol.startsWith("https") ? "wss" : "ws";
 
-        const {lastMessage} = useWebSocket(`${websocketScheme}://${window.location.host}/api/sync/ws`,
+        const {lastJsonMessage} = useWebSocket(`${websocketScheme}://${window.location.host}/api/sync/ws`,
             {
-                queryParams: {key: socketURL || url},
+                share: true,
                 retryOnError: true,
                 onReconnectStop: (e) => {
                     console.log('reconnect', e)
@@ -28,9 +27,10 @@ export const createContext = (defaultValue) => {
                 },
             });
 
-        const flush = useMemo(() => debounce((force = false, token = null) => {
-            Axios.get(url, {cancelToken: token}).then(response => {
-                if (force) setCounter(p => p + 1)
+        const flush = useMemo(() => debounce(() => {
+            const cancellationSource = Axios.CancelToken.source();
+
+            Axios.get(url, {cancelToken: cancellationSource.token}).then(response => {
                 setValue({loading: false, value: response.data});
             }).catch(error => {
                 if (Axios.isCancel(error))
@@ -39,17 +39,19 @@ export const createContext = (defaultValue) => {
                     onError(error);
                 console.error(error);
             })
+
+            return () => cancellationSource.cancel();
         }, 1000, {leading: true, trailing: true}), [url, onError]);
 
         useEffect(() => {
-            return () => flush.cancel();
-        }, [flush]);
+            return flush()
+        }, [url, flush]);
 
         useEffect(() => {
-            const s = Axios.CancelToken.source()
-            flush(false, s.token)
-            return () => s.cancel()
-        }, [url, lastMessage, flush]);
+            if (lastJsonMessage && lastJsonMessage.keys.includes(url)) {
+                flush()
+            }
+        }, [lastJsonMessage, url, flush]);
 
         const update = useCallback((path, newValue) => {
             const deepReplace = (path, data, value) => {
@@ -68,19 +70,18 @@ export const createContext = (defaultValue) => {
             });
         }, [url, updateURL]);
 
-        return <context.Provider key={counter} value={{
+        return <context.Provider value={{
             value: value,
             update: update,
             loading: loading,
-            flush: flush,
-            lastMessage: lastMessage
+            flush: flush
         }}>
             {props.children({
                 value: value,
                 update: update,
                 loading: loading,
                 flush: flush,
-                lastMessage: lastMessage, ...props
+                ...props
             })}
         </context.Provider>
     }

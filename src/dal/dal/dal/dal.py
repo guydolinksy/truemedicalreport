@@ -1,13 +1,13 @@
 import datetime
 import json
 from dataclasses import dataclass
-from enum import Enum
-from typing import List, Dict
+from typing import List, Dict, Type, Any
 
 import logbook
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from pymongo.database import Database
+from pydantic import BaseModel
 
 from common.data_models.awaiting import Awaiting, AwaitingTypes
 from common.data_models.event import Event
@@ -20,40 +20,63 @@ from common.data_models.patient import Patient, ExternalPatient, InternalPatient
 from common.data_models.referrals import Referral
 from common.data_models.treatment import Treatment
 from common.data_models.wing import WingFilter, WingFilters, PatientNotifications, WingDetails
-from common.utilities.exceptions import PatientNotFound
-from common.utilities.websocket import atomic_update
-from ..routes.websocket import notify, notify_property
+from common.utilities.exceptions import PatientNotFound, MaxRetriesExceeded
+from common.utilities.json_utils import json_to_dot_notation
+from ..routes.publishing import publish
 
 logger = logbook.Logger(__name__)
-
-
-class Action(Enum):
-    insert = 0
-    remove = 1
-    update = 2
 
 
 @dataclass
 class MedicalDal:
     db: Database
 
-    @property
-    def atomic_update_patient(self):
-        return atomic_update(klass=Patient, collection=self.db.patients,
-                             notify=notify, notify_property=notify_property)
+    @staticmethod
+    async def publish_property(klass: Type[BaseModel], oid: str, attr: str, old: Any, new: Any) -> None:
+        await publish(".".join([klass.__name__, attr]), dict(oid=oid, old=old, new=new))
 
-    @property
-    def atomic_update_referral(self):
-        return atomic_update(klass=Referral, collection=self.db.referrals,
-                             notify=notify, notify_property=notify_property)
+    async def _atomic_update(
+        self, klass: Type[BaseModel], collection: Collection, query: dict, new: dict, max_retries=10
+    ) -> None:
 
-    @property
-    def atomic_update_notification(self):
-        return atomic_update(klass=Notification, collection=self.db.notifications,
-                             notify=notify, notify_property=notify_property)
+        update = json_to_dot_notation(new)
+        old = None
+        for i in range(max_retries):
+            prv = await collection.find_one(query)
+            old = json_to_dot_notation(klass(**prv).dict(include=set(new), exclude_unset=True)) if prv else {}
 
-    def get_department_wings(self, department: str) -> dict:
-        return json.loads(dumps(self.db.wings.find({"department": department}, {"_id": 1, "key": 1, "name": 1})))
+            if all(k in old and update[k] == old[k] for k in update):
+                return
+            try:
+                update_result = await collection.update_one({**query, **old}, {"$set": update}, upsert=True)
+                if update_result.modified_count or update_result.upserted_id:
+                    break
+            except DuplicateKeyError:
+                pass
+        else:
+            raise MaxRetriesExceeded(f"{query}: {old} -> {new}")
+
+        if oid := str((await collection.find_one(query)).pop("_id")):  # TODO get the new id from the upsert?
+            for attr in new:
+                if old.get(attr) != new.get(attr):
+                    await self.publish_property(klass, oid, attr, old.get(attr), new.get(attr))
+
+        await publish(klass.__name__, oid)
+
+    async def atomic_update_patient(self, query: dict, new: dict) -> None:
+        await self._atomic_update(klass=Patient, collection=self.db.patients, query=query, new=new)
+
+    async def atomic_update_referral(self, query: dict, new: dict):
+        await self._atomic_update(klass=Referral, collection=self.db.referrals, query=query, new=new)
+
+    async def atomic_update_notification(self, query: dict, new: dict):
+        await self._atomic_update(klass=Notification, collection=self.db.notifications, query=query, new=new)
+
+    async def get_department_wings(self, department: str) -> List[dict]:
+        return [
+            json.loads(dumps(wing))
+            async for wing in self.db.wings.find({"department": department}, {"_id": 1, "key": 1, "name": 1})
+        ]
 
     def get_wing(self, department: str, wing: str) -> WingDetails:
         return WingDetails(**self.db.wings.find_one({"department": department, "key": wing}))
@@ -227,6 +250,8 @@ class MedicalDal:
         if previous and not patient:
             self.db.patients.delete_one({"external_id": previous.external_id})
             await self._cascade_delete_patient(previous.external_id)
+            await publish(Patient.__name__, previous.oid)
+            await self.publish_property(Patient, previous.oid, "admission", previous.admission.dict(), None)
         elif previous and patient:
             await self.atomic_update_patient(
                 {"_id": ObjectId(previous.oid)},
@@ -289,7 +314,7 @@ class MedicalDal:
             notification = imaging_obj.to_notification()
             self.db.notifications.update_one({"notification_id": notification.notification_id},
                                              {'$set': notification.dict()}, upsert=True)
-            await notify('notification', patient.oid)
+            await publish("notification", patient.oid)
         updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(imaging_obj.external_id, Awaiting(
             subtype=imaging_obj.title,
             name=imaging_obj.title,
@@ -325,7 +350,7 @@ class MedicalDal:
                 notification = lab.to_notification()
                 self.db.notifications.update_one({"notification_id": notification.notification_id},
                                                  {'$set': notification.dict()}, upsert=True)
-                await notify('notification', patient.oid)
+                await publish("notification", patient.oid)
 
             for key, warning in lab.warnings:
                 updated.warnings.setdefault(key, warning)
