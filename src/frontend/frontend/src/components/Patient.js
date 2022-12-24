@@ -89,16 +89,16 @@ export const PatientStatus = ({patient, style}) => {
             trackEvent({category: 'patient-complaint', action: 'click-event'});
             e.stopPropagation();
         }}>
-        <div><Tooltip overlay={'תלונה עיקרית'}>{value.intake.complaint}</Tooltip>
+        <div><Tooltip overlay={value.intake.nurse_description}>{value.intake.complaint}</Tooltip>
             &nbsp;-&nbsp;
             <Tooltip overlay={'זמן מקבלה'}>
                 <RelativeTime className={arrivalClass} date={value.admission.arrival}/>
             </Tooltip></div>
         <div>
-        <Tooltip overlay='דחיפות'>
-            <strong>{value.severity.value}&nbsp;</strong>
-        </Tooltip>
-          <ArrowLeftOutlined/>&nbsp;{
+            <Tooltip overlay='דחיפות'>
+                <strong>{value.severity.value}&nbsp;</strong>
+            </Tooltip>
+            <ArrowLeftOutlined/>&nbsp;{
             value.treatment.destination || <span className={'error-text'}>(לא הוחלט)</span>
         }</div>
 
@@ -208,7 +208,7 @@ const PatientInner = ({patient, avatar, style}) => {
     const {matched, matching} = useContext(hashMatchContext);
     const {trackEvent} = useMatomo();
 
-    let text = value.warnings.length || <Tooltip overlay={'סימון דגל'}>
+    let text = Object.keys(value.warnings).length || <Tooltip overlay={'סימון דגל'}>
         {<FlagFilled onClick={e => {
             update(['flagged'], !value.flagged);
             trackEvent({category: 'patient-flagged', action: 'click-event'});
@@ -230,7 +230,7 @@ const PatientInner = ({patient, avatar, style}) => {
     }} extra={<PatientAwaiting/>} actions={patientMeasures(patient, value.measures)}>
         <div style={style}>
             <Badge.Ribbon text={text}
-                          color={value.warnings.length ? "red" : value.flagged ? "blue" : "grey"}>
+                          color={Object.keys(value.warnings).length ? "red" : value.flagged ? "blue" : "grey"}>
                 <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
                     <div><PatientStatus patient={patient} style={{direction: "rtl"}}/></div>
                     {Object.entries(value.warnings).map(([key, warning], i) => <div key={i}>

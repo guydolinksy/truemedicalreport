@@ -81,7 +81,7 @@ class SqlToDal(object):
                     patients.append(ExternalPatient(
                         external_id=row["MedicalRecord"],
                         info=Person(
-                            id_=row["MedicalRecord"],
+                            id_=row["PatientID"],
                             name=row["FullName"],
                             gender='male' if row["Gender"] == 'זכר' else 'female',
                             birthdate=utils.datetime_utc_serializer(row["BirthDate"]),
@@ -176,6 +176,7 @@ class SqlToDal(object):
                             min_warn_bar=row["NormMinimum"],
                             max_warn_bar=row["NormMaximum"],
                             panic=row["Panic"],
+                            result=row["Result"],
                             status=(LabStatus.ordered if row["ResultTime"] is None else LabStatus.analyzed)
 
                         ).dict(exclude_unset=True))

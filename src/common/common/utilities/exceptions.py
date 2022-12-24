@@ -1,13 +1,16 @@
 from inspect import signature
 from fastapi.params import Depends
+from fastapi.exceptions import HTTPException
 
 
-class MaxRetriesExceeded(Exception):
-    pass
+class MaxRetriesExceeded(HTTPException):
+    def __init__(self, msg: str) -> None:
+        super().__init__(status_code=500, detail=msg)
 
 
-class PatientNotFound(Exception):
-    pass
+class PatientNotFound(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(status_code=404)
 
 
 def inject_dependencies(**kwargs):

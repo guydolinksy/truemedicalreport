@@ -1,6 +1,6 @@
 import React, {useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {
-    Badge,
+    Badge, Button,
     Card,
     Col,
     Collapse,
@@ -9,7 +9,7 @@ import {
     Input,
     Layout,
     List,
-    Menu,
+    Menu, Popover,
     Radio,
     Row,
     Select,
@@ -27,7 +27,7 @@ import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
-import {FilterOutlined, PushpinOutlined, UserOutlined} from "@ant-design/icons";
+import {FilterOutlined, PushpinOutlined, RightOutlined, UserOutlined} from "@ant-design/icons";
 import {Link} from "react-router-dom";
 import Moment from "react-moment";
 import {useLocalStorage} from "../hooks/localStorageHook";
@@ -191,7 +191,6 @@ const WingStatus = () => {
         justifyContent: "space-between",
     }
 
-
     return <div style={{
         display: "flex",
         flexDirection: "column",
@@ -306,11 +305,22 @@ const WingInner = ({department, wing}) => {
         filter => (value.filters.mapping[filter] || []).includes(oid)
     )).sort(sortFunctions[wingSortKey]);
     const unassignedPatients = allPatients.filter(({admission}) => !admission.bed);
+
+    const patientList = <div style={{display: "flex", flexDirection: "column"}}>
+        {value.patients.sort((a, b) => a.info.name.localeCompare(b.info.name)).map((patient, i) =>
+            <Button key={i} onClick={() => navigate(`#highlight#${patient.oid}#open`)}>
+                {patient?.info?.name}
+            </Button>)}
+    </div>
+
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
             <WingStatus/>
         </Sider>
         <Content className={'content'} style={{overflowY: "auto"}}>
+            <Popover placement={"bottomLeft"} content={patientList} title={"מטופלים.ות:"}>
+                <Button type={"primary"} style={{position: "absolute", top: 0, left: 0, zIndex: 1000}} icon={<RightOutlined />}/>
+            </Popover>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                 {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedTreatments.length || selectedAwaiting.length ?
                     <Patients key={'patients'} patients={allPatients} onError={flush}/> : [

@@ -60,7 +60,7 @@ class Laboratory(BaseModel):
     test_tube_id: Optional[int]
     min_warn_bar: Optional[float]
     max_warn_bar: Optional[float]
-    result: Optional[float]
+    result: Optional[str]
     panic: Optional[bool]
     status: LabStatus
 
@@ -110,13 +110,14 @@ class LabCategory(BaseModel):
         use_enum_values = True
 
     def to_notification(self) -> [LabsNotification]:
+        panic = any(category_data.panic for category_data in self.results.values())
         return LabsNotification(
             static_id=self.get_instance_id(),
             patient_id=self.patient_id,
             at=self.at,
             message=f"התקבלו תוצאות {self.category}",
             link="Add in the future",
-            level=NotificationLevel.normal,
+            level=NotificationLevel.normal if not panic else NotificationLevel.panic,
         )
 
     @property
@@ -125,4 +126,4 @@ class LabCategory(BaseModel):
             message = f"תוצאת {category_data.category_name}-{category_data.test_type_name} חריגה: {category_data.result}"
             if not category_data.panic:
                 continue
-            yield cat_id, PatientWarning(content=message, severity=Severity(value=0, at=category_data.at))
+            yield cat_id, PatientWarning(content=message, severity=Severity(value=1, at=category_data.at))

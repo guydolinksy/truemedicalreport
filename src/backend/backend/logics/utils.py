@@ -1,8 +1,28 @@
 from typing import List
 
+import aiohttp
+
+from .. import config
+
 
 def prepare_update_object(path: List[str], value: any) -> dict:
     if not path:
         return value
 
     return {path[0]: prepare_update_object(path[1:], value)}
+
+
+async def fetch_dal_json(endpoint: str) -> dict:
+    assert endpoint.startswith("/")
+
+    async with aiohttp.ClientSession() as session:
+        ret = await session.get(f"{config.dal_url}{endpoint}")
+        return await ret.json()
+
+
+async def post_dal_json(endpoint: str, json_payload: dict) -> dict:
+    assert endpoint.startswith("/")
+
+    async with aiohttp.ClientSession() as session:
+        ret = await session.post(f"{config.dal_url}{endpoint}", json=json_payload)
+        return await ret.json()
