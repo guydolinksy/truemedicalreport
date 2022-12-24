@@ -16,6 +16,7 @@ export const createContext = (defaultValue) => {
         const {lastJsonMessage} = useWebSocket(`${websocketScheme}://${window.location.host}/api/sync/ws`,
             {
                 share: true,
+                shouldReconnect: () => true,
                 retryOnError: true,
                 onReconnectStop: (e) => {
                     console.log('reconnect', e)
