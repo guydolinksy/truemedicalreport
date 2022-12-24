@@ -3,7 +3,6 @@ from typing import List, Dict
 
 import logbook
 from fastapi import APIRouter, Depends, Body
-from pymongo import MongoClient
 
 from common.data_models.department import Department
 from common.data_models.image import Image
@@ -16,7 +15,7 @@ from common.data_models.treatment import Treatment
 from common.data_models.wing import WingSummary
 from common.utilities.exceptions import PatientNotFound
 from .wing import wing_router
-from .. import config
+from ..clients import medical_dal
 from ..dal.dal import MedicalDal
 
 department_router = APIRouter()
@@ -26,27 +25,22 @@ department_router.include_router(wing_router, prefix="/{department}/wings")
 logger = logbook.Logger(__name__)
 
 
-# TODO remove duplicate use of dal function
-def medical_dal() -> MedicalDal:
-    return MedicalDal(MongoClient(config.mongo_connection).medical)
-
-
 @department_router.get("/{department}", tags=["Department"], response_model=Department,
                        response_model_exclude_unset=True)
-def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> Department:
+async def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> Department:
     return Department(wings=[WingSummary(
-        details=dal.get_wing(department, wing["key"]),
-        filters=dal.get_wing_filters(department, wing["key"]),
-    ) for wing in dal.get_department_wings(department)])
+        details=await dal.get_wing(department, wing["key"]),
+        filters=await dal.get_wing_filters(department, wing["key"]),
+    ) for wing in await dal.get_department_wings(department)])
 
 
 @department_router.post("/{department}/admissions", tags=["Department"])
 async def update_admissions(department: str, admissions: List[ExternalPatient] = Body(..., embed=True),
                             dal: MedicalDal = Depends(medical_dal)):
     updated = {patient.external_id: patient for patient in admissions}
-    existing = {patient.external_id: patient for patient in dal.get_department_patients(department)}
-    for patient in set(updated) | set(existing):
-        await dal.upsert_patient(previous=existing.get(patient), patient=updated.get(patient))
+    existing = {patient.external_id: patient for patient in await dal.get_department_patients(department)}
+    for patient_external_id in set(updated) | set(existing):
+        await dal.upsert_patient(previous=existing.get(patient_external_id), patient=updated.get(patient_external_id))
 
 
 @department_router.post("/{department}/measurements", tags=["Department"])
@@ -92,7 +86,7 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
     for patient in referrals:
         try:
             updated = {referral.external_id: referral for referral in referrals[patient]}
-            existing = {referral.external_id: referral for referral in dal.get_patient_referrals(patient)}
+            existing = {referral.external_id: referral for referral in await dal.get_patient_referrals(patient)}
             for referral in set(updated) | set(existing):
                 await dal.upsert_referral(
                     patient_id=patient,

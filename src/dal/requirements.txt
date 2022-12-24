@@ -4,7 +4,8 @@ pydantic~=1.9.0
 pydentic~=0.0.1.dev3
 common
 fastapi_offline
-pymongo==4.0.2
+pymongo==4.3.3
+motor==3.1.1
 uvicorn==0.17.6
 broadcaster
 asyncio_redis

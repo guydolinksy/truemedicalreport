@@ -48,11 +48,11 @@ class InternalPatient(BaseModel):
             severity=Severity(**patient.esi.dict()),
             awaiting={
                 AwaitingTypes.doctor.value: {
-                    'exam': Awaiting(subtype='exam', name='בדיקת צוות רפואי', since=patient.admission.arrival,
+                    'exam': Awaiting(subtype='exam', name='בדיקת צוות רפואי', since=patient.admission.arrival or "",
                                      limit=1500)
                 },
                 AwaitingTypes.nurse.value: {
-                    'exam': Awaiting(subtype='exam', name='בדיקת צוות סיעודי', since=patient.admission.arrival,
+                    'exam': Awaiting(subtype='exam', name='בדיקת צוות סיעודי', since=patient.admission.arrival or "",
                                      limit=1500)
                 },
             },
