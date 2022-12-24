@@ -4,8 +4,8 @@ from fastapi.exceptions import HTTPException
 
 
 class MaxRetriesExceeded(HTTPException):
-    def __init__(self) -> None:
-        super().__init__(status_code=500)
+    def __init__(self, msg: str) -> None:
+        super().__init__(status_code=500, detail=msg)
 
 
 class PatientNotFound(HTTPException):
