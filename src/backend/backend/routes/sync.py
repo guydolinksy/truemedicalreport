@@ -12,6 +12,7 @@ from common.data_models.patient import Patient
 from .. import config
 from common.utilities.pubsub import create_subscriber
 
+
 logger = Logger(__name__)
 
 sync_router = APIRouter()
@@ -96,7 +97,27 @@ async def _notify_single(ws: WebSocket, data: Any) -> Optional[WebSocket]:
     return ws
 
 
+_waiting_keys = set()
+
+
 async def notify(keys: Collection[str]) -> None:
+    _waiting_keys.update(keys)
+    asyncio.create_task(_consolidated_notify())
+
+
+async def _consolidated_notify() -> None:
+    if len(_waiting_keys) < config.websocket_burst_threshold:
+        await asyncio.sleep(config.websocket_consolidation_window_seconds)
+
+    _keys = list(_waiting_keys)
+    _waiting_keys.clear()
+    await _notify_now(_keys)
+
+
+async def _notify_now(keys: List[str]) -> None:
+    if not keys:
+        return
+
     websockets = _ws_manager.all()
 
     if not websockets:
@@ -104,7 +125,8 @@ async def notify(keys: Collection[str]) -> None:
         return
 
     data = {
-        "keys": list(set(keys)),
+        "length": len(keys),
+        "keys": keys,
     }
 
     tasks = [asyncio.create_task(_notify_single(ws, data)) for ws in websockets]
@@ -114,7 +136,13 @@ async def notify(keys: Collection[str]) -> None:
         await _ws_manager.remove(dead_socket)
 
 
-@sync_router.get('/test_broadcast')
-async def test_broadcast_key(key, message):
-    await notify(key, message)
+@sync_router.post('/test_broadcast')
+async def test_broadcast(keys: List[str]):
+    await notify(keys)
+    return {}
+
+
+@sync_router.post('/test_broadcast_now')
+async def test_broadcast_now(keys: List[str]):
+    await _notify_now(keys)
     return {}
