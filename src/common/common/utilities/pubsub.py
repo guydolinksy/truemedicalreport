@@ -1,5 +1,6 @@
 import asyncio
 import json
+from asyncio import Task
 from collections import defaultdict
 from types import NoneType
 from typing import Callable, Any, TypeVar, Union, List, Dict, Awaitable, Optional
@@ -12,16 +13,14 @@ import logbook
 logger = logbook.Logger(__name__)
 
 T = TypeVar("T")
+
 _JSON_TYPE = Union[NoneType, Dict, List, str, int, float]
 _SUBSCRIBER_HANDLER_TYPE = Callable[[_JSON_TYPE], Awaitable[T]]
-
+_SUBSCRIBER_DECORATOR_TYPE = Callable[[_SUBSCRIBER_HANDLER_TYPE], _SUBSCRIBER_HANDLER_TYPE]
 CHANNEL = "updates"
 
 
-
-def create_publisher(
-    router: APIRouter, broadcast_backing: str, channel: str = CHANNEL
-) -> Callable[[str, Optional], Awaitable[NoneType]]:
+def _register_broadcaster(router: APIRouter, broadcast_backing: str) -> Broadcast:
     broadcaster = Broadcast(broadcast_backing)
 
     @router.on_event("startup")
@@ -32,23 +31,26 @@ def create_publisher(
     async def on_shutdown() -> None:
         await broadcaster.disconnect()
 
+    return broadcaster
+
+
+def create_publisher(router: APIRouter, broadcast_backing: str) -> Callable[[str, Optional], Awaitable[NoneType]]:
+    broadcaster = _register_broadcaster(router, broadcast_backing)
+
     async def publish(key: str, value: Any = None) -> None:
-        await broadcaster.publish(channel=channel, message=json.dumps((key, value)))
+        await broadcaster.publish(channel=CHANNEL, message=json.dumps((key, value)))
 
     return publish
 
 
-def create_subscriber(
-    router: APIRouter, broadcast_backing: str, channel: str = CHANNEL
-) -> Callable[[str], Callable[[_SUBSCRIBER_HANDLER_TYPE], _SUBSCRIBER_HANDLER_TYPE]]:
+def create_subscriber(router: APIRouter, broadcast_backing: str) -> Callable[[str], _SUBSCRIBER_DECORATOR_TYPE]:
+    broadcaster = _register_broadcaster(router, broadcast_backing)
 
-    broadcaster = Broadcast(broadcast_backing)
-    tasks = []
-
+    listener_task: Optional[Task] = None
     handlers: Dict[str, List[Callable[[_JSON_TYPE], Awaitable[NoneType]]]] = defaultdict(list)
 
-    async def listen():
-        async with broadcaster.subscribe(channel=channel) as subscriber:
+    async def listen() -> None:
+        async with broadcaster.subscribe(channel=CHANNEL) as subscriber:
             async for event in subscriber:
                 try:
                     key, value = json.loads(event.message)
@@ -60,17 +62,17 @@ def create_subscriber(
 
     @router.on_event("startup")
     async def on_startup() -> None:
-        await broadcaster.connect()
-        tasks.append(asyncio.create_task(listen()))
+        nonlocal listener_task
+        listener_task = asyncio.create_task(listen())
 
     @router.on_event("shutdown")
     async def on_shutdown() -> None:
-        for task in tasks:
-            task.cancel()
+        nonlocal listener_task
+        if listener_task:
+            listener_task.cancel()
+            listener_task = None
 
-        await broadcaster.disconnect()
-
-    def subscribe(key: str) -> Callable[[_SUBSCRIBER_HANDLER_TYPE], _SUBSCRIBER_HANDLER_TYPE]:
+    def subscribe(key: str) -> _SUBSCRIBER_DECORATOR_TYPE:
         def decorator(f: _SUBSCRIBER_HANDLER_TYPE) -> _SUBSCRIBER_HANDLER_TYPE:
             async def handler(value: _JSON_TYPE) -> None:
                 with logger.catch_exceptions():
