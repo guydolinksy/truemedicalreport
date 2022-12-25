@@ -50,8 +50,6 @@ spec:
               value: '"redis://{{ .Values.global.fullname.redis }}-master:{{ .Values.global.servicePort.redis }}/0"'
             - name: 'DAL_CONNECTION'
               value: '"http://{{ .Values.global.fullname.dal }}:{{ .Values.global.servicePort.dal }}/dal"'
-            - name: 'SYNC_CONNECTION'
-              value: '"ws://{{ .Values.global.fullname.dal }}:{{ .Values.global.servicePort.dal }}/dal/sync/ws"'
             - name: 'PORT'
               value: '80'
             - name: 'DEBUG'
