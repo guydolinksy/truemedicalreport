@@ -12,9 +12,10 @@ import {useMatomo} from "@datapunt/matomo-tracker-react";
 import {UserTheme} from "./themes/ThemeContext";
 import {HashMatch} from "./components/HashMatch";
 import {TimeContextProvider} from "./components/RelativeTime";
-
+import * as Sentry from "@sentry/browser";
 
 function App() {
+    Sentry.init({ dsn: process.env.SENTRY_CONNECTION_DSN });
 
     const {trackPageView} = useMatomo();
 
