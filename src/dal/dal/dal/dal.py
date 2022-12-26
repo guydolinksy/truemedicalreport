@@ -44,9 +44,11 @@ class MedicalDal:
 
         update = json_to_dot_notation(new)
         old = None
+        old_full = None
+
         for i in range(max_retries):
-            prv = await collection.find_one(query)
-            old = json_to_dot_notation(klass(**prv).dict(include=set(new), exclude_unset=True)) if prv else {}
+            old_full = await collection.find_one(query)
+            old = json_to_dot_notation(klass(**old_full).dict(include=set(new), exclude_unset=True)) if old_full else {}
 
             if all(k in old and update[k] == old[k] for k in update):
                 return
@@ -59,12 +61,21 @@ class MedicalDal:
         else:
             raise MaxRetriesExceeded(f"{query}: {old} -> {new}")
 
-        if oid := str((await collection.find_one(query)).pop("_id")):  # TODO get the new id from the upsert?
+        new_full = await collection.find_one(query)
+
+        if oid := str(new_full.pop("_id")):
             for attr in new:
                 if old.get(attr) != new.get(attr):
                     await self.publish_property(klass, oid, attr, old.get(attr), new.get(attr))
 
-        await publish(klass.__name__, oid)
+        if old_full:
+            del old_full["_id"]  # Not JSON serializable, and we already have the ObjectId in a separate field
+
+        await publish(klass.__name__, {
+            "oid": oid,
+            "old": old_full,
+            "new": new_full,
+        })
 
     async def atomic_update_patient(self, query: dict, new: dict) -> None:
         await self._atomic_update(klass=Patient, collection=self.db.patients, query=query, new=new)

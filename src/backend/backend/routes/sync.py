@@ -21,8 +21,21 @@ subscribe = create_subscriber(sync_router, config.redis_connection)
 
 
 @subscribe(Patient.__name__)
-async def patient_handler(patient_oid: str):
-    await notify([f"/api/patients/{patient_oid}", f"/api/patients/{patient_oid}/info"])
+async def patient_handler(data: dict):
+    patient_oid = data["oid"]
+    old = data["old"] or {}
+    new = data["new"] or {}
+
+    keys = [f"/api/patients/{patient_oid}", f"/api/patients/{patient_oid}/info"]
+
+    if new.get("flagged") != old.get("flagged"):
+        if admission := old.get("admission", {}):
+            keys.append(f"/api/departments/{admission['department']}/wings/{admission['wing']}")
+
+        if admission := new.get("admission", {}):
+            keys.append(f"/api/departments/{admission['department']}/wings/{admission['wing']}")
+
+    await notify(keys)
 
 
 @subscribe(f"{Patient.__name__}.admission")
