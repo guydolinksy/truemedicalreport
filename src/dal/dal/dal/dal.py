@@ -325,7 +325,9 @@ class MedicalDal:
     async def upsert_patient(self, previous: Patient, patient: ExternalPatient):
         if previous and not patient:
             await self._cascade_delete_patient(previous.external_id)
-            await publish(Patient.__name__, previous.oid)
+            await publish(Patient.__name__, {
+                "oid": previous.oid,
+            })
             await self.publish_property(Patient, previous.oid, "admission", previous.admission.dict(), None)
         elif previous and patient:
             await self.atomic_update_patient(
