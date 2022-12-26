@@ -14,3 +14,4 @@ websockets
 fastapi-login
 werkzeug
 environs
+faker
