@@ -17,7 +17,7 @@ dal_url = json.loads(os.getenv('DAL_CONNECTION', '""'))
 # WS_BURST_THRESHOLD:
 #   In case there's a very large burst (defined by this parameter), we won't wait for the consolidation time period
 #   and notify the websockets right away just to prevent too large updates.
-websocket_consolidation_window_seconds = json.loads(os.getenv("WS_CONSOLIDATION_WINDOW_SECONDS", '3'))
+websocket_consolidation_window_seconds = json.loads(os.getenv("WS_CONSOLIDATION_WINDOW_SECONDS", '0'))
 websocket_burst_threshold = json.loads(os.getenv("WS_BURST_THRESHOLD", '100'))
 
 
