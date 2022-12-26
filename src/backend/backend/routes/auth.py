@@ -7,6 +7,7 @@ from fastapi.params import Security
 from fastapi_login import LoginManager
 from pydantic import ValidationError
 from starlette.responses import Response
+import datetime as dt
 
 from .. import config
 from ..logics.exceptions import UnauthorizedException, InvalidSettingsException, BadRequestException
@@ -65,7 +66,8 @@ async def login(
             # The data in sub (JWT "subject") must conform to whatever load_user(...) expects.
             sub=user.dict()
         ),
-        scopes=([ADMIN_SCOPE] if user.is_admin else [])
+        scopes=([ADMIN_SCOPE] if user.is_admin else []),
+        expires=dt.timedelta(hours=12)
     )
     login_manager.set_cookie(response, access_token)
     return True
