@@ -118,12 +118,13 @@ class LdapAuthProvider(AuthProvider):
         """
         settings = self.settings
         ldap_connection = settings.connect(bind=True)
+        user_filter = settings.filter.format(username=username)
 
         with settings.handle_ldap_exceptions(extra="finding user"):
             r = ldap_connection.search_s(
                 settings.users_base,
                 ldap.SCOPE_SUBTREE,
-                settings.filter.format(username=username),
+                user_filter,
                 attrlist=[LDAP_MEMBER_IN_GROUP_ATTRIBUTE],
             )
 
@@ -136,14 +137,17 @@ class LdapAuthProvider(AuthProvider):
         user_dn, user_object = r[0]
 
         if settings.use_ad_style_group_membership:
+            groups = []
             with settings.handle_ldap_exceptions(extra="finding user groups"):
-                r = ldap_connection.search_s(
-                    settings.groups_base,
-                    ldap.SCOPE_SUBTREE,
-                    f"member:{LDAP_MATCHING_RULE_IN_CHAIN}:={user_dn}",
-                    attrlist=[""],
-                )
-                groups = [group_dn for group_dn, _ in r]
+                for group_dn in [settings.admin_group_dn, settings.user_group_dn]:
+                    if ldap_connection.search_s(
+                        settings.users_base,
+                        ldap.SCOPE_SUBTREE,
+                        # Recursive search is extremely slow, optimizing by filtering only for the wanted groups
+                        f"(&(memberOf:{LDAP_MATCHING_RULE_IN_CHAIN}:={group_dn})({user_filter}))",
+                        attrlist=[""],
+                    ):
+                        groups.append(group_dn)
         elif LDAP_MEMBER_IN_GROUP_ATTRIBUTE in user_object:
             groups = set(group_dn.decode() for group_dn in user_object[LDAP_MEMBER_IN_GROUP_ATTRIBUTE])
         else:
@@ -155,7 +159,20 @@ class LdapAuthProvider(AuthProvider):
         """
         Just returns the full list of groups the user is a member of. No authentication is done.
         """
-        _, user_groups = self._find_user(username)
+        settings = self.settings
+
+        user_dn, user_groups = self._find_user(username)
+
+        if settings.use_ad_style_group_membership:
+            with settings.handle_ldap_exceptions(extra="finding user groups"):
+                r = settings.connect(bind=True).search_s(
+                    settings.groups_base,
+                    ldap.SCOPE_SUBTREE,
+                    f"member:{LDAP_MATCHING_RULE_IN_CHAIN}:={user_dn}",
+                    attrlist=[""],
+                )
+                user_groups = [group_dn for group_dn, _ in r]
+
         return list(user_groups)
 
 
