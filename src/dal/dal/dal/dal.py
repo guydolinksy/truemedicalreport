@@ -327,6 +327,7 @@ class MedicalDal:
             await self._cascade_delete_patient(previous.external_id)
             await publish(Patient.__name__, {
                 "oid": previous.oid,
+                "old": previous.dict(),
             })
             await self.publish_property(Patient, previous.oid, "admission", previous.admission.dict(), None)
         elif previous and patient:
