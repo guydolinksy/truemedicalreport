@@ -39,7 +39,7 @@ class MedicalDal:
         await publish(".".join([klass.__name__, attr]), dict(oid=oid, old=old, new=new))
 
     async def _atomic_update(
-        self, klass: Type[BaseModel], collection: Collection, query: dict, new: dict, max_retries=10
+            self, klass: Type[BaseModel], collection: Collection, query: dict, new: dict, max_retries=10
     ) -> None:
 
         update = json_to_dot_notation(new)
@@ -265,9 +265,9 @@ class MedicalDal:
             async for referral in self.db.referrals.find({"patient_id": patient})
         ]
 
-    async def get_patient_labs(self, patient: str) -> List[Laboratory]:
+    async def get_patient_labs(self, patient: str) -> List[LabCategory]:
         return [
-            Laboratory(oid=str(labs.pop("_id")), **labs) async for labs in self.db.labs.find({"patient_id": patient})
+            LabCategory(oid=str(labs.pop("_id")), **labs) async for labs in self.db.labs.find({"patient_id": patient})
         ]
 
     async def get_patient(self, patient_query: dict) -> Patient:
@@ -458,7 +458,6 @@ class MedicalDal:
                     limit=3600,
                 ),
             )
-        logger.debug("{} {}", updated.dict(include={"awaiting", "warnings"}, exclude_unset=True), patient.dict())
 
         await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"awaiting", "warnings"}, exclude_unset=True)
