@@ -10,7 +10,7 @@ from pydantic import ValidationError
 from pymongo.collection import Collection
 
 from .base import AuthProvider
-from ..exceptions import UnauthorizedException, InvalidSettingsException
+from ..exceptions import UnauthorizedException, InvalidSettingsException, ForbiddenException
 from ..user import User
 
 LDAP_MEMBER_IN_GROUP_ATTRIBUTE = "memberOf"
@@ -100,7 +100,7 @@ class LdapAuthProvider(AuthProvider):
         elif settings.user_group_dn in user_groups:
             is_admin = False
         else:
-            raise UnauthorizedException("Provided user is not a member of any authorized group")
+            raise ForbiddenException("Provided user is not a member of any authorized group")
 
         with settings.handle_ldap_exceptions(invalid_credentials_message=f"Failed to authenticate {user_dn=}"):
             settings.connect(bind=False).bind_s(user_dn, password)
