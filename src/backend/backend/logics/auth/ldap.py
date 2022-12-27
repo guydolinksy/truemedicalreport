@@ -149,11 +149,11 @@ class LdapAuthProvider(AuthProvider):
                     ):
                         groups.append(group_dn)
         elif LDAP_MEMBER_IN_GROUP_ATTRIBUTE in user_object:
-            groups = set(group_dn.decode() for group_dn in user_object[LDAP_MEMBER_IN_GROUP_ATTRIBUTE])
+            groups = [group_dn.decode() for group_dn in user_object[LDAP_MEMBER_IN_GROUP_ATTRIBUTE]]
         else:
             raise UnauthorizedException("User doesn't have a memberOf field; Their groups can't be determined")
 
-        return user_dn, groups
+        return user_dn, set(groups)
 
     def query_user_groups(self, username: str) -> List[str]:
         """
