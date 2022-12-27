@@ -50,7 +50,7 @@ async def update_measurements(measurements: Dict[str, List[Measure]] = Body(...,
         try:
             await dal.upsert_measurements(patient_id=patient, measures=measurements[patient])
         except PatientNotFound:
-            logger.debug('Cannot update patient {} measurements', patient)
+            logger.debug('Cannot update patient {} measurements - Patient not found', patient)
         except Exception as e:
             logger.exception(f"update measurements failed - patient {patient} measurements {measurements[patient]}")
 
@@ -63,7 +63,7 @@ async def update_imaging(department: str, images: Dict[str, List[Image]] = Body(
             try:
                 await dal.upsert_imaging(imaging_obj=image)
             except PatientNotFound:
-                logger.debug('Cannot update patient {} images', patient)
+                logger.debug('Cannot update patient {} images - Patient not found', patient)
             except Exception as e:
                 logger.exception(f"update imaging failed - patient {patient} image {image}")
 
@@ -106,7 +106,7 @@ async def update_intake(department: str, intakes: Dict[str, Intake] = Body(..., 
         try:
             await dal.upsert_intake(patient, intake)
         except PatientNotFound:
-            logger.debug('Cannot update patient {} intake', patient)
+            logger.debug('Cannot update patient {} intake - Patient not found', patient)
         except Exception as e:
             logger.exception(f"update intake failed - intake {intake} patient {patient}")
 
@@ -118,7 +118,7 @@ async def update_treatments(department: str, treatments: Dict[str, Treatment] = 
         try:
             await dal.upsert_treatment(record, treatments[record])
         except PatientNotFound:
-            logger.debug('Cannot update patient {} treatments', record)
+            logger.debug('Cannot update patient {} treatments - Patient not found', record)
         except Exception as e:
             logger.exception(f"update treatments failed - record {record}")
 
@@ -130,4 +130,4 @@ async def update_medicines(department: str, medications: Dict[str, List[Medicine
         try:
             await dal.upsert_medicines(patient, medications[patient])
         except PatientNotFound:
-            logger.debug('Cannot update patient {} medicines', patient)
+            logger.debug('Cannot update patient {} medicines - Patient not found', patient)
