@@ -98,8 +98,6 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
 
         except PatientNotFound:
             logger.debug('Cannot update patient {} referrals', patient)
-        except AttributeError:
-            logger.exception(f"Attribute Error on Update referrals - patient {patient} referrals - {_referral}")
         except Exception as e:
             logger.exception(f"update referrals failed - patient {patient}")
 
