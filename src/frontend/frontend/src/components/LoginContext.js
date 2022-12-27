@@ -97,9 +97,9 @@ export const LoginForm = () => {
             if (error.response.status === 504) {
                 message = "השרת אינו זמין"
             } else if (error.response.status === 403) {
-                message = "המשתמש לא חבר בקבוצה מאושרת, יש ליצור קשר עם ARC"
+                message = "אינך חבר.ה בקבוצה מורשי הגישה למערכת, נא צרו קשר עימנו"
             } else if (error.response.status === 401) {
-                message = "שם המשתמש או הסיסמא לא נכונים."
+                message = "שם המשתמש או הסיסמא לא נכונים"
                 incorrectCredentials = true;
             }
             setError({
