@@ -130,7 +130,7 @@ async def test_ldap_settings(_=REQUIRE_ADMIN, args=Body(...)):
     try:
         _settings = LdapSettings.create(args)
     except InvalidSettingsException:
-        raise BadRequestException("New setting are invalid")
+        raise BadRequestException("New settings are invalid")
 
     provider = LdapAuthProvider.with_constant_settings(_settings)
     return provider.login(username=test_user, password=test_password)
@@ -145,7 +145,7 @@ async def test_ldap_settings_groups_only(_=REQUIRE_ADMIN, args=Body(...)):
     try:
         _settings = LdapSettings.create(args)
     except InvalidSettingsException:
-        raise BadRequestException("New setting are invalid")
+        raise BadRequestException("New settings are invalid")
 
     provider = LdapAuthProvider.with_constant_settings(_settings)
     groups = provider.query_user_groups(username=test_user)
