@@ -140,7 +140,7 @@ class LdapAuthProvider(AuthProvider):
                 r = ldap_connection.search_s(
                     settings.groups_base,
                     ldap.SCOPE_SUBTREE,
-                    f"member:{LDAP_MATCHING_RULE_IN_CHAIN}={user_dn}",
+                    f"member:{LDAP_MATCHING_RULE_IN_CHAIN}:={user_dn}",
                     attrlist=[""],
                 )
                 groups = [group_dn for group_dn, _ in r]
