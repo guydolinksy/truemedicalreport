@@ -261,20 +261,20 @@ class FullMeasures(BaseModel):
         for measure in measures or []:
             match measure.type:
                 case MeasureType.pain.value:
-                    res.setdefault(MeasureType.pain.value, []).append([measure.at_.timestamp(), int(measure.value)])
+                    res.setdefault(MeasureType.pain.value, []).append([measure.at_.timestamp(), measure.value])
                 case MeasureType.pulse.value:
-                    res.setdefault(MeasureType.pulse.value, []).append([measure.at_.timestamp(), int(measure.value)])
+                    res.setdefault(MeasureType.pulse.value, []).append([measure.at_.timestamp(), measure.value])
                 case MeasureType.temperature.value:
                     res.setdefault(MeasureType.temperature.value, []).append([measure.at_.timestamp(), measure.value])
                 case MeasureType.saturation.value:
                     res.setdefault(MeasureType.saturation.value, []).append(
-                        [measure.at_.timestamp(), int(measure.value)])
+                        [measure.at_.timestamp(), measure.value])
                 case MeasureType.systolic.value:
                     res.setdefault(MeasureType.systolic.value, {}).__setitem__(measure.at_.timestamp(),
-                                                                               int(measure.value))
+                                                                               measure.value)
                 case MeasureType.diastolic.value:
                     res.setdefault(MeasureType.diastolic.value, {}).__setitem__(measure.at_.timestamp(),
-                                                                                int(measure.value))
+                                                                                measure.value)
         if 'blood_pressure' not in kwargs:
             systolic, diastolic = res.get(MeasureType.systolic.value, {}), res.get(MeasureType.diastolic.value, {})
             diastolic_keys = iter(sorted(diastolic))
