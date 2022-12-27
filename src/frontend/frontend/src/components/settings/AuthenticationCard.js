@@ -137,10 +137,18 @@ const LDAPAuthentication = () => {
         ]}>
             <Input placeholder={"ldap://..."} autoComplete={"off"}/>
         </Form.Item>
-        <Form.Item name={"base"} label={"מזהה בסיסי"} rules={[
-            {required: true, message: 'יש להזין מזהה בסיסי'}
+        <Form.Item name={"users_base"} label={"מזהה בסיסי למשתמשים"} rules={[
+            {required: true, message: 'יש להזין מזהה בסיסי למשתמשים'}
         ]}>
-            <Input placeholder={"ex. dc=example,dc=com"} autoComplete={"off"}/>
+            <Input placeholder={"ex. ou=users,dc=example,dc=com"} autoComplete={"off"}/>
+        </Form.Item>
+        <Form.Item name={"groups_base"} label={"מזהה בסיסי לקבוצות"} rules={[
+            {required: true, message: 'יש להזין מזהה בסיסי לקבוצות'}
+        ]}>
+            <Input placeholder={"ex. ou=groups,dc=example,dc=com"} autoComplete={"off"}/>
+        </Form.Item>
+        <Form.Item name={"use_ad_style_group_membership"} label={"מצב תאימות ל-Active Directory"} valuePropName={"checked"}>
+            <Switch/>
         </Form.Item>
         <Form.Item name={"filter"} label={"פילטר משתמשים"} rules={[
             {required: true, message: 'יש להזין פילטר משתמשים'}
