@@ -352,32 +352,38 @@ class MedicalDal:
                 case MeasureType.pain.value:
                     if not updated.measures.pain.at_ or measure.at_ > updated.measures.pain.at_:
                         updated.measures.pain = Latest(
-                            value=int(measure.value), at=measure.at, is_valid=measure.is_valid
+                            value=int(measure.value) if measure.value else None, at=measure.at,
+                            is_valid=measure.is_valid
                         )
                 case MeasureType.pulse.value:
                     if not updated.measures.pulse.at_ or measure.at_ > updated.measures.pulse.at_:
                         updated.measures.pulse = Latest(
-                            value=int(measure.value), at=measure.at, is_valid=measure.is_valid
+                            value=int(measure.value) if measure.value else None, at=measure.at,
+                            is_valid=measure.is_valid
                         )
                 case MeasureType.temperature.value:
                     if not updated.measures.temperature.at_ or measure.at_ > updated.measures.temperature.at_:
                         updated.measures.temperature = Latest(
-                            value=measure.value, at=measure.at, is_valid=measure.is_valid
+                            value=int(measure.value) if measure.value else None, at=measure.at,
+                            is_valid=measure.is_valid
                         )
                 case MeasureType.saturation.value:
                     if not updated.measures.saturation.at_ or measure.at_ > updated.measures.saturation.at_:
                         updated.measures.saturation = Latest(
-                            value=int(measure.value), at=measure.at, is_valid=measure.is_valid
+                            value=int(measure.value) if measure.value else None, at=measure.at,
+                            is_valid=measure.is_valid
                         )
                 case MeasureType.systolic.value:
                     if not updated.measures.systolic.at_ or measure.at_ > updated.measures.systolic.at_:
                         updated.measures.systolic = Latest(
-                            value=int(measure.value), at=measure.at, is_valid=measure.is_valid
+                            value=int(measure.value) if measure.value else None, at=measure.at,
+                            is_valid=measure.is_valid
                         )
                 case MeasureType.diastolic.value:
                     if not updated.measures.diastolic.at_ or measure.at_ > updated.measures.diastolic.at_:
                         updated.measures.diastolic = Latest(
-                            value=int(measure.value), at=measure.at, is_valid=measure.is_valid
+                            value=int(measure.value) if measure.value else None, at=measure.at,
+                            is_valid=measure.is_valid
                         )
             await self.db.measures.update_one(
                 {"external_id": measure.external_id},
