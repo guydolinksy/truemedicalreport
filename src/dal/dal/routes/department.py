@@ -83,18 +83,23 @@ async def update_labs(labs: Dict[str, List[Laboratory]] = Body(..., embed=True),
 @department_router.post("/{department}/referrals")
 async def update_referrals(department: str, referrals: Dict[str, List[Referral]] = Body(..., embed=True),
                            dal: MedicalDal = Depends(medical_dal)):
+    _referral: Referral = None
     for patient in referrals:
         try:
             updated = {referral.external_id: referral for referral in referrals[patient]}
             existing = {referral.external_id: referral for referral in await dal.get_patient_referrals(patient)}
             for referral in set(updated) | set(existing):
+                _referral = referral
                 await dal.upsert_referral(
                     patient_id=patient,
                     previous=existing.get(referral),
                     referral=updated.get(referral)
                 )
+
         except PatientNotFound:
             logger.debug('Cannot update patient {} referrals', patient)
+        except AttributeError:
+            logger.exception(f"Attribute Error on Update referrals - patient {patient} referrals - {_referral}")
         except Exception as e:
             logger.exception(f"update referrals failed - patient {patient}")
 
