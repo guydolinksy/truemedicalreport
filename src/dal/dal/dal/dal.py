@@ -452,7 +452,9 @@ class MedicalDal:
                 )
                 await publish("notification", patient.oid)
 
-            for key, warning in lab.warnings:
+            for key, warning in lab.get_updated_warnings(
+                    {key: warning for key, warning in patient.warnings.items() if key.startswith('lab#')}
+            ):
                 updated.warnings.setdefault(key, warning)
 
             updated.awaiting.setdefault(AwaitingTypes.laboratory.value, {}).__setitem__(
