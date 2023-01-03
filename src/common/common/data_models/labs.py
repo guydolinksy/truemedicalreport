@@ -122,7 +122,7 @@ class LabCategory(BaseModel):
 
     def get_updated_warnings(self, warnings: Dict[str, PatientWarning]):
         for id_, lab in self.results.items():
-            key = f'lab#{lab.external_id}'
+            key = f"lab#{lab.external_id}"
             if key in warnings and not lab.panic:
                 yield key, PatientWarning(**warnings[key].dict(exclude={'acknowledge'}), acknowledge=True)
             elif key not in warnings and lab.panic:

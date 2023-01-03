@@ -455,7 +455,7 @@ class MedicalDal:
             for key, warning in lab.get_updated_warnings(
                     {key: warning for key, warning in patient.warnings.items() if key.startswith('lab#')}
             ):
-                updated.warnings.setdefault(key, warning)
+                updated.warnings[key] = warning
 
             updated.awaiting.setdefault(AwaitingTypes.laboratory.value, {}).__setitem__(
                 lab.get_instance_id(),
