@@ -30,10 +30,18 @@ dal:
   global:
     <<: *global
   fullnameOverride: *dal-fullname
+  sentry:
+    enabled: false
+    secretName: ''
+    secretKey: ''
 backend:
   global:
     <<: *global
   fullnameOverride: *backend-fullname
+  sentry:
+    enabled: false
+    secretName: ''
+    secretKey: ''
 frontend:
   global:
     <<: *global

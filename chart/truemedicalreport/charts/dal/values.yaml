@@ -74,3 +74,8 @@ devMappings:
     containerPath: /opt/dal/dal
   - relativePath: src/common/common
     containerPath: /opt/common/common
+
+sentry:
+  enabled: false
+  secretName: ''
+  secretKey: ''

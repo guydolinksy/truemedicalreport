@@ -74,3 +74,8 @@ devMappings:
     containerPath: /opt/backend/backend
   - relativePath: src/common/common
     containerPath: /opt/common/common
+
+sentry:
+  enabled: false
+  secretName: ''
+  secretKey: ''
