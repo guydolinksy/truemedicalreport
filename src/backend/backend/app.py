@@ -1,7 +1,10 @@
 import sys
+import sentry_sdk
 
 from fastapi_offline import FastAPIOffline
 from logbook import StreamHandler
+
+from . import config
 
 
 def create_app() -> FastAPIOffline:
@@ -20,6 +23,9 @@ def create_app() -> FastAPIOffline:
     app_.include_router(department_router, prefix="/api/departments")
     app_.include_router(sync_router, prefix="/api/sync")
     app_.include_router(settings_router, prefix="/api/settings")
+
+    if config.sentry_dsn:
+        sentry_sdk.init(config.sentry_dsn)
 
     return app_
 

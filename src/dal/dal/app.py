@@ -1,10 +1,12 @@
 import sys
 
+import sentry_sdk
 from fastapi_offline import FastAPIOffline
 from logbook import StreamHandler
 
 from .consts import DAL_FAKER_TAG_NAME
 
+from . import config
 
 def create_app() -> FastAPIOffline:
     app_ = FastAPIOffline(
@@ -32,6 +34,9 @@ def create_app() -> FastAPIOffline:
     app_.include_router(department_router, prefix="/dal/departments")
     app_.include_router(publish_router, prefix="/dal/publishing")
     app_.include_router(faker_router, prefix="/dal/faker")
+
+    if config.sentry_dsn:
+        sentry_sdk.init(config.sentry_dsn)
 
     return app_
 
