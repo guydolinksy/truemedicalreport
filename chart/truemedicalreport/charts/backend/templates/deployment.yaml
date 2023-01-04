@@ -44,8 +44,6 @@ spec:
           image: "{{ .Values.image.repository }}:{{ if .Values.global.devMode.enabled }}{{ .Values.image.tag | default "dev" }}{{ else }}{{ .Values.image.tag | default .Chart.AppVersion }}{{ end }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: 'SENTRY_CONNECTION_DSN'
-              value: '"http://4c6fa8c951c14d04b99773144cac8a72@localhost:9000/2"'
             - name: 'MONGO_CONNECTION'
               value: '"mongodb://{{ .Values.global.fullname.mongo }}:{{ .Values.global.servicePort.mongo }}"'
             - name: 'REDIS_CONNECTION'

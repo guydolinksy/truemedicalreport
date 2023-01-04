@@ -52,6 +52,10 @@ sheba:
     external:
       secretName: ''
       secretKey: ''
+  sentry:
+    enabled: false
+    secretKey: ''
+    secretName: ''
 redis:
   enabled: true
   fullnameOverride: *redis-fullname

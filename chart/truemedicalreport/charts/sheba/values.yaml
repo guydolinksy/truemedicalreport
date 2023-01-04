@@ -98,3 +98,8 @@ faker:
   global:
     <<: *global
   fullnameOverride: *faker-fullname
+
+sentry:
+  enabled: false
+  secretName: ''
+  secretKey: ''
