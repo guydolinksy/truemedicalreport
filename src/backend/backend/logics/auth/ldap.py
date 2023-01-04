@@ -10,10 +10,13 @@ from pydantic import ValidationError
 from pymongo.collection import Collection
 
 from .base import AuthProvider
-from ..exceptions import UnauthorizedException, InvalidSettingsException
+from ..exceptions import UnauthorizedException, InvalidSettingsException, ForbiddenException
 from ..user import User
 
 LDAP_MEMBER_IN_GROUP_ATTRIBUTE = "memberOf"
+
+# See https://ldapwiki.com/wiki/Active%20Directory%20User%20Related%20Searches#section-Active+Directory+User+Related+Searches-AllGroupsAUserIsAMemberOfIncludingNestedGroups
+LDAP_MATCHING_RULE_IN_CHAIN = "1.2.840.113556.1.4.1941"
 
 logger = logbook.Logger("ldap-provider")
 
@@ -97,7 +100,7 @@ class LdapAuthProvider(AuthProvider):
         elif settings.user_group_dn in user_groups:
             is_admin = False
         else:
-            raise UnauthorizedException("Provided user is not a member of any authorized group")
+            raise ForbiddenException("Provided user is not a member of any authorized group")
 
         with settings.handle_ldap_exceptions(invalid_credentials_message=f"Failed to authenticate {user_dn=}"):
             settings.connect(bind=False).bind_s(user_dn, password)
@@ -114,12 +117,14 @@ class LdapAuthProvider(AuthProvider):
         :return: The user DN and the group DNs the user is a member of.
         """
         settings = self.settings
+        ldap_connection = settings.connect(bind=True)
+        user_filter = settings.filter.format(username=username)
 
-        with settings.handle_ldap_exceptions():
-            r = settings.connect(bind=True).search_s(
-                settings.base,
+        with settings.handle_ldap_exceptions(extra="finding user"):
+            r = ldap_connection.search_s(
+                settings.users_base,
                 ldap.SCOPE_SUBTREE,
-                settings.filter.format(username=username),
+                user_filter,
                 attrlist=[LDAP_MEMBER_IN_GROUP_ATTRIBUTE],
             )
 
@@ -131,18 +136,43 @@ class LdapAuthProvider(AuthProvider):
 
         user_dn, user_object = r[0]
 
-        if LDAP_MEMBER_IN_GROUP_ATTRIBUTE in user_object:
-            groups = set(group_dn.decode() for group_dn in user_object[LDAP_MEMBER_IN_GROUP_ATTRIBUTE])
+        if settings.use_ad_style_group_membership:
+            groups = []
+            with settings.handle_ldap_exceptions(extra="finding user groups"):
+                for group_dn in [settings.admin_group_dn, settings.user_group_dn]:
+                    if ldap_connection.search_s(
+                        settings.users_base,
+                        ldap.SCOPE_SUBTREE,
+                        # Recursive search is extremely slow, optimizing by filtering only for the wanted groups
+                        f"(&(memberOf:{LDAP_MATCHING_RULE_IN_CHAIN}:={group_dn})({user_filter}))",
+                        attrlist=[""],
+                    ):
+                        groups.append(group_dn)
+        elif LDAP_MEMBER_IN_GROUP_ATTRIBUTE in user_object:
+            groups = [group_dn.decode() for group_dn in user_object[LDAP_MEMBER_IN_GROUP_ATTRIBUTE]]
         else:
             raise UnauthorizedException("User doesn't have a memberOf field; Their groups can't be determined")
 
-        return user_dn, groups
+        return user_dn, set(groups)
 
     def query_user_groups(self, username: str) -> List[str]:
         """
         Just returns the full list of groups the user is a member of. No authentication is done.
         """
-        _, user_groups = self._find_user(username)
+        settings = self.settings
+
+        user_dn, user_groups = self._find_user(username)
+
+        if settings.use_ad_style_group_membership:
+            with settings.handle_ldap_exceptions(extra="finding user groups"):
+                r = settings.connect(bind=True).search_s(
+                    settings.groups_base,
+                    ldap.SCOPE_SUBTREE,
+                    f"member:{LDAP_MATCHING_RULE_IN_CHAIN}:={user_dn}",
+                    attrlist=[""],
+                )
+                user_groups = [group_dn for group_dn, _ in r]
+
         return list(user_groups)
 
 
@@ -153,7 +183,10 @@ class LdapSettings:
     LDAP Authentication configuration.
 
     uri: The URI of the LDAP server; i.e. ldap://server.com:1337
-    base: the common part of each DNs. For example, dc=my-org,dc=co,dc=il
+
+    users_base: the common part of user DNs. For example, ou=users,dc=my-org,dc=co,dc=il
+    groups_base: the common part of group DNs. For example, ou=groups,dc=my-org,dc=co,dc=il
+
     filter: an LDAP search query format string that will be used to find the DN of a user which attempts to log in.
            For example, (sAMAccountName={username}).
            The string must contain the `{username}` placeholder.
@@ -166,17 +199,25 @@ class LdapSettings:
 
     timeout_seconds: Limits the wait time for the LDAP server (initial connection / operations, like search).
 
+    use_ad_style_group_membership:
+        See https://ldapwiki.com/wiki/Active%20Directory%20User%20Related%20Searches#section-Active+Directory+User+Related+Searches-AllGroupsAUserIsAMemberOfIncludingNestedGroups
+        This is an AD-specific extension that allows for recursive group membership check.
+        For example, Group A contains Group B which contains User 1.
+        This mode is unsupported in OopenLDAP.
+
     raw: Raw settings, as-is from the DB. Used in the UI to enable changing invalid settings.
     """
 
     enabled: bool
     uri: str
-    base: str
+    users_base: str
+    groups_base: str
     filter: str
     bind_dn: str
     bind_password: str
     admin_group_dn: str
     user_group_dn: str
+    use_ad_style_group_membership: bool
 
     raw: Dict[str, Any]
 
@@ -224,23 +265,28 @@ class LdapSettings:
             raw=raw or {},
             enabled=False,
             uri="",
-            base="",
+            users_base="",
+            groups_base="",
             filter="",
             bind_dn="",
             bind_password="",
             admin_group_dn="",
             user_group_dn="",
+            use_ad_style_group_membership=False,
         )
 
     @contextlib.contextmanager
-    def handle_ldap_exceptions(self, *, invalid_credentials_message: str = "Invalid Credentials"):
+    def handle_ldap_exceptions(self, *, invalid_credentials_message: str = "Invalid Credentials", extra: str = ""):
+        if extra:
+            extra = f" ({extra})"
+
         try:
             yield
         except (ldap.TIMEOUT, ldap.TIMELIMIT_EXCEEDED) as e:
-            raise UnauthorizedException(f"LDAP server at {self.uri} timed out") from e
+            raise UnauthorizedException(f"LDAP server at {self.uri} timed out" + extra) from e
         except ldap.SERVER_DOWN as e:
-            raise UnauthorizedException(f"Failed to contact the LDAP server at {self.uri}") from e
+            raise UnauthorizedException(f"Failed to contact the LDAP server at {self.uri}" + extra) from e
         except ldap.INVALID_CREDENTIALS as e:
-            raise UnauthorizedException(invalid_credentials_message) from e
+            raise UnauthorizedException(invalid_credentials_message + extra) from e
         except ldap.LDAPError as e:
-            raise UnauthorizedException(f"Error while contacting the LDAP server at {self.uri}") from e
+            raise UnauthorizedException(f"Error while contacting the LDAP server at {self.uri}" + extra) from e

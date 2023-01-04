@@ -23,8 +23,8 @@ subscribe = create_subscriber(sync_router, config.redis_connection)
 @subscribe(Patient.__name__)
 async def patient_handler(data: dict):
     patient_oid = data["oid"]
-    old = data["old"] or {}
-    new = data["new"] or {}
+    old = data.get("old") or {}
+    new = data.get("new") or {}
 
     keys = [f"/api/patients/{patient_oid}", f"/api/patients/{patient_oid}/info"]
 

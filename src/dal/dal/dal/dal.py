@@ -39,7 +39,7 @@ class MedicalDal:
         await publish(".".join([klass.__name__, attr]), dict(oid=oid, old=old, new=new))
 
     async def _atomic_update(
-        self, klass: Type[BaseModel], collection: Collection, query: dict, new: dict, max_retries=10
+            self, klass: Type[BaseModel], collection: Collection, query: dict, new: dict, max_retries=10
     ) -> None:
 
         update = json_to_dot_notation(new)
@@ -128,43 +128,43 @@ class MedicalDal:
         awaiting_total = set(p for keys in awaitings.values() for l in keys.values() for p in l)
         return WingFilters(
             doctors=[
-                WingFilter(
-                    key="no-physician",
-                    count=len(patients) - len(doctor_total),
-                    title="ללא",
-                    valid=False,
-                    icon="doctor",
-                ),
-            ]
-            + [
-                WingFilter(
-                    key=".".join(["physician", doctor]),
-                    count=len(patients),
-                    title=doctor,
-                    valid=True,
-                    icon="doctor",
-                )
-                for doctor, patients in doctors.items()
-            ],
+                        WingFilter(
+                            key="no-physician",
+                            count=len(patients) - len(doctor_total),
+                            title="ללא",
+                            valid=False,
+                            icon="doctor",
+                        ),
+                    ]
+                    + [
+                        WingFilter(
+                            key=".".join(["physician", doctor]),
+                            count=len(patients),
+                            title=doctor,
+                            valid=True,
+                            icon="doctor",
+                        )
+                        for doctor, patients in doctors.items()
+                    ],
             treatments=[
-                WingFilter(
-                    key="no-treatment",
-                    count=len(patients) - len(treatment_total),
-                    title="ללא",
-                    valid=True,
-                    icon="treatment",
-                ),
-            ]
-            + [
-                WingFilter(
-                    key=".".join(["treatment", treatment]),
-                    count=len(patients),
-                    title=treatment,
-                    valid=True,
-                    icon="treatment",
-                )
-                for treatment, patients in treatments.items()
-            ],
+                           WingFilter(
+                               key="no-treatment",
+                               count=len(patients) - len(treatment_total),
+                               title="ללא",
+                               valid=True,
+                               icon="treatment",
+                           ),
+                       ]
+                       + [
+                           WingFilter(
+                               key=".".join(["treatment", treatment]),
+                               count=len(patients),
+                               title=treatment,
+                               valid=True,
+                               icon="treatment",
+                           )
+                           for treatment, patients in treatments.items()
+                       ],
             awaiting=[
                 WingFilter(
                     key="awaiting",
@@ -265,9 +265,9 @@ class MedicalDal:
             async for referral in self.db.referrals.find({"patient_id": patient})
         ]
 
-    async def get_patient_labs(self, patient: str) -> List[Laboratory]:
+    async def get_patient_labs(self, patient: str) -> List[LabCategory]:
         return [
-            Laboratory(oid=str(labs.pop("_id")), **labs) async for labs in self.db.labs.find({"patient_id": patient})
+            LabCategory(oid=str(labs.pop("_id")), **labs) async for labs in self.db.labs.find({"patient_id": patient})
         ]
 
     async def get_patient(self, patient_query: dict) -> Patient:
@@ -325,7 +325,10 @@ class MedicalDal:
     async def upsert_patient(self, previous: Patient, patient: ExternalPatient):
         if previous and not patient:
             await self._cascade_delete_patient(previous.external_id)
-            await publish(Patient.__name__, previous.oid)
+            await publish(Patient.__name__, {
+                "oid": previous.oid,
+                "old": previous.dict(),
+            })
             await self.publish_property(Patient, previous.oid, "admission", previous.admission.dict(), None)
         elif previous and patient:
             await self.atomic_update_patient(
@@ -350,32 +353,38 @@ class MedicalDal:
                 case MeasureType.pain.value:
                     if not updated.measures.pain.at_ or measure.at_ > updated.measures.pain.at_:
                         updated.measures.pain = Latest(
-                            value=int(measure.value), at=measure.at, is_valid=measure.is_valid
+                            value=measure.value, at=measure.at,
+                            is_valid=measure.is_valid
                         )
                 case MeasureType.pulse.value:
                     if not updated.measures.pulse.at_ or measure.at_ > updated.measures.pulse.at_:
                         updated.measures.pulse = Latest(
-                            value=int(measure.value), at=measure.at, is_valid=measure.is_valid
+                            value=measure.value, at=measure.at,
+                            is_valid=measure.is_valid
                         )
                 case MeasureType.temperature.value:
                     if not updated.measures.temperature.at_ or measure.at_ > updated.measures.temperature.at_:
                         updated.measures.temperature = Latest(
-                            value=measure.value, at=measure.at, is_valid=measure.is_valid
+                            value=measure.value, at=measure.at,
+                            is_valid=measure.is_valid
                         )
                 case MeasureType.saturation.value:
                     if not updated.measures.saturation.at_ or measure.at_ > updated.measures.saturation.at_:
                         updated.measures.saturation = Latest(
-                            value=int(measure.value), at=measure.at, is_valid=measure.is_valid
+                            value=measure.value, at=measure.at,
+                            is_valid=measure.is_valid
                         )
                 case MeasureType.systolic.value:
                     if not updated.measures.systolic.at_ or measure.at_ > updated.measures.systolic.at_:
                         updated.measures.systolic = Latest(
-                            value=int(measure.value), at=measure.at, is_valid=measure.is_valid
+                            value=measure.value, at=measure.at,
+                            is_valid=measure.is_valid
                         )
                 case MeasureType.diastolic.value:
                     if not updated.measures.diastolic.at_ or measure.at_ > updated.measures.diastolic.at_:
                         updated.measures.diastolic = Latest(
-                            value=int(measure.value), at=measure.at, is_valid=measure.is_valid
+                            value=measure.value, at=measure.at,
+                            is_valid=measure.is_valid
                         )
             await self.db.measures.update_one(
                 {"external_id": measure.external_id},
@@ -443,8 +452,10 @@ class MedicalDal:
                 )
                 await publish("notification", patient.oid)
 
-            for key, warning in lab.warnings:
-                updated.warnings.setdefault(key, warning)
+            for key, warning in lab.get_updated_warnings(
+                    {key: warning for key, warning in patient.warnings.items() if key.startswith('lab#')}
+            ):
+                updated.warnings[key] = warning
 
             updated.awaiting.setdefault(AwaitingTypes.laboratory.value, {}).__setitem__(
                 lab.get_instance_id(),
@@ -456,7 +467,6 @@ class MedicalDal:
                     limit=3600,
                 ),
             )
-        logger.debug("{} {}", updated.dict(include={"awaiting", "warnings"}, exclude_unset=True), patient.dict())
 
         await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"awaiting", "warnings"}, exclude_unset=True)
@@ -478,7 +488,7 @@ class MedicalDal:
             patient = await self.get_patient({"external_id": patient_id})
             updated = patient.copy()
             updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
-                referral.get_instance_id(),
+                previous.get_instance_id(),
                 Awaiting(
                     subtype=updated_referral.to,
                     name=updated_referral.to,

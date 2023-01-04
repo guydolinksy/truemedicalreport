@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 from pydantic import BaseModel
 
@@ -120,10 +120,12 @@ class LabCategory(BaseModel):
             level=NotificationLevel.normal if not panic else NotificationLevel.panic,
         )
 
-    @property
-    def warnings(self):
-        for cat_id, category_data in self.results.items():
-            message = f"תוצאת {category_data.category_name}-{category_data.test_type_name} חריגה: {category_data.result}"
-            if not category_data.panic:
-                continue
-            yield cat_id, PatientWarning(content=message, severity=Severity(value=1, at=category_data.at))
+    def get_updated_warnings(self, warnings: Dict[str, PatientWarning]):
+        for id_, lab in self.results.items():
+            key = f"lab#{lab.external_id}"
+            if key in warnings and not lab.panic:
+                yield key, PatientWarning(**warnings[key].dict(exclude={'acknowledge'}), acknowledge=True)
+            elif key not in warnings and lab.panic:
+                yield key, PatientWarning(
+                    content=f"תוצאת {lab.category_name}-{lab.test_type_name} חריגה: {lab.result}",
+                    severity=Severity(value=1, at=lab.at), acknowledge=False)
