@@ -67,11 +67,13 @@ spec:
             - name: SENTRY_CA_CERT_PATH
               value: '/opt/ssl/cert_ca.pem'
             {{- end }}
-          {{- if .Values.sentry.enabled }}
-          volumeMounts: {{ if not (or (len .Values.devMappings) .Values.sentry.enabled) }} [] {{ end }}
+          {{- if or .Values.global.devMode.enabled .Values.sentry.enabled }}
+          volumeMounts: {{ if not (or (and .Values.global.devMode.enabled (len .Values.devMappings)) .Values.sentry.enabled) }} [] {{ end }}
+            {{- if .Values.global.devMode.enabled}}
             {{- range $index, $value := .Values.devMappings }}
             - name: 'volume-{{ $index }}'
               mountPath: {{ $value.containerPath }}
+            {{- end }}
             {{- end }}
             {{- if .Values.sentry.enabled }}
             - name: 'volume-sentry-ca'
@@ -92,13 +94,15 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- if .Values.sentry.enabled }}
-      volumes: {{ if not (or (len .Values.devMappings) .Values.sentry.enabled) }} [] {{ end }}
+      {{- if or .Values.global.devMode.enabled .Values.sentry.enabled }}
+      volumes: {{ if not (or (and .Values.global.devMode.enabled (len .Values.devMappings)) .Values.sentry.enabled) }} [] {{ end }}
+        {{- if .Values.global.devMode.enabled}}
         {{- range $index, $value := .Values.devMappings }}
         - name: 'volume-{{ $index }}'
           hostPath:
             path: {{ $.Values.global.devMode.baseDir }}/{{ $value.relativePath }}
             type: DirectoryOrCreate
+        {{- end }}
         {{- end }}
         {{- if .Values.sentry.enabled }}
         - name: 'volume-sentry-ca'
