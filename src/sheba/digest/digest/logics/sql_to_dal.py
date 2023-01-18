@@ -4,6 +4,7 @@ from enum import Enum
 import logbook
 import requests
 from requests import HTTPError
+from sentry_sdk import capture_message
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
@@ -181,8 +182,9 @@ class SqlToDal(object):
 
                         ).dict(exclude_unset=True))
                     except KeyError as e:
-                        logger.error(
-                            f"Lab from category {row['Category']} isn't exists in internal mapping - medical record {row['MedicalRecord']}")
+                        msg = f"Lab from category '{category}' isn't exists in internal mapping - medical record {row['MedicalRecord']}"
+                        capture_message(msg, level="warning")
+                        logger.error(msg)
             res = requests.post(f'{self.dal_url}/departments/{department.name}/labs',
                                 json={"labs": labs})
             res.raise_for_status()

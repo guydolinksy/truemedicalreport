@@ -4,6 +4,7 @@ from typing import List
 import logbook
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 
 
 logger = logbook.Logger("tracing")
@@ -30,6 +31,7 @@ def setup_sentry(dsn: str, extra_integrations: List[sentry_sdk.integrations.Inte
         ca_certs=sentry_ca_path,
         integrations=[
             *(extra_integrations or []),
-            FastApiIntegration()
+            FastApiIntegration(),
+            AioHttpIntegration(),
         ]
     )
