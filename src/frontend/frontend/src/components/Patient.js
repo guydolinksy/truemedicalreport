@@ -233,7 +233,9 @@ const PatientInner = ({patient, avatar, style}) => {
                           color={Object.keys(value.warnings).length ? "red" : value.flagged ? "blue" : "grey"}>
                 <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
                     <div><PatientStatus patient={patient} style={{direction: "rtl"}}/></div>
-                    {Object.entries(value.warnings).map(([key, warning], i) => <div key={i}>
+                    {Object.entries(value.warnings).filter(
+                        ([key, {acknowledge}], i) => acknowledge
+                    ).map(([key, warning], i) => <div key={i}>
                         <PatientWarning patient={patient} warning={warning} index={i} style={{direction: "rtl"}}/>
                     </div>)}
                 </Carousel>
