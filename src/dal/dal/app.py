@@ -1,14 +1,22 @@
 import sys
 
-import sentry_sdk
 from fastapi_offline import FastAPIOffline
 from logbook import StreamHandler
+from sentry_sdk.integrations.pymongo import PyMongoIntegration
+
+from common.tracing import setup_sentry
 
 from .consts import DAL_FAKER_TAG_NAME
-
 from . import config
 
 def create_app() -> FastAPIOffline:
+    if config.sentry_dsn:
+        setup_sentry(config.sentry_dsn, extra_integrations=[
+            # Even though we use Motor, the async MongoDB client, it uses PyMongo under the hood -
+            # meaning, it'll be correctly traced.
+            PyMongoIntegration()
+        ])
+
     app_ = FastAPIOffline(
         openapi_url="/dal/openapi.json",
         static_url="/dal/static-offline-docs",
@@ -34,9 +42,6 @@ def create_app() -> FastAPIOffline:
     app_.include_router(department_router, prefix="/dal/departments")
     app_.include_router(publish_router, prefix="/dal/publishing")
     app_.include_router(faker_router, prefix="/dal/faker")
-
-    if config.sentry_dsn:
-        sentry_sdk.init(config.sentry_dsn)
 
     return app_
 
