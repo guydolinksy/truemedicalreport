@@ -1,13 +1,17 @@
 import sys
-import sentry_sdk
 
 from fastapi_offline import FastAPIOffline
 from logbook import StreamHandler
+
+from common.tracing import setup_sentry
 
 from . import config
 
 
 def create_app() -> FastAPIOffline:
+    if config.sentry_dsn:
+        setup_sentry(config.sentry_dsn)
+
     app_ = FastAPIOffline(openapi_url='/api/openapi.json', static_url="/api/static-offline-docs", docs_url='/api/docs')
 
     StreamHandler(sys.stdout).push_application()
@@ -23,9 +27,6 @@ def create_app() -> FastAPIOffline:
     app_.include_router(department_router, prefix="/api/departments")
     app_.include_router(sync_router, prefix="/api/sync")
     app_.include_router(settings_router, prefix="/api/settings")
-
-    if config.sentry_dsn:
-        sentry_sdk.init(config.sentry_dsn)
 
     return app_
 
