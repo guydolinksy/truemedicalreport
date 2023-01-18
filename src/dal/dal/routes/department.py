@@ -3,7 +3,7 @@ from typing import List, Dict
 
 import logbook
 from fastapi import APIRouter, Depends, Body
-
+from sentry_sdk import capture_exception, capture_message
 from common.data_models.department import Department
 from common.data_models.image import Image
 from common.data_models.labs import Laboratory
@@ -50,8 +50,11 @@ async def update_measurements(measurements: Dict[str, List[Measure]] = Body(...,
         try:
             await dal.upsert_measurements(patient_id=patient, measures=measurements[patient])
         except PatientNotFound:
-            logger.debug('Cannot update patient {} measurements - Patient not found', patient)
+            msg = f"Cannot update patient {patient} measurements - Patient not found"
+            capture_message(msg, level="warning")
+            logger.debug(msg)
         except Exception as e:
+            capture_exception(e, level="warning")
             logger.exception(f"update measurements failed - patient {patient} measurements {measurements[patient]}")
 
 
@@ -75,8 +78,11 @@ async def update_labs(labs: Dict[str, List[Laboratory]] = Body(..., embed=True),
         try:
             await dal.upsert_labs(patient_id=patient, new_labs=labs[patient])
         except PatientNotFound:
-            logger.debug('Cannot update patient {} labs', patient)
+            msg = f"Cannot update patient {patient} labs"
+            capture_message(msg)
+            logger.debug(msg)
         except Exception as e:
+            capture_exception(e, level="warning")
             logger.exception(f"update labs failed - patient {patient}")
 
 

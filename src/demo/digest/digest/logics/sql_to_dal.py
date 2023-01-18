@@ -7,7 +7,7 @@ import requests
 from requests import HTTPError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-
+from sentry_sdk import capture_message
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
 from common.data_models.image import ImagingStatus, Image
@@ -187,7 +187,9 @@ class SqlToDal(object):
 
                         ).dict(exclude_unset=True))
                     except KeyError as e:
-                        logger.error(f"Lab from category {row['Category']} isn't exists in internal mapping")
+                        msg = f"category - {row['Category']}` not exists in internal mapping"
+                        capture_message(msg)
+                        logger.error(msg)
             res = requests.post(f'{self.dal_url}/departments/{department.name}/labs',
                                 json={"labs": labs})
             res.raise_for_status()
