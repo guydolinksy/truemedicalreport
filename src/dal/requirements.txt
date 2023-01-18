@@ -15,3 +15,5 @@ fastapi-login
 werkzeug
 environs
 faker
+sentry_sdk
+
