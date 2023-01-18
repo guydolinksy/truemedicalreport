@@ -1,7 +1,12 @@
+import os
 from typing import List
 
+import logbook
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
+
+
+logger = logbook.Logger("tracing")
 
 
 def setup_sentry(dsn: str, extra_integrations: List[sentry_sdk.integrations.Integration] = None) -> None:
@@ -16,8 +21,13 @@ def setup_sentry(dsn: str, extra_integrations: List[sentry_sdk.integrations.Inte
     :param dsn: See https://docs.sentry.io/product/sentry-basics/dsn-explainer/
     :param extra_integrations: Extra Sentry ingrations. By default, only the FastAPI integration is enabled.
     """
+    if sentry_ca_path := os.getenv("SENTRY_CA_CERT_PATH"):
+        logger.info(f"Note, using CA from {sentry_ca_path}")
+        assert os.path.exists(sentry_ca_path), "The provided CA path doesn't exist"
+
     sentry_sdk.init(
         dsn=dsn,
+        ca_certs=sentry_ca_path,
         integrations=[
             *(extra_integrations or []),
             FastApiIntegration()
