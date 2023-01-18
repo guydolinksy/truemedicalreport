@@ -49,19 +49,19 @@ spec:
               value: '80'
             - name: 'DEBUG'
               value: {{ if .Values.global.devMode.enabled }} '1' {{ else }} '0' {{ end }}
-            {{- if .Values.sentry.enabled -}}
+            {{- if .Values.sentry.enabled }}
             - name: SENTRY_DSN
               valueFrom:
                 secretKeyRef:
-                  key: {{.Values.sentry.secretKey }}
-                  name: {{.Values.sentry.secretName}}
-            {{- end -}}
+                  key: {{ .Values.sentry.secretKey }}
+                  name: {{ .Values.sentry.secretName }}
+            {{- end }}
           {{- if .Values.global.devMode.enabled }}
           volumeMounts: {{ if not (len .Values.devMappings) }}[]{{ end }}
             {{- range $index, $value := .Values.devMappings }}
             - name: 'volume-{{ $index }}'
               mountPath: {{ $value.containerPath }}
-            {{end}}
+            {{- end }}
           {{- end }}
           ports:
             - name: http
@@ -86,7 +86,7 @@ spec:
           hostPath:
             path:  {{ $.Values.global.devMode.baseDir }}/{{ $value.relativePath }}
             type: DirectoryOrCreate
-        {{end}}
+        {{- end }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
