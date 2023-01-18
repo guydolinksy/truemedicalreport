@@ -54,7 +54,7 @@ WHERE
 """
 query_measurements = """
 SELECT
-    CONCAT(m.Parameter, '#', m.Monitor_Date) AS MeasureID,
+    CONCAT(m.Parameter, '#',CONVERT(VARCHAR(33), m.Monitor_Date, 126)) AS MeasureID,
     ev.Medical_Record AS MedicalRecord,
     m.Result,
     mp.Min_Value AS MinValue,

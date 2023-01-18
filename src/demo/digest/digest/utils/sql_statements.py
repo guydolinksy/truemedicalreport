@@ -30,7 +30,7 @@ AND p.Delete_Date IS NULL
 
 query_measurements = """
 SELECT
-    CONCAT(m.Device_monitor_Parameter, '#', m.Device_monitor_date) AS MeasureID,
+    CONCAT(m.Device_monitor_Parameter, '#', CONVERT(VARCHAR(33), m.Device_monitor_date, 126),'#',m.ev_MedicalRecord) AS MeasureID,
     m.ev_MedicalRecord AS MedicalRecord,
     m.Device_monitor_result AS Result,
     m.Monitoring_Min_Value AS MinValue,

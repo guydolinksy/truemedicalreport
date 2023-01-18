@@ -3,7 +3,7 @@ appVersion: develop-c082b60
 description: A helm chart for True Medical Report
 name: truemedicalreport
 type: application
-version: 0.1.0
+version: 0.2.1
 
 dependencies:
   - name: ingress-nginx
