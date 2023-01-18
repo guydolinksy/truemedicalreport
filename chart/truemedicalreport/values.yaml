@@ -34,6 +34,7 @@ dal:
     enabled: false
     secretName: ''
     secretKey: ''
+    caCertConfigMapName: ''
 backend:
   global:
     <<: *global
@@ -42,6 +43,7 @@ backend:
     enabled: false
     secretName: ''
     secretKey: ''
+    caCertConfigMapName: ''
 frontend:
   global:
     <<: *global
@@ -64,6 +66,7 @@ sheba:
     enabled: false
     secretKey: ''
     secretName: ''
+    caCertConfigMapName: ''
 redis:
   enabled: true
   fullnameOverride: *redis-fullname

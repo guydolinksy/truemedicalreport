@@ -79,3 +79,4 @@ sentry:
   enabled: true
   secretName: ''
   secretKey: ''
+  caCertConfigMapName: ''
