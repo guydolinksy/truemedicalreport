@@ -18,4 +18,6 @@ def datetime_utc_serializer(datetime_object):
         serialized = pytz.timezone('Asia/Jerusalem').localize(datetime_object).isoformat()
     except AttributeError:
         serialized = None
+    except NameError:
+        serialized = None
     return serialized
