@@ -30,7 +30,7 @@ CategoriesInHebrew = {
     LabCategories.biochemistry.value: "ביוכימיה בדם",
     LabCategories.coagulation.value: "תפקודי קרישה",
     LabCategories.microscopy.value: "Microscopy",
-    LabCategories.therapeutic_drugs: "Therapeutic  Drugs",
+    LabCategories.therapeutic_drugs.value: "Therapeutic  Drugs",
     LabCategories.unknown.value: "אחר",
 }
 
@@ -41,11 +41,13 @@ StatusInHebrew = {
 }
 
 LabTestType = {
-    LabCategories.completeBloodCount: ["wbc", "rbc", "leukocytes", "neutrophils"],
-    LabCategories.gases: ["pCO2", "pO2"],
-    LabCategories.biochemistry: ["troponin", "pH"],
-    LabCategories.coagulation: ["pt", "ptt", "d-dimer"],
-    LabCategories.unknown: []
+    LabCategories.completeBloodCount.value: ["wbc", "rbc", "leukocytes", "neutrophils"],
+    LabCategories.gases.value: ["pCO2", "pO2"],
+    LabCategories.biochemistry.value: ["troponin", "pH"],
+    LabCategories.coagulation.value: ["pt", "ptt", "d-dimer"],
+    LabCategories.therapeutic_drugs.value: [],
+    LabCategories.microscopy.value: [],
+    LabCategories.unknown.value: []
 }
 
 
