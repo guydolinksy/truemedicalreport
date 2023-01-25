@@ -38,7 +38,17 @@ spec:
           image: "{{ .Values.image.repository }}:{{ if .Values.global.devMode.enabled }}{{ .Values.image.tag | default "dev" }}{{ else }}{{ .Values.image.tag | default .Chart.AppVersion }}{{ end }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-          {{- if .Values.global.devMode.enabled }}
+            - name: 'DEBUG'
+              value: {{ if .Values.global.devMode.enabled }} '1' {{ else }} '0' {{ end }}
+            {{- if .Values.sentry.enabled }}
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.sentry.secretKey }}
+                  name: {{ .Values.sentry.secretName }}
+            - name: SENTRY_CA_CERT_PATH
+              value: '/opt/ssl/cert_ca.pem'
+            {{- end }}
           volumeMounts: {{ if not (len .Values.devMappings) }}[]{{ end }}
             {{- range $index, $value := .Values.devMappings }}
             - name: 'volume-{{ $index }}'

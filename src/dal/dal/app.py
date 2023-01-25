@@ -9,6 +9,7 @@ from common.tracing import setup_sentry
 from .consts import DAL_FAKER_TAG_NAME
 from . import config
 
+
 def create_app() -> FastAPIOffline:
     if config.sentry_dsn:
         setup_sentry(config.sentry_dsn, extra_integrations=[

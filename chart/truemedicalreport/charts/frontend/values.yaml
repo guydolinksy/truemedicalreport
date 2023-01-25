@@ -74,3 +74,9 @@ devMappings:
     containerPath: /opt/frontend/frontend/src
   - relativePath: src/frontend/frontend/public
     containerPath: /opt/frontend/frontend/public
+
+sentry:
+  enabled: true
+  secretName: ''
+  secretKey: ''
+  caCertConfigMapName: ''
