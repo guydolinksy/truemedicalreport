@@ -6,6 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import {MatomoProvider, createInstance} from '@datapunt/matomo-tracker-react'
 import Axios from "axios";
 import * as Sentry from "@sentry/browser";
+import { BrowserTracing } from "@sentry/tracing";
 
 const instance = createInstance({
     urlBase: 'http://localhost:8090/',
@@ -20,7 +21,16 @@ Axios.get("/api/tracing/dsn", {
     console.log(`Got Sentry DSN ${dsn}`)
 
     if (dsn) {
-        Sentry.init({dsn});
+        console.log("Initializing Sentry")
+        
+        Sentry.init({
+            dsn,
+            integrations: [
+                new BrowserTracing({
+                    tracePropagationTargets: [`${window.location.host}/api`],
+                }),
+            ],
+        });
     }
 }).finally(() => {
     ReactDOM.render(
