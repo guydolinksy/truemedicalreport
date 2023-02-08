@@ -172,7 +172,15 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
 
     let completed = Object.values(awaitings).filter(({completed}) => completed),
         pending = Object.values(awaitings).filter(({completed}) => !completed);
+    const AWAITING_TITLE = {
+        laboratory: 'בדיקות מעבדה',
+        imaging: 'בדיקות הדמיה',
+        referral: 'הפניות וייעוצים',
+        nurse: 'צוות סיעודי',
+        doctor: 'צוות רפואי',
+    }
     return <Tooltip key={type} overlay={<div>
+        <b style={{textDecoration: "underline"}}>{AWAITING_TITLE[type]}</b>
         {pending.length > 0 && <b>ממתין.ה עבור (דקות):</b>}
         {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, since}, i) =>
             <div key={i}>
@@ -220,7 +228,7 @@ const PatientInner = ({patient, avatar, style}) => {
     return loading ? <Spin/> : <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
         paddingRight: -4, paddingLeft: -4,
         animation: matched(['highlight', patient]) ?
-            `highlight-${matching(['highlight', patient])[0]} 1s ease-out` :
+            `highlight-${matching(['highlight', patient])[0]} 2s ease-out` :
             undefined
     }} title={<PatientHeader patient={patient} avatar={avatar}/>} style={{
         margin: 0, maxWidth: MAX_WIDTH, minWidth: MIN_WIDTH, borderStyle: patient ? "solid" : "dotted", ...style

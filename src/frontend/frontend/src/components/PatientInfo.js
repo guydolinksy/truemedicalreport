@@ -102,7 +102,11 @@ const InternalPatientCard = ({patient, setTitle}) => {
         if (loading)
             setTitle('')
         else {
-            setTitle(`${value.info.name} (${value.info.age || 'גיל לא ידוע'})`);
+            let gender = {
+                male: 'בן',
+                female: 'בת',
+            }[value.info.gender];
+            setTitle(`${value.info.name}, ${gender} ${value.info.age || 'גיל לא ידוע'})), ת.ז. ${value.info.id_}:`);
         }
     }, [value, loading, setTitle]);
     if (loading)
@@ -187,7 +191,8 @@ const InternalPatientCard = ({patient, setTitle}) => {
         </Panel>
         <Panel key={'referrals'} header={'ייעוץ'}>
             {value.referrals.length ? value.referrals.map((referral, i) => <p key={i}>
-                    {referral.to} - <Moment date={referral.at} format={'HH:mm DD-MM-YYYY'}/> - {referral.completed ? 'בהמתנה' : 'הושלם'}
+                {referral.to} - <Moment date={referral.at}
+                                        format={'HH:mm DD-MM-YYYY'}/> - {referral.completed ? 'בהמתנה' : 'הושלם'}
             </p>) : <Empty description={'לא נרשמו הפניות'}/>}
         </Panel>
         <Panel key={'story'} header={'סיפור מטופל'}>

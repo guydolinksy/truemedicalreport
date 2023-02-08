@@ -278,7 +278,7 @@ const WingInner = ({department, wing}) => {
     const navigate = useNavigate();
     const {value, flush} = useContext(wingDataContext.context);
 
-    const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'location');
+    const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'arrival');
     const [selectedAwaiting, setSelectedAwaiting] = useLocalStorage('selectedAwaiting', []);
     const [selectedDoctors, setSelectedDoctors] = useLocalStorage('selectedDoctors', []);
     const [selectedTreatments, setSelectedTreatments] = useLocalStorage('selectedTreatments', []);

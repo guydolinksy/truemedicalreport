@@ -178,7 +178,6 @@ class SqlToDal(object):
                             panic=row["Panic"],
                             result=row["Result"],
                             status=(LabStatus.ordered if row["ResultTime"] is None else LabStatus.analyzed)
-
                         ).dict(exclude_unset=True))
                     except KeyError as e:
                         logger.error(
