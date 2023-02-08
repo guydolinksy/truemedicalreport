@@ -180,7 +180,7 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
         doctor: 'צוות רפואי',
     }
     return <Tooltip key={type} overlay={<div>
-        <b style={{textDecoration: "underline"}}>{AWAITING_TITLE[type]}</b>
+        <b style={{textDecoration: "underline"}}>{AWAITING_TITLE[type]}&nbsp;</b>
         {pending.length > 0 && <b>ממתין.ה עבור (דקות):</b>}
         {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, since}, i) =>
             <div key={i}>
