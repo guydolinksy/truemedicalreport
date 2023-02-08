@@ -4,6 +4,7 @@ from enum import Enum
 import logbook
 import requests
 from requests import HTTPError
+from sentry_sdk import capture_message
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
@@ -162,32 +163,47 @@ class SqlToDal(object):
             with self.session() as session:
                 for row in session.execute(sql_statements.query_labs.format(unit=department.value)):
                     try:
-                        at = utils.datetime_utc_serializer(row["OrderDate"])
-                        category = row["Category"].strip()
-                        labs.setdefault(row['MedicalRecord'], []).append(Laboratory(
-                            patient_id=row['MedicalRecord'],
-                            external_id=f'{row["MedicalRecord"]}#{at.replace(":", "-").replace(".", "-")}#{row["TestCode"]}',
-                            at=at,
-                            test_type_id=row["TestCode"],
-                            test_type_name=row["TestName"],
-                            category_id=CategoriesInHebrew[category],
-                            category_name=CategoriesInHebrew[category],
-                            test_tube_id=9,
-                            min_warn_bar=row["NormMinimum"],
-                            max_warn_bar=row["NormMaximum"],
-                            panic=row["Panic"],
-                            result=row["Result"],
-                            status=(LabStatus.ordered if row["ResultTime"] is None else LabStatus.analyzed)
-                        ).dict(exclude_unset=True))
+                        labs.setdefault(row['MedicalRecord'], []).append(self._update_lab(row).dict(
+                            exclude_unset=True))
                     except KeyError as e:
-                        logger.error(
-                            f"Lab from category {row['Category']} isn't exists in internal mapping - medical record {row['MedicalRecord']}")
+                        msg = f"Lab from category '{row['Category'].strip()}' isn't exists in internal mapping " \
+                              f"for medical record {row['MedicalRecord']}"
+                        capture_message(msg, level="warning")
+                        logger.error(msg)
             res = requests.post(f'{self.dal_url}/departments/{department.name}/labs',
                                 json={"labs": labs})
             res.raise_for_status()
             return {"labs": labs}
         except HTTPError as e:
             logger.exception(f'Could not run labs handler. {e}')
+
+    @staticmethod
+    def _update_lab(row) -> Laboratory:
+        if row["ResultTime"] is None:
+            status = LabStatus.ordered
+            result_at = None
+        else:
+            status = LabStatus.analyzed
+            result_at = utils.datetime_utc_serializer(row["ResultTime"])
+
+        ordered_at = utils.datetime_utc_serializer(row["OrderDate"])
+        category = row["Category"].strip()
+        return Laboratory(
+            patient_id=row['MedicalRecord'],
+            external_id=f'{row["MedicalRecord"]}#{ordered_at}#{row["TestCode"]}',
+            ordered_at=ordered_at,
+            result_at=result_at,
+            test_type_id=row["TestCode"],
+            test_type_name=row["TestName"],
+            category_id=CategoriesInHebrew[category],
+            category_name=CategoriesInHebrew[category],
+            test_tube_id=9,
+            min_warn_bar=row["NormMinimum"],
+            max_warn_bar=row["NormMaximum"],
+            panic=row["Panic"],
+            result=row["Result"],
+            status=status
+        )
 
     def update_doctor_intake(self, department: Departments):
         try:

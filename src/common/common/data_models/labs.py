@@ -30,7 +30,7 @@ CategoriesInHebrew = {
     LabCategories.biochemistry.value: "ביוכימיה בדם",
     LabCategories.coagulation.value: "תפקודי קרישה",
     LabCategories.microscopy.value: "Microscopy",
-    LabCategories.therapeutic_drugs: "Therapeutic  Drugs",
+    LabCategories.therapeutic_drugs.value: "Therapeutic  Drugs",
     LabCategories.unknown.value: "אחר",
 }
 
@@ -41,18 +41,21 @@ StatusInHebrew = {
 }
 
 LabTestType = {
-    LabCategories.completeBloodCount: ["wbc", "rbc", "leukocytes", "neutrophils"],
-    LabCategories.gases: ["pCO2", "pO2"],
-    LabCategories.biochemistry: ["troponin", "pH"],
-    LabCategories.coagulation: ["pt", "ptt", "d-dimer"],
-    LabCategories.unknown: []
+    LabCategories.completeBloodCount.value: ["wbc", "rbc", "leukocytes", "neutrophils"],
+    LabCategories.gases.value: ["pCO2", "pO2"],
+    LabCategories.biochemistry.value: ["troponin", "pH"],
+    LabCategories.coagulation.value: ["pt", "ptt", "d-dimer"],
+    LabCategories.therapeutic_drugs.value: [],
+    LabCategories.microscopy.value: [],
+    LabCategories.unknown.value: []
 }
 
 
 class Laboratory(BaseModel):
     patient_id: str
     external_id: str
-    at: str
+    ordered_at: str
+    result_at: Optional[str]
     test_type_id: int
     test_type_name: str
     category_id: str
@@ -66,7 +69,7 @@ class Laboratory(BaseModel):
 
     @property
     def category_key(self):
-        return self.at, self.category_id
+        return self.ordered_at, self.category_id
 
     class Config:
         orm_mode = True
@@ -87,7 +90,8 @@ class LabsNotification(Notification):
 
 
 class LabCategory(BaseModel):
-    at: str
+    ordered_at: str
+    result_at: Optional[str]
     category_id: str
     category: str
     patient_id: str
@@ -96,14 +100,14 @@ class LabCategory(BaseModel):
 
     @property
     def key(self):
-        return self.at, self.category_id
+        return self.ordered_at, self.category_id
 
     @property
     def query_key(self):
-        return {'at': self.at, 'category_id': self.category_id}
+        return {'at': self.ordered_at, 'category_id': self.category_id}
 
     def get_instance_id(self):
-        return f'{self.category_id}#{self.at.replace(":", "-").replace(".", "-")}'
+        return f'{self.category_id}#{self.ordered_at.replace(":", "-").replace(".", "-")}'
 
     class Config:
         orm_mode = True
@@ -114,7 +118,7 @@ class LabCategory(BaseModel):
         return LabsNotification(
             static_id=self.get_instance_id(),
             patient_id=self.patient_id,
-            at=self.at,
+            at=self.result_at if self.result_at else self.ordered_at,
             message=f"התקבלו תוצאות {self.category}",
             link="Add in the future",
             level=NotificationLevel.normal if not panic else NotificationLevel.panic,
@@ -128,4 +132,5 @@ class LabCategory(BaseModel):
             elif key not in warnings and lab.panic:
                 yield key, PatientWarning(
                     content=f"תוצאת {lab.category_name}-{lab.test_type_name} חריגה: {lab.result}",
-                    severity=Severity(value=1, at=lab.at), acknowledge=False)
+                    severity=Severity(value=1, at=self.result_at if self.result_at else self.ordered_at),
+                    acknowledge=False)

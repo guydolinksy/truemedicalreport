@@ -8,3 +8,4 @@ mssql
 faker
 fastapi-utils
 pytz
+sentry_sdk

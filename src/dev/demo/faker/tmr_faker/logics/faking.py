@@ -292,46 +292,53 @@ class FakeMain(object):
             step = random.randint(0, 100)
             if step < 10:
                 continue
-            category = random.choice(list(LabCategories))
-            h_category = CategoriesInHebrew[category.value]
+            try:
+                category = random.choice(list(LabCategories))
+                h_category = CategoriesInHebrew[category.value]
+            except KeyError as e:
+                logger.exception(e)
             order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC).strftime(
                 "%Y-%m-%dT%H:%M:%S")
             collection_date = self.faker.date_time_between_dates('-10m', '-8m').astimezone(pytz.UTC).strftime(
                 "%Y-%m-%dT%H:%M:%S")
             order_number = random.randint(100000000, 999999999)
-            for test_type_name in LabTestType[category]:
-                patient_id = patient
-                order_date = order_date
-                test_type_name = test_type_name
-                min_warn_bar = self.faker.pyfloat(min_value=20.0,
-                                                  max_value=40.0, right_digits=2)
-                panic_min_warn_bar = self.faker.pyfloat(min_value=0.0,
-                                                        max_value=39.9, right_digits=2)
-                max_warn_bar = self.faker.pyfloat(min_value=80.0,
-                                                  max_value=100.0, right_digits=2)
-                panic_max_warn_bar = self.faker.pyfloat(min_value=100.0,
-                                                        max_value=130.0, right_digits=2)
+            try:
+                for test_type_name in LabTestType[category.value]:
+                    patient_id = patient
+                    order_date = order_date
+                    test_type_name = test_type_name
+                    min_warn_bar = self.faker.pyfloat(min_value=20.0,
+                                                      max_value=40.0, right_digits=2)
+                    panic_min_warn_bar = self.faker.pyfloat(min_value=0.0,
+                                                            max_value=39.9, right_digits=2)
+                    max_warn_bar = self.faker.pyfloat(min_value=80.0,
+                                                      max_value=100.0, right_digits=2)
+                    panic_max_warn_bar = self.faker.pyfloat(min_value=100.0,
+                                                            max_value=130.0, right_digits=2)
 
-                result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC).strftime(
-                    "%Y-%m-%dT%H:%M:%S")
-                result = ''
-                panic = 0
-                if step > 30:
-                    collection_date = collection_date
-                    if step > 65:
-                        if random.randint(0, 1):
-                            result = self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2)
-                            if step > 90:
-                                panic = 1
-                with self.session() as session:
-                    session.execute(
-                        sql_statements.insert_labs.format(ev_MedicalRecord=patient_id, LR_Test_code=order_number,
-                                                          Lab_Headline_Name=h_category, LR_Test_Name=test_type_name,
-                                                          LR_Result=result,
-                                                          LR_Norm_Minimum=min_warn_bar,
-                                                          LR_Norm_Maximum=max_warn_bar, LR_Result_Date=order_date,
-                                                          LR_Result_Entry_Date=result_time, LR_Units=None, Panic=panic))
-                    session.commit()
+                    result_time = self.faker.past_datetime('-8m').astimezone(pytz.UTC).strftime(
+                        "%Y-%m-%dT%H:%M:%S")
+                    result = ''
+                    panic = 1
+                    if step > 50:
+                        collection_date = collection_date
+                        if step > 65:
+                            if random.randint(0, 1):
+                                result = self.faker.pyfloat(min_value=0.1, max_value=100.0, right_digits=2)
+                                if step > 90:
+                                    panic = 1
+                    with self.session() as session:
+                        session.execute(
+                            sql_statements.insert_labs.format(ev_MedicalRecord=patient_id, LR_Test_code=order_number,
+                                                              Lab_Headline_Name=h_category, LR_Test_Name=test_type_name,
+                                                              LR_Result=result,
+                                                              LR_Norm_Minimum=min_warn_bar,
+                                                              LR_Norm_Maximum=max_warn_bar, LR_Result_Date=order_date,
+                                                              LR_Result_Entry_Date=result_time, LR_Units=None,
+                                                              Panic=panic))
+                        session.commit()
+            except KeyError as e:
+                logger.exception(e)
 
     def _generate_referrals_dates(self, chameleon_id=None, department=None, wing=None):
         if chameleon_id:

@@ -431,7 +431,8 @@ class MedicalDal:
         for lab in new_labs:
             c = labs.setdefault(
                 lab.category_key,
-                LabCategory(patient_id=patient_id, at=lab.at, category_id=lab.category_id, category=lab.category_name),
+                LabCategory(patient_id=patient_id, ordered_at=lab.ordered_at, result_at=lab.result_at,
+                            category_id=lab.category_id, category=lab.category_name),
             )
             c.results[str(lab.test_type_id)] = lab
             c.status = StatusInHebrew[min({l.status for l in c.results.values()})]
@@ -462,7 +463,7 @@ class MedicalDal:
                 Awaiting(
                     subtype=lab.category,
                     name=lab.category,
-                    since=lab.at,
+                    since=lab.ordered_at,
                     completed=lab.status == StatusInHebrew[LabStatus.analyzed.value],
                     limit=3600,
                 ),
