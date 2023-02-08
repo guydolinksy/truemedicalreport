@@ -27,7 +27,7 @@ Axios.get("/api/tracing/dsn", {
             dsn,
             integrations: [
                 new BrowserTracing({
-                    tracePropagationTargets: [`${window.location.host}/api`],
+                    tracePropagationTargets: [`${window.location.host}/api`, /^\/api/],
                 }),
             ],
         });
