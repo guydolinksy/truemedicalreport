@@ -30,6 +30,7 @@ Axios.get("/api/tracing/dsn", {
                     tracePropagationTargets: [`${window.location.host}/api`, /^\/api/],
                 }),
             ],
+            tracesSampleRate: 1.0,
         });
     }
 }).finally(() => {
