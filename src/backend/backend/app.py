@@ -21,12 +21,14 @@ def create_app() -> FastAPIOffline:
     from .routes.department import department_router
     from .routes.sync import sync_router
     from .routes.settings import settings_router
+    from .routes.tracing import tracing_router
 
     app_.include_router(auth_router, prefix="/api/auth")
     app_.include_router(patient_router, prefix="/api/patients")
     app_.include_router(department_router, prefix="/api/departments")
     app_.include_router(sync_router, prefix="/api/sync")
     app_.include_router(settings_router, prefix="/api/settings")
+    app_.include_router(tracing_router, prefix="/api/tracing")
 
     return app_
 
