@@ -1,6 +1,7 @@
 import React, {useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {
-    Badge, Button,
+    Badge,
+    Button,
     Card,
     Col,
     Collapse,
@@ -9,13 +10,14 @@ import {
     Input,
     Layout,
     List,
-    Menu, Popover,
+    Modal,
+    Popover,
     Radio,
     Row,
-    Select,
     Space,
     Spin,
     Tag,
+    Tooltip,
     Tree
 } from 'antd';
 import {MIN_WIDTH, Patient} from "./Patient";
@@ -27,12 +29,13 @@ import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
-import {FilterOutlined, PushpinOutlined, RightOutlined, UserOutlined} from "@ant-design/icons";
+import {FilterOutlined, InfoCircleOutlined, PushpinOutlined, RightOutlined, UserOutlined} from "@ant-design/icons";
 import {Link} from "react-router-dom";
 import Moment from "react-moment";
 import {useLocalStorage} from "../hooks/localStorageHook";
 import moment from "moment";
-import { useViewport } from "./UseViewPort";
+import {useViewport} from "./UseViewPort";
+import {Department} from "./Department";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -47,8 +50,9 @@ const badgeClass = {
     2: 'status-badge status-warn',
     3: 'status-badge status-success',
 }
-const WingLayout = ({department, wing, details, onError}) => {
-    return <Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
+
+const WingLayout = ({ department, wing, details, onError }) => {
+    return <Card key={'grid'} style={{ width: '100%', marginBottom: 16 }}>
         {(details.rows || []).map((row, i) => <Row key={i} style={row} wrap={false}>
             {(details.columns || []).map((column, j) =>
                 details.beds[i][j] === null ? <div key={`filler-${j}`} style={column}/> :
@@ -152,7 +156,7 @@ const WingNotifications = () => {
     </div>
 }
 
-const WingStatus = () => {
+const WingStatus = ({department}) => {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const {value} = useContext(wingDataContext.context);
@@ -191,6 +195,8 @@ const WingStatus = () => {
         justifyContent: "space-between",
     }
 
+    const [isDepartmentPeekModelOpen, setIsDepartmentPeekModelOpen] = useState(false);
+
     return <div style={{
         display: "flex",
         flexDirection: "column",
@@ -198,60 +204,94 @@ const WingStatus = () => {
         overflowY: "hidden",
         justifyContent: "space-between",
     }}>
-        <Collapse defaultActiveKey={['basic']}>
-            <Panel key={'basic'} header={value.details.name} extra={<FilterOutlined/>}>
-                <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
-                        placeholder={'חיפוש:'}/>
-                <Divider style={{marginTop: 10, marginBottom: 10}}/>
-                <div style={filterTagsContainerStyle}>
-                    <b style={{whiteSpace: "nowrap"}}>מטפל.ת:</b>
-                    {value.filters.doctors.map(filter => <CheckableTag
-                        key={filter.key}
-                        checked={selectedDoctors.indexOf(filter.key) > -1}
-                        onChange={(checked) => handleDoctorFilterChange(filter.key, checked)}
-                    >
-                        {filter.title}
-                    </CheckableTag>)}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Card bodyStyle={{padding : '10px'}}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{value.details.name}</span>
+                    <ul style={{ display: 'flex', gap: '0 5px', margin: 0 }}>
+                        <li>
+                            <Tooltip overlay='נתוני מחלקה'>
+                                <InfoCircleOutlined onClick={(evt) => {
+                                    evt.stopPropagation();
+                                    setIsDepartmentPeekModelOpen(true);
+                                }} />
+                            </Tooltip>
+                        </li>
+                        <li>
+                            <Tooltip overlay='חזרה למחלקה'>
+                                <FontAwesomeIcon onClick={() => navigate('/')} icon={faRightFromBracket} style={{ cursor: 'pointer' }} />
+                            </Tooltip>
+                        </li>
+                    </ul>
+
                 </div>
-                <Divider style={{marginTop: 10, marginBottom: 10}}/>
-                <div style={filterTagsContainerStyle}>
-                    <b style={{whiteSpace: "nowrap"}}>יעד:</b>
-                    {value.filters.treatments.map(filter => <CheckableTag
-                        key={filter.key}
-                        checked={selectedTreatments.indexOf(filter.key) > -1}
-                        onChange={(checked) => handleDecisionStatusFilterChange(filter.key, checked)}
-                    >
-                        {filter.title}
-                    </CheckableTag>)}
-                </div>
-                <Divider style={{marginTop: 10, marginBottom: 10}}/>
-                <Tree treeData={value.filters.awaiting.map(toTree)} style={{width: '100%'}} checkable multiple
-                      defaultExpandedKeys={value.filters.awaiting.map(x => x.key)}
-                      placeholder="סינון לפי המתנה עבור:" onCheck={setSelectedAwaiting}
-                      checkedKeys={selectedAwaiting}/>
-                <Divider style={{marginTop: 10, marginBottom: 10}}/>
-                <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
-                             buttonStyle={"solid"}
-                             style={{width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex"}}>
-                    <Radio.Button value={"location"} style={{flex: "1 1 30px", textAlign: "center"}}>
-                        <span style={{whiteSpace: "nowrap"}}>מיקום</span>
-                    </Radio.Button>
-                    <Radio.Button value={"arrival"} style={{flex: "1 1 50px", textAlign: "center"}}>
-                        <span style={{whiteSpace: "nowrap"}}>זמן קבלה</span>
-                    </Radio.Button>
-                    <Radio.Button value={"name"} style={{flex: "1 1 50px", textAlign: "center"}}>
-                        <span style={{whiteSpace: "nowrap"}}>שם מלא</span>
-                    </Radio.Button>
-                    <Radio.Button value={"severity"} style={{flex: "1 1 35px", textAlign: "center"}}>
-                        <span style={{whiteSpace: "nowrap"}}>דחיפות</span>
-                    </Radio.Button>
-                </Radio.Group>
-            </Panel>
-        </Collapse>
-        <WingNotifications/>
-        <Menu selectable={false} mode={"inline"} style={{userSelect: "none"}} items={[
-            {key: 'exit', label: <span><FontAwesomeIcon icon={faRightFromBracket}/>&nbsp;חזרה למחלקה</span>}
-        ]} onClick={() => navigate('/')}/>
+
+            </Card>
+            <Collapse defaultActiveKey={['1', '2']}>
+                <Panel header={"סינון"} key={1} extra={<FilterOutlined/>}>
+
+                    <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
+                            placeholder={'חיפוש:'}/>
+                    <Divider style={{marginTop: 10, marginBottom: 10}}/>
+                    <div style={filterTagsContainerStyle}>
+                        <b style={{whiteSpace: "nowrap"}}>מטפל.ת:</b>
+                        {value.filters.doctors.map(filter => <CheckableTag
+                            key={filter.key}
+                            checked={selectedDoctors.indexOf(filter.key) > -1}
+                            onChange={(checked) => handleDoctorFilterChange(filter.key, checked)}
+                        >
+                            {filter.title}
+                        </CheckableTag>)}
+                    </div>
+                    <Divider style={{marginTop: 10, marginBottom: 10}}/>
+                    <div style={filterTagsContainerStyle}>
+                        <b style={{whiteSpace: "nowrap"}}>יעד:</b>
+                        {value.filters.treatments.map(filter => <CheckableTag
+                            key={filter.key}
+                            checked={selectedTreatments.indexOf(filter.key) > -1}
+                            onChange={(checked) => handleDecisionStatusFilterChange(filter.key, checked)}
+                        >
+                            {filter.title}
+                        </CheckableTag>)}
+                    </div>
+                    <Divider style={{marginTop: 10, marginBottom: 10}}/>
+                    <Tree treeData={value.filters.awaiting.map(toTree)} style={{width: '100%'}} checkable multiple
+                          defaultExpandedKeys={value.filters.awaiting.map(x => x.key)}
+                          placeholder="סינון לפי המתנה עבור:" onCheck={setSelectedAwaiting}
+                          checkedKeys={selectedAwaiting}/>
+                    <Divider style={{marginTop: 10, marginBottom: 10}}/>
+                    <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
+                                 buttonStyle={"solid"}
+                                 style={{width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex"}}>
+                        <Radio.Button value={"location"} style={{flex: "1 1 30px", textAlign: "center"}}>
+                            <span style={{whiteSpace: "nowrap"}}>מיקום</span>
+                        </Radio.Button>
+                        <Radio.Button value={"arrival"} style={{flex: "1 1 50px", textAlign: "center"}}>
+                            <span style={{whiteSpace: "nowrap"}}>זמן קבלה</span>
+                        </Radio.Button>
+                        <Radio.Button value={"name"} style={{flex: "1 1 50px", textAlign: "center"}}>
+                            <span style={{whiteSpace: "nowrap"}}>שם מלא</span>
+                        </Radio.Button>
+                        <Radio.Button value={"severity"} style={{flex: "1 1 35px", textAlign: "center"}}>
+                            <span style={{whiteSpace: "nowrap"}}>דחיפות</span>
+                        </Radio.Button>
+                    </Radio.Group>
+                </Panel>
+                <Panel header="עדכונים" key="2">
+                    <WingNotifications/>
+                </Panel>
+            </Collapse>
+        </div>
+        <Modal title="נתוני מחלקה"
+               open={isDepartmentPeekModelOpen}
+               onCancel={() => setIsDepartmentPeekModelOpen(false)}
+               footer={null}
+               width='fit-content'
+        >
+            <ul style={{ display: 'flex', gap: '0 20px', margin: 0 }}>
+                <Department department={department}/>
+            </ul>
+        </Modal>
     </div>
 };
 const Patients = ({patients, onError}) => {
@@ -315,7 +355,7 @@ const WingInner = ({department, wing}) => {
 
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
-            <WingStatus/>
+            <WingStatus department={department} />
         </Sider>
         <Content className={'content'} style={{overflowY: "auto"}}>
             <Popover placement={"bottomLeft"} content={patientList} title={"מטופלים.ות:"}>
