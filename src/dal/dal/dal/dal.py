@@ -14,7 +14,7 @@ from pymongo.errors import DuplicateKeyError
 
 from common.data_models.awaiting import Awaiting, AwaitingTypes
 from common.data_models.event import Event
-from common.data_models.image import Image, ImagingStatus
+from common.data_models.image import Image, ImagingStatus, ImagingTypes
 from common.data_models.labs import Laboratory, LabCategory, StatusInHebrew, LabStatus
 from common.data_models.measures import Measure, MeasureType, FullMeasures, Latest, ExpectedEffect, MeasureEffect
 from common.data_models.medicine import Medicine
@@ -414,8 +414,8 @@ class MedicalDal:
             Awaiting(
                 subtype=imaging_obj.title,
                 name=imaging_obj.title,
-                since=imaging_obj.at,
-                completed=imaging_obj.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value],
+                since=imaging_obj.accomplished_at if imaging_obj.accomplished_at else imaging_obj.ordered_at,
+                completed=self._is_imaging_completed(imaging_obj),
                 limit=3600,
             ),
         )
@@ -423,6 +423,11 @@ class MedicalDal:
         await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"awaiting"}, exclude_unset=True)
         )
+
+    def _is_imaging_completed(self, imaging: Image) -> bool:
+        if imaging.imaging_type == ImagingTypes.xray:
+            return imaging.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value]
+        # TODO determine the condition based on relevant data
 
     async def upsert_labs(self, patient_id: str, new_labs: List[Laboratory]):
         labs: Dict[tuple, LabCategory] = {

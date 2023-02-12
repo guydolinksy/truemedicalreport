@@ -1,7 +1,7 @@
 from enum import Enum
 
 from pydantic import BaseModel
-
+from typing import Optional
 from common.data_models.notification import NotificationLevel, Notification, NotificationType
 
 
@@ -9,6 +9,8 @@ class ImagingTypes(Enum):
     ct = 'ct'
     ultrasound = 'us'
     xray = 'xray'
+    mri = 'mri'
+    unknown = 'unknown'
 
 
 class ImagingStatus(Enum):
@@ -38,10 +40,15 @@ class Image(BaseModel):
     patient_id: str
     title: str
     status: ImagingStatus
+    # TODO remove Optional when update the faker
+    code: Optional[ImagingTypes]
+    # TODO remove Optional when we have access to DB with imaging type
+    imaging_type: Optional[ImagingTypes]
     status_text: str
     link: str
     level: NotificationLevel
-    at: str
+    ordered_at: str
+    accomplished_at: Optional[str]
 
     class Config:
         orm_mode = True
@@ -65,7 +72,7 @@ class Image(BaseModel):
         return ImagingNotification(
             static_id=self.external_id,
             patient_id=self.patient_id,
-            at=self.at,
+            at=self.accomplished_at if self.accomplished_at else self.ordered_at,
             message=f'{self.title} - {self.status_text}',
             link=self.link,
             level=self.level,
