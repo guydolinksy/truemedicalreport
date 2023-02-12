@@ -10,17 +10,15 @@ import {
     Input,
     Layout,
     List,
-    Menu,
+    Modal,
     Popover,
     Radio,
     Row,
-    Select,
     Space,
     Spin,
-    Tree,
     Tag,
-    Modal,
-    Tooltip
+    Tooltip,
+    Tree
 } from 'antd';
 import {MIN_WIDTH, Patient} from "./Patient";
 import {createContext} from "../hooks/DataContext";
@@ -36,8 +34,9 @@ import {Link} from "react-router-dom";
 import Moment from "react-moment";
 import {useLocalStorage} from "../hooks/localStorageHook";
 import moment from "moment";
-import { useViewport } from "./UseViewPort";
-import { CustomIcon } from './CustomIcon';
+import {useViewport} from "./UseViewPort";
+import {CustomIcon} from './CustomIcon';
+import {Department} from "./Department";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -168,7 +167,7 @@ const WingNotifications = () => {
     </div>
 }
 
-const WingStatus = () => {
+const WingStatus = ({department}) => {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const {value} = useContext(wingDataContext.context);
@@ -207,15 +206,7 @@ const WingStatus = () => {
         justifyContent: "space-between",
     }
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const showModal = () => {
-        setIsModalOpen(true);
-    };
-
-    const handleCancel = () => {
-        setIsModalOpen(false);
-    };
+    const [isDepartmentPeekModelOpen, setIsDepartmentPeekModelOpen] = useState(false);
 
     return <div style={{
         display: "flex",
@@ -233,7 +224,7 @@ const WingStatus = () => {
                             <Tooltip overlay='נתוני מחלקה'>
                                 <InfoCircleOutlined onClick={(evt) => {
                                     evt.stopPropagation();
-                                    showModal();
+                                    setIsDepartmentPeekModelOpen(true);
                                 }} />
                             </Tooltip>
                         </li>
@@ -302,20 +293,14 @@ const WingStatus = () => {
                 </Panel>
             </Collapse>
         </div>
-        <Modal title="נתוני מחלקה" open={isModalOpen} onCancel={handleCancel} footer={null} width='fit-content'>
+        <Modal title="נתוני מחלקה"
+               open={isDepartmentPeekModelOpen}
+               onCancel={() => setIsDepartmentPeekModelOpen(false)}
+               footer={null}
+               width='fit-content'
+        >
             <ul style={{ display: 'flex', gap: '0 20px', margin: 0 }}>
-                {
-                    [].concat(...value.filters.awaiting.map(toActions))
-                        .filter(({ key }) => SHOW_ACTIONS.includes(key))
-                        .map(
-                            ({ count, title, icon, valid, key }) => <li key={key} style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: 12 }}>{title}{icon &&
-                                    <span>&nbsp;<CustomIcon status={'processing'} icon={icon} /></span>}</div>
-                                <div className={valid || !count ? undefined : 'error-text'}
-                                    style={{ userSelect: "none", fontSize: 14 }}>{count}</div>
-                            </li>
-                        )
-                }
+                <Department department={department}/>
             </ul>
         </Modal>
     </div>
@@ -381,7 +366,7 @@ const WingInner = ({department, wing}) => {
 
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
-            <WingStatus/>
+            <WingStatus department={department} />
         </Sider>
         <Content className={'content'} style={{overflowY: "auto"}}>
             <Popover placement={"bottomLeft"} content={patientList} title={"מטופלים.ות:"}>
