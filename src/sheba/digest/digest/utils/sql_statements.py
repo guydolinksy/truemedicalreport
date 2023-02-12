@@ -109,7 +109,7 @@ SELECT
     [at].Name as TestName,
     ato.Order_Status as OrderStatus,
     atd.Result,
-    at.Code
+    [at].Code
     atd.Panic
 FROM [Chameleon].[dbo].[AuxiliaryTestOrders] AS ato
 JOIN [Chameleon].[dbo].[AuxTests] AS [at] ON ato.Test = [at].Code

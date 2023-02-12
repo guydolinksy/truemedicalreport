@@ -425,9 +425,9 @@ class MedicalDal:
         )
 
     def _is_imaging_completed(self, imaging: Image) -> bool:
-        if imaging.imaging_type == ImagingTypes.xray:
-            return imaging.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value]
-        # TODO determine the condition based on relevant data
+        # if imaging.imaging_type == ImagingTypes.xray:
+        return imaging.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value]
+        # TODO determine the condition based on relevant statuses
 
     async def upsert_labs(self, patient_id: str, new_labs: List[Laboratory]):
         labs: Dict[tuple, LabCategory] = {
