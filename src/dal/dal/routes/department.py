@@ -76,6 +76,7 @@ async def update_labs(labs: Dict[str, List[Laboratory]] = Body(..., embed=True),
                       dal: MedicalDal = Depends(medical_dal)):
     for patient in labs:
         try:
+            logger.info(f"upsert labs for {patient}")
             await dal.upsert_labs(patient_id=patient, new_labs=labs[patient])
         except PatientNotFound:
             msg = f"Cannot update patient {patient} labs"

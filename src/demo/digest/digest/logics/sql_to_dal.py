@@ -259,7 +259,6 @@ class SqlToDal(object):
                     if row['MedicalLicense']:
                         treatments.setdefault(row['MedicalRecord'], Treatment()).doctors.append(
                             f'{row["Title"]} {row["FirstName"]} {row["LastName"]}'
-                            # TODO:  (מ.ר. {row["MedicalLicense"]})'
                         )
                     else:
                         referrals.setdefault(row['MedicalRecord'], []).append(Referral(

@@ -451,6 +451,7 @@ class MedicalDal:
                 await self.db.notifications.update_one(
                     {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
                 )
+                logger.info(f"publish notification for {patient.external_id}")
                 await publish("notification", patient.oid)
 
             for key, warning in lab.get_updated_warnings(
