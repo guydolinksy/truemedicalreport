@@ -40,9 +40,7 @@ class Image(BaseModel):
     patient_id: str
     title: str
     status: ImagingStatus
-    # TODO remove Optional when update the faker
-    code: Optional[ImagingTypes]
-    # TODO remove Optional when we have access to DB with imaging type
+    code: Optional[int]
     imaging_type: Optional[ImagingTypes]
     status_text: str
     link: str

@@ -1,4 +1,5 @@
 import contextlib
+import datetime
 from enum import Enum
 
 import logbook
@@ -179,8 +180,8 @@ class SqlToDal(object):
                         external_id=row['OrderNumber'],
                         patient_id=row['MedicalRecord'],
                         ordered_at=utils.datetime_utc_serializer(row['OrderDate']),
-                        code=row["Code"],
-                        imaging_type=self._get_imaging_type_by_code(row["Code"]),
+                        code=int(row["Code"]),
+                        imaging_type=self._get_imaging_type_by_code(int(row["Code"])),
                         title=row['TestName'],
                         status=SHEBA_IMAGING_STATUS.get(row['OrderStatus'], ImagingStatus.unknown),
                         interpretation=row['Result'],
@@ -194,7 +195,7 @@ class SqlToDal(object):
             logger.exception('Could not run imaging handler.')
 
     @staticmethod
-    def _get_imaging_type_by_code(code: str) -> ImagingTypes:
+    def _get_imaging_type_by_code(code: int) -> ImagingTypes:
         if code in SHEBA_XRAY_CODES:
             return ImagingTypes.xray
         elif code in SHEBA_CT_CODES:
@@ -229,9 +230,14 @@ class SqlToDal(object):
         if row["ResultTime"] is None:
             status = LabStatus.ordered
             result_at = None
+            logger.info(
+                f"current: {datetime.datetime.utcnow()} - order: {utils.datetime_utc_serializer(row['OrderDate'])} - status: {status} - lab:{row['Row_ID']}")
+
         else:
             status = LabStatus.analyzed
             result_at = utils.datetime_utc_serializer(row["ResultTime"])
+            logger.info(
+                f"current: {datetime.datetime.utcnow()} - result: {result_at} - status: {status} -  lab:{row['Row_ID']}")
 
         ordered_at = utils.datetime_utc_serializer(row["OrderDate"])
         category = row["Category"].strip()
@@ -239,6 +245,7 @@ class SqlToDal(object):
             patient_id=row['MedicalRecord'],
             external_id=f'{row["MedicalRecord"]}#{ordered_at}#{row["TestCode"]}',
             ordered_at=ordered_at,
+            chameleon_id=row["Row_ID"],
             result_at=result_at,
             test_type_id=row["TestCode"],
             test_type_name=row["TestName"],

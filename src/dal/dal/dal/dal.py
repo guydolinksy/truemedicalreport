@@ -424,10 +424,12 @@ class MedicalDal:
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"awaiting"}, exclude_unset=True)
         )
 
-    def _is_imaging_completed(self, imaging: Image) -> bool:
-        # if imaging.imaging_type == ImagingTypes.xray:
+    @staticmethod
+    def _is_imaging_completed(imaging: Image) -> bool:
+        if imaging.imaging_type == ImagingTypes.xray:
+            return imaging.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value,
+                                      ImagingStatus.cancelled.value, ImagingStatus.performed.value]
         return imaging.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value]
-        # TODO determine the condition based on relevant statuses
 
     async def upsert_labs(self, patient_id: str, new_labs: List[Laboratory]):
         labs: Dict[tuple, LabCategory] = {
@@ -456,7 +458,8 @@ class MedicalDal:
                 await self.db.notifications.update_one(
                     {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
                 )
-                logger.info(f"publish notification for {patient.external_id}")
+                logger.info(
+                    f"current time:{datetime.datetime.utcnow()} - notification time: {notification.at} - {notification.message}")
                 await publish("notification", patient.oid)
 
             for key, warning in lab.get_updated_warnings(

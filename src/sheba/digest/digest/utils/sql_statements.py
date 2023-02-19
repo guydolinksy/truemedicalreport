@@ -109,7 +109,7 @@ SELECT
     [at].Name as TestName,
     ato.Order_Status as OrderStatus,
     atd.Result,
-    [at].Code
+    [at].Code,
     atd.Panic
 FROM [Chameleon].[dbo].[AuxiliaryTestOrders] AS ato
 JOIN [Chameleon].[dbo].[AuxTests] AS [at] ON ato.Test = [at].Code
@@ -160,6 +160,7 @@ ev.Medical_Record AS MedicalRecord,
 labr.test_code AS TestCode,
 lhs.Name AS Category, 
 labr.Test_Name AS TestName,
+labr.Row_ID,
 concat(labr.Result,' ',labr.Units)  AS Result,
 labr.Norm_Minimum AS NormMinimum,
 labr.Norm_Maximum AS NormMaximum,
