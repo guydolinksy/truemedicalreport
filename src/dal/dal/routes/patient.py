@@ -1,7 +1,9 @@
 import logbook
 from bson import ObjectId
 from fastapi import APIRouter, Depends
+
 from common.data_models.patient import Patient, PatientInfo
+from common.data_models.plugins import PatientInfoPluginDataV1
 from ..clients import medical_dal
 from ..dal.dal import MedicalDal
 
@@ -17,6 +19,12 @@ async def get_patient_by_id(patient: str, dal: MedicalDal = Depends(medical_dal)
 @patient_router.get("/{patient}/info", response_model=PatientInfo)
 async def get_patient_info_by_id(patient: str, dal: MedicalDal = Depends(medical_dal)) -> PatientInfo:
     return await dal.get_patient_info({"_id": ObjectId(patient)})
+
+
+@patient_router.get("/{patient}/plugins/v1", response_model=PatientInfoPluginDataV1)
+async def get_patient_info_plugin_data_by_id_v1(patient: str,
+                                                dal: MedicalDal = Depends(medical_dal)) -> PatientInfoPluginDataV1:
+    return await dal.get_patient_info_plugin_data_v1({"_id": ObjectId(patient)})
 
 
 @patient_router.post("/{patient}")
