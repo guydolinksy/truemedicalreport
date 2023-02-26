@@ -210,22 +210,16 @@ const WingStatus = ({department}) => {
                     <span>{value.details.name}</span>
                     <ul style={{ display: 'flex', gap: '0 5px', margin: 0 }}>
                         <li>
-                            <Tooltip overlay='נתוני מחלקה'>
-                                <InfoCircleOutlined onClick={(evt) => {
+                            <Tooltip overlay='מחלקות'>
+                                <FontAwesomeIcon onClick={(evt) => {
                                     evt.stopPropagation();
                                     setIsDepartmentPeekModelOpen(true);
-                                }} />
-                            </Tooltip>
-                        </li>
-                        <li>
-                            <Tooltip overlay='חזרה למחלקה'>
-                                <FontAwesomeIcon onClick={() => navigate('/')} icon={faRightFromBracket} style={{ cursor: 'pointer' }} />
+                                    navigate('/')
+                                }} icon={faRightFromBracket} style={{ cursor: 'pointer' }} />
                             </Tooltip>
                         </li>
                     </ul>
-
                 </div>
-
             </Card>
             <Collapse defaultActiveKey={['1', '2']}>
                 <Panel header={"סינון"} key={1} extra={<FilterOutlined/>}>
@@ -359,7 +353,7 @@ const WingInner = ({department, wing}) => {
         </Sider>
         <Content className={'content'} style={{overflowY: "auto"}}>
             <Popover placement={"bottomLeft"} content={patientList} title={"מטופלים.ות:"}>
-                <Button type={"primary"} style={{position: "absolute", top: 0, left: 0, zIndex: 1000}} icon={<RightOutlined />}/>
+                <Button type={"primary"} style={{position: "absolute", top: 41, left: 0, width:40, zIndex: 1000}} icon={<RightOutlined />}/>
             </Popover>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                 {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedTreatments.length || selectedAwaiting.length ?

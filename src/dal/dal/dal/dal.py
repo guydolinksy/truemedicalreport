@@ -7,9 +7,8 @@ from typing import List, Dict, Type, Any
 import logbook
 from bson.json_util import dumps
 from bson.objectid import ObjectId
-from pydantic import BaseModel
-
 from motor.motor_asyncio import AsyncIOMotorDatabase as Database, AsyncIOMotorCollection as Collection
+from pydantic import BaseModel
 from pymongo.errors import DuplicateKeyError
 
 from common.data_models.awaiting import Awaiting, AwaitingTypes
@@ -20,6 +19,7 @@ from common.data_models.measures import Measure, MeasureType, FullMeasures, Late
 from common.data_models.medicine import Medicine
 from common.data_models.notification import Notification
 from common.data_models.patient import Patient, ExternalPatient, InternalPatient, PatientInfo, Intake
+from common.data_models.plugins import PatientInfoPluginDataV1
 from common.data_models.referrals import Referral
 from common.data_models.treatment import Treatment
 from common.data_models.wing import WingFilter, WingFilters, PatientNotifications, WingDetails
@@ -296,6 +296,13 @@ class MedicalDal:
             events=events,
             visits=visits,
             **patient.dict(),
+        )
+
+    async def get_patient_info_plugin_data_v1(self, patient: dict) -> PatientInfoPluginDataV1:
+        patient = await self.get_patient(patient)
+        return PatientInfoPluginDataV1(
+            info=patient.info,
+            medical_record=patient.external_id
         )
 
     async def get_patient_by_bed(self, department: str, wing: str, bed: str) -> str:

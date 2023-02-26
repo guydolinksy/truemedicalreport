@@ -71,10 +71,24 @@ class Patient(ExternalPatient, InternalPatient):
         super(Patient, self).__init__(**kwargs)
 
 
-class PatientInfoPlugin(BaseModel):
+class PatientInfoPluginRender(BaseModel):
     key: str
     title: str
     url: str
+
+
+class PatientInfoPluginConfig(BaseModel):
+    key: str
+    title: str
+    url: str
+    api_version: str
+
+    def render(self, **kwargs):
+        return PatientInfoPluginRender(
+            key=self.key,
+            title=self.title.format(**kwargs),
+            url=self.url.format(**kwargs),
+        )
 
 
 class AggregatePatient(BaseModel):
@@ -95,4 +109,4 @@ class PatientInfo(Patient, AggregatePatient):
 
 
 class PanelPatient(PatientInfo):
-    plugins: List[PatientInfoPlugin] = []
+    plugins: List[PatientInfoPluginRender] = []

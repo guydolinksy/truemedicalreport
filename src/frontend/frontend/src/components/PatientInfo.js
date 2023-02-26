@@ -204,7 +204,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
         </Panel>
         {value.plugins.map(({key, title, url}) =>
             <Panel key={key} header={title}>
-                <iframe title={key} src={url}/>
+                <iframe style={{border: "none", width: "100%", height: "100%"}} title={title} src={url}/>
             </Panel>
         )}
         <Panel key={'mortality'} header={'AI חיזוי תמותה'}>
