@@ -36,7 +36,7 @@ async def get_patient_info_by_id(
     return PanelPatient(**res, plugins=plugins).dict()
 
 
-def get_plugins(patient, general_settings_, user_settings_):
+async def get_plugins(patient, general_settings_, user_settings_):
     user_plugins = getattr(user_settings_, "plugins", {})
     data = {}
     for key, config in getattr(general_settings_, "plugins", {}).items():
