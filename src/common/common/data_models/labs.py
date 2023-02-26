@@ -55,7 +55,7 @@ class Laboratory(BaseModel):
     patient_id: str
     external_id: str
     ordered_at: str
-    chameleon_id: str
+    chameleon_id: Optional[str]
     result_at: Optional[str]
     test_type_id: int
     test_type_name: str

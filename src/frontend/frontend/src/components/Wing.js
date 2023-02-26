@@ -278,7 +278,9 @@ const WingStatus = ({department}) => {
                     </Radio.Group>
                 </Panel>
                 <Panel header="עדכונים" key="2">
-                    <WingNotifications/>
+                    <div style={{ height:"30vh",overflowY:"scroll"}}>
+                        <WingNotifications/>
+                    </div>
                 </Panel>
             </Collapse>
         </div>
