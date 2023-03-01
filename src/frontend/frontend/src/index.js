@@ -9,8 +9,8 @@ import * as Sentry from "@sentry/browser";
 import { BrowserTracing } from "@sentry/tracing";
 
 const instance = createInstance({
-    urlBase: 'http://localhost:8090/',
-    siteId: 1
+    urlBase: 'http://matomo.arc-devops.sheba.gov.il/',
+    siteId: 25
 })
 
 // Intialize Sentry ASAP, before anything else
