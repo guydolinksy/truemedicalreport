@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from common.data_models.patient import Patient, PatientInfo
 from common.data_models.plugins import PatientInfoPluginDataV1
 from ..clients import medical_dal
-from ..dal.dal import MedicalDal
+from ..dal.medical_dal import MedicalDal
 
 patient_router = APIRouter(tags=["Patient"])
 logger = logbook.Logger(__name__)
