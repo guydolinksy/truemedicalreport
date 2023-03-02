@@ -69,7 +69,8 @@ async def login(
         scopes=([ADMIN_SCOPE] if user.is_admin else []),
         expires=dt.timedelta(hours=12)
     )
-    login_manager.set_cookie(response, access_token)
+
+    response.set_cookie(key=login_manager.cookie_name, value=access_token, httponly=True, samesite='none', secure=True)
     return True
 
 
