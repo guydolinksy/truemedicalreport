@@ -9,6 +9,8 @@ mongo_connection = json.loads(os.getenv('MONGO_CONNECTION', '"mongodb://localhos
 redis_connection = json.loads(os.getenv('REDIS_CONNECTION', '"redis://localhost:6379/1"'))
 dal_url = json.loads(os.getenv('DAL_CONNECTION', '""'))
 sentry_dsn = os.getenv('SENTRY_DSN', None)
+matomo_url = os.getenv('MATOMO_BASE_URL', None)
+matomo_site_id = os.getenv('MATOMO_SITE_ID', None)
 
 # Websocket tweaking.
 # WS_CONSOLIDATION_WINDOW_SECONDS:
