@@ -31,7 +31,7 @@ async def get_patient_info_by_id(
     except HTTPError as e:
         raise PatientNotFound() from e
 
-    plugins = list(get_plugins(patient, general_settings_, user_settings_))
+    plugins = [a async for a in get_plugins(patient, general_settings_, user_settings_)]
 
     return PanelPatient(**res, plugins=plugins).dict()
 
@@ -48,7 +48,7 @@ async def get_plugins(patient, general_settings_, user_settings_):
             if config.api_version not in data:
                 data[config.api_version] = await fetch_dal_json(f"/patients/{patient}/plugins/{config.api_version}")
 
-            yield config.render(**data[config.version])
+            yield config.render(**data[config.api_version])
         except:
             logger.exception("Plugin Evaluation Failed")
 

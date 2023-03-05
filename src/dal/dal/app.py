@@ -32,13 +32,13 @@ def create_app() -> FastAPIOffline:
 
     StreamHandler(sys.stdout).push_application()
 
-    from .routes.init import init_router
+    from .routes.config import config_router
     from .routes.patient import patient_router
     from .routes.department import department_router
     from .routes.publishing import publish_router
     from .routes.faking import faker_router
 
-    app_.include_router(init_router, prefix="/dal/init")
+    app_.include_router(config_router, prefix="/dal/config")
     app_.include_router(patient_router, prefix="/dal/patients")
     app_.include_router(department_router, prefix="/dal/departments")
     app_.include_router(publish_router, prefix="/dal/publishing")
