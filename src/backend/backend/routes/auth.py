@@ -1,3 +1,4 @@
+import datetime as dt
 import os
 from typing import Optional
 
@@ -7,13 +8,11 @@ from fastapi.params import Security
 from fastapi_login import LoginManager
 from pydantic import ValidationError
 from starlette.responses import Response
-import datetime as dt
 
 from .. import config
 from ..logics.exceptions import UnauthorizedException, InvalidSettingsException, BadRequestException
 from ..logics.settings import Settings, settings, current_general_settings, Proxy, current_settings
 from ..logics.user import User
-
 
 logger = logbook.Logger(__name__)
 auth_router = APIRouter()
@@ -29,7 +28,9 @@ def _create_login_manager() -> LoginManager:
 login_manager = _create_login_manager()
 
 ADMIN_SCOPE = "admin"
+PLUGIN_SCOPE = "plugin"
 REQUIRE_ADMIN = Security(login_manager, scopes=[ADMIN_SCOPE])
+REQUIRE_PLUGIN = Security(login_manager, scopes=[PLUGIN_SCOPE])
 
 
 @login_manager.user_loader()
@@ -53,14 +54,22 @@ def init_auths():
 
 @auth_router.post("/token")
 async def login(
-    response: Response,
-    s: Settings = Depends(settings),
-    auth_provider_name: str = Body(default=None, alias="authProviderName"),
-    username=Body(...),
-    password=Body(...),
+        response: Response,
+        s: Settings = Depends(settings),
+        auth_provider_name: str = Body(default=None, alias="authProviderName"),
+        username=Body(...),
+        password=Body(...),
 ):
     assert auth_provider_name
     user = s.auth.login(provider_name=auth_provider_name, username=username, password=password)
+    user.plugin_token = login_manager.create_access_token(
+        data=dict(
+            # The data in sub (JWT "subject") must conform to whatever load_user(...) expects.
+            sub=user.dict()
+        ),
+        scopes=([PLUGIN_SCOPE]),
+        expires=dt.timedelta(hours=12)
+    )
     access_token = login_manager.create_access_token(
         data=dict(
             # The data in sub (JWT "subject") must conform to whatever load_user(...) expects.
@@ -70,7 +79,7 @@ async def login(
         expires=dt.timedelta(hours=12)
     )
 
-    response.set_cookie(key=login_manager.cookie_name, value=access_token, httponly=True, samesite='none', secure=True)
+    login_manager.set_cookie(response=response, token=access_token)
     return True
 
 
@@ -82,6 +91,7 @@ def get_user(user: User = Depends(login_manager), user_settings_=Depends(user_se
             canChangePassword=user.auth_provider_name == "local",
             admin=user.is_admin,
             groups=user.groups,
+            pluginToken=user.plugin_token,
         ),
         userSettings=dict(theme=getattr(user_settings_, "display", {}).get("theme", "light-theme")),
     )
@@ -89,11 +99,11 @@ def get_user(user: User = Depends(login_manager), user_settings_=Depends(user_se
 
 @auth_router.post("/change-password")
 async def change_password(
-    user: User = Depends(login_manager),
-    s: Settings = Depends(settings),
-    previous=Body(...),
-    password=Body(...),
-    confirm=Body(...),
+        user: User = Depends(login_manager),
+        s: Settings = Depends(settings),
+        previous=Body(...),
+        password=Body(...),
+        confirm=Body(...),
 ):
     if password != confirm:
         raise UnauthorizedException("The confirmation password does not match")

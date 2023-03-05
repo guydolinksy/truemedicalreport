@@ -1,19 +1,20 @@
+import datetime as dt
+import itertools as it
 from typing import Tuple, Optional, Iterable
 
+from faker import Faker
 from faker.providers import BaseProvider
 from fastapi import APIRouter, Depends, Body
-from faker import Faker
-import itertools as it
-import datetime as dt
 
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
 from common.data_models.intake import Intake
 from common.data_models.patient import ExternalPatient, Person
 from .faker_consts import ER_DEPARTMENT, WINGS_LAYOUT, WING_KEYS, ALL_BEDS
+from ...clients import medical_dal, application_dal
 from ...consts import DAL_FAKER_TAG_NAME
-from ...clients import mongo_client, medical_dal, AsyncIOMotorClient
-from ...dal.dal import MedicalDal
+from ...dal.application_dal import ApplicationDal
+from ...dal.medical_dal import MedicalDal
 
 router = APIRouter(tags=[DAL_FAKER_TAG_NAME])
 _faker = Faker("he-IL")
@@ -103,27 +104,25 @@ _faker.add_provider(MedicalPropertiesProvider)
 
 
 @router.put("/init_with_wings")
-async def init_db_with_wings(mongo: AsyncIOMotorClient = Depends(mongo_client)) -> None:
-    from dal.routes.init import init_db
-
-    await init_db(
-        wings=[
+async def init_db_with_wings(application_dal_: ApplicationDal = Depends(application_dal)) -> None:
+    await application_dal_.set_config(key='departments', version=0, value=[{
+        'name': ER_DEPARTMENT,
+        'key': ER_DEPARTMENT,
+        'wings': [
             {
                 "key": wing_key,
                 **wing,
             }
             for wing_key, wing in WINGS_LAYOUT.items()
         ],
-        mongo=mongo,
-    )
+    }])
 
 
 @router.post("/patients/admit", description="Admits new patients. Drops the existing ones.")
 async def admit_new_patient(
-    dal: MedicalDal = Depends(medical_dal),
-    count: Optional[int] = Body(20),
+        dal: MedicalDal = Depends(medical_dal),
+        count: Optional[int] = Body(20),
 ) -> None:
-
     from dal.routes.department import update_admissions
 
     await update_admissions(
