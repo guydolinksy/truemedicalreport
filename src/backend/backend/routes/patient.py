@@ -24,19 +24,19 @@ async def get_patient_by_id(patient: str, _=Depends(login_manager)) -> dict:
 
 @patient_router.get("/{patient}/info")
 async def get_patient_info_by_id(
-        patient: str, general_settings_=Depends(general_settings), user_settings_=Depends(user_settings)
+        patient: str, user=Depends(login_manager), general_settings_=Depends(general_settings), user_settings_=Depends(user_settings)
 ) -> dict:
     try:
         res = await fetch_dal_json(f"/patients/{patient}/info")
     except HTTPError as e:
         raise PatientNotFound() from e
 
-    plugins = [a async for a in get_plugins(patient, general_settings_, user_settings_)]
+    plugins = [a async for a in get_plugins(patient, user, general_settings_, user_settings_)]
 
     return PanelPatient(**res, plugins=plugins).dict()
 
 
-async def get_plugins(patient, general_settings_, user_settings_):
+async def get_plugins(patient, user, general_settings_, user_settings_):
     user_plugins = getattr(user_settings_, "plugins", {})
     data = {}
     for key, config in getattr(general_settings_, "plugins", {}).items():
@@ -48,7 +48,7 @@ async def get_plugins(patient, general_settings_, user_settings_):
             if config.api_version not in data:
                 data[config.api_version] = await fetch_dal_json(f"/patients/{patient}/plugins/{config.api_version}")
 
-            yield config.render(**data[config.api_version])
+            yield config.render(token=user.plugin_token, **data[config.api_version])
         except:
             logger.exception("Plugin Evaluation Failed")
 

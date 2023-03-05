@@ -4,7 +4,7 @@ from .. import config
 
 
 async def init_wings():
-    requests.post(f'{config.dal_url}/config', json={
+    requests.post(f'{config.dal_url}/config/set', json={
         'key': 'departments',
         'version': 0,
         'value': [{
