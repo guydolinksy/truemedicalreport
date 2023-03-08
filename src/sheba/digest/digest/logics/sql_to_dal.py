@@ -20,6 +20,8 @@ from common.data_models.referrals import Referral
 from common.data_models.treatment import Treatment
 from .. import config
 from ..utils import sql_statements, utils
+from RIS_Adapter import OracleAdapter
+from ..models.ris_imaging import RisImaging
 
 logger = logbook.Logger(__name__)
 
@@ -97,11 +99,14 @@ class Departments(Enum):
 
 
 class SqlToDal(object):
-    def __init__(self, chameleon_connection=None, dal_url=None):
+    def __init__(self, chameleon_connection=None, dal_url=None, oracle_params=None):
         self.dal_url = dal_url or config.dal_url
 
         chameleon_connection = chameleon_connection or config.chameleon_connection
         self._engine = create_engine(chameleon_connection)
+
+        oracle_connection_params = oracle_params or config.oracle_params
+        self._oracle_client = OracleAdapter(**oracle_connection_params)
 
     @contextlib.contextmanager
     def session(self):
@@ -172,37 +177,34 @@ class SqlToDal(object):
 
     def update_imaging(self, department: Departments):
         try:
+            orders = []
             logger.debug('Getting imaging for `{}`...', department.name)
+
             imaging = {}
             with self.session() as session:
                 for row in session.execute(sql_statements.query_images.format(unit=department.value)):
                     imaging.setdefault(row['MedicalRecord'], []).append(Image(
+                        order_number=row['OrderNumber'],
+                        # TODO change to accession number
                         external_id=row['OrderNumber'],
                         patient_id=row['MedicalRecord'],
                         ordered_at=utils.datetime_utc_serializer(row['OrderDate']),
                         code=int(row["Code"]),
-                        imaging_type=self._get_imaging_type_by_code(int(row["Code"])),
                         title=row['TestName'],
                         status=SHEBA_IMAGING_STATUS.get(row['OrderStatus'], ImagingStatus.unknown),
                         interpretation=row['Result'],
                         level=SHEBA_IMAGING_LEVEL.get(row['Panic'], NotificationLevel.normal),
                         link='https://localhost/',
                     ).dict(exclude_unset=True))
+                    self._get_ris_imaging(orders)
                 res = requests.post(f'{self.dal_url}/departments/{department.name}/imaging', json={'images': imaging})
                 res.raise_for_status()
                 return {'images': imaging}
         except HTTPError:
             logger.exception('Could not run imaging handler.')
 
-    @staticmethod
-    def _get_imaging_type_by_code(code: int) -> ImagingTypes:
-        if code in SHEBA_XRAY_CODES:
-            return ImagingTypes.xray
-        elif code in SHEBA_CT_CODES:
-            return ImagingTypes.ct
-        elif code in SHEBA_MRI_CODES:
-            return ImagingTypes.mri
-        return ImagingTypes.unknown
+    def _get_ris_imaging(self, orders: list[str]) -> list[RisImaging]:
+        return self._oracle_client.query_imaging(', '.join(set(orders)))
 
     def update_labs(self, department: Departments):
         try:

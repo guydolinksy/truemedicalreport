@@ -36,6 +36,7 @@ class ImagingNotification(Notification):
 
 
 class Image(BaseModel):
+    order_number: Optional[str]
     external_id: str
     patient_id: str
     title: str
