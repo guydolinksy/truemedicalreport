@@ -207,22 +207,5 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 <iframe style={{border: "none", width: "100%", height: "100%"}} title={title} src={url}/>
             </Panel>
         )}
-        <Panel key={'mortality'} header={'AI חיזוי תמותה'}>
-            <div>הסתברות לתמותה בתוך 48 שעות: 1%-3%</div>
-            <div>סיכון של <b>פי 3 יותר</b> מהאוכלוסיה הכללית!</div>
-            <br/>
-            <div>מאפיינים מכריעים:</div>
-            <ul>
-                <li>
-                    ESI=3 <span style={{color: "#579d2f"}}>(+)</span>
-                </li>
-                <li>
-                    Age=99 <span style={{color: "#ff0000"}}>(-)</span>
-                </li>
-                <li>
-                    Respiratory Rate=22 <span style={{color: "#579d2f"}}>(+)</span>
-                </li>
-            </ul>
-        </Panel>
     </Collapse>
 }
