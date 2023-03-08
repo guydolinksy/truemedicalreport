@@ -22,4 +22,4 @@ dependencies:
 description: A helm chart for True Medical Report
 name: truemedicalreport
 type: application
-version: 0.2.7
+version: 0.2.8
