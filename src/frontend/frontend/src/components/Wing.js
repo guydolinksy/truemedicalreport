@@ -214,7 +214,6 @@ const WingStatus = ({department}) => {
                                 <FontAwesomeIcon onClick={(evt) => {
                                     evt.stopPropagation();
                                     setIsDepartmentPeekModelOpen(true);
-                                    navigate('/')
                                 }} icon={faRightFromBracket} style={{ cursor: 'pointer' }} />
                             </Tooltip>
                         </li>

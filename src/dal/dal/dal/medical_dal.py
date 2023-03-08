@@ -1,11 +1,9 @@
 import asyncio
 import datetime
-import json
 from dataclasses import dataclass
 from typing import List, Dict, Type, Any
 
 import logbook
-from bson.json_util import dumps
 from bson.objectid import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase as Database, AsyncIOMotorCollection as Collection
 from pydantic import BaseModel
@@ -25,6 +23,7 @@ from common.data_models.treatment import Treatment
 from common.data_models.wing import WingFilter, WingFilters, PatientNotifications, WingDetails
 from common.utilities.exceptions import PatientNotFound, MaxRetriesExceeded
 from common.utilities.json_utils import json_to_dot_notation
+from .application_dal import ApplicationDal
 from ..routes.publishing import publish
 
 logger = logbook.Logger(__name__)
@@ -33,6 +32,7 @@ logger = logbook.Logger(__name__)
 @dataclass
 class MedicalDal:
     db: Database
+    application_dal: ApplicationDal
 
     @staticmethod
     async def publish_property(klass: Type[BaseModel], oid: str, attr: str, old: Any, new: Any) -> None:
@@ -86,14 +86,15 @@ class MedicalDal:
     async def atomic_update_notification(self, query: dict, new: dict):
         await self._atomic_update(klass=Notification, collection=self.db.notifications, query=query, new=new)
 
-    async def get_department_wings(self, department: str) -> List[dict]:
+    async def get_department_wings(self, department: str) -> List[WingDetails]:
         return [
-            json.loads(dumps(wing))
-            async for wing in self.db.wings.find({"department": department}, {"_id": 1, "key": 1, "name": 1})
+            WingDetails(**wing)
+            for d in await self.application_dal.get_config('departments', []) if d['name'] == department
+            for wing in d['wings']
         ]
 
-    async def get_wing(self, department: str, wing: str) -> WingDetails:
-        return WingDetails(**(await self.db.wings.find_one({"department": department, "key": wing})))
+    async def get_wing_details(self, department: str, wing: str) -> WingDetails:
+        return next(w for w in await self.get_department_wings(department) if w.key == wing)
 
     async def get_wing_patients(self, department: str, wing: str) -> List[Patient]:
         patients = [
