@@ -36,6 +36,7 @@ class ImagingNotification(Notification):
 
 
 class Image(BaseModel):
+    order_number: str
     external_id: str
     patient_id: str
     title: str
@@ -46,7 +47,7 @@ class Image(BaseModel):
     link: str
     level: NotificationLevel
     ordered_at: str
-    accomplished_at: Optional[str]
+    updated_at: Optional[str]
 
     class Config:
         orm_mode = True

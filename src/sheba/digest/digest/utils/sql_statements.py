@@ -212,4 +212,6 @@ WHERE
        AND mr.Release_Time is null
        AND tc.[Entry_Date] >= mr.Admission_Date"""
 
-query_ris_imaging="""{}"""
+query_ris_imaging="""SELECT ORDER_KEY,MODALITY_TYPE_CODE_SPSCODE,SPS_KEY
+FROM CSHRIS.SITE_M_BI_EXAMS_VIEW 
+WHERE ORDER_KEY IN ({});"""

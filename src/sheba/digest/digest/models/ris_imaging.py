@@ -14,7 +14,7 @@ modality_type_mapping = {
 
 
 class RisImaging(BaseModel):
-    order_number: int
+    order_number: str
     imaging_type: str
     sps_code: str
     accession_number: str
