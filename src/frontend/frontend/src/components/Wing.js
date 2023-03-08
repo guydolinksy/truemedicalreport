@@ -112,8 +112,8 @@ const WingNotifications = () => {
         })
     }, [navigate]);
     if (!value.notifications.length)
-        return <Empty description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/>
-    return <div style={{display: "flex", flexDirection: "column", flex: 1, overflowY: "hidden"}}>
+        return <div style={{height:'100%'}}><Empty style={{height:'100%'}} description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/></div>
+    return <div style={{display: "flex",height:'100%', flexDirection: "column", flex: 1}}>
         <Collapse onChange={openChange} style={{overflowY: "auto", flex: 1}}>
             {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
                 <div style={{
@@ -204,7 +204,7 @@ const WingStatus = ({department}) => {
         overflowY: "hidden",
         justifyContent: "space-between",
     }}>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <Card bodyStyle={{padding : '10px'}}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span>{value.details.name}</span>
@@ -214,13 +214,14 @@ const WingStatus = ({department}) => {
                                 <FontAwesomeIcon onClick={(evt) => {
                                     evt.stopPropagation();
                                     setIsDepartmentPeekModelOpen(true);
+                                    navigate('/')
                                 }} icon={faRightFromBracket} style={{ cursor: 'pointer' }} />
                             </Tooltip>
                         </li>
                     </ul>
                 </div>
             </Card>
-            <Collapse defaultActiveKey={['1', '2']}>
+            <Collapse defaultActiveKey={['1', '2']} style={{height:'100%'}}>
                 <Panel header={"סינון"} key={1} extra={<FilterOutlined/>}>
 
                     <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
@@ -270,8 +271,10 @@ const WingStatus = ({department}) => {
                         </Radio.Button>
                     </Radio.Group>
                 </Panel>
-                <Panel header="עדכונים" key="2">
-                    <WingNotifications/>
+                <Panel header="עדכונים" key="2" style={{height:'100%'}}>
+                    <div style={{ height:"100%",overflowY:"scroll"}}>
+                        <WingNotifications/>
+                    </div>
                 </Panel>
             </Collapse>
         </div>

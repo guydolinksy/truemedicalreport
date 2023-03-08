@@ -11,6 +11,10 @@ patient_router = APIRouter(tags=["Patient"])
 logger = logbook.Logger(__name__)
 
 
+# {
+#        'info': {'id_': '63570414', 'name': 'בר אלעד', 'age': '8.0', 'gender': 'female', 'birthdate': '2015-02-08T22:00:00+02:00'},
+#        'protocol' : {'title':'headach', 'attributes': {'labs':'none'}}
+#    }
 @patient_router.get("/{patient}", response_model=Patient)
 async def get_patient_by_id(patient: str, dal: MedicalDal = Depends(medical_dal)) -> Patient:
     return await dal.get_patient({"_id": ObjectId(patient)})
