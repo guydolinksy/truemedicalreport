@@ -211,3 +211,5 @@ WHERE
        AND mr.Delete_Date is null
        AND mr.Release_Time is null
        AND tc.[Entry_Date] >= mr.Admission_Date"""
+
+query_ris_imaging="""{}"""
