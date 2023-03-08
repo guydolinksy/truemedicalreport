@@ -80,3 +80,7 @@ sentry:
   secretName: ''
   secretKey: ''
   caCertConfigMapName: ''
+
+matomo:
+  urlBase: ''
+  siteId: ''
