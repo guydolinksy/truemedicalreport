@@ -10,7 +10,7 @@ class OracleAdapter:
                                         user=username)
         self._conn = oracledb.connect(params=params)
 
-    def query_imaging(self, orders: str) -> list[RisImaging]:
+    def query_imaging(self, orders: str):
         with self._conn.cursor() as cursor:
             results = cursor.execute(query_ris_imaging.format(orders))
             return [RisImaging(order_number=result[0], imaging_type=result[1], sps_code=result[2],
