@@ -47,7 +47,7 @@ class Image(BaseModel):
     link: str
     level: NotificationLevel
     ordered_at: str
-    accomplished_at: Optional[str]
+    updated_at: Optional[str]
 
     class Config:
         orm_mode = True
