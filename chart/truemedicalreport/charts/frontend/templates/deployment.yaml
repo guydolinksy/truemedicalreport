@@ -40,15 +40,6 @@ spec:
           env:
             - name: 'DEBUG'
               value: {{ if .Values.global.devMode.enabled }} '1' {{ else }} '0' {{ end }}
-            {{- if .Values.sentry.enabled }}
-            - name: SENTRY_DSN
-              valueFrom:
-                secretKeyRef:
-                  key: {{ .Values.sentry.secretKey }}
-                  name: {{ .Values.sentry.secretName }}
-            - name: SENTRY_CA_CERT_PATH
-              value: '/opt/ssl/cert_ca.pem'
-            {{- end }}
           {{- if .Values.global.devMode.enabled }}
           volumeMounts: {{ if not (len .Values.devMappings) }}[]{{ end }}
             {{- range $index, $value := .Values.devMappings }}
