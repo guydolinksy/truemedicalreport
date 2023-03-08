@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from common.data_models.bed import Bed
 from common.data_models.wing import Wing
 from ..clients import medical_dal
-from ..dal.dal import MedicalDal
+from ..dal.medical_dal import MedicalDal
 
 logger = logbook.Logger(__name__)
 wing_router = APIRouter()
@@ -13,7 +13,7 @@ wing_router = APIRouter()
 async def get_wing(department: str, wing: str, dal: MedicalDal = Depends(medical_dal)) -> Wing:
     return Wing(
         patients=await dal.get_wing_patients(department, wing),
-        details=await dal.get_wing(department, wing),
+        details=await dal.get_wing_details(department, wing),
         filters=await dal.get_wing_filters(department, wing),
         notifications=await dal.get_wing_notifications(department, wing)
     )

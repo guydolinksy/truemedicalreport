@@ -4,6 +4,7 @@ from typing import List, Dict
 import logbook
 from fastapi import APIRouter, Depends, Body
 from sentry_sdk import capture_exception, capture_message
+
 from common.data_models.department import Department
 from common.data_models.image import Image
 from common.data_models.labs import Laboratory
@@ -16,7 +17,7 @@ from common.data_models.wing import WingSummary
 from common.utilities.exceptions import PatientNotFound
 from .wing import wing_router
 from ..clients import medical_dal
-from ..dal.dal import MedicalDal
+from ..dal.medical_dal import MedicalDal
 
 department_router = APIRouter()
 
@@ -27,11 +28,11 @@ logger = logbook.Logger(__name__)
 
 @department_router.get("/{department}", tags=["Department"], response_model=Department,
                        response_model_exclude_unset=True)
-async def get_department(department: str, dal: MedicalDal = Depends(medical_dal)) -> Department:
+async def get_department(department: str, medical_dal_: MedicalDal = Depends(medical_dal)) -> Department:
     return Department(wings=[WingSummary(
-        details=await dal.get_wing(department, wing["key"]),
-        filters=await dal.get_wing_filters(department, wing["key"]),
-    ) for wing in await dal.get_department_wings(department)])
+        details=wing,
+        filters=await medical_dal_.get_wing_filters(department, wing.key),
+    ) for wing in await medical_dal_.get_department_wings(department)])
 
 
 @department_router.post("/{department}/admissions", tags=["Department"])
