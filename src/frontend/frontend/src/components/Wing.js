@@ -112,9 +112,9 @@ const WingNotifications = () => {
         })
     }, [navigate]);
     if (!value.notifications.length)
-        return <div style={{height:'100%'}}><Empty style={{height:'100%'}} description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/></div>
-    return <div style={{display: "flex",height:'100%', flexDirection: "column", flex: 1}}>
-        <Collapse onChange={openChange} style={{overflowY: "auto", flex: 1}}>
+        return <div style={{height:'fit-content'}}><Empty style={{height:'fit-content'}} description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/></div>
+    return <div style={{display: "flex",maxHeight: "40vh", height:"fit-content", overflowY:"scroll", flexDirection: "column", flex: 1}}>
+        <Collapse onChange={openChange} style={{ flex: 1}}>
             {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
                 <div style={{
                     display: "flex",
@@ -201,7 +201,7 @@ const WingStatus = ({department}) => {
         display: "flex",
         flexDirection: "column",
         height: '100vh',
-        overflowY: "hidden",
+        // overflowY: "hidden",
         justifyContent: "space-between",
     }}>
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -271,10 +271,8 @@ const WingStatus = ({department}) => {
                         </Radio.Button>
                     </Radio.Group>
                 </Panel>
-                <Panel header="עדכונים" key="2" style={{height:'100%'}}>
-                    <div style={{ height:"100%",overflowY:"scroll"}}>
-                        <WingNotifications/>
-                    </div>
+                <Panel header="עדכונים" key="2" style={{height:'-webkit-fill-available'}}>
+                    <WingNotifications/>
                 </Panel>
             </Collapse>
         </div>
@@ -353,7 +351,7 @@ const WingInner = ({department, wing}) => {
         <Sider breakpoint={"lg"} width={siderWidth}>
             <WingStatus department={department} />
         </Sider>
-        <Content className={'content'} style={{overflowY: "auto"}}>
+        <Content className={'content'}>
             <Popover placement={"bottomLeft"} content={patientList} title={"מטופלים.ות:"}>
                 <Button type={"primary"} style={{position: "absolute", top: 41, left: 0, width:40, zIndex: 1000}} icon={<RightOutlined />}/>
             </Popover>
