@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from common.data_models.image import ImagingTypes, ImagingStatus
-from common.data_models.labs import LabCategories, LabTestType, CategoriesInHebrew
+from common.data_models.labs import LabCategories, LAB_TEST_TYPE, CATEGORIES_IN_HEBREW
 from common.data_models.notification import NotificationLevel
 # from digest.models.arc_patient import ARCPatient
 # from digest.models.chameleon_imaging import ChameleonImaging
@@ -291,11 +291,11 @@ class FakeMain(object):
             if step < 10:
                 continue
             category = random.choice(list(LabCategories))
-            h_category = CategoriesInHebrew[category]
+            h_category = CATEGORIES_IN_HEBREW[category]
             order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC)
             collection_date = self.faker.date_time_between_dates('-10m', '-8m').astimezone(pytz.UTC)
             order_number = random.randint(100000000, 999999999)
-            for test_type_id, test_type_name in enumerate(LabTestType[category]):
+            for test_type_id, test_type_name in enumerate(LAB_TEST_TYPE[category]):
                 patient_id = patient
                 order_date = order_date
                 # test_type_id = f'{category.value}{test_type_id:04}'

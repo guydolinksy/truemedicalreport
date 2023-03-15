@@ -11,6 +11,7 @@ from .event import Event
 from .image import Image
 from .intake import Intake
 from .labs import LabCategory
+from .protocol import Protocol
 from .severity import Severity
 from .treatment import Treatment
 
@@ -38,6 +39,7 @@ class InternalPatient(BaseModel):
     flagged: Optional[bool]
     warnings: Dict[str, PatientWarning] = {}
     measures: Measures = Measures()
+    protocol: Protocol = Protocol()
 
     class Config:
         orm_mode = True

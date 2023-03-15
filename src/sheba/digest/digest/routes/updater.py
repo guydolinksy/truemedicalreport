@@ -1,11 +1,12 @@
+import asyncio
 import http
 
 import logbook
 from fastapi import APIRouter, Depends
 from fastapi_utils.tasks import repeat_every
 
-from ..logics.sql_to_dal import SqlToDal, Departments
 from common.utilities.exceptions import safe, inject_dependencies
+from ..logics.sql_to_dal import SqlToDal, Departments
 
 updater_router = APIRouter()
 
@@ -17,7 +18,18 @@ def dal_updater() -> SqlToDal:
 logger = logbook.Logger(__name__)
 
 
-@updater_router.on_event('startup')
+def startup(router):
+    def _decorator(func):
+        @router.on_event('startup')
+        def _wrapper():
+            asyncio.create_task(func())
+
+        return func
+
+    return _decorator
+
+
+@startup(updater_router)
 @repeat_every(seconds=40, logger=logger)
 @safe(logger)
 @inject_dependencies(department=Departments.er)
@@ -29,7 +41,7 @@ async def update_admissions(department: Departments, dal: SqlToDal = Depends(dal
     # return res
 
 
-@updater_router.on_event('startup')
+@startup(updater_router)
 @repeat_every(seconds=50, logger=logger)
 @safe(logger)
 @inject_dependencies(department=Departments.er)
@@ -41,7 +53,7 @@ async def update_measurements(department: Departments, dal: SqlToDal = Depends(d
     # return res
 
 
-@updater_router.on_event('startup')
+@startup(updater_router)
 @repeat_every(seconds=70, logger=logger)
 @safe(logger)
 @inject_dependencies(department=Departments.er)
@@ -53,7 +65,7 @@ async def update_imagings(department: Departments, dal: SqlToDal = Depends(dal_u
     # return res
 
 
-@updater_router.on_event('startup')
+@startup(updater_router)
 @repeat_every(seconds=60, logger=logger)
 @safe(logger)
 @inject_dependencies(department=Departments.er)
@@ -65,7 +77,7 @@ async def update_labs(department: Departments, dal: SqlToDal = Depends(dal_updat
     # return res
 
 
-@updater_router.on_event('startup')
+@startup(updater_router)
 @repeat_every(seconds=60, logger=logger)
 @safe(logger)
 @inject_dependencies(department=Departments.er)
@@ -77,7 +89,7 @@ async def update_referrals(department: Departments, dal: SqlToDal = Depends(dal_
     # return res
 
 
-@updater_router.on_event('startup')
+@startup(updater_router)
 @safe(logger)
 @repeat_every(seconds=10, logger=logger)
 @inject_dependencies(department=Departments.er)
@@ -89,7 +101,7 @@ async def update_treatment(department: Departments, dal: SqlToDal = Depends(dal_
     # return res
 
 
-@updater_router.on_event('startup')
+@startup(updater_router)
 @repeat_every(seconds=60, logger=logger)
 @safe(logger)
 @inject_dependencies(department=Departments.er)
@@ -101,7 +113,7 @@ async def update_doctor_intake(department: Departments, dal: SqlToDal = Depends(
     # return res
 
 
-@updater_router.on_event('startup')
+@startup(updater_router)
 @repeat_every(seconds=60, logger=logger)
 @safe(logger)
 @inject_dependencies(department=Departments.er)

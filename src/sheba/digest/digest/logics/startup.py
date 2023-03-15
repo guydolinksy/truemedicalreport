@@ -102,5 +102,29 @@ async def init_wings():
     }).raise_for_status()
 
 
+async def init_protocols():
+    requests.post(f'{config.dal_url}/config/set', json={
+        'key': 'protocols',
+        'version': 0,
+        'value': {
+            'כאב חזה': [
+                {'name': 'כאב', 'default': 'לא נמדד', 'key': 'measure-pain'},
+                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'imaging-xray'},
+                {'name': 'טרופונין', 'default': 'לא הוזמן', 'key': 'lab-120104040'},
+            ],
+            'סינקופה': [
+                {'name': 'טרופונין', 'default': 'לא הוזמן', 'key': 'lab-120104040'},
+                {'name': 'HGB', 'default': 'לא הוזמן', 'key': 'lab-100109497'},
+            ],
+            'חום': [
+                {'name': 'CRP', 'default': 'לא הוזמן', 'key': 'lab-120104016'},
+                {'name': 'WBC', 'default': 'לא הוזמן', 'key': f'lab-100109500'},
+                {'name': 'לקטט', 'default': 'לא הוזמן', 'key': f'lab-150108685'},
+            ],
+        }
+    }).raise_for_status()
+
+
 async def startup():
     await init_wings()
+    await init_protocols()
