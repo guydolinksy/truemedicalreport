@@ -112,9 +112,9 @@ const WingNotifications = () => {
         })
     }, [navigate]);
     if (!value.notifications.length)
-        return <Empty description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/>
-    return <div style={{display: "flex", flexDirection: "column", flex: 1, overflowY: "hidden"}}>
-        <Collapse onChange={openChange} style={{overflowY: "auto", flex: 1}}>
+        return <div style={{ display:"flex",flex:1}}><Empty style={{height:'fit-content'}} description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/></div>
+    return <div className="collapseNotifications" style={{display: "flex !important", overflowY:"scroll", flexDirection: "column", flex: "1"}}>
+        <Collapse onChange={openChange} style={{ flex: "1 0 10vh", minHeight:"10vh"}}>
             {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
                 <div style={{
                     display: "flex",
@@ -123,6 +123,7 @@ const WingNotifications = () => {
                 }}>
                     <div><UserOutlined/>&nbsp;{notification.patient.info.name}</div>
                     <div style={{
+                        display:"flex",
                         textOverflow: "ellipsis",
                         fontSize: "10px"
                     }}>{notification.preview}</div>
@@ -201,11 +202,11 @@ const WingStatus = ({department}) => {
         display: "flex",
         flexDirection: "column",
         height: '100vh',
-        overflowY: "hidden",
+        // overflowY: "hidden",
         justifyContent: "space-between",
     }}>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <Card bodyStyle={{padding : '10px'}}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <Card bodyStyle={{ display:"flex",padding : '10px'}}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span>{value.details.name}</span>
                     <ul style={{ display: 'flex', gap: '0 5px', margin: 0 }}>
@@ -214,13 +215,14 @@ const WingStatus = ({department}) => {
                                 <FontAwesomeIcon onClick={(evt) => {
                                     evt.stopPropagation();
                                     setIsDepartmentPeekModelOpen(true);
+                                    navigate('/')
                                 }} icon={faRightFromBracket} style={{ cursor: 'pointer' }} />
                             </Tooltip>
                         </li>
                     </ul>
                 </div>
             </Card>
-            <Collapse defaultActiveKey={['1', '2']}>
+            <Collapse defaultActiveKey={['1', '2']} style={{height:'100%', display:"flex", flexDirection:"column", overflowY:"scroll"}}>
                 <Panel header={"סינון"} key={1} extra={<FilterOutlined/>}>
 
                     <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
@@ -270,7 +272,7 @@ const WingStatus = ({department}) => {
                         </Radio.Button>
                     </Radio.Group>
                 </Panel>
-                <Panel header="עדכונים" key="2">
+                <Panel className="collapseNotifications" header="עדכונים" key="2" style={{display:"flex", flexDirection:"column", flex:1}}>
                     <WingNotifications/>
                 </Panel>
             </Collapse>
@@ -350,7 +352,7 @@ const WingInner = ({department, wing}) => {
         <Sider breakpoint={"lg"} width={siderWidth}>
             <WingStatus department={department} />
         </Sider>
-        <Content className={'content'} style={{overflowY: "auto"}}>
+        <Content className={'content'} style={{height:'100vh', overflowY:'scroll'}}>
             <Popover placement={"bottomLeft"} content={patientList} title={"מטופלים.ות:"}>
                 <Button type={"primary"} style={{position: "absolute", top: 41, left: 0, width:40, zIndex: 1000}} icon={<RightOutlined />}/>
             </Popover>

@@ -29,7 +29,7 @@ function App() {
                             <LoginProvider>
                                 {({user}) =>
                                     <UserTheme>
-                                        <Layout style={{height: '100vh'}}>
+                                        <Layout style={{height: '100%'}}>
                                             <Routes>
                                                 <Route path={LOGIN_URL} element={<LoginView/>}/>
                                                 <Route path={WING_URL} element={<WingView/>}/>

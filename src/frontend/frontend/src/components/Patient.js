@@ -256,6 +256,7 @@ const PatientInner = ({patient, avatar, style}) => {
         <div>
             <Badge.Ribbon text={text}
                           color={Object.keys(value.warnings).length ? "red" : value.flagged ? "blue" : "grey"}>
+                {value.protocol.attributes && Object.keys(value.protocol.attributes).map((key) => <div>{key}:{value.protocol.attributes[key]}</div>)}
                 <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
                     <div>
                         <div className={`severity-background severity-${value.severity.value || 0}`} style={{
@@ -300,7 +301,8 @@ export const Patient = ({patient, loading, avatar, style, onError}) => {
     return patient ? <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={{
         warnings: [], awaiting: [], severity: {value: 0, at: null}, flagged: null,
         id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
-        treatment: {destination: null}, complaint: null, admission: {bed: null}, measures: {}
+        protocol:{title:null, attributes:{}},treatment: {destination: null}, complaint: null,
+        admission: {bed: null}, measures: {}
     }} onError={onError}>
         {data => data.loading || loading ? placeholder(<Spin size={"small"}/>) :
             <PatientInner patient={patient} avatar={avatar} style={style}/>}
