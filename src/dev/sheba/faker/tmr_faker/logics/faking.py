@@ -426,47 +426,47 @@ class FakeMain(object):
                 session.execute(sql_statements.execute_set_patient_admission.format(patient, random.randint(0, 5)))
                 session.commit()
 
-    async def admit_patients(self, department):
+    def admit_patients(self, department):
         for wing in self.wings:
             if random.randint(0, 1):
                 chameleon_id = self._admit_patient(department, wing)
                 self._generate_measurements(chameleon_id=chameleon_id)
 
-    async def discharge_patient(self, department):
+    def discharge_patient(self, department):
         for wing in self.wings:
             for patient in self._get_patients(department, wing):
                 if not random.randint(0, 3):
                     self._discharge_patient(patient)
 
-    async def update_measurements(self, department):
+    def update_measurements(self, department):
         for wing in self.wings:
             self._generate_measurements(department=department, wing=wing)
 
-    async def update_imagings(self, department):
+    def update_imagings(self, department):
         for wing in self.wings:
             self._generate_imagings(department=department, wing=wing)
 
-    async def update_labs(self, department):
+    def update_labs(self, department):
         for wing in self.wings:
             self._generate_labs(department=department, wing=wing)
 
-    async def update_referrals(self, department):
+    def update_referrals(self, department):
         for wing in self.wings:
             self._generate_referrals_dates(department=department, wing=wing)
 
-    async def update_nurse_summaries(self, department):
+    def update_nurse_summaries(self, department):
         for wing in self.wings:
             self._generate_nurse_summary(department=department, wing=wing)
 
-    async def update_doctor_visits(self, department):
+    def update_doctor_visits(self, department):
         for wing in self.wings:
             self._generate_doctor_visit(department=department, wing=wing)
 
-    async def update_room_placements(self, department):
+    def update_room_placements(self, department):
         for wing in self.wings:
             self._generate_room_placements(department=department, wing=wing)
 
-    async def update_treatment(self, department):
+    def update_treatment(self, department):
         for wing in self.wings:
             self._generate_treatment(department=department, wing=wing)
 
