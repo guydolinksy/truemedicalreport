@@ -162,7 +162,7 @@ const WingStatus = ({department}) => {
     const [search, setSearch] = useState('');
     const {value} = useContext(wingDataContext.context);
 
-    const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'location');
+    const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'arrival');
 
     useEffect(() => {
         highlighter.apply(search)
@@ -257,11 +257,11 @@ const WingStatus = ({department}) => {
                     <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
                                  buttonStyle={"solid"}
                                  style={{width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex"}}>
+                         <Radio.Button value={"arrival"} style={{flex: "1 1 50px", textAlign: "center"}}>
+                            <span style={{whiteSpace: "nowrap"}}>זמן קבלה</span>
+                        </Radio.Button>
                         <Radio.Button value={"location"} style={{flex: "1 1 30px", textAlign: "center"}}>
                             <span style={{whiteSpace: "nowrap"}}>מיקום</span>
-                        </Radio.Button>
-                        <Radio.Button value={"arrival"} style={{flex: "1 1 50px", textAlign: "center"}}>
-                            <span style={{whiteSpace: "nowrap"}}>זמן קבלה</span>
                         </Radio.Button>
                         <Radio.Button value={"name"} style={{flex: "1 1 50px", textAlign: "center"}}>
                             <span style={{whiteSpace: "nowrap"}}>שם מלא</span>

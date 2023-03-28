@@ -84,7 +84,7 @@ const FullMeasure = ({patient, measure, icon, latest, data, title, graphProps}) 
         animation: matched(['info', patient, 'measures', measure]) ? 'highlight 2s ease-out' : undefined
     }}>
         <div style={{textAlign: "center", flex: 1}}>
-            <div style={{fontSize: 12}}>{title}&nbsp;<FontAwesomeIcon icon={icon}/></div>
+            <div style={{fontSize: 12}}><FontAwesomeIcon icon={icon}/> {title}</div>
             <div className={latest && !latest.is_valid ? 'error-text' : undefined} style={{
                 userSelect: "none",
                 fontSize: 14,
@@ -106,7 +106,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 male: 'בן',
                 female: 'בת',
             }[value.info.gender];
-            setTitle(`${value.info.name}, ${gender} ${value.info.age || 'גיל לא ידוע'})), ת.ז. ${value.info.id_}:`);
+            setTitle(`${value.info.name}, ${gender} (${value.info.age || 'גיל לא ידוע'}), ת.ז. ${value.info.id_}:`);
         }
     }, [value, loading, setTitle]);
     if (loading)
