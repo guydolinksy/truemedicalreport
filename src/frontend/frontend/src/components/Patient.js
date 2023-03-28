@@ -22,39 +22,41 @@ export const patientDataContext = createContext({
 
 export const MIN_WIDTH = 250, MAX_WIDTH = 500;
 
-const Measure = ({patient, measure, value, icon, title}) => {
+const Measure = ({patient, measure, icon, title}) => {
     const navigate = useNavigate();
     const {trackEvent} = useMatomo()
+    const {value} = useContext(patientDataContext.context);
+    const data = value && value.measures ? value.measures[measure] : null;
 
     return <Popover style={{width: 100}} title={<>
         <div>{title}&nbsp;<CustomIcon icon={icon}/></div>
     </>} content={<div style={{textAlign: "center"}}>
         <div>
-            <span className={(value && !value.is_valid) ? 'error-text' : undefined}
+            <span className={(data && !data.is_valid) ? 'error-text' : undefined}
                   style={{userSelect: "none", fontSize: 14}}>
-                <CustomIcon icon={icon}/>&nbsp;<b>{(value && value.value) ? value.value : '?'}</b>&nbsp;
+                <CustomIcon icon={icon}/>&nbsp;<b>{(data && data.value) ? data.value : '?'}</b>&nbsp;
             </span>
-            {(value && value.effect.kind) &&
-                <CustomIcon status={value.is_valid ? 'processing' : 'error'} icon={value.effect.kind}/>}
+            {(data && data.effect.kind) &&
+                <CustomIcon status={data.is_valid ? 'processing' : 'error'} icon={data.effect.kind}/>}
         </div>
         <div>
-            {(value && value.value) && <RelativeTime style={{fontSize: 12}} date={value.at}/>}
-            {(value && value.value && value.effect.kind) && '|'}
-            {(value && value.effect.kind) && <RelativeTime style={{fontSize: 12}} date={value.effect.at}/>}
-            {(!value || (!value.value && !value.effect.kind)) && '-'}
+            {(data && data.value) && <RelativeTime style={{fontSize: 12}} date={data.at}/>}
+            {(data && data.value && data.effect.kind) && '|'}
+            {(data && data.effect.kind) && <RelativeTime style={{fontSize: 12}} date={data.effect.at}/>}
+            {(!data || (!data.value && !data.effect.kind)) && '-'}
         </div>
     </div>}>
-        <div style={{flex: 1, textAlign: "center"}} onClick={value ? e => {
+        <div style={{flex: 1, textAlign: "center"}} onClick={data ? e => {
             navigate(`#info#${patient}#measures#${measure}`);
             trackEvent({category: 'patient-' + measure, action: 'click-event'});
             e.stopPropagation();
         } : null}>
-            <span className={(value && !value.is_valid) ? 'error-text' : undefined}
+            <span className={(data && !data.is_valid) ? 'error-text' : undefined}
                   style={{userSelect: "none", fontSize: 14}}>
-                <CustomIcon icon={icon}/>&nbsp;<b>{(value && value.value) ? value.value : '?'}</b>&nbsp;
+                <CustomIcon icon={icon}/>&nbsp;<b>{(data && data.value) ? data.value : '?'}</b>&nbsp;
             </span>
-            {(value && value.effect.kind) &&
-                <CustomIcon status={value.is_valid ? 'processing' : 'error'} icon={value.effect.kind}/>}
+            {(data && data.effect.kind) &&
+                <CustomIcon status={data.is_valid ? 'processing' : 'error'} icon={data.effect.kind}/>}
         </div>
     </Popover>
 };

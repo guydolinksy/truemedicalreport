@@ -207,7 +207,7 @@ const WingStatus = ({department}) => {
     }}>
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <Card bodyStyle={{ display:"flex",padding : '10px'}}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
                     <span>{value.details.name}</span>
                     <ul style={{ display: 'flex', gap: '0 5px', margin: 0 }}>
                         <li>
@@ -215,7 +215,6 @@ const WingStatus = ({department}) => {
                                 <FontAwesomeIcon onClick={(evt) => {
                                     evt.stopPropagation();
                                     setIsDepartmentPeekModelOpen(true);
-                                    navigate('/')
                                 }} icon={faRightFromBracket} style={{ cursor: 'pointer' }} />
                             </Tooltip>
                         </li>
