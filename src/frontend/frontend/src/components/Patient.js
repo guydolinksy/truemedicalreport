@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useRef, useState} from "react";
-import {Badge, Button, Card, Carousel, Space, Spin, Tooltip} from "antd";
+import {Badge, Button, Card, Carousel, List, Popover, Space, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faWarning,} from "@fortawesome/free-solid-svg-icons";
 import {ArrowLeftOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
@@ -20,21 +20,20 @@ export const patientDataContext = createContext({
     loading: true,
 });
 
-export const MIN_WIDTH = 400, MAX_WIDTH = 500;
+export const MIN_WIDTH = 250, MAX_WIDTH = 500;
 
 const Measure = ({patient, measure, value, icon, title}) => {
     const navigate = useNavigate();
     const {trackEvent} = useMatomo()
 
-    return <div onClick={patient && value ? e => {
-        navigate(`#info#${patient}#measures#${measure}`);
-        trackEvent({category: 'patient-' + measure, action: 'click-event'});
-        e.stopPropagation();
-    } : null}>
-        <div style={{fontSize: 12}}>{title}&nbsp;<CustomIcon icon={icon}/></div>
-        <div className={(value && !value.is_valid) ? 'error-text' : undefined}
-             style={{userSelect: "none", fontSize: 14}}>
-            <b>{(value && value.value) ? value.value : '?'}</b>
+    return <Popover title={<>
+        <div>{title}&nbsp;<CustomIcon icon={icon}/></div>
+    </>} content={<div>
+        <div>
+            <span className={(value && !value.is_valid) ? 'error-text' : undefined}
+                  style={{userSelect: "none", fontSize: 14}}>
+                <CustomIcon icon={icon}/>&nbsp;<b>{(value && value.value) ? value.value : '?'}</b>&nbsp;
+            </span>
             {(value && value.effect.kind) &&
                 <CustomIcon status={value.is_valid ? 'processing' : 'error'} icon={value.effect.kind}/>}
         </div>
@@ -44,7 +43,20 @@ const Measure = ({patient, measure, value, icon, title}) => {
             {(value && value.effect.kind) && <RelativeTime style={{fontSize: 12}} date={value.effect.at}/>}
             {(!value || (!value.value && !value.effect.kind)) && '-'}
         </div>
-    </div>
+    </div>}>
+        <div style={{flex: 1, textAlign: "center"}} onClick={value ? e => {
+            navigate(`#info#${patient}#measures#${measure}`);
+            trackEvent({category: 'patient-' + measure, action: 'click-event'});
+            e.stopPropagation();
+        } : null}>
+            <span className={(value && !value.is_valid) ? 'error-text' : undefined}
+                  style={{userSelect: "none", fontSize: 14}}>
+                <CustomIcon icon={icon}/>&nbsp;<b>{(value && value.value) ? value.value : '?'}</b>&nbsp;
+            </span>
+            {(value && value.effect.kind) &&
+                <CustomIcon status={value.is_valid ? 'processing' : 'error'} icon={value.effect.kind}/>}
+        </div>
+    </Popover>
 };
 
 
@@ -63,6 +75,7 @@ const PatientAge = ({patient}) => {
         </Tooltip>
     </span>
 }
+
 export const PatientStatus = ({patient, style}) => {
     const navigate = useNavigate();
     const {value, loading} = useContext(patientDataContext.context);
@@ -75,34 +88,38 @@ export const PatientStatus = ({patient, style}) => {
             setArrivalClass('warn-text')
     }, [value.admission.arrival, minutes]);
 
-    return loading ? <Spin/> : <div
-        className={`severity-background severity-${value.severity.value || 0}`}
-        style={{
-            userSelect: "none",
-            padding: 20,
-            cursor: "pointer",
-            textAlign: "center",
-            ...style
-        }}
-        onClick={e => {
-            navigate(`#info#${patient}#basic#complaint`);
-            trackEvent({category: 'patient-complaint', action: 'click-event'});
-            e.stopPropagation();
-        }}>
-        <div><Tooltip overlay={value.intake.nurse_description}>{value.intake.complaint}</Tooltip>
-            &nbsp;-&nbsp;
-            <Tooltip overlay={'זמן מקבלה'}>
-                <RelativeTime className={arrivalClass} date={value.admission.arrival}/>
-            </Tooltip></div>
-        <div>
-            <Tooltip overlay='דחיפות'>
-                <strong>{value.severity.value}&nbsp;</strong>
-            </Tooltip>
-            <ArrowLeftOutlined/>&nbsp;{
-            value.treatment.destination || <span className={'error-text'}>(לא הוחלט)</span>
-        }</div>
-
+    return loading ? <Spin/> : <div style={style} onClick={e => {
+        navigate(`#info#${patient}#basic#complaint`);
+        trackEvent({category: 'patient-complaint', action: 'click-event'});
+        e.stopPropagation();
+    }}>
+        <Tooltip overlay='דחיפות'>(<strong>{value.severity.value}</strong>)</Tooltip>&nbsp;
+        <Tooltip overlay={value.intake.nurse_description}>{value.intake.complaint}</Tooltip>&nbsp;
+        <ArrowLeftOutlined/>&nbsp;
+        {value.treatment.destination || <span className={'error-text'}>(לא הוחלט)</span>}&nbsp;-&nbsp;
+        <Tooltip overlay={'זמן מקבלה'}>
+            <RelativeTime className={arrivalClass} date={value.admission.arrival}/>
+        </Tooltip>
     </div>
+}
+export const ProtocolStatus = ({patient}) => {
+    const navigate = useNavigate();
+    const {value, loading} = useContext(patientDataContext.context);
+    const {trackEvent} = useMatomo()
+
+    return loading ? <Spin/> :
+        <List bordered size={"small"} grid={{gutter: 16, columns: 2}} onClick={e => {
+            navigate(`#info#${patient}#basic#protocol`);
+            trackEvent({category: 'patient-protocol', action: 'click-event'});
+            e.stopPropagation();
+        }} dataSource={value.protocol && value.protocol.items} renderItem={item => {
+            let data = value.protocol.values[item.key];
+            return <List.Item>
+                {item.name}:{data !== undefined && data.value !== undefined ? data.value : item.default}
+                {data !== undefined && <RelativeTime style={{fontSize: 12}} date={data.at}/>}
+            </List.Item>
+        }
+        }/>
 }
 export const PatientWarning = ({patient, warning, index, style}) => {
     const navigate = useNavigate();
@@ -124,20 +141,19 @@ export const PatientWarning = ({patient, warning, index, style}) => {
     </div>
 }
 
-const patientMeasures = (patient, measures) => {
-    console.log(patient)
-    return [
+const PatientMeasures = (patient, measures) => {
+    return <div style={{display: "flex"}}>
         <Measure key={'temperature'} patient={patient} measure={'temperature'} icon={'temperature'}
-                 value={measures && measures.temperature} title={'חום'}/>,
+                 value={measures && measures.temperature} title={'חום'}/>
         <Measure key={'blood_pressure'} patient={patient} measure={'blood_pressure'} icon={'bloodPressure'}
-                 value={measures && measures.blood_pressure} title={'לחץ דם'}/>,
+                 value={measures && measures.blood_pressure} title={'לחץ דם'}/>
         <Measure key={'pulse'} patient={patient} measure={'pulse'} icon={'pulse'}
-                 value={measures && measures.pulse} title={'דופק'}/>,
+                 value={measures && measures.pulse} title={'דופק'}/>
         <Measure key={'saturation'} patient={patient} measure={'saturation'} icon={'saturation'}
-                 value={measures && measures.saturation} title={'סטורציה'}/>,
+                 value={measures && measures.saturation} title={'סטורציה'}/>
         <Measure key={'pain'} patient={patient} measure={'pain'} icon={'pain'}
-                 value={measures && measures.pain} title={'כאב'}/>,
-    ];
+                 value={measures && measures.pain} title={'כאב'}/>
+    </div>
 }
 
 const PatientAwaiting = () => {
@@ -203,11 +219,11 @@ const PatientHeader = ({patient, avatar}) => {
     if (!patient)
         return <Button shape={"circle"} type={"text"}>{avatar || <UserOutlined/>}</Button>
     return <span>
-        {avatar || value.admission.bed || <UserOutlined/>}&nbsp;<Tooltip
+    {avatar || value.admission.bed || <UserOutlined/>}&nbsp;<Tooltip
         overlay={`ת.ז. ${value.info.id_ || 'לא ידוע'}`}>
-            {value.info.name}
+    {value.info.name}
         </Tooltip><PatientAge patient={patient}/>
-    </span>
+        </span>
 }
 const PatientInner = ({patient, avatar, style}) => {
     const ref = useRef(null);
@@ -236,13 +252,21 @@ const PatientInner = ({patient, avatar, style}) => {
     }} className={`severity-border severity-${value.severity.value || 0}`} hoverable onClick={() => {
         navigate(`#info#${patient}#basic`);
         trackEvent({category: 'patient', action: 'click-event'});
-    }} extra={<PatientAwaiting/>} actions={patientMeasures(patient, value.measures)}>
-        <div style={style}>
+    }} extra={<PatientAwaiting/>}>
+        <div>
             <Badge.Ribbon text={text}
                           color={Object.keys(value.warnings).length ? "red" : value.flagged ? "blue" : "grey"}>
-                {value.protocol.attributes && Object.keys(value.protocol.attributes).map((key) => <div>{key}:{value.protocol.attributes[key]}</div>)}
+                {value.protocol && value.protocol.attributes && Object.keys(value.protocol.attributes).map((key) => <div>{key}:{value.protocol.attributes[key]}</div>)}
                 <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
-                    <div><PatientStatus patient={patient} style={{direction: "rtl"}}/></div>
+                    <div>
+                        <div className={`severity-background severity-${value.severity.value || 0}`} style={{
+                            direction: "rtl", userSelect: "none", padding: 20, cursor: "pointer",
+                        }}>
+                            <PatientStatus patient={patient}
+                                           style={value.protocol && value.protocol.active ? {} : {textAlign: "center"}}/>
+                            {value.protocol && value.protocol.active && <ProtocolStatus patient={patient}/>}
+                        </div>
+                    </div>
                     {Object.entries(value.warnings).filter(
                         ([key, {acknowledge}], i) => acknowledge
                     ).map(([key, warning], i) => <div key={i}>
@@ -250,6 +274,7 @@ const PatientInner = ({patient, avatar, style}) => {
                     </div>)}
                 </Carousel>
             </Badge.Ribbon>
+            <PatientMeasures patient={patient} measures={value.measures}/>
         </div>
     </Card>
 }
@@ -262,7 +287,7 @@ export const Patient = ({patient, loading, avatar, style, onError}) => {
         minWidth: MIN_WIDTH,
         borderStyle: patient ? "solid" : "dotted",
         borderColor: "#d9d9d9", ...style
-    }} actions={patientMeasures()}>
+    }}>
         <div style={style}>
             <div style={{
                 userSelect: "none",

@@ -234,21 +234,31 @@ class MedicalDal:
 
     async def get_wing_notifications(self, department: str, wing: str) -> List[PatientNotifications]:
         patients = {patient.external_id: patient for patient in await self.get_wing_patients(department, wing)}
-        notifications = {external_id: [] for external_id in patients}
-        async for notification in self.db.notifications.find({"patient_id": {"$in": list(notifications)}}):
-            notification = Notification(oid=str(notification.pop("_id")), **notification)
-            notifications[notification.patient_id].append(notification)
+        # notifications = {external_id: [] for external_id in patients}
+        # async for notification in self.db.notifications.find({"patient_id": {"$in": list(notifications)}}):
+        #     notification = Notification(oid=str(notification.pop("_id")), **notification)
+        #     notifications[notification.patient_id].append(notification)
+
+
 
         return sorted(
             [
                 PatientNotifications(
                     patient=patients[patient],
-                    notifications=sorted(
-                        notifications, key=lambda n: datetime.datetime.fromisoformat(n.at), reverse=True
+                    notifications=sorted([
+                            Notification(
+                                patient_id=patients[patient].oid,
+                                notification_id={"id": "a1"},
+                                static_id="a2",
+                                message=f"Test {i}",
+                                at=datetime.date.today().isoformat(),
+                                type="labs",
+                                level=1) for i in range(10)], key=lambda n: datetime.datetime.fromisoformat(n.at), reverse=True
                     ),
                 )
-                for patient, notifications in notifications.items()
-                if notifications or patients[patient].flagged
+                # for patient, notifications in notifications.items()
+                # if notifications or patients[patient].flagged
+                for patient in patients
             ],
             key=lambda pn: (
                 bool(pn.patient.flagged),

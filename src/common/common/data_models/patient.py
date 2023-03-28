@@ -39,7 +39,7 @@ class InternalPatient(BaseModel):
     flagged: Optional[bool]
     warnings: Dict[str, PatientWarning] = {}
     measures: Measures = Measures()
-    # protocol: Protocol = Protocol()
+    protocol: Protocol = Protocol()
 
     class Config:
         orm_mode = True

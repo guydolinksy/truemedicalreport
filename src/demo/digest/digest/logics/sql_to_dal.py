@@ -11,7 +11,7 @@ from sentry_sdk import capture_message
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
 from common.data_models.image import ImagingStatus, Image, ImagingTypes
-from common.data_models.labs import Laboratory, LabStatus, CategoriesInHebrew
+from common.data_models.labs import Laboratory, LabStatus, CATEGORIES_IN_HEBREW
 from common.data_models.measures import Measure, MeasureType
 from common.data_models.notification import NotificationLevel
 from common.data_models.patient import Intake, ExternalPatient, Person
@@ -246,8 +246,8 @@ class SqlToDal(object):
             result_at=result_at,
             test_type_id=row["TestCode"],
             test_type_name=row["TestName"],
-            category_id=CategoriesInHebrew[category],
-            category_name=CategoriesInHebrew[category],
+            category_id=category,
+            category_name=CATEGORIES_IN_HEBREW[category],
             test_tube_id=9,
             min_warn_bar=row["NormMinimum"],
             max_warn_bar=row["NormMaximum"],

@@ -38,10 +38,15 @@ async def get_department(department: str, medical_dal_: MedicalDal = Depends(med
 @department_router.post("/{department}/admissions", tags=["Department"])
 async def update_admissions(department: str, admissions: List[ExternalPatient] = Body(..., embed=True),
                             dal: MedicalDal = Depends(medical_dal)):
+    protocol_config = await dal.get_protocol_config()
     updated = {patient.external_id: patient for patient in admissions}
     existing = {patient.external_id: patient for patient in await dal.get_department_patients(department)}
     for patient_external_id in set(updated) | set(existing):
-        await dal.upsert_patient(previous=existing.get(patient_external_id), patient=updated.get(patient_external_id))
+        await dal.upsert_patient(
+            previous=existing.get(patient_external_id),
+            patient=updated.get(patient_external_id),
+            protocol_config=protocol_config,
+        )
 
 
 @department_router.post("/{department}/measurements", tags=["Department"])
@@ -90,7 +95,7 @@ async def update_labs(labs: Dict[str, List[Laboratory]] = Body(..., embed=True),
 
 @department_router.post("/{department}/referrals")
 async def update_referrals(department: str, referrals: Dict[str, List[Referral]] = Body(..., embed=True),
-                           dal: MedicalDal = Depends(medical_dal)):
+                           at: str = Body(..., embed=True), dal: MedicalDal = Depends(medical_dal)):
     _referral: Referral = None
     for patient in referrals:
         try:
@@ -99,7 +104,7 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
             for referral in set(updated) | set(existing):
                 _referral = referral
                 await dal.upsert_referral(
-                    patient_id=patient,
+                    patient_id=patient, at=at,
                     previous=existing.get(referral),
                     referral=updated.get(referral)
                 )
