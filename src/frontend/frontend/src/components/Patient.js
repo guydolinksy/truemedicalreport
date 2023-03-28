@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useRef, useState} from "react";
-import {Badge, Button, Card, Carousel, Space, Spin, Tooltip} from "antd";
+import {Badge, Button, Card, Carousel, List, Popover, Space, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faWarning,} from "@fortawesome/free-solid-svg-icons";
 import {ArrowLeftOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
@@ -112,7 +112,7 @@ export const ProtocolStatus = ({patient}) => {
             navigate(`#info#${patient}#basic#protocol`);
             trackEvent({category: 'patient-protocol', action: 'click-event'});
             e.stopPropagation();
-        }} dataSource={value.protocol.items} renderItem={item => {
+        }} dataSource={value.protocol && value.protocol.items} renderItem={item => {
             let data = value.protocol.values[item.key];
             return <List.Item>
                 {item.name}:{data !== undefined && data.value !== undefined ? data.value : item.default}
@@ -256,15 +256,15 @@ const PatientInner = ({patient, avatar, style}) => {
         <div>
             <Badge.Ribbon text={text}
                           color={Object.keys(value.warnings).length ? "red" : value.flagged ? "blue" : "grey"}>
-                {value.protocol.attributes && Object.keys(value.protocol.attributes).map((key) => <div>{key}:{value.protocol.attributes[key]}</div>)}
+                {value.protocol && value.protocol.attributes && Object.keys(value.protocol.attributes).map((key) => <div>{key}:{value.protocol.attributes[key]}</div>)}
                 <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
                     <div>
                         <div className={`severity-background severity-${value.severity.value || 0}`} style={{
                             direction: "rtl", userSelect: "none", padding: 20, cursor: "pointer",
                         }}>
                             <PatientStatus patient={patient}
-                                           style={value.protocol.active ? {} : {textAlign: "center"}}/>
-                            {value.protocol.active && <ProtocolStatus patient={patient}/>}
+                                           style={value.protocol && value.protocol.active ? {} : {textAlign: "center"}}/>
+                            {value.protocol && value.protocol.active && <ProtocolStatus patient={patient}/>}
                         </div>
                     </div>
                     {Object.entries(value.warnings).filter(
