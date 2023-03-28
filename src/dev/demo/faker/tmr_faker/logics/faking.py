@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from enum import Enum
 from common.data_models.image import ImagingTypes, ImagingStatus
-from common.data_models.labs import LabCategories, LabTestType, CategoriesInHebrew
+from common.data_models.labs import LabCategories, LAB_TEST_TYPE, CATEGORIES_IN_HEBREW
 from common.data_models.notification import NotificationLevel
 from tmr_faker.utils import sql_statements
 from .. import config
@@ -294,7 +294,7 @@ class FakeMain(object):
                 continue
             try:
                 category = random.choice(list(LabCategories))
-                h_category = CategoriesInHebrew[category.value]
+                h_category = CATEGORIES_IN_HEBREW[category.value]
             except KeyError as e:
                 logger.exception(e)
             order_date = self.faker.date_time_between_dates('-30m', '-10m').astimezone(pytz.UTC).strftime(
@@ -303,7 +303,7 @@ class FakeMain(object):
                 "%Y-%m-%dT%H:%M:%S")
             order_number = random.randint(100000000, 999999999)
             try:
-                for test_type_name in LabTestType[category.value]:
+                for test_type_name in LAB_TEST_TYPE[category.value]:
                     patient_id = patient
                     order_date = order_date
                     test_type_name = test_type_name

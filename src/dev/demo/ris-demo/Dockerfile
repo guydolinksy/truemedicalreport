@@ -1,1 +1,1 @@
-FROM container-registry.oracle.com/database/express:21.3.0-xe as dev
+FROM container-registry.oracle.com/database/enterprise:12.2.0.1  as dev

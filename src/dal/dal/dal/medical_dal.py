@@ -12,12 +12,13 @@ from pymongo.errors import DuplicateKeyError
 from common.data_models.awaiting import Awaiting, AwaitingTypes
 from common.data_models.event import Event
 from common.data_models.image import Image, ImagingStatus, ImagingTypes
-from common.data_models.labs import Laboratory, LabCategory, StatusInHebrew, LabStatus
+from common.data_models.labs import Laboratory, LabCategory, STATUS_IN_HEBREW, LabStatus
 from common.data_models.measures import Measure, MeasureType, FullMeasures, Latest, ExpectedEffect, MeasureEffect
 from common.data_models.medicine import Medicine
 from common.data_models.notification import Notification
 from common.data_models.patient import Patient, ExternalPatient, InternalPatient, PatientInfo, Intake
 from common.data_models.plugins import PatientInfoPluginDataV1
+from common.data_models.protocol import ProtocolValue, ProtocolItem, Protocol
 from common.data_models.referrals import Referral
 from common.data_models.treatment import Treatment
 from common.data_models.wing import WingFilter, WingFilters, PatientNotifications, WingDetails
@@ -85,6 +86,10 @@ class MedicalDal:
 
     async def atomic_update_notification(self, query: dict, new: dict):
         await self._atomic_update(klass=Notification, collection=self.db.notifications, query=query, new=new)
+
+    async def get_protocol_config(self) -> Dict[str, List[ProtocolItem]]:
+        return {k: [ProtocolItem(**i) for i in items] for k, items in
+                (await self.application_dal.get_config('protocols', {})).items()}
 
     async def get_department_wings(self, department: str) -> List[WingDetails]:
         return [
@@ -340,7 +345,8 @@ class MedicalDal:
             ]
         )
 
-    async def upsert_patient(self, previous: Patient, patient: ExternalPatient):
+    async def upsert_patient(self, previous: Patient, patient: ExternalPatient,
+                             protocol_config: Dict[str, List[ProtocolItem]]):
         if previous and not patient:
             await self._cascade_delete_patient(previous.external_id)
             await publish(Patient.__name__, {
@@ -348,19 +354,28 @@ class MedicalDal:
                 "old": previous.dict(),
             })
             await self.publish_property(Patient, previous.oid, "admission", previous.admission.dict(), None)
-        elif previous and patient:
-            await self.atomic_update_patient(
-                {"_id": ObjectId(previous.oid)},
-                patient.dict(exclude_unset=True),
-            )
-        elif not previous and patient:
-            await self.atomic_update_patient(
-                {"external_id": patient.external_id},
-                dict(
-                    **patient.dict(exclude_unset=True),
-                    **InternalPatient.from_external_patient(patient).dict(exclude_unset=True),
-                ),
-            )
+        elif patient:
+            protocol = Protocol(
+                active=patient.intake.complaint in protocol_config,
+                items=protocol_config.get(patient.intake.complaint, []),
+            ).dict(exclude_unset=True)
+            if not previous:
+                await self.atomic_update_patient(
+                    {"external_id": patient.external_id},
+                    dict(
+                        **patient.dict(exclude_unset=True),
+                        **InternalPatient.from_external_patient(patient).dict(exclude_unset=True),
+                        protocol=protocol,
+                    ),
+                )
+            else:
+                await self.atomic_update_patient(
+                    {"_id": ObjectId(previous.oid)},
+                    dict(
+                        **patient.dict(exclude_unset=True),
+                        protocol=protocol,
+                    )
+                )
 
     async def upsert_measurements(self, patient_id: str, measures: List[Measure]):
         patient = await self.get_patient({"external_id": patient_id})
@@ -409,9 +424,12 @@ class MedicalDal:
                 {"$set": dict(patient_id=patient_id, **measure.dict())},
                 upsert=True,
             )
+            for key in [item.key for item in patient.protocol.items if item.key == f'measure-{measure.type}']:
+                if key not in patient.protocol.values or patient.protocol.values[key].at < measure.at:
+                    updated.protocol.values[key] = ProtocolValue(value=measure.value, at=measure.at)
 
         await self.atomic_update_patient(
-            {"_id": ObjectId(patient.oid)}, updated.dict(include={"measures"}, exclude_unset=True)
+            {"_id": ObjectId(patient.oid)}, updated.dict(include={"measures", 'protocol'}, exclude_unset=True)
         )
 
     async def upsert_imaging(self, imaging_obj: Image):
@@ -427,6 +445,12 @@ class MedicalDal:
                 {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
             )
             await publish("notification", patient.oid)
+
+        for key in [item.key for item in patient.protocol.items if item.key == f'imaging-{imaging_obj.imaging_type}']:
+            # TODO: should be changed to `updated_at` after the imaging bugfix is merged.
+            if key not in patient.protocol.values or patient.protocol.values[key].at < imaging_obj.ordered_at:
+                updated.protocol.values[key] = ProtocolValue(value=imaging_obj.status_text, at=imaging_obj.ordered_at)
+
         updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(
             imaging_obj.external_id,
             Awaiting(
@@ -439,7 +463,7 @@ class MedicalDal:
         )
 
         await self.atomic_update_patient(
-            {"_id": ObjectId(patient.oid)}, updated.dict(include={"awaiting"}, exclude_unset=True)
+            {"_id": ObjectId(patient.oid)}, updated.dict(include={"awaiting", "protocol"}, exclude_unset=True)
         )
 
     @staticmethod
@@ -450,6 +474,9 @@ class MedicalDal:
         return imaging.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value]
 
     async def upsert_labs(self, patient_id: str, new_labs: List[Laboratory]):
+        patient = await self.get_patient({"external_id": patient_id})
+        updated = patient.copy()
+
         labs: Dict[tuple, LabCategory] = {
             c.key: c for c in [LabCategory(**l) async for l in self.db.labs.find({"patient_id": patient_id})]
         }
@@ -460,18 +487,21 @@ class MedicalDal:
                             category_id=lab.category_id, category=lab.category_name),
             )
             c.results[str(lab.test_type_id)] = lab
-            c.status = StatusInHebrew[min({l.status for l in c.results.values()})]
+            c.status = STATUS_IN_HEBREW[min({l.status for l in c.results.values()})]
 
-        patient = await self.get_patient({"external_id": patient_id})
+            for key in [item.key for item in patient.protocol.items if
+                        item.key == f'lab-{lab.test_type_id}']:
+                value, at = (lab.result, lab.result_at) if lab.result_at else ('הוזמן', lab.ordered_at)
+                if key not in patient.protocol.values or patient.protocol.values[key].at < at:
+                    updated.protocol.values[key] = ProtocolValue(value=value, at=at)
 
-        updated = patient.copy()
         for lab in labs.values():
             await self.db.labs.update_one(
                 {"patient_id": patient_id, **lab.query_key},
                 {"$set": dict(patient_id=patient_id, **lab.dict(exclude={"patient_id"}))},
                 upsert=True,
             )
-            if lab.status == StatusInHebrew[LabStatus.analyzed.value]:
+            if lab.status == STATUS_IN_HEBREW[LabStatus.analyzed.value]:
                 notification = lab.to_notification()
                 await self.db.notifications.update_one(
                     {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
@@ -491,16 +521,16 @@ class MedicalDal:
                     subtype=lab.category,
                     name=lab.category,
                     since=lab.ordered_at,
-                    completed=lab.status == StatusInHebrew[LabStatus.analyzed.value],
+                    completed=lab.status == STATUS_IN_HEBREW[LabStatus.analyzed.value],
                     limit=3600,
                 ),
             )
 
-        await self.atomic_update_patient(
-            {"_id": ObjectId(patient.oid)}, updated.dict(include={"awaiting", "warnings"}, exclude_unset=True)
-        )
+        await self.atomic_update_patient({"_id": ObjectId(patient.oid)}, updated.dict(
+            include={"awaiting", "warnings", 'protocol'}, exclude_unset=True
+        ))
 
-    async def upsert_referral(self, patient_id, previous: Referral, referral: Referral):
+    async def upsert_referral(self, patient_id, at, previous: Referral, referral: Referral):
         if previous and not referral:
             updated_referral = previous.copy()
             updated_referral.completed = True
@@ -515,6 +545,12 @@ class MedicalDal:
             )
             patient = await self.get_patient({"external_id": patient_id})
             updated = patient.copy()
+
+            for key in [item.key for item in patient.protocol.items if
+                        item.key == f'referral-{referral.to}']:
+                if key not in patient.protocol.values or patient.protocol.values[key].at < at:
+                    updated.protocol.values[key] = ProtocolValue(value='הפנייה נסגרה', at=at)
+
             updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
                 previous.get_instance_id(),
                 Awaiting(
@@ -527,7 +563,7 @@ class MedicalDal:
             )
             await self.atomic_update_patient(
                 {"_id": ObjectId(patient.oid)},
-                updated.dict(include={"awaiting"}, exclude_unset=True),
+                updated.dict(include={"awaiting", 'protocol'}, exclude_unset=True),
             )
 
         elif previous and referral:
@@ -542,6 +578,12 @@ class MedicalDal:
             )
             patient = await self.get_patient({"external_id": patient_id})
             updated = patient.copy()
+
+            for key in [item.key for item in patient.protocol.items if
+                        item.key == f'referral-{referral.to}']:
+                if key not in patient.protocol.values or patient.protocol.values[key].at < referral.at:
+                    updated.protocol.values[key] = ProtocolValue(value='הפנייה פתוחה', at=referral.at)
+
             updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
                 referral.get_instance_id(),
                 Awaiting(
@@ -554,7 +596,7 @@ class MedicalDal:
             )
             await self.atomic_update_patient(
                 {"_id": ObjectId(patient.oid)},
-                updated.dict(include={"awaiting"}, exclude_unset=True),
+                updated.dict(include={"awaiting", 'protocol'}, exclude_unset=True),
             )
 
     async def upsert_treatment(self, external_id: str, treatment: Treatment):

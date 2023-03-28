@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
 from common.data_models.image import ImagingStatus, Image, ImagingTypes
-from common.data_models.labs import Laboratory, LabStatus, CategoriesInHebrew
+from common.data_models.labs import Laboratory, LabStatus, CATEGORIES_IN_HEBREW, LabCategories
 from common.data_models.measures import Measure, MeasureType
 from common.data_models.notification import NotificationLevel
 from common.data_models.patient import Intake, ExternalPatient, Person
@@ -249,8 +249,8 @@ class SqlToDal(object):
             result_at=result_at,
             test_type_id=row["TestCode"],
             test_type_name=row["TestName"],
-            category_id=CategoriesInHebrew[category],
-            category_name=CategoriesInHebrew[category],
+            category_id=category,
+            category_name=CATEGORIES_IN_HEBREW.get(category, CATEGORIES_IN_HEBREW[LabCategories.unknown.value]),
             test_tube_id=9,
             min_warn_bar=row["NormMinimum"],
             max_warn_bar=row["NormMaximum"],
@@ -301,6 +301,7 @@ class SqlToDal(object):
             logger.debug('Getting referrals for `{}`...', department.name)
             referrals = {}
             treatments = {}
+            at = datetime.datetime.utcnow().isoformat()
             with self.session() as session:
                 for row in session.execute(sql_statements.query_referrals.format(unit=department.value)):
                     if row['MedicalLicense']:
@@ -319,10 +320,10 @@ class SqlToDal(object):
                                 json={record: treatments[record].dict(exclude_unset=True) for record in treatments})
             res.raise_for_status()
             res = requests.post(f'{self.dal_url}/departments/{department.name}/referrals',
-                                json={'referrals': referrals})
+                                json={'referrals': referrals, 'at': at})
             res.raise_for_status()
             return {'treatments': {record: treatments[record].dict(exclude_unset=True) for record in treatments},
-                    'referrals': referrals}
+                    'referrals': referrals, 'at': at}
         except HTTPError:
             logger.exception('Could not run referrals handler.')
 
