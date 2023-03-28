@@ -4,8 +4,8 @@ import logbook
 from fastapi import APIRouter, Depends
 from fastapi_utils.tasks import repeat_every
 
+from common.utilities.exceptions import inject_dependencies, safe
 from ..logics.sql_to_dal import SqlToDal, Departments
-from ..logics.utils import inject_dependencies, safe
 
 updater_router = APIRouter()
 
@@ -40,7 +40,6 @@ async def update_measurements(department: Departments, dal: SqlToDal = Depends(d
     logger.debug("Done.")
 
 
-
 @updater_router.on_event('startup')
 @repeat_every(seconds=70, logger=logger)
 @safe(logger)
@@ -52,7 +51,6 @@ async def update_imagings(department: Departments, dal: SqlToDal = Depends(dal_u
     logger.debug("Done.")
 
 
-
 @updater_router.on_event('startup')
 @repeat_every(seconds=60, logger=logger)
 @safe(logger)
@@ -62,7 +60,6 @@ async def update_labs(department: Departments, dal: SqlToDal = Depends(dal_updat
     logger.debug("Update labs...")
     res = dal.update_labs(department=department)
     logger.debug("Done.")
-
 
 
 # TODO  remove this commet to enable referrals faking

@@ -272,7 +272,8 @@ const WingStatus = ({department}) => {
                         </Radio.Button>
                     </Radio.Group>
                 </Panel>
-                <Panel className="collapseNotifications" header="עדכונים" key="2" style={{display:"flex", flexDirection:"column", flex:1}}>
+                <Panel className="collapseNotifications" header="עדכונים" key="2" collapsible={"disabled"}
+                       showArrow={false} style={{display:"flex", flexDirection:"column", flex:1}}>
                     <WingNotifications/>
                 </Panel>
             </Collapse>

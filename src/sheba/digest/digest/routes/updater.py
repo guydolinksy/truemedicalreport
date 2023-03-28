@@ -3,7 +3,6 @@ import http
 
 import logbook
 from fastapi import APIRouter, Depends
-from fastapi_utils.tasks import repeat_every
 
 from common.utilities.exceptions import safe, inject_dependencies
 from common.wsp import register

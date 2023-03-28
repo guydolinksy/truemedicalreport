@@ -26,9 +26,9 @@ const Measure = ({patient, measure, value, icon, title}) => {
     const navigate = useNavigate();
     const {trackEvent} = useMatomo()
 
-    return <Popover title={<>
+    return <Popover style={{width: 100}} title={<>
         <div>{title}&nbsp;<CustomIcon icon={icon}/></div>
-    </>} content={<div>
+    </>} content={<div style={{textAlign: "center"}}>
         <div>
             <span className={(value && !value.is_valid) ? 'error-text' : undefined}
                   style={{userSelect: "none", fontSize: 14}}>

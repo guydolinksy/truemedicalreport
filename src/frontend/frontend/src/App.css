@@ -256,12 +256,12 @@
     flex: 1 0 10vh;
     flex-direction: column;
 }
-.ant-collapse-content {
+.ant-collapse-content:not(.ant-collapse-content-hidden) {
     display: flex !important;
     flex: 1 0 10vh;
     flex-direction: column;
 }
-.ant-collapse-content > * {
+.ant-collapse-content:not(.ant-collapse-content-hidden) > * {
     display: flex !important;
     flex: 1 0 10vh;
     flex-direction: column;

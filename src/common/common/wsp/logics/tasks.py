@@ -5,6 +5,7 @@ from typing import Callable, Dict
 
 import logbook
 from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 
 
 class ScheduledTask(BaseModel):
@@ -27,7 +28,12 @@ async def start(function_name: str):
 
     async def runner():
         while True:
-            await tasks[function_name].code()
+            logger.debug('Starting Scheduled Task: {}', function_name)
+            if asyncio.iscoroutinefunction(tasks[function_name].code):
+                await tasks[function_name].code()
+            else:
+                await run_in_threadpool(tasks[function_name].code)
+            logger.debug('Finished Scheduled Task: {}', function_name)
             await asyncio.sleep(tasks[function_name].period.total_seconds())
 
     tasks[function_name].task = asyncio.create_task(runner())
