@@ -30,7 +30,6 @@ export const createContext = (defaultValue) => {
 
         const flush = useMemo(() => debounce(() => {
             const cancellationSource = Axios.CancelToken.source();
-
             Axios.get(url, {cancelToken: cancellationSource.token}).then(response => {
                 setValue({loading: false, value: response.data});
             }).catch(error => {
