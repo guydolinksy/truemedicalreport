@@ -106,7 +106,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 male: 'בן',
                 female: 'בת',
             }[value.info.gender];
-            setTitle(`${value.info.name}, ${gender} ${value.info.age || 'גיל לא ידוע'})), ת.ז. ${value.info.id_}:`);
+            setTitle(`${value.info.name}, ${gender} (${value.info.age || 'גיל לא ידוע'}), ת.ז. ${value.info.id_}:`);
         }
     }, [value, loading, setTitle]);
     if (loading)
