@@ -125,7 +125,6 @@ export const PatientWarning = ({patient, warning, index, style}) => {
 }
 
 const patientMeasures = (patient, measures) => {
-    console.log(patient)
     return [
         <Measure key={'temperature'} patient={patient} measure={'temperature'} icon={'temperature'}
                  value={measures && measures.temperature} title={'חום'}/>,
@@ -240,7 +239,7 @@ const PatientInner = ({patient, avatar, style}) => {
         <div style={style}>
             <Badge.Ribbon text={text}
                           color={Object.keys(value.warnings).length ? "red" : value.flagged ? "blue" : "grey"}>
-                {value.protocol.attributes && Object.keys(value.protocol.attributes).map((key) => <div>{key}:{value.protocol.attributes[key]}</div>)}
+                {/*{value.protocol.attributes && Object.keys(value.protocol.attributes).map((key) => <div>{key}:{value.protocol.attributes[key]}</div>)}*/}
                 <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
                     <div><PatientStatus patient={patient} style={{direction: "rtl"}}/></div>
                     {Object.entries(value.warnings).filter(
