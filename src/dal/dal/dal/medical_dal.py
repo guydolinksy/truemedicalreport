@@ -459,7 +459,7 @@ class MedicalDal:
             await publish("notification", patient.oid)
 
         for key in [k for item in patient.protocol.items for k in item.keys
-                    if k == f'imaging-{imaging.imaging_type}']:
+                    if k == f'imaging-{imaging.title}']:
             # TODO: should be changed to `updated_at` after the imaging bugfix is merged.
             if key not in patient.protocol.values or patient.protocol.values[key].at < imaging.ordered_at:
                 updated.protocol.values[key] = ProtocolValue(value=imaging.status_text, at=imaging.ordered_at)

@@ -84,7 +84,7 @@ async def update_imaging(department: str, images: Dict[str, List[Image]] = Body(
 
 
 @department_router.post("/{department}/referrals")
-async def update_referrals(department: str, referrals: Dict[str, List[Referral]] = Body(..., embed=True),
+async def update_referrals(department: str, at: str, referrals: Dict[str, List[Referral]] = Body(..., embed=True),
                            dal: MedicalDal = Depends(medical_dal)):
     for patient in referrals:
         try:
@@ -92,7 +92,7 @@ async def update_referrals(department: str, referrals: Dict[str, List[Referral]]
             existing = {referral.external_id: referral for referral in await dal.get_patient_referrals(patient)}
             for referral in set(updated) | set(existing):
                 await dal.upsert_referral(
-                    patient_id=patient,
+                    patient_id=patient, at=at,
                     previous=existing.get(referral),
                     referral=updated.get(referral)
                 )
