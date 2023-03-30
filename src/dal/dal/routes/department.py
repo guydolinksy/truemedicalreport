@@ -68,13 +68,39 @@ async def update_measurements(measurements: Dict[str, List[Measure]] = Body(...,
 async def update_imaging(department: str, images: Dict[str, List[Image]] = Body(..., embed=True),
                          dal: MedicalDal = Depends(medical_dal)):
     for patient in images:
-        for image in images[patient]:
-            try:
-                await dal.upsert_imaging(imaging_obj=image)
-            except PatientNotFound:
-                logger.debug('Cannot update patient {} images - Patient not found', patient)
-            except Exception as e:
-                logger.exception(f"update imaging failed - patient {patient} image {image}")
+        try:
+            updated = {image.external_id: image for image in images[patient]}
+            existing = {image.external_id: image for image in await dal.get_patient_images(patient)}
+
+            for image in set(updated) | set(existing):
+                await dal.upsert_imaging(patient,
+                                         previous=existing.get(image),
+                                         imaging=updated.get(image))
+
+        except PatientNotFound:
+            logger.debug('Cannot update patient {} images - Patient not found', patient)
+        except Exception:
+            logger.exception(f"update imaging failed - patient {patient}")
+
+
+@department_router.post("/{department}/referrals")
+async def update_referrals(department: str, referrals: Dict[str, List[Referral]] = Body(..., embed=True),
+                           dal: MedicalDal = Depends(medical_dal)):
+    for patient in referrals:
+        try:
+            updated = {referral.external_id: referral for referral in referrals[patient]}
+            existing = {referral.external_id: referral for referral in await dal.get_patient_referrals(patient)}
+            for referral in set(updated) | set(existing):
+                await dal.upsert_referral(
+                    patient_id=patient,
+                    previous=existing.get(referral),
+                    referral=updated.get(referral)
+                )
+
+        except PatientNotFound:
+            logger.debug('Cannot update patient {} referrals', patient)
+        except Exception as e:
+            logger.exception(f"update referrals failed - patient {patient}")
 
 
 @department_router.post("/{department}/labs")
@@ -91,28 +117,6 @@ async def update_labs(labs: Dict[str, List[Laboratory]] = Body(..., embed=True),
         except Exception as e:
             capture_exception(e, level="warning")
             logger.exception(f"update labs failed - patient {patient}")
-
-
-@department_router.post("/{department}/referrals")
-async def update_referrals(department: str, referrals: Dict[str, List[Referral]] = Body(..., embed=True),
-                           at: str = Body(..., embed=True), dal: MedicalDal = Depends(medical_dal)):
-    _referral: Referral = None
-    for patient in referrals:
-        try:
-            updated = {referral.external_id: referral for referral in referrals[patient]}
-            existing = {referral.external_id: referral for referral in await dal.get_patient_referrals(patient)}
-            for referral in set(updated) | set(existing):
-                _referral = referral
-                await dal.upsert_referral(
-                    patient_id=patient, at=at,
-                    previous=existing.get(referral),
-                    referral=updated.get(referral)
-                )
-
-        except PatientNotFound:
-            logger.debug('Cannot update patient {} referrals', patient)
-        except Exception as e:
-            logger.exception(f"update referrals failed - patient {patient}")
 
 
 @department_router.post("/{department}/intake")

@@ -81,6 +81,9 @@ input:
   external:
     secretName: ''
     secretKey: ''
+  oracle:
+    secretName: ''
+    secretKey: ''
 
 global: &global
   fullname:
