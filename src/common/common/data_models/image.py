@@ -36,12 +36,11 @@ class ImagingNotification(Notification):
 
 
 class Image(BaseModel):
-    order_number: Optional[str]
+    order_number: str
     external_id: str
     patient_id: str
     title: str
     status: ImagingStatus
-    code: Optional[int]
     imaging_type: Optional[ImagingTypes]
     status_text: str
     link: str
@@ -52,7 +51,6 @@ class Image(BaseModel):
     class Config:
         orm_mode = True
         use_enum_values = True
-        # TODO add the flag to all classes that using enum
 
     def __init__(self, **kwargs):
         if 'status_text' not in kwargs:
@@ -71,7 +69,7 @@ class Image(BaseModel):
         return ImagingNotification(
             static_id=self.external_id,
             patient_id=self.patient_id,
-            at=self.accomplished_at if self.accomplished_at else self.ordered_at,
+            at=self.updated_at if self.updated_at else self.ordered_at,
             message=f'{self.title} - {self.status_text}',
             link=self.link,
             level=self.level,
