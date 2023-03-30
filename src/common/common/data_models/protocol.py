@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class ProtocolItem(BaseModel):
-    key: str
+    keys: List[str] = list()
     name: str
     default: str
 

@@ -414,7 +414,7 @@ class MedicalDal:
                 {"$set": dict(patient_id=patient_id, **measure.dict())},
                 upsert=True,
             )
-            for key in [item.key for item in patient.protocol.items if item.key == f'measure-{measure.type}']:
+            for key in [k for item in patient.protocol.items for k in item.keys if k == f'measure-{measure.type}']:
                 if key not in patient.protocol.values or patient.protocol.values[key].at < measure.at:
                     updated.protocol.values[key] = ProtocolValue(value=measure.value, at=measure.at)
 
@@ -436,7 +436,8 @@ class MedicalDal:
             )
             await publish("notification", patient.oid)
 
-        for key in [item.key for item in patient.protocol.items if item.key == f'imaging-{imaging_obj.imaging_type}']:
+        for key in [k for item in patient.protocol.items for k in item.keys
+                    if k == f'imaging-{imaging_obj.imaging_type}']:
             # TODO: should be changed to `updated_at` after the imaging bugfix is merged.
             if key not in patient.protocol.values or patient.protocol.values[key].at < imaging_obj.ordered_at:
                 updated.protocol.values[key] = ProtocolValue(value=imaging_obj.status_text, at=imaging_obj.ordered_at)
@@ -479,8 +480,7 @@ class MedicalDal:
             c.results[str(lab.test_type_id)] = lab
             c.status = STATUS_IN_HEBREW[min({l.status for l in c.results.values()})]
 
-            for key in [item.key for item in patient.protocol.items if
-                        item.key == f'lab-{lab.test_type_id}']:
+            for key in [k for item in patient.protocol.items for k in item.keys if k == f'lab-{lab.test_type_id}']:
                 value, at = (lab.result, lab.result_at) if lab.result_at else ('הוזמן', lab.ordered_at)
                 if key not in patient.protocol.values or patient.protocol.values[key].at < at:
                     updated.protocol.values[key] = ProtocolValue(value=value, at=at)
@@ -536,8 +536,7 @@ class MedicalDal:
             patient = await self.get_patient({"external_id": patient_id})
             updated = patient.copy()
 
-            for key in [item.key for item in patient.protocol.items if
-                        item.key == f'referral-{referral.to}']:
+            for key in [k for item in patient.protocol.items for k in item.keys if k == f'referral-{referral.to}']:
                 if key not in patient.protocol.values or patient.protocol.values[key].at < at:
                     updated.protocol.values[key] = ProtocolValue(value='הפנייה נסגרה', at=at)
 
@@ -569,8 +568,7 @@ class MedicalDal:
             patient = await self.get_patient({"external_id": patient_id})
             updated = patient.copy()
 
-            for key in [item.key for item in patient.protocol.items if
-                        item.key == f'referral-{referral.to}']:
+            for key in [k for item in patient.protocol.items for k in item.keys if k == f'referral-{referral.to}']:
                 if key not in patient.protocol.values or patient.protocol.values[key].at < referral.at:
                     updated.protocol.values[key] = ProtocolValue(value='הפנייה פתוחה', at=referral.at)
 
