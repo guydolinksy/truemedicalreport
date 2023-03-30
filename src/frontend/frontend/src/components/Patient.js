@@ -125,6 +125,7 @@ export const PatientWarning = ({patient, warning, index, style}) => {
 }
 
 const patientMeasures = (patient, measures) => {
+    console.log(patient)
     return [
         <Measure key={'temperature'} patient={patient} measure={'temperature'} icon={'temperature'}
                  value={measures && measures.temperature} title={'חום'}/>,
@@ -239,6 +240,7 @@ const PatientInner = ({patient, avatar, style}) => {
         <div style={style}>
             <Badge.Ribbon text={text}
                           color={Object.keys(value.warnings).length ? "red" : value.flagged ? "blue" : "grey"}>
+                {value.protocol.attributes && Object.keys(value.protocol.attributes).map((key) => <div>{key}:{value.protocol.attributes[key]}</div>)}
                 <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
                     <div><PatientStatus patient={patient} style={{direction: "rtl"}}/></div>
                     {Object.entries(value.warnings).filter(
@@ -274,7 +276,8 @@ export const Patient = ({patient, loading, avatar, style, onError}) => {
     return patient ? <patientDataContext.Provider url={`/api/patients/${patient}`} defaultValue={{
         warnings: [], awaiting: [], severity: {value: 0, at: null}, flagged: null,
         id_: null, name: null, age: null, gender: null, birthdate: null, arrival: null,
-        treatment: {destination: null}, complaint: null, admission: {bed: null}, measures: {}
+        protocol:{title:null, attributes:{}},treatment: {destination: null}, complaint: null,
+        admission: {bed: null}, measures: {}
     }} onError={onError}>
         {data => data.loading || loading ? placeholder(<Spin size={"small"}/>) :
             <PatientInner patient={patient} avatar={avatar} style={style}/>}
