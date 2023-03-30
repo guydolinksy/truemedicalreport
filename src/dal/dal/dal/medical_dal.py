@@ -262,7 +262,7 @@ class MedicalDal:
 
     async def get_patient_images(self, patient: str) -> List[Image]:
         return [
-            Image(oid=str(image.pop("_id")), **image) async for image in self.db.images.find({"patient_id": patient})
+            Image(oid=str(image.pop("_id")), **image) async for image in self.db.imaging.find({"patient_id": patient})
         ]
 
     async def get_patient_referrals(self, patient: str) -> List[Referral]:
