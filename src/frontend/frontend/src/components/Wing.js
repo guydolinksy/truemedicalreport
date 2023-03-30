@@ -29,13 +29,13 @@ import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
-import {FilterOutlined, InfoCircleOutlined, PushpinOutlined, RightOutlined, UserOutlined} from "@ant-design/icons";
-import {Link} from "react-router-dom";
+import {FilterOutlined, PushpinOutlined, RightOutlined, UserOutlined} from "@ant-design/icons";
 import Moment from "react-moment";
 import {useLocalStorage} from "../hooks/localStorageHook";
 import moment from "moment";
 import {useViewport} from "./UseViewPort";
 import {Department} from "./Department";
+import {Notification} from "./Notification";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -51,8 +51,8 @@ const badgeClass = {
     3: 'status-badge status-success',
 }
 
-const WingLayout = ({ department, wing, details, onError }) => {
-    return <Card key={'grid'} style={{ width: '100%', marginBottom: 16 }}>
+const WingLayout = ({department, wing, details, onError}) => {
+    return <Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
         {(details.rows || []).map((row, i) => <Row key={i} style={row} wrap={false}>
             {(details.columns || []).map((column, j) =>
                 details.beds[i][j] === null ? <div key={`filler-${j}`} style={column}/> :
@@ -64,19 +64,6 @@ const WingLayout = ({ department, wing, details, onError }) => {
             )}
         </Row>)}
     </Card>
-}
-const WingNotification = ({oid, notification, message, unread, markRead}) => {
-    useEffect(() => {
-        let task = setTimeout(() => markRead(oid, message.static_id), 6000);
-        return () => clearTimeout(task);
-    }, [oid, notification, message, markRead]);
-    return <>
-        <Link to={`#info#${notification.patient.oid}#${message.type}#${message.static_id}`}>
-            {(unread[oid] || []).includes(message.static_id) && <Badge status={'processing'}/>}
-            &nbsp;<span className={message.danger ? 'warn-text' : undefined}>{message.message}</span>
-        </Link>
-        <Moment style={{display: "block"}} date={message.at} format={'HH:mm'}/>
-    </>
 }
 const WingNotifications = () => {
     const navigate = useNavigate();
@@ -112,9 +99,11 @@ const WingNotifications = () => {
         })
     }, [navigate]);
     if (!value.notifications.length)
-        return <div style={{ display:"flex",flex:1}}><Empty style={{height:'fit-content'}} description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/></div>
-    return <div className="collapseNotifications" style={{display: "flex !important", overflowY:"scroll", flexDirection: "column", flex: "1"}}>
-        <Collapse onChange={openChange} style={{ flex: "1 0 10vh", minHeight:"10vh"}}>
+        return <div style={{display: "flex", flex: 1}}><Empty style={{height: 'fit-content'}} description={'אין התרעות'}
+                                                              image={Empty.PRESENTED_IMAGE_SIMPLE}/></div>
+    return <div className="collapseNotifications"
+                style={{display: "flex !important", overflowY: "scroll", flexDirection: "column", flex: "1"}}>
+        <Collapse onChange={openChange} style={{flex: "1 0 10vh", minHeight: "10vh"}}>
             {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
                 <div style={{
                     display: "flex",
@@ -123,7 +112,7 @@ const WingNotifications = () => {
                 }}>
                     <div><UserOutlined/>&nbsp;{notification.patient.info.name}</div>
                     <div style={{
-                        display:"flex",
+                        display: "flex",
                         textOverflow: "ellipsis",
                         fontSize: "10px"
                     }}>{notification.preview}</div>
@@ -147,8 +136,9 @@ const WingNotifications = () => {
                 {notification.notifications.length ? <List>
                     {notification.notifications.map((message, j) =>
                         <Item key={`${notification.patient.oid}-${j}`}>
-                            <WingNotification oid={notification.patient.oid} notification={notification}
-                                              message={message} markRead={markRead} unread={unread}/>
+                            <Notification unread={(unread[notification.patient.oid] || []).includes(message.static_id)}
+                                          markRead={() => markRead(notification.patient.oid, message.static_id)}
+                                          patient={notification.patient.oid} message={message}/>
                         </Item>
                     )}
                 </List> : <Empty description={'אין התרעות חדשות'}/>}
@@ -158,7 +148,6 @@ const WingNotifications = () => {
 }
 
 const WingStatus = ({department}) => {
-    const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const {value} = useContext(wingDataContext.context);
 
@@ -205,23 +194,24 @@ const WingStatus = ({department}) => {
         // overflowY: "hidden",
         justifyContent: "space-between",
     }}>
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <Card bodyStyle={{ display:"flex",padding : '10px'}}>
-                <div style={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
+        <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
+            <Card bodyStyle={{display: "flex", padding: '10px'}}>
+                <div style={{display: 'flex', flex: 1, justifyContent: 'space-between'}}>
                     <span>{value.details.name}</span>
-                    <ul style={{ display: 'flex', gap: '0 5px', margin: 0 }}>
+                    <ul style={{display: 'flex', gap: '0 5px', margin: 0}}>
                         <li>
                             <Tooltip overlay='מחלקות'>
                                 <FontAwesomeIcon onClick={(evt) => {
                                     evt.stopPropagation();
                                     setIsDepartmentPeekModelOpen(true);
-                                }} icon={faRightFromBracket} style={{ cursor: 'pointer' }} />
+                                }} icon={faRightFromBracket} style={{cursor: 'pointer'}}/>
                             </Tooltip>
                         </li>
                     </ul>
                 </div>
             </Card>
-            <Collapse defaultActiveKey={['1', '2']} style={{height:'100%', display:"flex", flexDirection:"column", overflowY:"scroll"}}>
+            <Collapse defaultActiveKey={['1', '2']}
+                      style={{height: '100%', display: "flex", flexDirection: "column", overflowY: "scroll"}}>
                 <Panel header={"סינון"} key={1} extra={<FilterOutlined/>}>
 
                     <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
@@ -257,7 +247,7 @@ const WingStatus = ({department}) => {
                     <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
                                  buttonStyle={"solid"}
                                  style={{width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex"}}>
-                         <Radio.Button value={"arrival"} style={{flex: "1 1 50px", textAlign: "center"}}>
+                        <Radio.Button value={"arrival"} style={{flex: "1 1 50px", textAlign: "center"}}>
                             <span style={{whiteSpace: "nowrap"}}>זמן קבלה</span>
                         </Radio.Button>
                         <Radio.Button value={"location"} style={{flex: "1 1 30px", textAlign: "center"}}>
@@ -272,7 +262,7 @@ const WingStatus = ({department}) => {
                     </Radio.Group>
                 </Panel>
                 <Panel className="collapseNotifications" header="עדכונים" key="2" collapsible={"disabled"}
-                       showArrow={false} style={{display:"flex", flexDirection:"column", flex:1}}>
+                       showArrow={false} style={{display: "flex", flexDirection: "column", flex: 1}}>
                     <WingNotifications/>
                 </Panel>
             </Collapse>
@@ -283,7 +273,7 @@ const WingStatus = ({department}) => {
                footer={null}
                width='fit-content'
         >
-            <ul style={{ display: 'flex', gap: '0 20px', margin: 0 }}>
+            <ul style={{display: 'flex', gap: '0 20px', margin: 0}}>
                 <Department department={department}/>
             </ul>
         </Modal>
@@ -350,11 +340,12 @@ const WingInner = ({department, wing}) => {
 
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
-            <WingStatus department={department} />
+            <WingStatus department={department}/>
         </Sider>
-        <Content className={'content'} style={{height:'100vh', overflowY:'scroll'}}>
+        <Content className={'content'} style={{height: '100vh', overflowY: 'scroll'}}>
             <Popover placement={"bottomLeft"} content={patientList} title={"מטופלים.ות:"}>
-                <Button type={"primary"} style={{position: "absolute", top: 41, left: 0, width:40, zIndex: 1000}} icon={<RightOutlined />}/>
+                <Button type={"primary"} style={{position: "absolute", top: 41, left: 0, width: 40, zIndex: 1000}}
+                        icon={<RightOutlined/>}/>
             </Popover>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                 {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedTreatments.length || selectedAwaiting.length ?

@@ -13,6 +13,7 @@ import {patientDataContext, PatientStatus, PatientWarning} from "./Patient";
 import {loginContext} from "./LoginContext";
 import {UserTheme} from "../themes/ThemeContext";
 import {hashMatchContext} from "./HashMatch";
+import {Notification} from "./Notification";
 
 highchartsMore(Highcharts);
 const themes = {['dark-theme']: darkTheme, ['light-theme']: lightTheme}
@@ -115,6 +116,9 @@ const InternalPatientCard = ({patient, setTitle}) => {
         <Panel key={'basic'} showArrow={false} collapsible={"disabled"} header={'מידע בסיסי'}>
             {Object.entries(value.warnings).map(([key, warning], i) =>
                 <PatientWarning key={i} patient={patient} warning={warning} index={i} style={{
+                    direction: "rtl",
+                    userSelect: "none",
+                    cursor: "pointer",
                     animation: matched(['info', patient, 'basic', `warning-${i}`]) ?
                         'highlight 2s ease-out' : undefined,
                     marginBottom: 18
@@ -157,10 +161,13 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 date={visit.at}/></a>
             </p>)}
         </Panel>}
-        {false && value.notifications.length > 0 && <Panel key={'important'} header={'עדכונים חשובים'}>
-            {value.notifications.map((notification, i) => <p
-                key={i}>{notification}</p>)}
-        </Panel>}
+        <Panel key={'notifications'} header={'עדכונים'}>
+            {value.notifications.length > 0 ? value.notifications.map((notification, i) =>
+                <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
+                    <Notification key={i} patient={patient} message={notification}/>
+                </div>
+            ): <Empty description={'אין עדכונים זמינים'}/>}
+        </Panel>
         <Panel key={'labs'} header={
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                 <span>מעבדה</span>
