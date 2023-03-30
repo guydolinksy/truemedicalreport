@@ -62,6 +62,9 @@ sheba:
     external:
       secretName: ''
       secretKey: ''
+    oracle:
+      secretName: ''
+      secretKey: ''
   sentry:
     enabled: false
     secretKey: ''

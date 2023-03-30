@@ -91,6 +91,9 @@ class MedicalDal:
         return {k: [ProtocolItem(**i) for i in items] for k, items in
                 (await self.application_dal.get_config('protocols', {})).items()}
 
+    async def atomic_update_imaging(self, query: dict, new: dict):
+        await self._atomic_update(klass=Image, collection=self.db.imaging, query=query, new=new)
+
     async def get_department_wings(self, department: str) -> List[WingDetails]:
         return [
             WingDetails(**wing)
@@ -421,33 +424,52 @@ class MedicalDal:
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"measures", 'protocol'}, exclude_unset=True)
         )
 
-    async def upsert_imaging(self, imaging_obj: Image):
-        patient = await self.get_patient({"external_id": imaging_obj.patient_id})
-
+    async def upsert_imaging(self, patient_id, previous: Image, imaging: Image):
+        patient = await self.get_patient({"external_id": patient_id})
         updated = patient.copy()
-        await self.db.imaging.update_one(
-            {"external_id": imaging_obj.external_id}, {"$set": imaging_obj.dict()}, upsert=True
-        )
-        if imaging_obj.status != ImagingStatus.ordered.value:
-            notification = imaging_obj.to_notification()
-            await self.db.notifications.update_one(
-                {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
+        if imaging and not previous:
+            await self.atomic_update_imaging(
+                {"external_id": imaging.external_id},
+                imaging.dict(exclude_unset=True),
             )
+            updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(
+                imaging.external_id,
+                Awaiting(
+                    subtype=imaging.imaging_type.value,
+                    name=imaging.title,
+                    since=imaging.updated_at if imaging.updated_at else imaging.ordered_at,
+                    completed=self._is_imaging_completed(imaging),
+                    limit=3600,
+                ),
+            )
+            await self.atomic_update_patient(
+                {"_id": ObjectId(patient.oid)},
+                updated.dict(include={"awaiting"}, exclude_unset=True),
+            )
+        elif previous and not imaging:
+            await self.db.imaging.delete_one({"external_id": previous.external_id})
+            del updated.awaiting[previous.external_id]
+            await self.atomic_update_patient(
+                {"_id": ObjectId(patient.oid)},
+                updated.dict(include={"awaiting"}, exclude_unset=True),
+            )
+        elif previous and imaging:
+            await self.atomic_update_imaging({"external_id": previous.external_id}, imaging.dict(exclude_unset=True))
             await publish("notification", patient.oid)
 
         for key in [k for item in patient.protocol.items for k in item.keys
-                    if k == f'imaging-{imaging_obj.imaging_type}']:
+                    if k == f'imaging-{imaging.title}']:
             # TODO: should be changed to `updated_at` after the imaging bugfix is merged.
-            if key not in patient.protocol.values or patient.protocol.values[key].at < imaging_obj.ordered_at:
-                updated.protocol.values[key] = ProtocolValue(value=imaging_obj.status_text, at=imaging_obj.ordered_at)
+            if key not in patient.protocol.values or patient.protocol.values[key].at < imaging.ordered_at:
+                updated.protocol.values[key] = ProtocolValue(value=imaging.status_text, at=imaging.ordered_at)
 
         updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(
-            imaging_obj.external_id,
+            imaging.external_id,
             Awaiting(
-                subtype=imaging_obj.title,
-                name=imaging_obj.title,
-                since=imaging_obj.accomplished_at if imaging_obj.accomplished_at else imaging_obj.ordered_at,
-                completed=self._is_imaging_completed(imaging_obj),
+                subtype=imaging.title,
+                name=imaging.title,
+                since=imaging.updated_at if imaging.updated_at else imaging.ordered_at,
+                completed=self._is_imaging_completed(imaging),
                 limit=3600,
             ),
         )
