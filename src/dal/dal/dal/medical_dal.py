@@ -278,7 +278,10 @@ class MedicalDal:
 
     async def get_patient(self, patient_query: dict) -> Patient:
         if res := await self.db.patients.find_one(patient_query):
-            return Patient(**res)
+            return Patient(notifications=[
+                Notification(oid=str(n.pop("_id")), **n)
+                async for n in self.db.notifications.find({"patient_id": res['external_id']})
+            ], **res)
 
         raise PatientNotFound()
 
@@ -294,10 +297,6 @@ class MedicalDal:
                 )
             ),
             labs=await self.get_patient_labs(patient.external_id),
-            notifications=[
-                Notification(oid=str(n.pop("_id")), **n)
-                async for n in self.db.notifications.find({"patient_id": patient.external_id})
-            ],
             referrals=await self.get_patient_referrals(patient.external_id),
             events=events,
             visits=visits,

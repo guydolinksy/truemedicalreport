@@ -2,15 +2,16 @@ from typing import Optional, List, Any, Dict
 
 from pydantic import BaseModel
 
-from common.data_models.esi_score import ESIScore
-from common.data_models.measures import Measures, FullMeasures
-from common.data_models.warnings import PatientWarning
+from .esi_score import ESIScore
+from .measures import Measures, FullMeasures
+from .warnings import PatientWarning
 from .admission import Admission
 from .awaiting import Awaiting, AwaitingTypes
 from .event import Event
 from .image import Image
 from .intake import Intake
 from .labs import LabCategory
+from .notification import Notification
 from .protocol import Protocol
 from .severity import Severity
 from .treatment import Treatment
@@ -40,6 +41,7 @@ class InternalPatient(BaseModel):
     warnings: Dict[str, PatientWarning] = {}
     measures: Measures = Measures()
     protocol: Protocol = Protocol()
+    notifications: List[Notification] = []
 
     class Config:
         orm_mode = True
@@ -59,7 +61,7 @@ class InternalPatient(BaseModel):
                 },
             },
             flagged=False,
-            warnings=[],
+            warnings={},
             measures=Measures(),
         )
 
@@ -96,7 +98,6 @@ class PatientInfoPluginConfig(BaseModel):
 class AggregatePatient(BaseModel):
     full_measures: FullMeasures
     visits: List[Any] = []
-    notifications: List[Any] = []
     imaging: List[Image] = []
     labs: List[LabCategory] = []
     referrals: List[Any] = []
