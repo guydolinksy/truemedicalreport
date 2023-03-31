@@ -353,7 +353,6 @@ class MedicalDal:
             protocol = Protocol(
                 active=patient.intake.complaint in protocol_config,
                 items=protocol_config.get(patient.intake.complaint, []),
-                values={},
             ).dict(exclude_unset=True)
             if not previous:
                 await self.atomic_update_patient(
@@ -361,7 +360,7 @@ class MedicalDal:
                     dict(
                         **patient.dict(exclude_unset=True),
                         **InternalPatient.from_external_patient(patient).dict(exclude_unset=True),
-                        protocol=protocol,
+                        protocol=dict(values={}, **protocol),
                     ),
                 )
             else:
@@ -437,7 +436,7 @@ class MedicalDal:
             updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(
                 imaging.external_id,
                 Awaiting(
-                    subtype=imaging.imaging_type,
+                    subtype=imaging.title,
                     name=imaging.title,
                     since=imaging.ordered_at,
                     completed=self._is_imaging_completed(imaging),
@@ -474,7 +473,7 @@ class MedicalDal:
             updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(
                 imaging.external_id,
                 Awaiting(
-                    subtype=imaging.imaging_type,
+                    subtype=imaging.title,
                     name=imaging.title,
                     since=imaging.ordered_at,
                     completed=self._is_imaging_completed(imaging),
