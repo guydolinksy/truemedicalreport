@@ -26,9 +26,11 @@ class OracleAdapter:
         with self._conn.cursor() as cursor:
             results = cursor.execute(query_ris_imaging.format(', '.join(set(accessions))))
             for result in results:
-                imaging.setdefault(result[3], []).append(
-                    RisImaging(order_number=result[0],
-                               imaging_type=modality_type_mapping.get(result[1], ImagingTypes.unknown),
-                               sps_code=result[2],
-                               accession_number=result[3]))
+                imaging[str(result[3])] = RisImaging(
+                    order_number=result[0],
+                    imaging_type=modality_type_mapping.get(result[1], ImagingTypes.unknown),
+                    sps_code=result[2],
+                    accession_number=result[3]
+                )
+
         return imaging

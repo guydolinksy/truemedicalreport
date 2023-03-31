@@ -112,7 +112,7 @@ atd.Entry_Date,
     ato.Order_Status as OrderStatus,
     atd.Result,
     atd.Panic,
-ato.Accession_Number
+ato.Accession_Number as AccessionNumber 
 FROM [Chameleon].[dbo].[AuxiliaryTestOrders] AS ato
 JOIN [Chameleon].[dbo].[AuxTests] AS [at] ON ato.Test = [at].Code
 JOIN [Chameleon].[dbo].[MedicalRecords] AS mr ON ato.Patient = mr.Patient
@@ -212,5 +212,5 @@ WHERE
 
 query_ris_imaging="""SELECT ORDER_KEY,MODALITY_TYPE_CODE,SPS_CODE,SPS_KEY
 FROM CSHRIS.SITE_M_BI_EXAMS_VIEW 
-WHERE SPS_KEY IN ({});"""
+WHERE SPS_KEY IN ({})"""
 

@@ -1,6 +1,7 @@
 import contextlib
 import datetime
 from enum import Enum
+from typing import Dict, List
 
 import logbook
 import requests
@@ -11,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
-from common.data_models.image import ImagingStatus, Image, ImagingTypes
+from common.data_models.image import ImagingStatus, Image
 from common.data_models.labs import Laboratory, LabStatus, CATEGORIES_IN_HEBREW, LabCategories
 from common.data_models.measures import Measure, MeasureType
 from common.data_models.notification import NotificationLevel
@@ -20,7 +21,7 @@ from common.data_models.referrals import Referral
 from common.data_models.treatment import Treatment
 from .. import config
 from ..utils import sql_statements, utils
-from RIS_Adapter import OracleAdapter
+from .ris_adapter import OracleAdapter
 from ..models.ris_imaging import RisImaging
 
 logger = logbook.Logger(__name__)
@@ -70,7 +71,7 @@ class SqlToDal(object):
         self._engine = create_engine(chameleon_connection)
 
         oracle_connection_params = oracle_params or config.oracle_params
-        self._oracle_client = OracleAdapter(**oracle_connection_params)
+        self._oracle_client = OracleAdapter(oracle_connection_params)
 
     @contextlib.contextmanager
     def session(self):
@@ -154,30 +155,32 @@ class SqlToDal(object):
                         external_id=row['AccessionNumber'],
                         patient_id=row['MedicalRecord'],
                         ordered_at=utils.datetime_utc_serializer(row['OrderDate']),
-                        updated_at=utils.datetime_utc_serializer(row['Entry_Date']),
+                        updated_at=utils.datetime_utc_serializer(
+                            row['Entry_Date']) if row['Entry_Date'] else utils.datetime_utc_serializer(
+                            row['OrderDate']),
                         title=row['TestName'],
                         status=SHEBA_IMAGING_STATUS.get(row['OrderStatus'], ImagingStatus.unknown),
                         interpretation=row['Result'],
                         level=SHEBA_IMAGING_LEVEL.get(row['Panic'], NotificationLevel.normal),
                         link='https://localhost/',
                     ))
-                    self._merge_ris_chameleon_imaging(self._get_ris_imaging(accessions), imaging)
+            self._merge_ris_chameleon_imaging(accessions, imaging)
 
-                    for image in imaging:
-                        patients_imagings.setdefault(row['MedicalRecord'], []).append(image.dict(exclude_unset=True))
+            for image in imaging:
+                logger.debug(
+                    f"Load Imaging for {image.patient_id} - Accession '{image.external_id}' - '{image.dict()}'")
+                patients_imagings.setdefault(image.patient_id, []).append(image.dict(exclude_unset=True))
 
-                res = requests.post(f'{self.dal_url}/departments/{department.name}/imaging',
-                                    json={'images': patients_imagings})
-                res.raise_for_status()
-                return {'images': patients_imagings}
+            res = requests.post(f'{self.dal_url}/departments/{department.name}/imaging',
+                                json={'images': patients_imagings})
+            res.raise_for_status()
+            return {'images': patients_imagings}
         except HTTPError:
             logger.exception('Could not run imaging handler.')
 
-    def _get_ris_imaging(self, accessions: list[str]) -> dict[str, RisImaging]:
-        return self._oracle_client.query_imaging(accessions)
-
-    @staticmethod
-    def _merge_ris_chameleon_imaging(ris_imagings: dict[str, RisImaging], chameleon_imaging: list[Image]) -> None:
+    def _merge_ris_chameleon_imaging(self, accessions, chameleon_imaging: List[Image]) -> None:
+        ris_imagings: Dict[str, RisImaging] = self._oracle_client.query_imaging(accessions)
+        logger.debug(ris_imagings)
         for imaging in chameleon_imaging:
             if ris_image := ris_imagings.get(imaging.external_id, False):
                 imaging.imaging_type = ris_image.imaging_type

@@ -84,7 +84,8 @@ async def update_imaging(department: str, images: Dict[str, List[Image]] = Body(
 
 
 @department_router.post("/{department}/referrals")
-async def update_referrals(department: str, at: str, referrals: Dict[str, List[Referral]] = Body(..., embed=True),
+async def update_referrals(department: str, at: str = Body(..., embed=True),
+                           referrals: Dict[str, List[Referral]] = Body(..., embed=True),
                            dal: MedicalDal = Depends(medical_dal)):
     for patient in referrals:
         try:
