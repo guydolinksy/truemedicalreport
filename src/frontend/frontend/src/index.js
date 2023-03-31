@@ -8,7 +8,7 @@ import Axios from "axios";
 import * as Sentry from "@sentry/browser";
 import { BrowserTracing } from "@sentry/tracing";
 
-const instance = null
+let instance = null;
 
 // Initialize Sentry ASAP, before anything else
 Axios.get("/api/tracing/config", {
@@ -37,7 +37,7 @@ Axios.get("/api/tracing/config", {
     {
         console.log(`Initializing matomo. Host: ${matomoUrlBase}, SiteId: ${matomoSiteId}`)
 
-        const instance = createInstance({
+        instance = createInstance({
             urlBase: matomoUrlBase,
             siteId: matomoSiteId
         })

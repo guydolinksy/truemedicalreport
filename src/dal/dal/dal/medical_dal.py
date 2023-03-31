@@ -106,7 +106,10 @@ class MedicalDal:
 
     async def get_wing_patients(self, department: str, wing: str) -> List[Patient]:
         patients = [
-            Patient(**patient)
+            Patient(notifications=sorted([
+                Notification(oid=str(n.pop("_id")), **n)
+                async for n in self.db.notifications.find({"patient_id": patient['external_id']})
+            ], key=lambda n: datetime.datetime.fromisoformat(n.at), reverse=True), **patient)
             async for patient in self.db.patients.find({"admission.department": department, "admission.wing": wing})
         ]
         return patients
@@ -281,10 +284,10 @@ class MedicalDal:
 
     async def get_patient(self, patient_query: dict) -> Patient:
         if res := await self.db.patients.find_one(patient_query):
-            return Patient(notifications=[
+            return Patient(notifications=sorted([
                 Notification(oid=str(n.pop("_id")), **n)
                 async for n in self.db.notifications.find({"patient_id": res['external_id']})
-            ], **res)
+            ], key=lambda n: datetime.datetime.fromisoformat(n.at), reverse=True), **res)
 
         raise PatientNotFound()
 

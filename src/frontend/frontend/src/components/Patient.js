@@ -120,11 +120,11 @@ export const ProtocolStatus = ({patient}) => {
     const {trackEvent} = useMatomo()
 
     return loading ? <Spin/> : <div onClick={e => {
-        navigate(`#info#${patient}#basic#protocol`);
+        navigate(`#info#${patient}#notifications`);
         trackEvent({category: 'patient-protocol', action: 'click-event'});
         e.stopPropagation();
     }}>
-        {value.protocol && value.protocol.items ? value.protocol.items.map(item => {
+        {value.protocol && value.protocol.items && value.protocol.items.length ? value.protocol.items.map(item => {
             let data = value.protocol.values[item.key];
             return <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                 <div>{item.name}: {data !== undefined && data.value !== undefined ? data.value : item.default}</div>
@@ -143,7 +143,7 @@ export const NotificationPreview = ({patient}) => {
         trackEvent({category: 'patient-timeline', action: 'click-event'});
         e.stopPropagation();
     }}>
-        {value.notifications ? value.notifications.map(item =>
+        {value.notifications && value.notifications.length ? value.notifications.map(item =>
             <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                 <Notification patient={patient} message={item}/>
             </div>) : <Empty description={'אין עדכונים זמינים'}/>}
@@ -166,7 +166,7 @@ export const PatientWarning = ({patient, warning, index, style}) => {
     </div>
 }
 
-const PatientMeasures = (patient) => {
+const PatientMeasures = ({patient}) => {
     return <div style={{display: "flex", justifyContent: "space-evenly"}}>
         <Measure patient={patient} measure={'temperature'} icon={'temperature'} title={'חום'}/>
         <Measure patient={patient} measure={'blood_pressure'} icon={'bloodPressure'} title={'לחץ דם'}/>
@@ -283,10 +283,10 @@ const PatientInner = ({patient, avatar, style}) => {
                         <div className={`severity-background severity-${value.severity.value || 0}`} style={{
                             direction: "rtl",
                             userSelect: "none",
-                            padding: "16px 20px",
+                            padding: "16px 24px",
                             cursor: "pointer",
                             height: 98,
-                            overflowY: "auto"
+                            overflowY: "overlay"
                         }}>
                             {value.protocol && value.protocol.active ?
                                 <ProtocolStatus patient={patient}/> :
@@ -300,9 +300,9 @@ const PatientInner = ({patient, avatar, style}) => {
                             direction: "rtl",
                             userSelect: "none",
                             cursor: "pointer",
-                            padding: "16px 20px",
+                            padding: "16px 24px",
                             height: 98,
-                            overflowY: "auto"
+                            overflowY: "overlay"
                         }}/>
                     </div>)}
                 </Carousel>
