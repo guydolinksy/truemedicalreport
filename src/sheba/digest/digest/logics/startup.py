@@ -108,17 +108,17 @@ async def init_protocols():
         'version': 0,
         'value': {
             'כאב חזה': [
-                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'keys': ['imaging-צילום בית החזה בעמידה']},
-                {'name': 'טרופונין', 'default': 'לא הוזמן', 'keys': ['lab-120104040']},
+                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': ['imaging-צילום בית החזה בעמידה']},
+                {'name': 'טרופונין', 'default': 'לא הוזמן', 'key': 'lab-1', 'keys': ['lab-120104040']},
             ],
             'סינקופה': [
-                {'name': 'טרופונין', 'default': 'לא הוזמן', 'keys': ['lab-120104040']},
-                {'name': 'HGB', 'default': 'לא הוזמן', 'keys': ['lab-100109497']},
+                {'name': 'טרופונין', 'default': 'לא הוזמן', 'key': 'lab-1', 'keys': ['lab-120104040']},
+                {'name': 'HGB', 'default': 'לא הוזמן', 'key': 'lab-2', 'keys': ['lab-100109497']},
             ],
             'חום': [
-                {'name': 'CRP', 'default': 'לא הוזמן', 'keys': ['lab-120104016']},
-                {'name': 'WBC', 'default': 'לא הוזמן', 'keys': ['lab-100109500']},
-                {'name': 'לקטט', 'default': 'לא הוזמן', 'keys': ['lab-150108685']},
+                {'name': 'CRP', 'default': 'לא הוזמן', 'key': 'lab-1', 'keys': ['lab-120104016']},
+                {'name': 'WBC', 'default': 'לא הוזמן', 'key': 'lab-2', 'keys': ['lab-100109500']},
+                {'name': 'לקטט', 'default': 'לא הוזמן', 'key': 'lab-3', 'keys': ['lab-150108685']},
             ],
         }
     }).raise_for_status()
