@@ -5,8 +5,12 @@ from pydantic import BaseModel
 
 class ProtocolItem(BaseModel):
     keys: List[str] = list()
+    key: str
     name: str
     default: str
+
+    def match(self, key):
+        return key in self.keys
 
 
 class ProtocolValue(BaseModel):

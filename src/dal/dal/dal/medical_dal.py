@@ -420,9 +420,10 @@ class MedicalDal:
                 {"$set": dict(patient_id=patient_id, **measure.dict())},
                 upsert=True,
             )
-            for key in [k for item in patient.protocol.items for k in item.keys if k == f'measure-{measure.type}']:
-                if key not in patient.protocol.values or patient.protocol.values[key].at < measure.at:
-                    updated.protocol.values[key] = ProtocolValue(value=measure.value, at=measure.at)
+
+            for item in [item for item in patient.protocol.items if item.match(f'measure-{measure.type}')]:
+                if item.key not in patient.protocol.values or patient.protocol.values[item.key].at < measure.at:
+                    updated.protocol.values[item.key] = ProtocolValue(value=measure.value, at=measure.at)
 
         await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"measures", 'protocol'}, exclude_unset=True)
@@ -436,17 +437,16 @@ class MedicalDal:
             updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(
                 imaging.external_id,
                 Awaiting(
-                    subtype=imaging.imaging_type.value,
+                    subtype=imaging.imaging_type,
                     name=imaging.title,
                     since=imaging.ordered_at,
                     completed=self._is_imaging_completed(imaging),
                     limit=3600,
                 ),
             )
-            for key in [k for item in patient.protocol.items for k in item.keys
-                        if k == f'imaging-{imaging.title}']:
-                if key not in patient.protocol.values or patient.protocol.values[key].at < imaging.updated_at:
-                    updated.protocol.values[key] = ProtocolValue(value=imaging.status_text, at=imaging.updated_at)
+            for item in [item for item in patient.protocol.items if item.match(f'imaging-{imaging.title}')]:
+                if item.key not in patient.protocol.values or patient.protocol.values[item.key].at < imaging.updated_at:
+                    updated.protocol.values[item.key] = ProtocolValue(value=imaging.status_text, at=imaging.updated_at)
 
             await self.atomic_update_patient(
                 {"_id": ObjectId(patient.oid)},
@@ -474,17 +474,16 @@ class MedicalDal:
             updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(
                 imaging.external_id,
                 Awaiting(
-                    subtype=imaging.title,
+                    subtype=imaging.imaging_type,
                     name=imaging.title,
                     since=imaging.ordered_at,
                     completed=self._is_imaging_completed(imaging),
                     limit=3600,
                 ),
             )
-            for key in [k for item in patient.protocol.items for k in item.keys
-                        if k == f'imaging-{imaging.title}']:
-                if key not in patient.protocol.values or patient.protocol.values[key].at < imaging.updated_at:
-                    updated.protocol.values[key] = ProtocolValue(value=imaging.status_text, at=imaging.updated_at)
+            for item in [item for item in patient.protocol.items if item.match(f'imaging-{imaging.title}')]:
+                if item.key not in patient.protocol.values or patient.protocol.values[item.key].at < imaging.updated_at:
+                    updated.protocol.values[item.key] = ProtocolValue(value=imaging.status_text, at=imaging.updated_at)
 
             await self.atomic_update_patient(
                 {"_id": ObjectId(patient.oid)}, updated.dict(include={"awaiting", "protocol"}, exclude_unset=True)
@@ -525,10 +524,10 @@ class MedicalDal:
             c.results[str(lab.test_type_id)] = lab
             c.status = STATUS_IN_HEBREW[min({l.status for l in c.results.values()})]
 
-            for key in [k for item in patient.protocol.items for k in item.keys if k == f'lab-{lab.test_type_id}']:
+            for item in [item for item in patient.protocol.items if item.match(f'lab-{lab.test_type_id}')]:
                 value, at = (lab.result, lab.result_at) if lab.result_at else ('הוזמן', lab.ordered_at)
-                if key not in patient.protocol.values or patient.protocol.values[key].at < at:
-                    updated.protocol.values[key] = ProtocolValue(value=value, at=at)
+                if item.key not in patient.protocol.values or patient.protocol.values[item.key].at < at:
+                    updated.protocol.values[item.key] = ProtocolValue(value=value, at=at)
 
         for lab in labs.values():
             await self.db.labs.update_one(
@@ -581,9 +580,9 @@ class MedicalDal:
             patient = await self.get_patient({"external_id": patient_id})
             updated = patient.copy()
 
-            for key in [k for item in patient.protocol.items for k in item.keys if k == f'referral-{referral.to}']:
-                if key not in patient.protocol.values or patient.protocol.values[key].at < at:
-                    updated.protocol.values[key] = ProtocolValue(value='הפנייה נסגרה', at=at)
+            for item in [item for item in patient.protocol.items if item.match(f'referral-{referral.to}')]:
+                if item.key not in patient.protocol.values or patient.protocol.values[item.key].at < at:
+                    updated.protocol.values[item.key] = ProtocolValue(value='הפנייה נסגרה', at=at)
 
             updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
                 previous.get_instance_id(),
@@ -613,9 +612,9 @@ class MedicalDal:
             patient = await self.get_patient({"external_id": patient_id})
             updated = patient.copy()
 
-            for key in [k for item in patient.protocol.items for k in item.keys if k == f'referral-{referral.to}']:
-                if key not in patient.protocol.values or patient.protocol.values[key].at < referral.at:
-                    updated.protocol.values[key] = ProtocolValue(value='הפנייה פתוחה', at=referral.at)
+            for item in [item for item in patient.protocol.items if item.match(f'referral-{referral.to}')]:
+                if item.key not in patient.protocol.values or patient.protocol.values[item.key].at < referral.at:
+                    updated.protocol.values[item.key] = ProtocolValue(value='הפנייה פתוחה', at=referral.at)
 
             updated.awaiting.setdefault(AwaitingTypes.referral.value, {}).__setitem__(
                 referral.get_instance_id(),
