@@ -166,7 +166,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                     <Notification key={i} patient={patient} message={notification}/>
                 </div>
-            ): <Empty description={'אין עדכונים זמינים'}/>}
+            ): <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין עדכונים זמינים'}/>}
         </Panel>
         <Panel key={'labs'} header={
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
@@ -180,7 +180,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 }}>
                     {lab.category} - {lab.status} - <Moment date={lab.at} format={'HH:mm DD/MM'}/>
                 </p>
-            ) : <Empty description={'לא הוזמנו בדיקות מעבדה'}/>}
+            ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
         </Panel>
         <Panel key={'imaging'} header={
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
@@ -194,13 +194,13 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 }}>
                     {image.title} - {image.status_text}
                 </p>
-            ) : <Empty description={'לא הוזמנו הדמיות'}/>}
+            ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו הדמיות'}/>}
         </Panel>
         <Panel key={'referrals'} header={'ייעוץ'}>
             {value.referrals.length ? value.referrals.map((referral, i) => <p key={i}>
                 {referral.to} - <Moment date={referral.at}
                                         format={'HH:mm DD-MM-YYYY'}/> - {referral.completed ? 'בהמתנה' : 'הושלם'}
-            </p>) : <Empty description={'לא נרשמו הפניות'}/>}
+            </p>) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא נרשמו הפניות'}/>}
         </Panel>
         <Panel key={'story'} header={'סיפור מטופל'}>
             <Timeline reverse mode={"left"}>{value.events.map(event =>

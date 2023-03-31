@@ -141,7 +141,7 @@ const WingNotifications = () => {
                                           patient={notification.patient.oid} message={message}/>
                         </Item>
                     )}
-                </List> : <Empty description={'אין התרעות חדשות'}/>}
+                </List> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין התרעות חדשות'}/>}
             </Panel>)}
         </Collapse>
     </div>

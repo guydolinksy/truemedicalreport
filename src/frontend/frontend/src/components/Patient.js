@@ -130,7 +130,7 @@ export const ProtocolStatus = ({patient}) => {
                 <div>{item.name}: {data !== undefined && data.value !== undefined ? data.value : item.default}</div>
                 {data !== undefined && <RelativeTime style={{fontSize: 12}} date={data.at}/>}
             </div>
-        }) : <Empty description={'אין מידע לפרוטוקול'}/>}
+        }) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין מידע לפרוטוקול'}/>}
     </div>
 }
 export const NotificationPreview = ({patient}) => {
@@ -146,7 +146,7 @@ export const NotificationPreview = ({patient}) => {
         {value.notifications && value.notifications.length ? value.notifications.map(item =>
             <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                 <Notification patient={patient} message={item}/>
-            </div>) : <Empty description={'אין עדכונים זמינים'}/>}
+            </div>) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין עדכונים זמינים'}/>}
     </div>
 }
 export const PatientWarning = ({patient, warning, index, style}) => {
