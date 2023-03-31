@@ -353,6 +353,7 @@ class MedicalDal:
             protocol = Protocol(
                 active=patient.intake.complaint in protocol_config,
                 items=protocol_config.get(patient.intake.complaint, []),
+                values={},
             ).dict(exclude_unset=True)
             if not previous:
                 await self.atomic_update_patient(
@@ -498,9 +499,13 @@ class MedicalDal:
 
     @staticmethod
     def _is_imaging_completed(imaging: Image) -> bool:
-        if imaging.imaging_type == ImagingTypes.xray:
-            return imaging.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value,
-                                      ImagingStatus.cancelled.value, ImagingStatus.performed.value]
+        logger.debug(f"{imaging}")
+        if imaging.imaging_type == ImagingTypes.xray.value:
+            result = imaging.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value,
+                                        ImagingStatus.cancelled.value, ImagingStatus.performed.value]
+            logger.debug(f"xray - {imaging}")
+
+            return result
         return imaging.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value,
                                   ImagingStatus.cancelled.value]
 
