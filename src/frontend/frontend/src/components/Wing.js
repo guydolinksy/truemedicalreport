@@ -30,12 +30,12 @@ import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
 import {FilterOutlined, PushpinOutlined, RightOutlined, UserOutlined} from "@ant-design/icons";
-import Moment from "react-moment";
 import {useLocalStorage} from "../hooks/localStorageHook";
 import moment from "moment";
 import {useViewport} from "./UseViewPort";
 import {Department} from "./Department";
 import {Notification} from "./Notification";
+import {RelativeTime} from "./RelativeTime";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -99,8 +99,9 @@ const WingNotifications = () => {
         })
     }, [navigate]);
     if (!value.notifications.length)
-        return <div style={{display: "flex", flex: 1}}><Empty style={{height: 'fit-content'}} description={'אין התרעות'}
-                                                              image={Empty.PRESENTED_IMAGE_SIMPLE}/></div>
+        return <div style={{display: "flex", flex: 1, flexDirection: "column"}}>
+            <Empty style={{height: 'fit-content'}} description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/>
+        </div>
     return <div className="collapseNotifications"
                 style={{display: "flex !important", overflowY: "scroll", flexDirection: "column", flex: "1"}}>
         <Collapse onChange={openChange} style={{flex: "1 0 10vh", minHeight: "10vh"}}>
@@ -123,7 +124,7 @@ const WingNotifications = () => {
                     flexFlow: "column nowrap",
                     alignItems: "flex-end",
                 }}>
-                    <Moment style={{display: "block"}} date={notification.at} format={'HH:mm'}/>
+                    <RelativeTime style={{fontSize: 12}} date={notification.at}/>
                     <Space>
                         {notification.patient.flagged && <PushpinOutlined style={{marginLeft: 0}}/>}
                         {(unread[notification.patient.oid] || []).length > 0 && <Badge

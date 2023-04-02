@@ -280,6 +280,25 @@
     transition: color .3s;
 }
 
+.dark-theme .patient-card-clickable-content {
+    color: hsla(0, 0%, 100%, 0.45);
+}
+
+.dark-theme .patient-card-clickable-content:hover {
+    color: #177ddc;
+    transition: color .3s;
+}
+
+.light-theme .patient-card-clickable-content {
+    color: rgba(0, 0, 0, 0.85);
+}
+
+.light-theme .patient-card-clickable-content:hover {
+    color: #1890ff;
+    transition: color .3s;
+}
+
+
 .dark-theme .warn-text {
     font-weight: bold;
     color: #ffc069;

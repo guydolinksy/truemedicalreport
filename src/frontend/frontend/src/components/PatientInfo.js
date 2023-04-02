@@ -14,6 +14,7 @@ import {loginContext} from "./LoginContext";
 import {UserTheme} from "../themes/ThemeContext";
 import {hashMatchContext} from "./HashMatch";
 import {Notification} from "./Notification";
+import {RelativeTime} from "./RelativeTime";
 
 highchartsMore(Highcharts);
 const themes = {['dark-theme']: darkTheme, ['light-theme']: lightTheme}
@@ -161,12 +162,14 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 date={visit.at}/></a>
             </p>)}
         </Panel>}
-        <Panel key={'notifications'} header={'עדכונים'}>
+        <Panel key={'notifications'} header={'עדכונים'} style={{
+            animation: matched(['info', patient, 'notifications']) ? 'highlight 2s ease-out' : undefined
+        }}>
             {value.notifications.length > 0 ? value.notifications.map((notification, i) =>
                 <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                     <Notification key={i} patient={patient} message={notification}/>
                 </div>
-            ): <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין עדכונים זמינים'}/>}
+            ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין עדכונים זמינים'}/>}
         </Panel>
         <Panel key={'labs'} header={
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
@@ -178,7 +181,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 <p key={i} style={{
                     animation: matched(['info', patient, 'labs', `lab-${i}`]) ? 'highlight 2s ease-out' : undefined
                 }}>
-                    {lab.category} - {lab.status} - <Moment date={lab.at} format={'HH:mm DD/MM'}/>
+                    {lab.category} - {lab.status} - <RelativeTime style={{fontSize: 12}} date={lab.at}/>
                 </p>
             ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
         </Panel>
@@ -198,8 +201,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
         </Panel>
         <Panel key={'referrals'} header={'ייעוץ'}>
             {value.referrals.length ? value.referrals.map((referral, i) => <p key={i}>
-                {referral.to} - <Moment date={referral.at}
-                                        format={'HH:mm DD-MM-YYYY'}/> - {referral.completed ? 'בהמתנה' : 'הושלם'}
+                {referral.to} - {referral.completed ? 'בהמתנה' : 'הושלם'} - <RelativeTime style={{fontSize: 12}} date={referral.at}/>
             </p>) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא נרשמו הפניות'}/>}
         </Panel>
         <Panel key={'story'} header={'סיפור מטופל'}>

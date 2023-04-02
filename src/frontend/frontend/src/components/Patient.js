@@ -52,13 +52,13 @@ const Measure = ({patient, measure, icon, title}) => {
             trackEvent({category: 'patient-' + measure, action: 'click-event'});
             e.stopPropagation();
         } : null}>
-            <CustomIcon style={{fontSize: 12}} icon={icon}/>
+            <CustomIcon style={{fontSize: 12}} icon={icon}/>&nbsp;
             <span className={(data && !data.is_valid) ? 'error-text' : undefined}>
                 {(data && data.value) ? data.value : '?'}
-            </span>
-            {(data && data.effect.kind) &&
-                <CustomIcon style={{fontSize: 12}} status={data.is_valid ? 'processing' : 'error'}
-                            icon={data.effect.kind}/>}
+            </span>{(data && data.effect.kind) && <span>
+                &nbsp;<CustomIcon style={{fontSize: 12}} status={data.is_valid ? 'processing' : 'error'}
+                                  icon={data.effect.kind}/>
+            </span>}
         </span>
     </Popover>
 };
@@ -115,22 +115,24 @@ export const PatientStatus = ({patient, style}) => {
     </div>
 }
 export const ProtocolStatus = ({patient}) => {
-    const navigate = useNavigate();
     const {value, loading} = useContext(patientDataContext.context);
     const {trackEvent} = useMatomo()
 
     return loading ? <Spin/> : <div onClick={e => {
-        navigate(`#info#${patient}#notifications`);
         trackEvent({category: 'patient-protocol', action: 'click-event'});
-        e.stopPropagation();
     }}>
         {value.protocol && value.protocol.items && value.protocol.items.length ? value.protocol.items.map(item => {
             let data = value.protocol.values[item.key];
             return <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
-                <div>{item.name}: {data !== undefined && data.value !== undefined ? data.value : item.default}</div>
+                <div style={{display: "flex", flexFlow: "row nowrap", whiteSpace: "nowrap", overflowX: "hidden"}}>
+                    <div>{item.name}: </div>
+                    <div style={{overflowX: "hidden", textOverflow: "ellipsis"}}>
+                        {data !== undefined && data.value !== undefined ? data.value : item.default}
+                    </div>
+                </div>
                 {data !== undefined && <RelativeTime style={{fontSize: 12}} date={data.at}/>}
             </div>
-        }) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין מידע לפרוטוקול'}/>}
+        }) : <Empty style={{margin: -2}} image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין מידע לפרוטוקול'}/>}
     </div>
 }
 export const NotificationPreview = ({patient}) => {
@@ -143,10 +145,20 @@ export const NotificationPreview = ({patient}) => {
         trackEvent({category: 'patient-timeline', action: 'click-event'});
         e.stopPropagation();
     }}>
-        {value.notifications && value.notifications.length ? value.notifications.map(item =>
+        {value.notifications && value.notifications.slice(0, 2).map(item =>
             <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
-                <Notification patient={patient} message={item}/>
-            </div>) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין עדכונים זמינים'}/>}
+                <Notification patient={patient} message={item} className={'patient-card-clickable-content'}
+                              style={{whiteSpace: "nowrap", textOverflow: "ellipsis", overflowX: "hidden"}}/>
+            </div>
+        )}
+        {value.notifications && value.notifications.slice(2, 3).length && <div>
+            <a className={'patient-card-clickable-content'} href={`#info#${patient}#notifications`}>
+                ועוד {value.notifications.length - 2} עידכונים נוספיים...
+            </a>
+        </div>}
+        {(!value.notifications || !value.notifications.length) &&
+            <Empty style={{margin: -2}} image={Empty.PRESENTED_IMAGE_SIMPLE}
+                   description={'אין עדכונים זמינים'}/>}
     </div>
 }
 export const PatientWarning = ({patient, warning, index, style}) => {

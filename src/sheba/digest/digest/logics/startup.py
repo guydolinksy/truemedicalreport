@@ -108,7 +108,11 @@ async def init_protocols():
         'version': 0,
         'value': {
             'כאב חזה': [
-                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': ['imaging-צילום בית החזה בעמידה']},
+                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': [
+                    'imaging-צילום בית החזה בעמידה',
+                    'imaging-צילום בית החזה בשכיבה/ישיבה',
+                    'imaging-צילום חזה+צבס',
+                ]},
                 {'name': 'טרופונין', 'default': 'לא הוזמן', 'key': 'lab-1', 'keys': ['lab-120104040']},
             ],
             'סינקופה': [
