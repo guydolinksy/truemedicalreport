@@ -98,9 +98,9 @@ export const PatientStatus = ({patient, style}) => {
         e.stopPropagation();
     }}>
         <div style={{whiteSpace: "nowrap", display: "flex", overflowX: "hidden"}}>
-            <Tooltip overlay='דחיפות'>
+            {!!value.severity.value && <span><Tooltip overlay='דחיפות'>
                 <span>(<strong>{value.severity.value}</strong>)</span>
-            </Tooltip>&nbsp;
+            </Tooltip>&nbsp;</span>}
             <Tooltip overlay={value.intake.nurse_description}>
                 <span style={{overflowX: "hidden", textOverflow: "ellipsis"}}>{value.intake.complaint}</span>
             </Tooltip>&nbsp;
@@ -125,7 +125,7 @@ export const ProtocolStatus = ({patient}) => {
             let data = value.protocol.values[item.key];
             return <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                 <div style={{display: "flex", flexFlow: "row nowrap", whiteSpace: "nowrap", overflowX: "hidden"}}>
-                    <div>{item.name}: </div>
+                    <div>{item.name}:&nbsp;</div>
                     <div style={{overflowX: "hidden", textOverflow: "ellipsis"}}>
                         {data !== undefined && data.value !== undefined ? data.value : item.default}
                     </div>
@@ -146,14 +146,19 @@ export const NotificationPreview = ({patient}) => {
         e.stopPropagation();
     }}>
         {value.notifications && value.notifications.slice(0, 2).map(item =>
-            <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
+            <div style={{
+                display: "flex",
+                flexFlow: "row nowrap",
+                justifyContent: "space-between",
+                alignItems: "center"
+            }}>
                 <Notification patient={patient} message={item} className={'patient-card-clickable-content'}
                               style={{whiteSpace: "nowrap", textOverflow: "ellipsis", overflowX: "hidden"}}/>
             </div>
         )}
-        {value.notifications && value.notifications.slice(2, 3).length && <div>
+        {value.notifications && value.notifications.slice(2, 3).length > 0 && <div>
             <a className={'patient-card-clickable-content'} href={`#info#${patient}#notifications`}>
-                ועוד {value.notifications.length - 2} עידכונים נוספיים...
+                ועוד {value.notifications.length - 2} עדכונים נוספים...
             </a>
         </div>}
         {(!value.notifications || !value.notifications.length) &&
@@ -229,15 +234,15 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
         doctor: 'צוות רפואי',
     }
     return <Tooltip key={type} overlay={<div>
-        <b style={{textDecoration: "underline"}}>{AWAITING_TITLE[type]}&nbsp;</b>
-        {pending.length > 0 && <b>ממתין.ה עבור (דקות):</b>}
+        <div><b style={{textDecoration: "underline"}}>{AWAITING_TITLE[type]}</b></div>
+        {pending.length > 0 && <div><b>ממתין.ה עבור (דקות):</b></div>}
         {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, since}, i) =>
             <div key={i}>
                 {name} - <RelativeTime date={since}/>
             </div>
         )}
-        {pending.length > 0 && completed.length > 0 && <span><br/></span>}
-        {completed.length > 0 && <b>הושלמו:</b>}
+        {pending.length > 0 && completed.length > 0 && <div><br/></div>}
+        {completed.length > 0 && <div><b>הושלמו:</b></div>}
         {completed.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, since}, i) =>
             <div key={i}>{name}</div>
         )}
@@ -295,7 +300,7 @@ const PatientInner = ({patient, avatar, style}) => {
                         <div className={`severity-background severity-${value.severity.value || 0}`} style={{
                             direction: "rtl",
                             userSelect: "none",
-                            padding: "16px 24px",
+                            padding: "16px 30px",
                             cursor: "pointer",
                             height: 98,
                             overflowY: "overlay"
@@ -306,7 +311,7 @@ const PatientInner = ({patient, avatar, style}) => {
                         </div>
                     </div>
                     {Object.entries(value.warnings).filter(
-                        ([key, {acknowledge}], i) => acknowledge
+                        ([key, {acknowledge}], i) => !acknowledge
                     ).map(([key, warning], i) => <div key={i}>
                         <PatientWarning patient={patient} warning={warning} index={i} style={{
                             direction: "rtl",

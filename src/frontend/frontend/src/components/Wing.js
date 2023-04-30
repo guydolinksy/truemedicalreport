@@ -102,22 +102,14 @@ const WingNotifications = () => {
         return <div style={{display: "flex", flex: 1, flexDirection: "column"}}>
             <Empty style={{height: 'fit-content'}} description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/>
         </div>
-    return <div className="collapseNotifications"
-                style={{display: "flex !important", overflowY: "scroll", flexDirection: "column", flex: "1"}}>
-        <Collapse onChange={openChange} style={{flex: "1 0 10vh", minHeight: "10vh"}}>
+    return <div style={{display: "flex !important", flexDirection: "column", flex: "1"}}>
+        <Collapse onChange={openChange} style={{flex: "1 0 10vh", minHeight: "10vh", overflowY: "overlay"}}>
             {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
-                <div style={{
-                    display: "flex",
-                    flexFlow: "column nowrap",
-                    alignItems: "flex-start",
-                }}>
-                    <div><UserOutlined/>&nbsp;{notification.patient.info.name}</div>
-                    <div style={{
-                        display: "flex",
-                        textOverflow: "ellipsis",
-                        fontSize: "10px"
-                    }}>{notification.preview}</div>
-                </div>
+                <>
+                    <span><UserOutlined/>&nbsp;{notification.patient.info.name}</span>
+                    <br/>
+                    <span style={{fontSize: "10px"}}>{notification.preview}</span>
+                </>
             } extra={
                 <div style={{
                     display: "flex",
@@ -142,7 +134,7 @@ const WingNotifications = () => {
                                           patient={notification.patient.oid} message={message}/>
                         </Item>
                     )}
-                </List> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין התרעות חדשות'}/>}
+                </List> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין עדכונים זמינים'}/>}
             </Panel>)}
         </Collapse>
     </div>

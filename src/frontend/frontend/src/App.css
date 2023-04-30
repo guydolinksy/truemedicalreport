@@ -238,6 +238,12 @@
     flex-direction: column;
 }
 
+.collapseNotifications .ant-collapse-header-text {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .ant-collapse-content:not(.ant-collapse-content-hidden) {
     display: flex !important;
     flex: 1 0 10vh;

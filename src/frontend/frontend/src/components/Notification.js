@@ -3,7 +3,7 @@ import {Badge} from "antd";
 import {useNavigate} from "react-router";
 import {RelativeTime} from "./RelativeTime";
 
-export const Notification = ({patient, message, unread, markRead, style, ...props}) => {
+export const Notification = ({patient, message, unread, markRead, ...props}) => {
     const {navigate} = useNavigate();
     useEffect(() => {
         let task = setTimeout(markRead || (() => {
