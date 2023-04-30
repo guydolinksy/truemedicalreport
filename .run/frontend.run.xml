@@ -10,7 +10,6 @@
     <envs>
       <env name="BROWSER" value="none" />
       <env name="CHOKIDAR_USEPOLLING" value="true" />
-      <env name="NODE_OPTIONS" value="--openssl-legacy-provider" />
       <env name="REACT_APP_TMR_PROXY_BACKEND_TO_PORT" value="8080" />
     </envs>
     <method v="2" />

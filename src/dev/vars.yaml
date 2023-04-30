@@ -7,7 +7,7 @@ global:
     host: localhost
 #change this value to true to expose swagger out of kubernetes network
 ingress-nginx:
-  enabled: false
+  enabled: true
   controller:
     admissionWebhooks:
       enabled: false

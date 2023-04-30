@@ -1,6 +1,8 @@
 from inspect import signature
-from fastapi.params import Depends
+
+import decorator
 from fastapi.exceptions import HTTPException
+from fastapi.params import Depends
 
 
 class MaxRetriesExceeded(HTTPException):
@@ -13,26 +15,22 @@ class PatientNotFound(HTTPException):
         super().__init__(status_code=404)
 
 
-def inject_dependencies(**kwargs):
+def inject_dependencies(**presets):
     def _decorator(func):
-        dependencies = {k: v.default for k, v in signature(func).parameters.items() if isinstance(v.default, Depends)}
-
-        async def _wrapper():
-            return await func(**kwargs, **{k: v.dependency() for k, v in dependencies.items()})
-
+        def _wrapper(*args, **kwargs):
+            dependencies = {k: v.default for k, v in signature(func).parameters.items() if isinstance(v.default, Depends)}
+            return func(*args, **kwargs, **presets, **{k: v.dependency() for k, v in dependencies.items()})
+        _wrapper.__name__ = func.__name__
         return _wrapper
-
     return _decorator
 
 
 def safe(logger):
-    def _decorator(func):
-        async def _wrapper(*args, **kwargs):
-            try:
-                return await func(*args, **kwargs)
-            except Exception:
-                logger.exception('Safe run encountered an exception.')
+    @decorator.decorator
+    def _wrapper(func, *args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            logger.exception('Safe run encountered an exception.')
 
-        return _wrapper
-
-    return _decorator
+    return _wrapper

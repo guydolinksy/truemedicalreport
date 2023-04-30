@@ -40,6 +40,19 @@ services:
       - "TZ=UTC"
     ports:
       - "1433:1433"
+  ris-demo:
+    build:
+      dockerfile: dev/demo/ris-demo/Dockerfile
+      context: ../src
+    ports:
+      - 1521:1521
+    environment:
+      #username is system
+      - "ORACLE_PWD=Password123"
+      - "ORACLE_ALLOW_REMOTE=true"
+    volumes:
+      - ris-demo:/opt/oracle
+
 
   # See the ldap_server Dockerfile for instructions.
   ldap:
@@ -58,3 +71,5 @@ volumes:
     name: chameleon-sheba
   chameleon-demo:
     name: chameleon-demo
+  ris-demo:
+    name: ris-demo

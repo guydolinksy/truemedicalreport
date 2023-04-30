@@ -13,9 +13,7 @@ CMD npm run start
 FROM node:latest
 WORKDIR /opt/frontend/frontend
 
-COPY frontend/frontend/package.json /opt/frontend/frontend/package.json
-COPY frontend/frontend/config-overrides.js /opt/frontend/frontend/config-overrides.js
-RUN npm i
+COPY --from=dev /opt/frontend /opt/frontend
 
 COPY frontend/frontend/src /opt/frontend/frontend/src
 COPY frontend/frontend/public /opt/frontend/frontend/public

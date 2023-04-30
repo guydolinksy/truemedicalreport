@@ -13,6 +13,8 @@ import {patientDataContext, PatientStatus, PatientWarning} from "./Patient";
 import {loginContext} from "./LoginContext";
 import {UserTheme} from "../themes/ThemeContext";
 import {hashMatchContext} from "./HashMatch";
+import {Notification} from "./Notification";
+import {RelativeTime} from "./RelativeTime";
 
 highchartsMore(Highcharts);
 const themes = {['dark-theme']: darkTheme, ['light-theme']: lightTheme}
@@ -84,7 +86,7 @@ const FullMeasure = ({patient, measure, icon, latest, data, title, graphProps}) 
         animation: matched(['info', patient, 'measures', measure]) ? 'highlight 2s ease-out' : undefined
     }}>
         <div style={{textAlign: "center", flex: 1}}>
-            <div style={{fontSize: 12}}>{title}&nbsp;<FontAwesomeIcon icon={icon}/></div>
+            <div style={{fontSize: 12}}><FontAwesomeIcon icon={icon}/> {title}</div>
             <div className={latest && !latest.is_valid ? 'error-text' : undefined} style={{
                 userSelect: "none",
                 fontSize: 14,
@@ -106,7 +108,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 male: 'בן',
                 female: 'בת',
             }[value.info.gender];
-            setTitle(`${value.info.name}, ${gender} ${value.info.age || 'גיל לא ידוע'})), ת.ז. ${value.info.id_}:`);
+            setTitle(`${value.info.name}, ${gender} (${value.info.age || 'גיל לא ידוע'}), ת.ז. ${value.info.id_}:`);
         }
     }, [value, loading, setTitle]);
     if (loading)
@@ -115,6 +117,9 @@ const InternalPatientCard = ({patient, setTitle}) => {
         <Panel key={'basic'} showArrow={false} collapsible={"disabled"} header={'מידע בסיסי'}>
             {Object.entries(value.warnings).map(([key, warning], i) =>
                 <PatientWarning key={i} patient={patient} warning={warning} index={i} style={{
+                    direction: "rtl",
+                    userSelect: "none",
+                    cursor: "pointer",
                     animation: matched(['info', patient, 'basic', `warning-${i}`]) ?
                         'highlight 2s ease-out' : undefined,
                     marginBottom: 18
@@ -157,10 +162,15 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 date={visit.at}/></a>
             </p>)}
         </Panel>}
-        {false && value.notifications.length > 0 && <Panel key={'important'} header={'עדכונים חשובים'}>
-            {value.notifications.map((notification, i) => <p
-                key={i}>{notification}</p>)}
-        </Panel>}
+        <Panel key={'notifications'} header={'עדכונים'} style={{
+            animation: matched(['info', patient, 'notifications']) ? 'highlight 2s ease-out' : undefined
+        }}>
+            {value.notifications.length > 0 ? value.notifications.map((notification, i) =>
+                <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
+                    <Notification key={i} patient={patient} message={notification}/>
+                </div>
+            ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין עדכונים זמינים'}/>}
+        </Panel>
         <Panel key={'labs'} header={
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                 <span>מעבדה</span>
@@ -171,9 +181,9 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 <p key={i} style={{
                     animation: matched(['info', patient, 'labs', `lab-${i}`]) ? 'highlight 2s ease-out' : undefined
                 }}>
-                    {lab.category} - {lab.status} - <Moment date={lab.at} format={'HH:mm DD/MM'}/>
+                    {lab.category} - {lab.status} - <RelativeTime style={{fontSize: 12}} date={lab.at}/>
                 </p>
-            ) : <Empty description={'לא הוזמנו בדיקות מעבדה'}/>}
+            ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
         </Panel>
         <Panel key={'imaging'} header={
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
@@ -187,13 +197,12 @@ const InternalPatientCard = ({patient, setTitle}) => {
                 }}>
                     {image.title} - {image.status_text}
                 </p>
-            ) : <Empty description={'לא הוזמנו הדמיות'}/>}
+            ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו הדמיות'}/>}
         </Panel>
         <Panel key={'referrals'} header={'ייעוץ'}>
             {value.referrals.length ? value.referrals.map((referral, i) => <p key={i}>
-                {referral.to} - <Moment date={referral.at}
-                                        format={'HH:mm DD-MM-YYYY'}/> - {referral.completed ? 'בהמתנה' : 'הושלם'}
-            </p>) : <Empty description={'לא נרשמו הפניות'}/>}
+                {referral.to} - {referral.completed ? 'בהמתנה' : 'הושלם'} - <RelativeTime style={{fontSize: 12}} date={referral.at}/>
+            </p>) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא נרשמו הפניות'}/>}
         </Panel>
         <Panel key={'story'} header={'סיפור מטופל'}>
             <Timeline reverse mode={"left"}>{value.events.map(event =>
@@ -204,25 +213,8 @@ const InternalPatientCard = ({patient, setTitle}) => {
         </Panel>
         {value.plugins.map(({key, title, url}) =>
             <Panel key={key} header={title}>
-                <iframe title={key} src={url}/>
+                <iframe style={{border: "none", width: "100%", height: "100%"}} title={title} src={url}/>
             </Panel>
         )}
-        <Panel key={'mortality'} header={'AI חיזוי תמותה'}>
-            <div>הסתברות לתמותה בתוך 48 שעות: 1%-3%</div>
-            <div>סיכון של <b>פי 3 יותר</b> מהאוכלוסיה הכללית!</div>
-            <br/>
-            <div>מאפיינים מכריעים:</div>
-            <ul>
-                <li>
-                    ESI=3 <span style={{color: "#579d2f"}}>(+)</span>
-                </li>
-                <li>
-                    Age=99 <span style={{color: "#ff0000"}}>(-)</span>
-                </li>
-                <li>
-                    Respiratory Rate=22 <span style={{color: "#579d2f"}}>(+)</span>
-                </li>
-            </ul>
-        </Panel>
     </Collapse>
 }

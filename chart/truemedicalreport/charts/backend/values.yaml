@@ -76,7 +76,11 @@ devMappings:
     containerPath: /opt/common/common
 
 sentry:
-  enabled: true
+  enabled: false
   secretName: ''
   secretKey: ''
   caCertConfigMapName: ''
+
+matomo:
+  urlBase: ''
+  siteId: ''

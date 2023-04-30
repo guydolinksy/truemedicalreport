@@ -102,34 +102,32 @@ WHERE
 """
 
 query_images = """
+
 SELECT
     ato.Order_Number AS OrderNumber,
-    d.Order_Date AS OrderDate,
-    mr.Medical_Record AS MedicalRecord,
+    ato.Test_Date AS OrderDate,
+mr.Medical_Record AS MedicalRecord,
+atd.Entry_Date,
     [at].Name as TestName,
     ato.Order_Status as OrderStatus,
     atd.Result,
-    [at].Code,
-    atd.Panic
+    atd.Panic,
+ato.Accession_Number as AccessionNumber 
 FROM [Chameleon].[dbo].[AuxiliaryTestOrders] AS ato
 JOIN [Chameleon].[dbo].[AuxTests] AS [at] ON ato.Test = [at].Code
 JOIN [Chameleon].[dbo].[MedicalRecords] AS mr ON ato.Patient = mr.Patient
 JOIN [Chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON mr.medical_record = rpp.Medical_record
 JOIN [Chameleon].[dbo].[emergancyvisits] as ev ON ev.Medical_Record= rpp.Medical_Record
-JOIN (
-    SELECT MIN(o.Test_date) AS Order_Date, o.Order_Number
-    from [Chameleon].[dbo].[AuxiliaryTestOrders] AS o GROUP BY o.Order_Number
-) AS d ON d.Order_Number = ato.Order_Number
 LEFT OUTER JOIN  [Chameleon].[dbo].[AuxiliaryTestDates] atd 
     ON ato.Accession_Number = atd.Accession_Number AND atd.Delete_Date IS NULL
 WHERE 
     ato.Delete_Date IS NULL
-    AND ato.Test_Date >= rpp.Start_Date 
+   AND ato.Test_Date >= ev.Admission_Date
     AND rpp.End_Date IS NULL 
-    AND rpp.Unit = {unit}
-	AND ev.Release_Time is null
-	and ev.Delete_Date is null
-	and d.Order_Date <= GETDATE()
+ AND rpp.Unit = {unit}
+AND ev.Release_Time is null
+and ev.Delete_Date is null
+and ato.Test_Date <= GETDATE()
 """
 
 query_referrals = """
@@ -211,3 +209,8 @@ WHERE
        AND mr.Delete_Date is null
        AND mr.Release_Time is null
        AND tc.[Entry_Date] >= mr.Admission_Date"""
+
+query_ris_imaging="""SELECT ORDER_KEY,MODALITY_TYPE_CODE,SPS_CODE,SPS_KEY
+FROM CSHRIS.SITE_M_BI_EXAMS_VIEW 
+WHERE SPS_KEY IN ({})"""
+

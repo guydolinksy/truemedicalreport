@@ -22,6 +22,9 @@ def create_app() -> FastAPIOffline:
     from .routes.updater import updater_router
     app_.include_router(updater_router, prefix="/digest")
 
+    from common.wsp import router as scheduler_router
+    app_.include_router(scheduler_router, prefix="/digest/scheduler")
+
     from .logics.startup import startup
     app_.on_event('startup')(startup)
 

@@ -8,23 +8,22 @@ import Axios from "axios";
 import * as Sentry from "@sentry/browser";
 import { BrowserTracing } from "@sentry/tracing";
 
-const instance = createInstance({
-    urlBase: 'http://localhost:8090/',
-    siteId: 1
-})
+let instance = null;
 
-// Intialize Sentry ASAP, before anything else
-Axios.get("/api/tracing/dsn", {
+// Initialize Sentry ASAP, before anything else
+Axios.get("/api/tracing/config", {
     timeout: 250  // ms
 }).then(response => {
-    const dsn = response.data;
-    console.log(`Got Sentry DSN ${dsn}`)
+    const sentryDsn = response.data.sentryDsn;
+    const matomoUrlBase = response.data.matomoUrlBase;
+    const matomoSiteId = response.data.matomoSiteId;
 
-    if (dsn) {
+    if (sentryDsn) {
+        console.log(`Got Sentry DSN ${sentryDsn}`)
         console.log("Initializing Sentry")
         
         Sentry.init({
-            dsn,
+            sentryDsn,
             integrations: [
                 new BrowserTracing({
                     tracePropagationTargets: [`${window.location.host}/api`, /^\/api/],
@@ -32,6 +31,16 @@ Axios.get("/api/tracing/dsn", {
             ],
             tracesSampleRate: 1.0,
         });
+    }
+
+    if(matomoUrlBase)
+    {
+        console.log(`Initializing matomo. Host: ${matomoUrlBase}, SiteId: ${matomoSiteId}`)
+
+        instance = createInstance({
+            urlBase: matomoUrlBase,
+            siteId: matomoSiteId
+        })
     }
 }).finally(() => {
     ReactDOM.render(

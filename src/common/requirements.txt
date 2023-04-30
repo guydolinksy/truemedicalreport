@@ -6,3 +6,4 @@ pydantic~=1.9.0
 pydentic~=0.0.1.dev3
 sentry-sdk[fastapi]~=1.13.0
 aiohttp
+decorator

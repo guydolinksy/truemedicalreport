@@ -5,7 +5,7 @@
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
-    background-color: rgb(45, 45, 45);
+    /*background-color: rgb(45, 45, 45);*/
 }
 
 ::-webkit-scrollbar-thumb {
@@ -28,26 +28,6 @@
 
 .dark-theme .content {
     background-color: #000d17;
-}
-
-.dark-theme .warn-text {
-    font-weight: bold;
-    color: #ffc069;
-}
-
-.dark-theme .error-text {
-    font-weight: bold;
-    color: #bd1a1a;
-}
-
-.light-theme .warn-text {
-    font-weight: bold;
-    color: #22075e;
-}
-
-.light-theme .error-text {
-    font-weight: bold;
-    color: #bd1a1a;
 }
 
 .dark-theme .status-color.status-success {
@@ -246,6 +226,36 @@
     background-color: #ffc069;
 }
 
+.collapseNotifications > *:not(:first-child) {
+    display: flex !important;
+    flex: 1 0 10vh;
+    flex-direction: column;
+}
+
+.collapseNotifications {
+    display: flex !important;
+    flex: 1 0 10vh;
+    flex-direction: column;
+}
+
+.collapseNotifications .ant-collapse-header-text {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ant-collapse-content:not(.ant-collapse-content-hidden) {
+    display: flex !important;
+    flex: 1 0 10vh;
+    flex-direction: column;
+}
+
+.ant-collapse-content:not(.ant-collapse-content-hidden) > * {
+    display: flex !important;
+    flex: 1 0 10vh;
+    flex-direction: column;
+}
+
 .light-theme .severity-background.severity-3 {
     background-color: #e5e3e3;
 }
@@ -256,4 +266,61 @@
 
 .light-theme .severity-background.severity-5 {
     background-color: #e5f993;
+}
+
+.dark-theme .measurement {
+    color: hsla(0, 0%, 100%, 0.45);
+}
+
+.dark-theme .measurement:hover {
+    color: #177ddc;
+    transition: color .3s;
+}
+
+.light-theme .measurement {
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.light-theme .measurement:hover {
+    color: #1890ff;
+    transition: color .3s;
+}
+
+.dark-theme .patient-card-clickable-content {
+    color: hsla(0, 0%, 100%, 0.45);
+}
+
+.dark-theme .patient-card-clickable-content:hover {
+    color: #177ddc;
+    transition: color .3s;
+}
+
+.light-theme .patient-card-clickable-content {
+    color: rgba(0, 0, 0, 0.85);
+}
+
+.light-theme .patient-card-clickable-content:hover {
+    color: #1890ff;
+    transition: color .3s;
+}
+
+
+.dark-theme .warn-text {
+    font-weight: bold;
+    color: #ffc069;
+}
+
+.dark-theme .error-text {
+    font-weight: bold;
+    color: #bd1a1a;
+}
+
+.light-theme .warn-text {
+    font-weight: bold;
+    color: #22075e;
+}
+
+.light-theme .error-text {
+    font-weight: bold;
+    color: #bd1a1a;
 }

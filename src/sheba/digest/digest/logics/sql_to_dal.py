@@ -1,6 +1,7 @@
 import contextlib
 import datetime
 from enum import Enum
+from typing import Dict, List
 
 import logbook
 import requests
@@ -11,8 +12,8 @@ from sqlalchemy.orm import Session
 
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
-from common.data_models.image import ImagingStatus, Image, ImagingTypes
-from common.data_models.labs import Laboratory, LabStatus, CategoriesInHebrew
+from common.data_models.image import ImagingStatus, Image
+from common.data_models.labs import Laboratory, LabStatus, CATEGORIES_IN_HEBREW, LabCategories
 from common.data_models.measures import Measure, MeasureType
 from common.data_models.notification import NotificationLevel
 from common.data_models.patient import Intake, ExternalPatient, Person
@@ -20,6 +21,8 @@ from common.data_models.referrals import Referral
 from common.data_models.treatment import Treatment
 from .. import config
 from ..utils import sql_statements, utils
+from .ris_adapter import OracleAdapter
+from ..models.ris_imaging import RisImaging
 
 logger = logbook.Logger(__name__)
 
@@ -37,42 +40,6 @@ SHEBA_IMAGING_STATUS = {
     125: ImagingStatus.ordered,  # הפנייה אושרה
     127: ImagingStatus.analyzed,  # הפנייה לאישור
 }
-SHEBA_XRAY_CODES = [2251, 2259, 2937, 3009, 3103, 3104, 3113, 3114, 3115, 3116, 3117, 3121, 3124, 3131, 3132, 3134,
-                    3140,
-                    3142, 3144, 3159, 3163, 3166, 3171, 3173, 3180, 3184, 3185, 3195, 3201, 3202, 3217, 3223, 3230,
-                    3529,
-                    3580, 3604, 3620, 3650, 3658, 3661, 3678, 3695, 3735, 3821, 3826, 3895, 3897, 3898, 3899, 3923,
-                    3969,
-                    4040, 4297, 4364, 4365, 4366, 4367, 4430, 4569, 4660]
-SHEBA_CT_CODES = [1794, 2944, 3493, 3579, 3582, 3583, 3585, 3586, 3587, 3588, 3594, 3605, 3608, 3610, 3611, 3612, 3613,
-                  3614, 3615, 3616, 3617, 3618, 3619, 3621, 3622, 3624, 3625, 3626, 3627, 3628, 3629, 3630, 3631, 3632,
-                  3633, 3634, 3635, 3636, 3637, 3638, 3639, 3640, 3641, 3642, 3643, 3644, 3645, 3646, 3647, 3648, 3649,
-                  3651, 3652, 3653, 3654, 3655, 3657, 3659, 3662, 3663, 3664, 3665, 3666, 3667, 3668, 3669, 3671, 3672,
-                  3673, 3674, 3675, 3681, 3683, 3684, 3685, 3686, 3687, 3690, 3693, 3694, 3696, 3705, 3707, 3709, 3710,
-                  3711, 3712, 3713, 3714, 3715, 3716, 3717, 3720, 3721, 3722, 3723, 3724, 3725, 3731, 3737, 3740, 3749,
-                  3751, 3752, 3753, 3757, 3767, 3768, 3769, 3776, 3779, 3782, 3783, 3791, 3800, 3814, 3819, 3822, 3823,
-                  3824, 3846, 3850, 3851, 3853, 3857, 3860, 3868, 3869, 3879, 3880, 3881, 3882, 3883, 3887, 3890, 3891,
-                  3894, 3901, 3905, 3907, 3910, 3921, 3924, 3934, 3935, 3937, 3958, 3961, 3962, 3963, 3972, 3973, 3975,
-                  3980, 3982, 3984, 3987, 3988, 3995, 3999, 4010, 4011, 4013, 4014, 4015, 4019, 4021, 4022, 4025, 4027,
-                  4036, 4039, 4055, 4064, 4094, 4095, 4097, 4128, 4129, 4130, 4132, 4137, 4150, 4174, 4175, 4177, 4181,
-                  4182, 4185, 4188, 4223, 4225, 4226, 4230, 4232, 4233, 4270, 4290, 4291, 4293, 4316, 4318, 4333, 4341,
-                  4344, 4355, 4356, 4370, 4387, 4400, 4410, 4414, 4429, 4465, 4467, 4477, 4484, 4510, 4535, 4547, 4556,
-                  4560, 4565, 4568, 4570, 4574, 4579, 4581, 4583, 4585, 4586, 4606, 4611, 4612, 4622, 4624, 4626, 4629,
-                  4637, 4638, 4639, 4643, 4644, 4645, 4647, 4650, 4651, 4652, 4653, 4654, 4658, 4664, 4701, 4773, 4785,
-                  4917, 4918, 5026, 5027]
-SHEBA_MRI_CODES = [2947, 2948, 2949, 2950, 2951, 2952, 2953, 2954, 2955, 2956, 2957, 2958, 2959, 2960, 2961, 2962, 2963,
-                   2964, 2965, 2966, 2967, 2968, 2969, 2970, 2971, 2972, 2973, 2974, 2976, 2977, 2978, 2979, 2980, 2981,
-                   2982, 2983, 2984, 2985, 2986, 2987, 2988, 2989, 2990, 2991, 2992, 2993, 2994, 2995, 2996, 2997, 2998,
-                   2999, 3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3010, 3011, 3024, 3025, 3028, 3029, 3030,
-                   3038, 3039, 3040, 3042, 3043, 3050, 3051, 3056, 3057, 3059, 3064, 3067, 3069, 3071, 3072, 3075, 3078,
-                   3080, 3083, 3085, 3086, 3098, 3122, 3155, 3157, 3162, 3172, 3174, 3175, 3177, 3187, 3189, 3190, 3194,
-                   3208, 3209, 3218, 3221, 3481, 3482, 3494, 3508, 3515, 3526, 3527, 3530, 3531, 3547, 3574, 3598, 3606,
-                   3623, 3656, 3660, 3689, 3718, 3775, 3827, 3830, 3834, 3844, 3867, 3903, 3915, 3919, 3948, 3960, 3966,
-                   3970, 3990, 3992, 3993, 3996, 3997, 4012, 4017, 4028, 4050, 4051, 4057, 4147, 4153, 4172, 4184, 4219,
-                   4220, 4224, 4271, 4332, 4368, 4378, 4391, 4392, 4399, 4401, 4422, 4424, 4428, 4432, 4478, 4529, 4544,
-                   4545, 4553, 4559, 4562, 4571, 4577, 4578, 4582, 4587, 4589, 4591, 4595, 4597, 4598, 4599, 4602, 4604,
-                   4609, 4615, 4630, 4641, 4698, 4745, 4800, 4819, 4822, 4847, 4864, 4868, 4892, 5040, 5042, 5046, 5047,
-                   5048, 5049, 5050, 5052, 5055]
 SHEBA_IMAGING_LEVEL = {
     0: NotificationLevel.normal,
     1: NotificationLevel.panic,
@@ -97,11 +64,14 @@ class Departments(Enum):
 
 
 class SqlToDal(object):
-    def __init__(self, chameleon_connection=None, dal_url=None):
+    def __init__(self, chameleon_connection=None, dal_url=None, oracle_params=None):
         self.dal_url = dal_url or config.dal_url
 
         chameleon_connection = chameleon_connection or config.chameleon_connection
         self._engine = create_engine(chameleon_connection)
+
+        oracle_connection_params = oracle_params or config.oracle_params
+        self._oracle_client = OracleAdapter(oracle_connection_params)
 
     @contextlib.contextmanager
     def session(self):
@@ -172,37 +142,48 @@ class SqlToDal(object):
 
     def update_imaging(self, department: Departments):
         try:
+            imaging = []
+            accessions = []
             logger.debug('Getting imaging for `{}`...', department.name)
-            imaging = {}
+
+            patients_imagings = {}
             with self.session() as session:
                 for row in session.execute(sql_statements.query_images.format(unit=department.value)):
-                    imaging.setdefault(row['MedicalRecord'], []).append(Image(
-                        external_id=row['OrderNumber'],
+                    accessions.append(row['AccessionNumber'])
+                    imaging.append(Image(
+                        order_number=row['OrderNumber'],
+                        external_id=row['AccessionNumber'],
                         patient_id=row['MedicalRecord'],
                         ordered_at=utils.datetime_utc_serializer(row['OrderDate']),
-                        code=int(row["Code"]),
-                        imaging_type=self._get_imaging_type_by_code(int(row["Code"])),
+                        updated_at=utils.datetime_utc_serializer(
+                            row['Entry_Date']) if row['Entry_Date'] else utils.datetime_utc_serializer(
+                            row['OrderDate']),
                         title=row['TestName'],
                         status=SHEBA_IMAGING_STATUS.get(row['OrderStatus'], ImagingStatus.unknown),
                         interpretation=row['Result'],
                         level=SHEBA_IMAGING_LEVEL.get(row['Panic'], NotificationLevel.normal),
                         link='https://localhost/',
-                    ).dict(exclude_unset=True))
-                res = requests.post(f'{self.dal_url}/departments/{department.name}/imaging', json={'images': imaging})
-                res.raise_for_status()
-                return {'images': imaging}
+                    ))
+            self._merge_ris_chameleon_imaging(accessions, imaging)
+
+            for image in imaging:
+                logger.debug(
+                    f"Load Imaging for {image.patient_id} - Accession '{image.external_id}' - '{image.dict()}'")
+                patients_imagings.setdefault(image.patient_id, []).append(image.dict(exclude_unset=True))
+
+            res = requests.post(f'{self.dal_url}/departments/{department.name}/imaging',
+                                json={'images': patients_imagings})
+            res.raise_for_status()
+            return {'images': patients_imagings}
         except HTTPError:
             logger.exception('Could not run imaging handler.')
 
-    @staticmethod
-    def _get_imaging_type_by_code(code: int) -> ImagingTypes:
-        if code in SHEBA_XRAY_CODES:
-            return ImagingTypes.xray
-        elif code in SHEBA_CT_CODES:
-            return ImagingTypes.ct
-        elif code in SHEBA_MRI_CODES:
-            return ImagingTypes.mri
-        return ImagingTypes.unknown
+    def _merge_ris_chameleon_imaging(self, accessions, chameleon_imaging: List[Image]) -> None:
+        ris_imagings: Dict[str, RisImaging] = self._oracle_client.query_imaging(accessions)
+        logger.debug(ris_imagings)
+        for imaging in chameleon_imaging:
+            if ris_image := ris_imagings.get(imaging.external_id, False):
+                imaging.imaging_type = ris_image.imaging_type
 
     def update_labs(self, department: Departments):
         try:
@@ -249,8 +230,8 @@ class SqlToDal(object):
             result_at=result_at,
             test_type_id=row["TestCode"],
             test_type_name=row["TestName"],
-            category_id=CategoriesInHebrew[category],
-            category_name=CategoriesInHebrew[category],
+            category_id=category,
+            category_name=CATEGORIES_IN_HEBREW.get(category, CATEGORIES_IN_HEBREW[LabCategories.unknown.value]),
             test_tube_id=9,
             min_warn_bar=row["NormMinimum"],
             max_warn_bar=row["NormMaximum"],
@@ -301,6 +282,7 @@ class SqlToDal(object):
             logger.debug('Getting referrals for `{}`...', department.name)
             referrals = {}
             treatments = {}
+            at = datetime.datetime.utcnow().isoformat()
             with self.session() as session:
                 for row in session.execute(sql_statements.query_referrals.format(unit=department.value)):
                     if row['MedicalLicense']:
@@ -319,10 +301,10 @@ class SqlToDal(object):
                                 json={record: treatments[record].dict(exclude_unset=True) for record in treatments})
             res.raise_for_status()
             res = requests.post(f'{self.dal_url}/departments/{department.name}/referrals',
-                                json={'referrals': referrals})
+                                json={'referrals': referrals, 'at': at})
             res.raise_for_status()
             return {'treatments': {record: treatments[record].dict(exclude_unset=True) for record in treatments},
-                    'referrals': referrals}
+                    'referrals': referrals, 'at': at}
         except HTTPError:
             logger.exception('Could not run referrals handler.')
 

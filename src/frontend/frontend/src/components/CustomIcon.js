@@ -3,18 +3,18 @@ import {dom, library} from "@fortawesome/fontawesome-svg-core";
 
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
+    faArrowDown,
+    faArrowUp,
+    faBoltLightning,
     faFileMedical,
     faHeart,
     faHeartPulse,
+    faHourglass,
     faPercentage,
     faStethoscope,
     faTemperatureHalf,
     faUserNurse,
     faVial,
-    faHourglass,
-    faBoltLightning,
-    faArrowUp,
-    faArrowDown,
     IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -33,37 +33,37 @@ export const faImaging: IconDefinition = {
 library.add(faImaging);
 dom.watch();
 
-export const CustomIcon = ({status, icon}) => {
+export const CustomIcon = ({status, icon, style}) => {
     const className = {
         'error': 'status-color status-error',
         'processing': 'status-color status-neutral',
         'success': 'status-color status-success'
     }[status]
     if (icon === 'pain')
-        return <FontAwesomeIcon className={className} icon={faBoltLightning}/>
+        return <FontAwesomeIcon style={style} className={className} icon={faBoltLightning}/>
     if (icon === 'pulse')
-        return <FontAwesomeIcon className={className} icon={faHeartPulse}/>
+        return <FontAwesomeIcon style={style} className={className} icon={faHeartPulse}/>
     if (icon === 'temperature')
-        return <FontAwesomeIcon className={className} icon={faTemperatureHalf}/>
+        return <FontAwesomeIcon style={style} className={className} icon={faTemperatureHalf}/>
     if (icon === 'saturation')
-        return <FontAwesomeIcon className={className} icon={faPercentage}/>
+        return <FontAwesomeIcon style={style} className={className} icon={faPercentage}/>
     if (icon === 'bloodPressure')
-        return <FontAwesomeIcon className={className} icon={faHeart}/>
+        return <FontAwesomeIcon style={style} className={className} icon={faHeart}/>
     if (icon === 'imaging')
-        return <FontAwesomeIcon className={className} icon={faImaging}/>
+        return <FontAwesomeIcon style={style} className={className} icon={faImaging}/>
     if (icon === 'laboratory')
-        return <FontAwesomeIcon className={className} icon={faVial}/>
+        return <FontAwesomeIcon style={style} className={className} icon={faVial}/>
     if (icon === 'doctor')
-        return <FontAwesomeIcon className={className} icon={faStethoscope}/>
+        return <FontAwesomeIcon style={style} className={className} icon={faStethoscope}/>
     if (icon === 'nurse')
-        return <FontAwesomeIcon className={className} icon={faUserNurse}/>
+        return <FontAwesomeIcon style={style} className={className} icon={faUserNurse}/>
     if (icon === 'referral')
-        return <FontAwesomeIcon className={className} icon={faFileMedical}/>
+        return <FontAwesomeIcon style={style} className={className} icon={faFileMedical}/>
     if (icon === 'awaiting')
-        return <FontAwesomeIcon className={className} icon={faHourglass}/>
+        return <FontAwesomeIcon style={style} className={className} icon={faHourglass}/>
     if (icon === 'raise')
-        return <FontAwesomeIcon className={className} icon={faArrowUp}/>
+        return <FontAwesomeIcon style={style} className={className} icon={faArrowUp}/>
     if (icon === 'lower')
-        return <FontAwesomeIcon className={className} icon={faArrowDown}/>
-    return <span>{icon}</span>
+        return <FontAwesomeIcon style={style} className={className} icon={faArrowDown}/>
+    return <span style={style}>{icon}</span>
 }

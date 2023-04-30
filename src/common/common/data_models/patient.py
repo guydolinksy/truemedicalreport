@@ -2,15 +2,17 @@ from typing import Optional, List, Any, Dict
 
 from pydantic import BaseModel
 
-from common.data_models.esi_score import ESIScore
-from common.data_models.measures import Measures, FullMeasures
-from common.data_models.warnings import PatientWarning
+from .esi_score import ESIScore
+from .measures import Measures, FullMeasures
+from .warnings import PatientWarning
 from .admission import Admission
 from .awaiting import Awaiting, AwaitingTypes
 from .event import Event
 from .image import Image
 from .intake import Intake
 from .labs import LabCategory
+from .notification import Notification
+from .protocol import Protocol
 from .severity import Severity
 from .treatment import Treatment
 
@@ -38,6 +40,8 @@ class InternalPatient(BaseModel):
     flagged: Optional[bool]
     warnings: Dict[str, PatientWarning] = {}
     measures: Measures = Measures()
+    protocol: Protocol = Protocol()
+    notifications: List[Notification] = []
 
     class Config:
         orm_mode = True
@@ -57,7 +61,7 @@ class InternalPatient(BaseModel):
                 },
             },
             flagged=False,
-            warnings=[],
+            warnings={},
             measures=Measures(),
         )
 
@@ -71,16 +75,29 @@ class Patient(ExternalPatient, InternalPatient):
         super(Patient, self).__init__(**kwargs)
 
 
-class PatientInfoPlugin(BaseModel):
+class PatientInfoPluginRender(BaseModel):
     key: str
     title: str
     url: str
 
 
+class PatientInfoPluginConfig(BaseModel):
+    key: str
+    title: str
+    url: str
+    api_version: str
+
+    def render(self, **kwargs):
+        return PatientInfoPluginRender(
+            key=self.key,
+            title=self.title.format(**kwargs),
+            url=self.url.format(**kwargs),
+        )
+
+
 class AggregatePatient(BaseModel):
     full_measures: FullMeasures
     visits: List[Any] = []
-    notifications: List[Any] = []
     imaging: List[Image] = []
     labs: List[LabCategory] = []
     referrals: List[Any] = []
@@ -95,4 +112,4 @@ class PatientInfo(Patient, AggregatePatient):
 
 
 class PanelPatient(PatientInfo):
-    plugins: List[PatientInfoPlugin] = []
+    plugins: List[PatientInfoPluginRender] = []

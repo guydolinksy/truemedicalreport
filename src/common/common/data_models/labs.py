@@ -1,10 +1,10 @@
 from enum import Enum
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 
 from pydantic import BaseModel
 
-from common.data_models.warnings import PatientWarning
 from common.data_models.notification import NotificationLevel, Notification, NotificationType
+from common.data_models.warnings import PatientWarning
 from .severity import Severity
 
 
@@ -24,7 +24,7 @@ class LabStatus(Enum):
     analyzed = 3
 
 
-CategoriesInHebrew = {
+CATEGORIES_IN_HEBREW = {
     LabCategories.completeBloodCount.value: "CBC",
     LabCategories.gases.value: "בדיקת גזים",
     LabCategories.biochemistry.value: "ביוכימיה בדם",
@@ -34,13 +34,13 @@ CategoriesInHebrew = {
     LabCategories.unknown.value: "אחר",
 }
 
-StatusInHebrew = {
+STATUS_IN_HEBREW = {
     LabStatus.ordered.value: "הוזמן",
     LabStatus.collected.value: "שויכו דגימות",
     LabStatus.analyzed.value: "תוצאות",
 }
 
-LabTestType = {
+LAB_TEST_TYPE = {
     LabCategories.completeBloodCount.value: ["wbc", "rbc", "leukocytes", "neutrophils"],
     LabCategories.gases.value: ["pCO2", "pO2"],
     LabCategories.biochemistry.value: ["troponin", "pH"],
@@ -96,7 +96,7 @@ class LabCategory(BaseModel):
     category_id: str
     category: str
     patient_id: str
-    status: str = StatusInHebrew[LabStatus.ordered.value]
+    status: str = STATUS_IN_HEBREW[LabStatus.ordered.value]
     results: Dict[str, Laboratory] = {}
 
     @property
