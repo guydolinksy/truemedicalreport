@@ -459,7 +459,7 @@ class MedicalDal:
                 await publish("notification", patient.oid)
         elif previous and not imaging:
             await self.db.imaging.delete_one({"external_id": previous.external_id})
-            del updated.awaiting[previous.external_id]
+            del updated.awaiting[AwaitingTypes.imaging.value][previous.external_id]
             await self.atomic_update_patient(
                 {"_id": ObjectId(patient.oid)},
                 updated.dict(include={"awaiting"}, exclude_unset=True),
