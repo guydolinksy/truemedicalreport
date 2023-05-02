@@ -524,7 +524,7 @@ class MedicalDal:
             c.status = STATUS_IN_HEBREW[min({l.status for l in c.results.values()})]
 
             for item in [item for item in patient.protocol.items if item.match(f'lab-{lab.test_type_id}')]:
-                value, at = (lab.result, lab.result_at) if lab.result_at else ('הוזמן', lab.ordered_at)
+                value, at = (f'{lab.result} {lab.units}', lab.result_at) if lab.result_at else ('הוזמן', lab.ordered_at)
                 if item.key not in patient.protocol.values or patient.protocol.values[item.key].at < at:
                     updated.protocol.values[item.key] = ProtocolValue(value=value, at=at)
 
@@ -535,12 +535,12 @@ class MedicalDal:
                 upsert=True,
             )
             if lab.status == STATUS_IN_HEBREW[LabStatus.analyzed.value]:
-                notification = lab.to_notification()
-                await self.db.notifications.update_one(
-                    {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
-                )
-                logger.info(
-                    f"current time:{datetime.datetime.utcnow()} - notification time: {notification.at} - {notification.message}")
+                for notification in lab.to_notifications():
+                    await self.db.notifications.update_one(
+                        {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
+                    )
+                    logger.info("current time:{} - notification time: {} - {}",
+                                datetime.datetime.utcnow(), notification.at, notification.message)
                 await publish("notification", patient.oid)
 
             for key, warning in lab.get_updated_warnings(

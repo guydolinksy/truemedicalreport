@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 from pydantic import BaseModel
 
@@ -65,6 +65,7 @@ class Laboratory(BaseModel):
     min_warn_bar: Optional[float]
     max_warn_bar: Optional[float]
     result: Optional[str]
+    units: Optional[str]
     panic: Optional[bool]
     status: LabStatus
 
@@ -108,22 +109,41 @@ class LabCategory(BaseModel):
         return {'at': self.ordered_at, 'category_id': self.category_id}
 
     def get_instance_id(self):
-        return f'{self.category_id}#{self.ordered_at.replace(":", "-").replace(".", "-")}'
+        return f'{self.patient_id}#{self.category_id}#{self.ordered_at.replace(":", "-").replace(".", "-")}'
 
     class Config:
         orm_mode = True
         use_enum_values = True
 
-    def to_notification(self) -> [LabsNotification]:
-        panic = any(category_data.panic for category_data in self.results.values())
-        return LabsNotification(
-            static_id=self.get_instance_id(),
-            patient_id=self.patient_id,
-            at=self.result_at if self.result_at else self.ordered_at,
-            message=f"התקבלו תוצאות {self.category}",
-            link="Add in the future",
-            level=NotificationLevel.normal if not panic else NotificationLevel.panic,
-        )
+    def to_notifications(self) -> List[LabsNotification]:
+        for key, result in self.results.items():
+            if result.max_warn_bar and self.result_at and float(result.result) > float(result.max_warn_bar):
+                yield LabsNotification(
+                    static_id=f'{self.get_instance_id()}#{key}',
+                    patient_id=self.patient_id,
+                    at=self.result_at,
+                    message=f"תוצאת {self.category}-{key} גבוהה: {result.result}",
+                    link="Add in the future",
+                    level=NotificationLevel.abnormal if not result.panic else NotificationLevel.panic,
+                )
+            if result.min_warn_bar and self.result_at and float(result.result) < float(result.min_warn_bar):
+                yield LabsNotification(
+                    static_id=f'{self.get_instance_id()}#{key}',
+                    patient_id=self.patient_id,
+                    at=self.result_at,
+                    message=f"תוצאת {self.category}-{key} נמוכה: {result.result}",
+                    link="Add in the future",
+                    level=NotificationLevel.abnormal if not result.panic else NotificationLevel.panic,
+                )
+        else:
+            yield LabsNotification(
+                static_id=self.get_instance_id(),
+                patient_id=self.patient_id,
+                at=self.result_at if self.result_at else self.ordered_at,
+                message=f"תוצאות {self.category} תקינות",
+                link="Add in the future",
+                level=NotificationLevel.normal,
+            )
 
     def get_updated_warnings(self, warnings: Dict[str, PatientWarning]):
         for id_, lab in self.results.items():
@@ -132,6 +152,6 @@ class LabCategory(BaseModel):
                 yield key, PatientWarning(**warnings[key].dict(exclude={'acknowledge'}), acknowledge=True)
             elif key not in warnings and lab.panic:
                 yield key, PatientWarning(
-                    content=f"תוצאת {lab.category_name}-{lab.test_type_name} חריגה: {lab.result}",
+                    content=f"תוצאת {lab.category_name}-{lab.test_type_name} חריגה: {lab.result} {lab.units}",
                     severity=Severity(value=1, at=self.result_at if self.result_at else self.ordered_at),
                     acknowledge=False)

@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 class NotificationLevel(Enum):
     panic = 1
-    # abnormal = 2
+    abnormal = 2
     normal = 0
     unknown = -1
 
