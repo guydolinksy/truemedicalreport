@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from fastapi import Depends, HTTPException
 from pymongo import MongoClient
@@ -27,7 +27,7 @@ class Authentication(object):
 
         raise UnauthorizedException(f"Unsupported Auth Provider: '{name}'")
 
-    def login(self, provider_name: str, *, username: str, password: str) -> User:
+    def login(self, provider_name: str, *, username: str, password: str) -> Tuple[User, List[str]]:
         return self._provider(provider_name).login(username, password)
 
 

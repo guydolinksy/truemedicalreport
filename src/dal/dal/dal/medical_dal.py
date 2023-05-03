@@ -89,7 +89,7 @@ class MedicalDal:
 
     async def get_protocol_config(self) -> Dict[str, List[ProtocolItem]]:
         return {k: [ProtocolItem(**i) for i in items] for k, items in
-                (await self.application_dal.get_config('protocols', {})).items()}
+                (await self.application_dal.get_config('protocols', {}))['value'].items()}
 
     async def atomic_update_imaging(self, query: dict, new: dict):
         await self._atomic_update(klass=Image, collection=self.db.imaging, query=query, new=new)
@@ -97,7 +97,7 @@ class MedicalDal:
     async def get_department_wings(self, department: str) -> List[WingDetails]:
         return [
             WingDetails(**wing)
-            for d in await self.application_dal.get_config('departments', []) if d['name'] == department
+            for d in (await self.application_dal.get_config('departments', []))['value'] if d['name'] == department
             for wing in d['wings']
         ]
 

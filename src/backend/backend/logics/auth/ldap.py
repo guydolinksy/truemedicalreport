@@ -84,10 +84,10 @@ class LdapAuthProvider(AuthProvider):
     def is_enabled(self) -> bool:
         return self.settings.enabled
 
-    def register(self, username: str, password: str) -> None:
+    def register(self, username: str, password: str, **settings) -> None:
         raise Exception("Registering users with LDAP is not supported")
 
-    def login(self, username: str, password: str) -> User:
+    def login(self, username: str, password: str) -> Tuple[User, List[str]]:
         """
         Verifies the specified user credentials.
         Checks that the user is a member of at least one of the configured groups.
@@ -109,8 +109,7 @@ class LdapAuthProvider(AuthProvider):
             username=username,
             auth_provider_name=self.name,
             is_admin=is_admin,
-            groups=list(user_groups),
-        )
+        ), list(user_groups)
 
     def _find_user(self, username: str) -> Tuple[str, Set[str]]:
         """

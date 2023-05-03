@@ -93,8 +93,8 @@ const LDAPAuthentication = () => {
 
             setInfo(toParagraphs([
                 `ההתאמתות הצליחה!`,
-                `משתמש: ${response.data.username}`,
-                `מנהל: ${response.data.is_admin ? "כן" : "לא"}`,
+                `משתמש: ${response.data.user.username}`,
+                `מנהל: ${response.data.user.is_admin ? "כן" : "לא"}`,
                 `קבוצות: ${groups}`
                 ]))
         }).catch(error => showError("המשתמש לא אומת בהצלחה.", error));

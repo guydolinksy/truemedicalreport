@@ -27,8 +27,10 @@ def _create_login_manager() -> LoginManager:
 
 login_manager = _create_login_manager()
 
+WRITE_SCOPE = "write"
 ADMIN_SCOPE = "admin"
 PLUGIN_SCOPE = "plugin"
+REQUIRE_WRITE = Security(login_manager, scopes=[WRITE_SCOPE])
 REQUIRE_ADMIN = Security(login_manager, scopes=[ADMIN_SCOPE])
 REQUIRE_PLUGIN = Security(login_manager, scopes=[PLUGIN_SCOPE])
 
@@ -49,7 +51,9 @@ def user_settings(user: User = Depends(login_manager), settings_: Settings = Dep
 
 @auth_router.on_event("startup")
 def init_auths():
-    current_settings.local_users.register("admin", "admin")
+    current_settings.local_users.register("admin", "admin", is_admin=True)
+    current_settings.local_users.register("view", "view", view_only=True)
+    current_settings.local_users.register("anon", "anon", anonymous=True)
 
 
 @auth_router.post("/token")
@@ -61,22 +65,22 @@ async def login(
         password=Body(...),
 ):
     assert auth_provider_name
-    user = s.auth.login(provider_name=auth_provider_name, username=username, password=password)
+    user, groups = s.auth.login(provider_name=auth_provider_name, username=username, password=password)
     user.plugin_token = login_manager.create_access_token(
         data=dict(
             # The data in sub (JWT "subject") must conform to whatever load_user(...) expects.
             sub=user.dict()
         ),
         scopes=([PLUGIN_SCOPE]),
-        expires=dt.timedelta(hours=12)
+        expires=dt.timedelta(hours=8) if not user.view_only else dt.timedelta(days=365)
     )
     access_token = login_manager.create_access_token(
         data=dict(
             # The data in sub (JWT "subject") must conform to whatever load_user(...) expects.
             sub=user.dict()
         ),
-        scopes=([ADMIN_SCOPE] if user.is_admin else []),
-        expires=dt.timedelta(hours=12)
+        scopes=([ADMIN_SCOPE] if user.is_admin else []) + ([] if user.view_only else [WRITE_SCOPE]),
+        expires=dt.timedelta(hours=8) if not user.view_only else dt.timedelta(days=365)
     )
 
     login_manager.set_cookie(response=response, token=access_token)
@@ -89,9 +93,10 @@ def get_user(user: User = Depends(login_manager), user_settings_=Depends(user_se
         user=dict(
             user=user.username,
             canChangePassword=user.auth_provider_name == "local",
-            admin=user.is_admin,
-            groups=user.groups,
             pluginToken=user.plugin_token,
+            is_admin=user.is_admin,
+            view_only=user.view_only,
+            anonymous=user.anonymous,
         ),
         userSettings=dict(theme=getattr(user_settings_, "display", {}).get("theme", "light-theme")),
     )
@@ -144,7 +149,8 @@ async def test_ldap_settings(_=REQUIRE_ADMIN, args=Body(...)):
         raise BadRequestException("New settings are invalid")
 
     provider = LdapAuthProvider.with_constant_settings(_settings)
-    return provider.login(username=test_user, password=test_password)
+    user, groups = provider.login(username=test_user, password=test_password)
+    return {"user": user, "groups": groups}
 
 
 @auth_router.post("/ldap/test_get_user_groups")
