@@ -20,6 +20,7 @@ from common.data_models.patient import Patient, ExternalPatient, InternalPatient
 from common.data_models.plugins import PatientInfoPluginDataV1
 from common.data_models.protocol import ProtocolValue, ProtocolItem, Protocol
 from common.data_models.referrals import Referral
+from common.data_models.status import Status
 from common.data_models.treatment import Treatment
 from common.data_models.wing import WingFilter, WingFilters, PatientNotifications, WingDetails
 from common.utilities.exceptions import PatientNotFound, MaxRetriesExceeded
@@ -635,9 +636,15 @@ class MedicalDal:
 
         updated = patient.copy()
         updated.treatment = treatment
+        if treatment.destination:
+            updated.status = Status.decided
+        elif treatment.doctors:
+            updated.status = Status.undecided
+        else:
+            updated.status = Status.unassigned
 
         await self.atomic_update_patient(
-            {"_id": ObjectId(patient.oid)}, updated.dict(include={"treatment"}, exclude_unset=True)
+            {"_id": ObjectId(patient.oid)}, updated.dict(include={"treatment", "status"}, exclude_unset=True)
         )
 
     async def upsert_intake(self, patient_id: str, intake: Intake):

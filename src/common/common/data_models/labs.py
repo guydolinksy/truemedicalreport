@@ -116,34 +116,34 @@ class LabCategory(BaseModel):
         use_enum_values = True
 
     def to_notifications(self) -> List[LabsNotification]:
+        res = []
         for key, result in self.results.items():
             if result.max_warn_bar and self.result_at and float(result.result) > float(result.max_warn_bar):
-                yield LabsNotification(
+                res.append(LabsNotification(
                     static_id=f'{self.get_instance_id()}#{key}',
                     patient_id=self.patient_id,
                     at=self.result_at,
-                    message=f"תוצאת {self.category}-{key} גבוהה: {result.result}",
+                    message=f"תוצאת {self.category}-{result.test_type_name} גבוהה: {result.result} {result.units}",
                     link="Add in the future",
                     level=NotificationLevel.abnormal if not result.panic else NotificationLevel.panic,
-                )
+                ))
             if result.min_warn_bar and self.result_at and float(result.result) < float(result.min_warn_bar):
-                yield LabsNotification(
+                res.append(LabsNotification(
                     static_id=f'{self.get_instance_id()}#{key}',
                     patient_id=self.patient_id,
                     at=self.result_at,
-                    message=f"תוצאת {self.category}-{key} נמוכה: {result.result}",
+                    message=f"תוצאת {self.category}-{result.test_type_name} נמוכה: {result.result} {result.units}",
                     link="Add in the future",
                     level=NotificationLevel.abnormal if not result.panic else NotificationLevel.panic,
-                )
-        else:
-            yield LabsNotification(
-                static_id=self.get_instance_id(),
-                patient_id=self.patient_id,
-                at=self.result_at if self.result_at else self.ordered_at,
-                message=f"תוצאות {self.category} תקינות",
-                link="Add in the future",
-                level=NotificationLevel.normal,
-            )
+                ))
+        return res if res else [LabsNotification(
+            static_id=self.get_instance_id(),
+            patient_id=self.patient_id,
+            at=self.result_at if self.result_at else self.ordered_at,
+            message=f"תוצאות {self.category} תקינות",
+            link="Add in the future",
+            level=NotificationLevel.normal,
+        )]
 
     def get_updated_warnings(self, warnings: Dict[str, PatientWarning]):
         for id_, lab in self.results.items():

@@ -52,7 +52,8 @@ export const PatientInfo = ({onError}) => {
     const {matched, matching} = useContext(hashMatchContext);
 
     const [title, setTitle] = useState();
-    return <Drawer title={title} placement={"left"} visible={matched(['info'])} onClose={() => navigate('#')}>
+    return <Drawer title={title} placement={"left"} visible={matched(['info'])} onClose={() => navigate('#')}
+                   size={500}>
         <UserTheme>
             {matched(['info']) &&
                 <patientDataContext.Provider url={`/api/patients/${matching(['info'])[0]}/info`} defaultValue={{
@@ -201,7 +202,8 @@ const InternalPatientCard = ({patient, setTitle}) => {
         </Panel>
         <Panel key={'referrals'} header={'ייעוץ'}>
             {value.referrals.length ? value.referrals.map((referral, i) => <p key={i}>
-                {referral.to} - {referral.completed ? 'בהמתנה' : 'הושלם'} - <RelativeTime style={{fontSize: 12}} date={referral.at}/>
+                {referral.to} - {referral.completed ? 'בהמתנה' : 'הושלם'} - <RelativeTime style={{fontSize: 12}}
+                                                                                          date={referral.at}/>
             </p>) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא נרשמו הפניות'}/>}
         </Panel>
         <Panel key={'story'} header={'סיפור מטופל'}>
@@ -213,7 +215,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
         </Panel>
         {value.plugins.map(({key, title, url}) =>
             <Panel key={key} header={title}>
-                <iframe style={{border: "none", width: "100%", height: "100%"}} title={title} src={url}/>
+                <iframe style={{border: "none", width: "100%", height: "200px"}} title={title} src={url}/>
             </Panel>
         )}
     </Collapse>

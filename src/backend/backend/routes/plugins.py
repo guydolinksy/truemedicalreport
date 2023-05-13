@@ -1,10 +1,12 @@
+import logbook
 from fastapi import APIRouter, Body
 
-from backend.logics.utils import post_dal_json, fetch_dal_json
-from backend.routes.patient import logger
+from ..logics.utils import post_dal_json, fetch_dal_json
 from common.data_models.patient import PatientInfoPluginConfig
 
 plugins_router = APIRouter()
+
+logger = logbook.Logger(__name__)
 
 
 @plugins_router.post("/register")

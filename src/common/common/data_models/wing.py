@@ -75,6 +75,7 @@ class PatientNotifications(BaseModel):
 
 
 class Wing(BaseModel):
+    department_patients: List[Patient]
     patients: List[Patient]
     details: WingDetails
     filters: WingFilters

@@ -297,7 +297,7 @@ const PatientInner = ({patient, avatar, style}) => {
                     <div>{key}:{value.protocol.attributes[key]}</div>)}
                 <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
                     <div>
-                        <div className={`severity-background severity-${value.severity.value || 0}`} style={{
+                        <div className={`status-background status-${value.status || 'unassigned'}`} style={{
                             direction: "rtl",
                             userSelect: "none",
                             padding: "16px 30px",

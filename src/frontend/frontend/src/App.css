@@ -226,6 +226,42 @@
     background-color: #ffc069;
 }
 
+.light-theme .severity-background.severity-3 {
+    background-color: #e5e3e3;
+}
+
+.light-theme .severity-background.severity-4 {
+    background-color: #cff5b6;
+}
+
+.light-theme .severity-background.severity-5 {
+    background-color: #e5f993;
+}
+
+.dark-theme .status-background.status-unseen {
+    background-color: #1a1a1a;
+}
+
+.dark-theme .status-background.status-undecided {
+    background-color: #303a1a;
+}
+
+.dark-theme .status-background.status-decided {
+    background-color: #14240e;
+}
+
+.light-theme .status-background.status-unseen {
+    background-color: #e0dfdf;
+}
+
+.light-theme .status-background.status-undecided {
+    background-color: #e5f993;
+}
+
+.light-theme .status-background.status-decided {
+    background-color: #cff5b6;
+}
+
 .collapseNotifications > *:not(:first-child) {
     display: flex !important;
     flex: 1 0 10vh;
@@ -254,18 +290,6 @@
     display: flex !important;
     flex: 1 0 10vh;
     flex-direction: column;
-}
-
-.light-theme .severity-background.severity-3 {
-    background-color: #e5e3e3;
-}
-
-.light-theme .severity-background.severity-4 {
-    background-color: #cff5b6;
-}
-
-.light-theme .severity-background.severity-5 {
-    background-color: #e5f993;
 }
 
 .dark-theme .measurement {
