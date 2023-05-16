@@ -325,8 +325,10 @@ const WingInner = ({department, wing}) => {
     const unassignedPatients = allPatients.filter(({admission}) => !admission.bed);
 
     const patientList = <div style={{display: "flex", flexDirection: "column"}}>
-        {value.patients.sort((a, b) => a.info.name.localeCompare(b.info.name)).map((patient, i) =>
-            <Button key={i} onClick={() => navigate(`#highlight#${patient.oid}#open`)}>
+        {value.department_patients.sort((a, b) => a.info.name.localeCompare(b.info.name)).map((patient, i) =>
+            <Button key={i} onClick={() => navigate(
+                `/department/${patient.admission.department}/wing/${patient.admission.wing}#highlight#${patient.oid}#open`
+            )}>
                 {patient?.info?.name}
             </Button>)}
     </div>

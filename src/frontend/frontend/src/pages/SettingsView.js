@@ -27,7 +27,7 @@ export const SettingsView = () => {
                 }}>
                     {user && user.canChangePassword && <ChangePasswordCard/>}
                     {user && <DisplayCard/>}
-                    {user && user.admin && <AuthenticationCard/>}
+                    {user && user.is_admin && <AuthenticationCard/>}
                 </Col>
             </Content>
         </Layout>

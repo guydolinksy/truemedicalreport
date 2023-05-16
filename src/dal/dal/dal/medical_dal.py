@@ -20,6 +20,7 @@ from common.data_models.patient import Patient, ExternalPatient, InternalPatient
 from common.data_models.plugins import PatientInfoPluginDataV1
 from common.data_models.protocol import ProtocolValue, ProtocolItem, Protocol
 from common.data_models.referrals import Referral
+from common.data_models.status import Status
 from common.data_models.treatment import Treatment
 from common.data_models.wing import WingFilter, WingFilters, PatientNotifications, WingDetails
 from common.utilities.exceptions import PatientNotFound, MaxRetriesExceeded
@@ -89,7 +90,7 @@ class MedicalDal:
 
     async def get_protocol_config(self) -> Dict[str, List[ProtocolItem]]:
         return {k: [ProtocolItem(**i) for i in items] for k, items in
-                (await self.application_dal.get_config('protocols', {})).items()}
+                (await self.application_dal.get_config('protocols', {}))['value'].items()}
 
     async def atomic_update_imaging(self, query: dict, new: dict):
         await self._atomic_update(klass=Image, collection=self.db.imaging, query=query, new=new)
@@ -97,7 +98,7 @@ class MedicalDal:
     async def get_department_wings(self, department: str) -> List[WingDetails]:
         return [
             WingDetails(**wing)
-            for d in await self.application_dal.get_config('departments', []) if d['name'] == department
+            for d in (await self.application_dal.get_config('departments', []))['value'] if d['name'] == department
             for wing in d['wings']
         ]
 
@@ -459,7 +460,7 @@ class MedicalDal:
                 await publish("notification", patient.oid)
         elif previous and not imaging:
             await self.db.imaging.delete_one({"external_id": previous.external_id})
-            del updated.awaiting[previous.external_id]
+            del updated.awaiting[AwaitingTypes.imaging.value][previous.external_id]
             await self.atomic_update_patient(
                 {"_id": ObjectId(patient.oid)},
                 updated.dict(include={"awaiting"}, exclude_unset=True),
@@ -524,7 +525,7 @@ class MedicalDal:
             c.status = STATUS_IN_HEBREW[min({l.status for l in c.results.values()})]
 
             for item in [item for item in patient.protocol.items if item.match(f'lab-{lab.test_type_id}')]:
-                value, at = (lab.result, lab.result_at) if lab.result_at else ('הוזמן', lab.ordered_at)
+                value, at = (f'{lab.result} {lab.units}', lab.result_at) if lab.result_at else ('הוזמן', lab.ordered_at)
                 if item.key not in patient.protocol.values or patient.protocol.values[item.key].at < at:
                     updated.protocol.values[item.key] = ProtocolValue(value=value, at=at)
 
@@ -535,12 +536,12 @@ class MedicalDal:
                 upsert=True,
             )
             if lab.status == STATUS_IN_HEBREW[LabStatus.analyzed.value]:
-                notification = lab.to_notification()
-                await self.db.notifications.update_one(
-                    {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
-                )
-                logger.info(
-                    f"current time:{datetime.datetime.utcnow()} - notification time: {notification.at} - {notification.message}")
+                for notification in lab.to_notifications():
+                    await self.db.notifications.update_one(
+                        {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
+                    )
+                    logger.info("current time:{} - notification time: {} - {}",
+                                datetime.datetime.utcnow(), notification.at, notification.message)
                 await publish("notification", patient.oid)
 
             for key, warning in lab.get_updated_warnings(
@@ -635,9 +636,15 @@ class MedicalDal:
 
         updated = patient.copy()
         updated.treatment = treatment
+        if treatment.destination:
+            updated.status = Status.decided
+        elif treatment.doctors:
+            updated.status = Status.undecided
+        else:
+            updated.status = Status.unassigned
 
         await self.atomic_update_patient(
-            {"_id": ObjectId(patient.oid)}, updated.dict(include={"treatment"}, exclude_unset=True)
+            {"_id": ObjectId(patient.oid)}, updated.dict(include={"treatment", "status"}, exclude_unset=True)
         )
 
     async def upsert_intake(self, patient_id: str, intake: Intake):

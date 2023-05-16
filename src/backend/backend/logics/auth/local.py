@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple, List
 
 from pymongo.collection import Collection
 
@@ -13,10 +13,14 @@ class LocalAuthProvider(AuthProvider):
     def __init__(self, collection: Collection) -> None:
         self.collection = collection
 
-    def register(self, username: str, password: str) -> None:
-        self.collection.update_one({'username': username}, {'$set': {'password': password}}, upsert=True)
+    def register(self, username: str, password: str, **settings) -> None:
+        self.collection.update_one(
+            {'username': username},
+            {'$set': dict(password=password, **{f'settings.{k}': v for k, v in settings.items()})},
+            upsert=True
+        )
 
-    def login(self, username: str, password: str) -> Optional[User]:
+    def login(self, username: str, password: str) -> Tuple[User, List[str]]:
         if doc := self.collection.find_one({'username': username}):
             if doc["password"] != password:
                 # TODO: Proper salt+hash comparisons
@@ -25,8 +29,9 @@ class LocalAuthProvider(AuthProvider):
             return User(
                 username=username,
                 auth_provider_name=self.name,
-                is_admin=True,  # local users are always considered to be admins
-                groups=[]
-            )
+                is_admin=doc.get('settings', {}).get('is_admin'),
+                view_only=doc.get('settings', {}).get('view_only', False),
+                anonymous=doc.get('settings', {}).get('anonymous', False),
+            ), []
 
         raise UnauthorizedException("Unknown user")

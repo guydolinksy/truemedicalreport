@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from .esi_score import ESIScore
 from .measures import Measures, FullMeasures
+from .status import Status
 from .warnings import PatientWarning
 from .admission import Admission
 from .awaiting import Awaiting, AwaitingTypes
@@ -35,6 +36,7 @@ class ExternalPatient(BaseModel):
 
 
 class InternalPatient(BaseModel):
+    status: Status
     severity: Severity = Severity()
     awaiting: Dict[str, Dict[str, Awaiting]] = {}
     flagged: Optional[bool]
@@ -49,6 +51,7 @@ class InternalPatient(BaseModel):
     @classmethod
     def from_external_patient(cls, patient: ExternalPatient):
         return cls(
+            status=Status.unseen,
             severity=Severity(**patient.esi.dict()),
             awaiting={
                 AwaitingTypes.doctor.value: {

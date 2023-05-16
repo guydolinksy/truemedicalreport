@@ -237,6 +237,7 @@ class SqlToDal(object):
             max_warn_bar=row["NormMaximum"],
             panic=row["Panic"],
             result=row["Result"],
+            units=row["Units"],
             status=status
         )
 

@@ -16,11 +16,11 @@ async def init_wings():
                 'department': 'er',
                 'columns': [
                     {'flex': "4 1 300px", 'minWidth': 300},
-                    {'width': 16, 'minWidth': 16},
+                    {'flex': 1, 'minWidth': 16},
                     {'flex': "4 1 300px", 'minWidth': 300},
-                    {'flex': 1, 'minWidth': 32},
+                    {'flex': 2, 'minWidth': 128},
                     {'flex': "4 1 300px", 'minWidth': 300},
-                    {'width': 16, 'minWidth': 16},
+                    {'flex': 1, 'minWidth': 16},
                     {'flex': "4 1 300px", 'minWidth': 300}
                 ],
                 'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'},
@@ -41,11 +41,11 @@ async def init_wings():
                 'department': 'er',
                 'columns': [
                     {'flex': "4 1 300px", 'minWidth': 300},
-                    {'flex': 1, 'minWidth': 32},
+                    {'flex': 1, 'minWidth': 16},
                     {'flex': "4 1 300px", 'minWidth': 300},
-                    {'width': 16, 'minWidth': 16},
+                    {'flex': 2, 'minWidth': 128},
                     {'flex': "4 1 300px", 'minWidth': 300},
-                    {'flex': 1, 'minWidth': 32},
+                    {'flex': 1, 'minWidth': 16},
                     {'flex': "4 1 300px", 'minWidth': 300}
                 ],
                 'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'},
@@ -66,11 +66,11 @@ async def init_wings():
                 'department': 'er',
                 'columns': [
                     {'flex': "4 1 300px", 'minWidth': 300},
-                    {'flex': 1, 'minWidth': 32},
+                    {'flex': 1, 'minWidth': 16},
                     {'flex': "4 1 300px", 'minWidth': 300},
-                    {'width': 16, 'minWidth': 16},
+                    {'flex': 2, 'minWidth': 128},
                     {'flex': "4 1 300px", 'minWidth': 300},
-                    {'flex': 1, 'minWidth': 32},
+                    {'flex': 1, 'minWidth': 16},
                     {'flex': "4 1 300px", 'minWidth': 300}
                 ],
                 'rows': [{'flex': '0 1'}, {'height': 16}, {'flex': '0 1'}, {'height': 16}, {'flex': '0 1'},
