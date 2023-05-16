@@ -35,6 +35,5 @@ TestOrders_Order_Status,TestDates_Panic,TestOrders_Order_Num,TestOrders_Order_St
 '{AuxTest_Name}', {TestOrders_Order_Status},{TestDates_Panic},'{TestOrders_Order_Num}',{TestOrders_Order_Status}) """
 
 insert_labs = """INSERT INTO DemoDB.dbo.Labs (ev_MedicalRecord,LR_Test_code,Lab_Headline_Name,LR_Test_Name,LR_Result,
-LR_Units,LR_Norm_Minimum,LR_Norm_Maximum,LR_Result_Date,LR_Result_Entry_Date) values({ev_MedicalRecord},
-{LR_Test_code},'{Lab_Headline_Name}','{LR_Test_Name}','{LR_Result}','{LR_Units}','{LR_Norm_Minimum}',
-'{LR_Norm_Maximum}','{LR_Result_Date}','{LR_Result_Entry_Date}') """
+LR_Units,LR_Result_Date,LR_Result_Entry_Date) values({ev_MedicalRecord},
+{LR_Test_code},'{Lab_Headline_Name}','{LR_Test_Name}','{LR_Result}','{LR_Units}','{LR_Result_Date}','{LR_Result_Entry_Date}') """

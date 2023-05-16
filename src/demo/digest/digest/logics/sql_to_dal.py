@@ -248,9 +248,7 @@ class SqlToDal(object):
             test_type_name=row["TestName"],
             category_id=category,
             category_name=CATEGORIES_IN_HEBREW[category],
-            test_tube_id=9,
-            min_warn_bar=row["NormMinimum"],
-            max_warn_bar=row["NormMaximum"],
+            range=row["Range"],
             panic=row["Panic"],
             result=row["Result"],
             status=status

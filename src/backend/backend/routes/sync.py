@@ -9,9 +9,8 @@ from websockets.exceptions import PayloadTooBig, WebSocketException, InvalidURI,
 
 from common.data_models.admission import Admission
 from common.data_models.patient import Patient
-from .. import config
 from common.utilities.pubsub import create_subscriber
-
+from .. import config
 
 logger = Logger(__name__)
 
@@ -54,7 +53,6 @@ async def admission_handler(data: dict) -> None:
         })
 
     await notify(keys)
-
 
 
 class WebsocketsManager:
