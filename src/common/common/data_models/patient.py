@@ -47,11 +47,12 @@ class InternalPatient(BaseModel):
 
     class Config:
         orm_mode = True
+        use_enum_values = True
 
     @classmethod
     def from_external_patient(cls, patient: ExternalPatient):
         return cls(
-            status=Status.unseen,
+            status=Status.unassigned.value,
             severity=Severity(**patient.esi.dict()),
             awaiting={
                 AwaitingTypes.doctor.value: {

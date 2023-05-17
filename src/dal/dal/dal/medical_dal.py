@@ -637,11 +637,11 @@ class MedicalDal:
         updated = patient.copy()
         updated.treatment = treatment
         if treatment.destination:
-            updated.status = Status.decided
+            updated.status = Status.decided.value
         elif treatment.doctors:
-            updated.status = Status.undecided
+            updated.status = Status.undecided.value
         else:
-            updated.status = Status.unassigned
+            updated.status = Status.unassigned.value
 
         await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"treatment", "status"}, exclude_unset=True)
