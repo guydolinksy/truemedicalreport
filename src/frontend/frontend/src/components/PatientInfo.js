@@ -9,8 +9,15 @@ import lightTheme from 'highcharts/themes/grid-light';
 import darkTheme from 'highcharts/themes/dark-unica';
 import {useMatomo} from '@datapunt/matomo-tracker-react';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faHeart, faHeartPulse, faPercent, faTemperatureHalf, faWindowRestore} from "@fortawesome/free-solid-svg-icons";
-import {modalButton} from "./iframeModal";
+import {
+    faFileLines,
+    faHeart,
+    faHeartPulse,
+    faPercent,
+    faTemperatureHalf,
+    faWindowRestore, faXRay
+} from "@fortawesome/free-solid-svg-icons";
+import {htmlModal, iframeModal} from "./modals";
 import {patientDataContext, PatientStatus, PatientWarning} from "./Patient";
 import {loginContext} from "./LoginContext";
 import {UserTheme} from "../themes/ThemeContext";
@@ -185,7 +192,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                 <span>מעבדה</span>
                 <div><Badge style={{backgroundColor: '#1890ff'}} count={value.labs.length} size={"small"}/></div>
-                {modalButton(modal, faWindowRestore, "צפה.י בקמיליון", value.lab_link)}
+                {iframeModal(modal, faWindowRestore, "צפה.י בקמיליון", value.lab_link)}
             </div>
         }>
             {value.labs.length ? value.labs.map((lab, i) =>
@@ -207,6 +214,8 @@ const InternalPatientCard = ({patient, setHeader}) => {
                     animation: matched(['info', patient, 'imaging', `${image.external_id}`]) ? 'highlight 2s ease-out' : undefined
                 }}>
                     {image.title} - {image.status_text}
+                    {iframeModal(modal, faXRay, "דימות", image.link)}
+                    {htmlModal(modal, faFileLines, "פענוח", image.interpretation)}
                 </p>
             ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו הדמיות'}/>}
         </Panel>

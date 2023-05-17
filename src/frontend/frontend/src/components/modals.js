@@ -2,7 +2,7 @@ import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {Tooltip} from "antd";
 
-export const modalButton = (modal, faIconName, tooltip, link) => {
+export const iframeModal = (modal, faIconName, tooltip, link) => {
     return link && <Tooltip overlay={tooltip}>
         <FontAwesomeIcon icon={faIconName} onClick={e => {
             modal.info({
@@ -21,6 +21,24 @@ export const modalButton = (modal, faIconName, tooltip, link) => {
                     }}
                     src={link}
                 />
+            })
+            e.stopPropagation();
+        }}/>
+    </Tooltip>
+}
+
+export const htmlModal = (modal, faIconName, tooltip, rawHTML, width="95%") => {
+    return rawHTML && <Tooltip overlay={tooltip}>
+        <FontAwesomeIcon icon={faIconName} onClick={e => {
+            modal.info({
+                icon: null,
+                width: width,
+                okText: "סגור",
+                centered: true,
+                bodyStyle: {
+                    padding: "10px"
+                },
+                content: <div dangerouslySetInnerHTML={{__html: rawHTML}} />
             })
             e.stopPropagation();
         }}/>

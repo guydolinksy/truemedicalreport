@@ -3,7 +3,7 @@ import {Badge} from "antd";
 import {useNavigate} from "react-router";
 import {RelativeTime} from "./RelativeTime";
 import useModal from "antd/es/modal/useModal";
-import {modalButton} from "./iframeModal";
+import {iframeModal} from "./modals";
 import {faPlus} from "@fortawesome/free-solid-svg-icons";
 
 export const Notification = ({patient, message, unread, markRead, showExternalLink, ...props}) => {
@@ -22,7 +22,7 @@ export const Notification = ({patient, message, unread, markRead, showExternalLi
             {unread && <span><Badge status={'processing'}/>&nbsp;</span>}
             <span className={message.danger ? 'warn-text' : undefined}>{message.message}</span>
         </a>
-        {showExternalLink && modalButton(modal, faPlus, "צפה.י במערכת חיצונית", message.link)}
+        {showExternalLink && iframeModal(modal, faPlus, "צפה.י במערכת חיצונית", message.link)}
         <RelativeTime style={{fontSize: 12}} date={message.at}/>
         {modalContext}
     </>
