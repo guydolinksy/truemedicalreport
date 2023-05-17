@@ -37,7 +37,7 @@ class ExternalPatient(BaseModel):
 
 
 class InternalPatient(BaseModel):
-    status: Status = Status.unassigned
+    status: Status = Status.unassigned.value
     severity: Severity = Severity()
     awaiting: Dict[str, Dict[str, Awaiting]] = {}
     flagged: Optional[bool]

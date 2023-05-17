@@ -107,7 +107,7 @@ class LabCategory(BaseModel):
         return {'at': self.ordered_at, 'category_id': self.category_id}
 
     def get_instance_id(self):
-        return f'{self.patient_id}#{self.category_id}#{self.ordered_at}'.\
+        return f'{self.patient_id}#{self.category_id}#{self.ordered_at}'. \
             replace(":", "-").replace(".", "-").replace("+", "-")
 
     class Config:
@@ -127,7 +127,7 @@ class LabCategory(BaseModel):
                     patient_id=self.patient_id,
                     at=self.result_at,
                     message=f"תוצאת {self.category}-{result.test_type_name} גבוהה: {result.result} {result.units}",
-                    link="Add in the future",
+                    link=None,  # TODO "Add in the future",
                     level=NotificationLevel.abnormal if not result.range == 'PH' else NotificationLevel.panic,
                 ))
             if result.range == 'VL' or result.range == 'PL':
@@ -136,7 +136,7 @@ class LabCategory(BaseModel):
                     patient_id=self.patient_id,
                     at=self.result_at,
                     message=f"תוצאת {self.category}-{result.test_type_name} נמוכה: {result.result} {result.units}",
-                    link="Add in the future",
+                    link=None,  # "Add in the future",
                     level=NotificationLevel.abnormal if not result.range == 'PL' else NotificationLevel.panic,
                 ))
         return res if res else [LabsNotification(
@@ -144,7 +144,7 @@ class LabCategory(BaseModel):
             patient_id=self.patient_id,
             at=self.result_at if self.result_at else self.ordered_at,
             message=f"תוצאות {self.category} {'לא ' if out_of_range else ''}תקינות",
-            link="Add in the future",
+            link=None,  # "Add in the future",
             level=NotificationLevel.normal,
         )]
 
