@@ -132,7 +132,7 @@ export const ProtocolStatus = ({patient}) => {
     }}>
         {value.protocol && value.protocol.items && value.protocol.items.length ? value.protocol.items.map(item => {
             let data = value.protocol.values[item.key];
-            return <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between", alignItems:"center"}}>
+            return <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between", alignItems:"baseline"}}>
                 <div style={{display: "flex", flexFlow: "row nowrap", whiteSpace: "nowrap", overflowX: "hidden"}}>
                     <div>{item.name}:&nbsp;</div>
                     <div style={{overflowX: "hidden", textOverflow: "ellipsis"}}>
