@@ -104,10 +104,9 @@ export const PatientStatus = ({patient, style}) => {
     }}>
         <div style={{whiteSpace: "nowrap", display: "flex",alignItems:"center", overflowX: "hidden"}}>
             {value.protocol && value.protocol.active &&
-                            <Tooltip overlay={`מצב פרוטוקול - ${value.intake.complaint}`}>
-                                <FontAwesomeIcon icon={faCheckCircle} style={{marginLeft:"0.3rem", color:"#40a9ff"}} />
-                            </Tooltip>
-}
+                <Tooltip overlay={`מצב פרוטוקול - ${value.intake.complaint}`}>
+                    <FontAwesomeIcon icon={faCheckCircle} style={{marginLeft:"0.3rem", color:"#40a9ff"}} />
+                </Tooltip>}
             {!!value.severity.value && <span><Tooltip overlay='דחיפות'>
                 <span>(<strong>{value.severity.value}</strong>)</span>
             </Tooltip>&nbsp;</span>}
@@ -263,12 +262,14 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
 
 const PatientHeader = ({patient, avatar}) => {
     const {value} = useContext(patientDataContext.context);
-
     const {user} = useContext(loginContext);
-
+    const genderedColor = {
+        male: '#096dd9',
+        female: '#eb2f96'
+    }
     if (!patient)
         return <Button shape={"circle"} type={"text"}>{avatar || <UserOutlined/>}</Button>
-    return <span>
+    return <span style={{color:genderedColor[value.info.gender]}}>
         {avatar || value.admission.bed || <UserOutlined/>}&nbsp;
         {!user.anonymous && <span>
             <Tooltip overlay={`ת.ז. ${value.info.id_ || 'לא ידוע'}`}>{value.info.name}</Tooltip>,&nbsp;
