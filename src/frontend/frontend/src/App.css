@@ -348,3 +348,11 @@
     font-weight: bold;
     color: #bd1a1a;
 }
+
+.gender-male .ant-drawer-title {
+    color:#096dd9
+}
+
+.gender-female .ant-drawer-title {
+    color:#eb2f96
+}
