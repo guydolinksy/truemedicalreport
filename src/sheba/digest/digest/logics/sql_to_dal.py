@@ -1,5 +1,6 @@
 import contextlib
 import datetime
+import re
 from enum import Enum
 from typing import Dict, List
 
@@ -13,7 +14,7 @@ from sqlalchemy.orm import Session
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
 from common.data_models.image import ImagingStatus, Image
-from common.data_models.labs import Laboratory, LabStatus, CATEGORIES_IN_HEBREW, LabCategories
+from common.data_models.labs import Laboratory, LabStatus, CATEGORIES_IN_HEBREW, LabCategory
 from common.data_models.measures import Measure, MeasureType
 from common.data_models.notification import NotificationLevel
 from common.data_models.patient import Intake, ExternalPatient, Person
@@ -192,26 +193,65 @@ class SqlToDal(object):
     def update_labs(self, department: Departments):
         try:
             logger.debug('Getting labs for `{}`...', department.name)
-            labs = {}
+            orders = {}
+            statuses = {}
             with self.session() as session:
-                for row in session.execute(sql_statements.query_labs.format(unit=department.value)):
+                for row in session.execute(sql_statements.query_lab_orders.format(unit=department.value)):
                     try:
-                        labs.setdefault(row['MedicalRecord'], []).append(self._update_lab(row).dict(
-                            exclude_unset=True))
+                        status = {
+                            1: LabStatus.in_progress.value,
+                            2: LabStatus.analyzed.value,
+                            5: LabStatus.ordered.value,
+                            6: LabStatus.collected.value,
+                        }[row['OrderNumber']]
+                        statuses[re.sub(r'[^[0-9]', '', row['OrderNumber'])] = status
+
+                        if status == LabStatus.analyzed.value:
+                            continue
+                        ordered_at = utils.datetime_utc_serializer(row["OrderDate"])
+                        lc = LabCategory(
+                            ordered_at=ordered_at,
+                            category=row['OrderNumber'],
+                            category_display_name=f"הזמנה {row['OrderNumber']}",
+                            patient_id=row['MedicalRecord'],
+                            status=status,
+                            results={}
+                        )
+                        orders.setdefault(row['MedicalRecord'], {}).setdefault(lc.key, lc)
+                    except KeyError as e:
+                        msg = f"Lab from category '{row['Category']}' isn't exists in internal mapping " \
+                              f"for medical record {row['MedicalRecord']}"
+                        capture_message(msg, level="warning")
+                        logger.error(msg)
+            with self.session() as session:
+                for row in session.execute(sql_statements.query_lab_results.format(unit=department.value)):
+                    try:
+                        ordered_at = utils.datetime_utc_serializer(row["OrderDate"])
+                        lc = LabCategory(
+                            ordered_at=ordered_at,
+                            category=row['Category'],
+                            category_display_name=CATEGORIES_IN_HEBREW.get(row['Category'], row['Category']),
+                            patient_id=row['MedicalRecord'],
+                            status=statuses.get(row['OrderNumber'], LabStatus.analyzed.value),
+                            results={}
+                        )
+                        orders.setdefault(row['MedicalRecord'], {}).setdefault(
+                            lc.key, lc
+                        ).results.setdefault(row["TestCode"], self.row_to_lab(row))
                     except KeyError as e:
                         msg = f"Lab from category '{row['Category'].strip()}' isn't exists in internal mapping " \
                               f"for medical record {row['MedicalRecord']}"
                         capture_message(msg, level="warning")
                         logger.error(msg)
-            res = requests.post(f'{self.dal_url}/departments/{department.name}/labs',
-                                json={"labs": labs})
+            labs = {mr: {c: cat.dict(exclude_unset=True) for c, cat in cats.items()} for mr, cats in orders.items()}
+            res = requests.post(f'{self.dal_url}/departments/{department.name}/labs', json={"labs": labs})
             res.raise_for_status()
             return {"labs": labs}
         except HTTPError as e:
             logger.exception(f'Could not run labs handler. {e}')
 
     @staticmethod
-    def _update_lab(row) -> Laboratory:
+    def row_to_lab(row) -> Laboratory:
         if row["ResultTime"] is None:
             status = LabStatus.ordered
             result_at = None
@@ -234,8 +274,8 @@ class SqlToDal(object):
             result_at=result_at,
             test_type_id=row["TestCode"],
             test_type_name=row["TestName"],
-            category_id=category,
-            category_name=CATEGORIES_IN_HEBREW.get(category, CATEGORIES_IN_HEBREW[LabCategories.unknown.value]),
+            category=category,
+            category_display_name=CATEGORIES_IN_HEBREW.get(category, category),
             range=row["Range"],
             result=row["Result"],
             units=row["Units"],

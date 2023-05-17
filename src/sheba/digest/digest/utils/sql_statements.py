@@ -153,13 +153,14 @@ WHERE
             AND mr.Delete_Date is null
 """
 
-query_labs = """
+query_lab_results = """
 select 
 ev.Medical_Record AS MedicalRecord,
 labr.test_code AS TestCode,
 lhs.Name AS Category, 
 labr.Test_Name AS TestName,
 labr.Row_ID,
+labr.Label_No as OrderNumber,
 labr.Result,
 labr.Units,
 labr.Result_Date AS OrderDate,
@@ -176,6 +177,23 @@ AND labr.Delete_Date IS NULL
 and ev.unit = {unit}
 and ev.admission_date > GETDATE()-7
 and labr.Result_Entry_Date >= ev.admission_date"""
+
+
+query_lab_orders = """
+select 
+ev.Medical_Record AS MedicalRecord,
+toh.External_Order_No AS OrderNumber,
+toh.Order_Status AS OrderStatus, 
+toh.Order_Date AS OrderDate, 
+toh.Entry_Date AS EntryDate, 
+from Chameleon.dbo.TestOrderHeading AS toh
+INNER JOIN chameleon.dbo.emergancyvisits AS ev ON ev.patient = toh.Patient 
+WHERE ev.Delete_Date  IS NULL
+AND ev.Release_Time  IS NULL
+AND toh.Delete_Date IS NULL
+and ev.unit = {unit}
+and ev.admission_date > GETDATE()-7
+and toh.Entry_Date >= ev.admission_date"""
 
 query_doctor_intake = """
 SELECT

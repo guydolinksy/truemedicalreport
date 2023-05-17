@@ -12,7 +12,7 @@ from pymongo.errors import DuplicateKeyError
 from common.data_models.awaiting import Awaiting, AwaitingTypes
 from common.data_models.event import Event
 from common.data_models.image import Image, ImagingStatus, ImagingTypes
-from common.data_models.labs import Laboratory, LabCategory, STATUS_IN_HEBREW, LabStatus
+from common.data_models.labs import LabCategory, LabStatus
 from common.data_models.measures import Measure, MeasureType, FullMeasures, Latest, ExpectedEffect, MeasureEffect
 from common.data_models.medicine import Medicine
 from common.data_models.notification import Notification
@@ -508,57 +508,56 @@ class MedicalDal:
         return imaging.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value,
                                   ImagingStatus.cancelled.value]
 
-    async def upsert_labs(self, patient_id: str, new_labs: List[Laboratory]):
+    async def upsert_labs(self, patient_id: str, new_categories:  Dict[str, LabCategory]):
         patient = await self.get_patient({"external_id": patient_id})
         updated = patient.copy()
 
         labs: Dict[tuple, LabCategory] = {
             c.key: c for c in [LabCategory(**l) async for l in self.db.labs.find({"patient_id": patient_id})]
         }
-        for lab in new_labs:
-            c = labs.setdefault(
-                lab.category_key,
-                LabCategory(patient_id=patient_id, ordered_at=lab.ordered_at, result_at=lab.result_at,
-                            category_id=lab.category_id, category=lab.category_name),
-            )
-            c.results[str(lab.test_type_id)] = lab
-            c.status = STATUS_IN_HEBREW[min({l.status for l in c.results.values()})]
+        for c in set(new_categories) | set(labs):
+            if c in new_categories:
+                cat = new_categories[c]
+                await self.db.labs.update_one(
+                    {"patient_id": patient_id, **cat.query_key},
+                    {"$set": dict(patient_id=patient_id, **cat.dict(exclude={"patient_id"}))},
+                    upsert=True,
+                )
+                for lab in cat.results.values():
+                    for item in [item for item in patient.protocol.items if item.match(f'lab-{lab.test_type_id}')]:
+                        value, at = \
+                            (f'{lab.result} {lab.units}', lab.result_at) if lab.result_at else ('הוזמן', lab.ordered_at)
+                        if item.key not in patient.protocol.values or patient.protocol.values[item.key].at < at:
+                            updated.protocol.values[item.key] = ProtocolValue(value=value, at=at)
 
-            for item in [item for item in patient.protocol.items if item.match(f'lab-{lab.test_type_id}')]:
-                value, at = (f'{lab.result} {lab.units}', lab.result_at) if lab.result_at else ('הוזמן', lab.ordered_at)
-                if item.key not in patient.protocol.values or patient.protocol.values[item.key].at < at:
-                    updated.protocol.values[item.key] = ProtocolValue(value=value, at=at)
+                if cat.status == LabStatus.analyzed.value:
+                    for notification in cat.to_notifications():
+                        await self.db.notifications.update_one(
+                            {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
+                        )
+                        logger.info("current time:{} - notification time: {} - {}",
+                                    datetime.datetime.utcnow(), notification.at, notification.message)
+                    await publish("notification", patient.oid)
 
-        for lab in labs.values():
-            await self.db.labs.update_one(
-                {"patient_id": patient_id, **lab.query_key},
-                {"$set": dict(patient_id=patient_id, **lab.dict(exclude={"patient_id"}))},
-                upsert=True,
-            )
-            if lab.status == STATUS_IN_HEBREW[LabStatus.analyzed.value]:
-                for notification in lab.to_notifications():
-                    await self.db.notifications.update_one(
-                        {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
-                    )
-                    logger.info("current time:{} - notification time: {} - {}",
-                                datetime.datetime.utcnow(), notification.at, notification.message)
-                await publish("notification", patient.oid)
+                for key, warning in cat.get_updated_warnings(
+                        {key: warning for key, warning in patient.warnings.items() if key.startswith('lab#')}
+                ):
+                    updated.warnings[key] = warning
 
-            for key, warning in lab.get_updated_warnings(
-                    {key: warning for key, warning in patient.warnings.items() if key.startswith('lab#')}
-            ):
-                updated.warnings[key] = warning
-
-            updated.awaiting.setdefault(AwaitingTypes.laboratory.value, {}).__setitem__(
-                lab.get_instance_id(),
-                Awaiting(
-                    subtype=lab.category,
-                    name=lab.category,
-                    since=lab.ordered_at,
-                    completed=lab.status == STATUS_IN_HEBREW[LabStatus.analyzed.value],
-                    limit=3600,
-                ),
-            )
+                updated.awaiting.setdefault(AwaitingTypes.laboratory.value, {}).__setitem__(
+                    cat.key,
+                    Awaiting(
+                        subtype=cat.category, # TODO subtype
+                        name=cat.category_display_name,
+                        since=cat.ordered_at,
+                        completed=cat.status == LabStatus.analyzed.value,
+                        limit=3600,
+                    ),
+                )
+            else:
+                cat = labs[c]
+                await self.db.labs.delete_one({"patient_id": patient_id, **cat.query_key})
+                del updated.awaiting[AwaitingTypes.laboratory.value][cat.key]
 
         await self.atomic_update_patient({"_id": ObjectId(patient.oid)}, updated.dict(
             include={"awaiting", "warnings", 'protocol'}, exclude_unset=True
