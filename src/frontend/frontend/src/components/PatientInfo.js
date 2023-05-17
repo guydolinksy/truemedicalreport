@@ -1,4 +1,4 @@
-import {Badge, Collapse, Drawer, Empty, List, Radio, Spin, Timeline} from "antd";
+import {Badge, Collapse, Drawer, Empty, List, Radio, Spin, Timeline, Tooltip, Modal} from "antd";
 import React, {useContext, useEffect, useState} from "react";
 import {useNavigate} from "react-router";
 import Moment from "react-moment";
@@ -7,8 +7,10 @@ import HighchartsReact from "highcharts-react-official";
 import highchartsMore from 'highcharts/highcharts-more';
 import lightTheme from 'highcharts/themes/grid-light';
 import darkTheme from 'highcharts/themes/dark-unica';
+import {useMatomo} from '@datapunt/matomo-tracker-react';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faHeart, faHeartPulse, faPercent, faTemperatureHalf,} from "@fortawesome/free-solid-svg-icons";
+import {faHeart, faHeartPulse, faPercent, faTemperatureHalf, faWindowRestore} from "@fortawesome/free-solid-svg-icons";
+import {FlagFilled} from '@ant-design/icons';
 import {patientDataContext, PatientStatus, PatientWarning} from "./Patient";
 import {loginContext} from "./LoginContext";
 import {UserTheme} from "../themes/ThemeContext";
@@ -102,6 +104,8 @@ const InternalPatientCard = ({patient, setHeader}) => {
     const {user} = useContext(loginContext);
     const {value, loading} = useContext(patientDataContext.context);
     const {matched, matching} = useContext(hashMatchContext);
+    const [modal, modalContext] = Modal.useModal();
+    const {trackEvent} = useMatomo()
     useEffect(() => {
         if (loading)
             setHeader({title: ''})
@@ -181,6 +185,29 @@ const InternalPatientCard = ({patient, setHeader}) => {
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                 <span>מעבדה</span>
                 <div><Badge style={{backgroundColor: '#1890ff'}} count={value.labs.length} size={"small"}/></div>
+                <Tooltip overlay={"צפה.י בקמיליון"}>
+                    <FontAwesomeIcon icon={faWindowRestore} onClick={e => {
+                        modal.info({
+                            icon: null,
+                            width: "95%",
+                            okText: "סגור",
+                            centered: true,
+                            bodyStyle: {
+                                padding: "10px"
+                            },
+                            content: <iframe
+                                style={{
+                                    border: 0,
+                                    width: "100%",
+                                    height: 0.75 * window.document.documentElement.clientHeight
+                                }}
+                                src="http://neverssl.com"
+                            />
+                        })
+                        trackEvent({category: 'external-lab', action: 'click-event'})
+                        e.stopPropagation();
+                    }}/>
+                </Tooltip>
             </div>
         }>
             {value.labs.length ? value.labs.map((lab, i) =>
@@ -223,5 +250,6 @@ const InternalPatientCard = ({patient, setHeader}) => {
                 <iframe style={{border: "none", width: "100%", height: "250px"}} title={title} src={url}/>
             </Panel>
         )}
+        {modalContext}
     </Collapse>
 }
