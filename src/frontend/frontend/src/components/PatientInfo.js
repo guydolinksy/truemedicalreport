@@ -10,7 +10,7 @@ import darkTheme from 'highcharts/themes/dark-unica';
 import {useMatomo} from '@datapunt/matomo-tracker-react';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faHeart, faHeartPulse, faPercent, faTemperatureHalf, faWindowRestore} from "@fortawesome/free-solid-svg-icons";
-import {FlagFilled} from '@ant-design/icons';
+import {modalButton} from "./iframeModal";
 import {patientDataContext, PatientStatus, PatientWarning} from "./Patient";
 import {loginContext} from "./LoginContext";
 import {UserTheme} from "../themes/ThemeContext";
@@ -185,29 +185,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                 <span>מעבדה</span>
                 <div><Badge style={{backgroundColor: '#1890ff'}} count={value.labs.length} size={"small"}/></div>
-                {value.lab_link && <Tooltip overlay={"צפה.י בקמיליון"}>
-                    <FontAwesomeIcon icon={faWindowRestore} onClick={e => {
-                        modal.info({
-                            icon: null,
-                            width: "95%",
-                            okText: "סגור",
-                            centered: true,
-                            bodyStyle: {
-                                padding: "10px"
-                            },
-                            content: <iframe
-                                style={{
-                                    border: 0,
-                                    width: "100%",
-                                    height: 0.75 * window.document.documentElement.clientHeight
-                                }}
-                                src={value.lab_link}
-                            />
-                        })
-                        trackEvent({category: 'external-lab', action: 'click-event'})
-                        e.stopPropagation();
-                    }}/>
-                </Tooltip>}
+                {modalButton(modal, faWindowRestore, "צפה.י בקמיליון", value.lab_link)}
             </div>
         }>
             {value.labs.length ? value.labs.map((lab, i) =>
