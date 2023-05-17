@@ -24,7 +24,8 @@ query_patient_admission = """
 SELECT
     ev.Medical_Record as MedicalRecord,
     CONCAT(pat.First_Name,' ',pat.Last_Name) AS FullName,
-    pat.Id_Num as PatientID,
+    pat.Id_Num as NationalID,
+    pat.Patient as PatientID,
     pd.Birth_Date AS BirthDate,
     gen.Answer_Text AS Gender,
     esi.Answer_Text AS ESI,

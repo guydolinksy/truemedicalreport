@@ -20,10 +20,10 @@ from common.data_models.notification import NotificationLevel
 from common.data_models.patient import Intake, ExternalPatient, Person
 from common.data_models.referrals import Referral
 from common.data_models.treatment import Treatment
-from .. import config
-from ..utils import sql_statements, utils
 from .ris_adapter import OracleAdapter
+from .. import config
 from ..models.ris_imaging import RisImaging
+from ..utils import sql_statements, utils
 
 logger = logbook.Logger(__name__)
 
@@ -59,6 +59,9 @@ SHEBA_MEASUREMENT_CODES = {
     542: MeasureType.enriched_saturation,
 }
 
+SHEBA_IMAGING_LINK = f'{config.care_stream_url}&accession_number={{accession_number}}'
+SHEBA_LABS_LINK = f'{config.chameleon_url}/Chameleon/Asp/Records/LabResults_Modal?Patient={{patient}}'
+
 
 class Departments(Enum):
     er = '1184000'
@@ -89,7 +92,7 @@ class SqlToDal(object):
                     patients.append(ExternalPatient(
                         external_id=row["MedicalRecord"],
                         info=Person(
-                            id_=row["PatientID"],
+                            id_=row["NationalID"],
                             name=row["FullName"],
                             gender='male' if row["Gender"] == 'זכר' else 'female',
                             birthdate=utils.datetime_utc_serializer(row["BirthDate"]),
@@ -108,6 +111,7 @@ class SqlToDal(object):
                         intake=Intake(
                             complaint=row["MainCause"],
                         ),
+                        lab_link=SHEBA_LABS_LINK.format(patient=row["PatientID"]),
                     ).dict(exclude_unset=True))
             res = requests.post(f'{self.dal_url}/departments/{department.name}/admissions',
                                 json={'admissions': patients})
@@ -163,7 +167,7 @@ class SqlToDal(object):
                         status=SHEBA_IMAGING_STATUS.get(row['OrderStatus'], ImagingStatus.unknown),
                         interpretation=row['Result'],
                         level=SHEBA_IMAGING_LEVEL.get(row['Panic'], NotificationLevel.normal),
-                        link='https://localhost/',
+                        link=SHEBA_IMAGING_LINK.format(accession_number=row['AccessionNumber']),
                     ))
             self._merge_ris_chameleon_imaging(accessions, imaging)
 

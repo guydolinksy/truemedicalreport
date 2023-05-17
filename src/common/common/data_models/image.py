@@ -1,7 +1,8 @@
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel
-from typing import Optional
+
 from common.data_models.notification import NotificationLevel, Notification, NotificationType
 
 
@@ -44,6 +45,7 @@ class Image(BaseModel):
     imaging_type: Optional[ImagingTypes]
     status_text: str
     link: str
+    interpretation: Optional[str]
     level: NotificationLevel
     ordered_at: str
     updated_at: Optional[str]
