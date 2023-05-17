@@ -33,6 +33,7 @@ class ExternalPatient(BaseModel):
     admission: Admission = Admission()
     intake: Intake = Intake()
     treatment: Treatment = Treatment()
+    lab_link: Optional[str]
 
 
 class InternalPatient(BaseModel):

@@ -59,6 +59,10 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.input.oracle.secretName }}
                   key: {{ .Values.input.oracle.secretKey }}
+            - name: 'CHAMELEON_URL'
+              value: '"{{ .Values.external.chameleonUrl }}"'
+            - name: 'CARE_STREAM_URL'
+              value: '"{{ .Values.external.careStreamUrl }}"'
             - name: 'PORT'
               value: '80'
             - name: 'DEBUG'

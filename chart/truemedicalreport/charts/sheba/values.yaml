@@ -85,6 +85,10 @@ input:
     secretName: ''
     secretKey: ''
 
+external:
+  careStreamUrl: ''
+  chameleonUrl: ''
+
 global: &global
   fullname:
     chameleon: &chameleon-fullname sbwnd81c
