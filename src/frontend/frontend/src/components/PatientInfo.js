@@ -177,7 +177,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
         }}>
             {value.notifications.length > 0 ? value.notifications.map((notification, i) =>
                 <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
-                    <Notification key={i} patient={patient} message={notification}/>
+                    <Notification key={i} patient={patient} message={notification} showExternalLink={true}/>
                 </div>
             ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין עדכונים זמינים'}/>}
         </Panel>

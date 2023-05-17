@@ -131,7 +131,7 @@ const WingNotifications = () => {
                         <Item key={`${notification.patient.oid}-${j}`}>
                             <Notification unread={(unread[notification.patient.oid] || []).includes(message.static_id)}
                                           markRead={() => markRead(notification.patient.oid, message.static_id)}
-                                          patient={notification.patient.oid} message={message}/>
+                                          patient={notification.patient.oid} message={message} showExternalLink={true}/>
                         </Item>
                     )}
                 </List> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין עדכונים זמינים'}/>}

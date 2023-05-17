@@ -2,9 +2,13 @@ import React, {useEffect} from "react";
 import {Badge} from "antd";
 import {useNavigate} from "react-router";
 import {RelativeTime} from "./RelativeTime";
+import useModal from "antd/es/modal/useModal";
+import {modalButton} from "./iframeModal";
+import {faPlus} from "@fortawesome/free-solid-svg-icons";
 
-export const Notification = ({patient, message, unread, markRead, ...props}) => {
+export const Notification = ({patient, message, unread, markRead, showExternalLink, ...props}) => {
     const {navigate} = useNavigate();
+    const [modal, modalContext] = useModal();
     useEffect(() => {
         let task = setTimeout(markRead || (() => {
         }), 6000);
@@ -18,6 +22,8 @@ export const Notification = ({patient, message, unread, markRead, ...props}) => 
             {unread && <span><Badge status={'processing'}/>&nbsp;</span>}
             <span className={message.danger ? 'warn-text' : undefined}>{message.message}</span>
         </a>
+        {showExternalLink && modalButton(modal, faPlus, "צפה.י במערכת חיצונית", message.link)}
         <RelativeTime style={{fontSize: 12}} date={message.at}/>
+        {modalContext}
     </>
 }
