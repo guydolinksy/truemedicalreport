@@ -300,15 +300,6 @@ class FakeMain(object):
                 order_date = order_date
                 # test_type_id = f'{category.value}{test_type_id:04}'
                 test_type_name = test_type_name
-                min_warn_bar = self.faker.pyfloat(min_value=20.0,
-                                                  max_value=40.0, right_digits=2)
-                panic_min_warn_bar = self.faker.pyfloat(min_value=0.0,
-                                                        max_value=39.9, right_digits=2)
-                max_warn_bar = self.faker.pyfloat(min_value=80.0,
-                                                  max_value=100.0, right_digits=2)
-                panic_max_warn_bar = self.faker.pyfloat(min_value=100.0,
-                                                        max_value=130.0, right_digits=2)
-
                 if step > 30:
                     collection_date = collection_date
                     if step > 65:
@@ -319,8 +310,7 @@ class FakeMain(object):
                     session.execute(
                         sql_statements.insert_labs.format(ev_MedicalRecord=patient_id, LR_Test_code=order_number,
                                                           Lab_Headline_Name=h_category, LR_Test_Name=test_type_name,
-                                                          LR_Result=result, LR_Norm_Minimum=min_warn_bar,
-                                                          LR_Norm_Maximum=max_warn_bar, LR_Result_Date=order_date,
+                                                          LR_Result=result, LR_Result_Date=order_date,
                                                           LR_Result_Entry_Date=result_time, LR_Units=None))
                     session.commit()
 

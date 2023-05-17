@@ -61,11 +61,9 @@ class Laboratory(BaseModel):
     test_type_name: str
     category_id: str
     category_name: str
-    test_tube_id: Optional[int]
-    min_warn_bar: Optional[float]
-    max_warn_bar: Optional[float]
     result: Optional[str]
     units: Optional[str]
+    range: Optional[str]
     panic: Optional[bool]
     status: LabStatus
 
@@ -109,7 +107,8 @@ class LabCategory(BaseModel):
         return {'at': self.ordered_at, 'category_id': self.category_id}
 
     def get_instance_id(self):
-        return f'{self.patient_id}#{self.category_id}#{self.ordered_at.replace(":", "-").replace(".", "-")}'
+        return f'{self.patient_id}#{self.category_id}#{self.ordered_at}'.\
+            replace(":", "-").replace(".", "-").replace("+", "-")
 
     class Config:
         orm_mode = True
@@ -117,30 +116,34 @@ class LabCategory(BaseModel):
 
     def to_notifications(self) -> List[LabsNotification]:
         res = []
+        out_of_range = False
         for key, result in self.results.items():
-            if result.max_warn_bar and self.result_at and float(result.result) > float(result.max_warn_bar):
+            if not result.range or result.range == 'N':
+                continue
+            out_of_range = True
+            if result.range == 'VH' or result.range == 'PH':
                 res.append(LabsNotification(
                     static_id=f'{self.get_instance_id()}#{key}',
                     patient_id=self.patient_id,
                     at=self.result_at,
                     message=f"תוצאת {self.category}-{result.test_type_name} גבוהה: {result.result} {result.units}",
                     link="Add in the future",
-                    level=NotificationLevel.abnormal if not result.panic else NotificationLevel.panic,
+                    level=NotificationLevel.abnormal if not result.range == 'PH' else NotificationLevel.panic,
                 ))
-            if result.min_warn_bar and self.result_at and float(result.result) < float(result.min_warn_bar):
+            if result.range == 'VL' or result.range == 'PL':
                 res.append(LabsNotification(
                     static_id=f'{self.get_instance_id()}#{key}',
                     patient_id=self.patient_id,
                     at=self.result_at,
                     message=f"תוצאת {self.category}-{result.test_type_name} נמוכה: {result.result} {result.units}",
                     link="Add in the future",
-                    level=NotificationLevel.abnormal if not result.panic else NotificationLevel.panic,
+                    level=NotificationLevel.abnormal if not result.range == 'PL' else NotificationLevel.panic,
                 ))
         return res if res else [LabsNotification(
             static_id=self.get_instance_id(),
             patient_id=self.patient_id,
             at=self.result_at if self.result_at else self.ordered_at,
-            message=f"תוצאות {self.category} תקינות",
+            message=f"תוצאות {self.category} {'לא ' if out_of_range else ''}תקינות",
             link="Add in the future",
             level=NotificationLevel.normal,
         )]

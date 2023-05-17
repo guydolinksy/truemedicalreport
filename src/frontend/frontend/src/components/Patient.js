@@ -14,6 +14,7 @@ import {useTime} from 'react-timer-hook';
 import {hashMatchContext} from "./HashMatch";
 import {RelativeTime} from "./RelativeTime"
 import {Notification} from "./Notification";
+import {loginContext} from "./LoginContext";
 
 const {Item} = List;
 export const patientDataContext = createContext({
@@ -71,7 +72,7 @@ const PatientAge = ({patient}) => {
         female: 'בת',
     }
     return !patient || loading ? null : <span>
-        ,&nbsp;{genderedAge[value.info.gender]}&nbsp;
+        {genderedAge[value.info.gender]}&nbsp;
         <Tooltip overlay={
             value.info.birthdate ? <Moment date={value.info.birthdate} format={"DD/MM/YYYY"}/> : "לא ידוע"
         }>
@@ -253,11 +254,16 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
 
 const PatientHeader = ({patient, avatar}) => {
     const {value} = useContext(patientDataContext.context);
+
+    const {user} = useContext(loginContext);
+
     if (!patient)
         return <Button shape={"circle"} type={"text"}>{avatar || <UserOutlined/>}</Button>
     return <span>
         {avatar || value.admission.bed || <UserOutlined/>}&nbsp;
-        <Tooltip overlay={`ת.ז. ${value.info.id_ || 'לא ידוע'}`}>{value.info.name}</Tooltip>
+        {!user.anonymous && <span>
+            <Tooltip overlay={`ת.ז. ${value.info.id_ || 'לא ידוע'}`}>{value.info.name}</Tooltip>,&nbsp;
+        </span>}
         <PatientAge patient={patient}/>
     </span>
 }

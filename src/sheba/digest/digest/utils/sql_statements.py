@@ -161,10 +161,9 @@ labr.Test_Name AS TestName,
 labr.Row_ID,
 labr.Result,
 labr.Units,
-labr.Norm_Minimum AS NormMinimum,
-labr.Norm_Maximum AS NormMaximum,
 labr.Result_Date AS OrderDate,
 labr.Result_Entry_Date AS ResultTime,
+labr.Range,
 rnc.panic AS Panic
 from Results.dbo.LabResults AS labr
 INNER JOIN chameleon.dbo.LabHeadlinesSort AS lhs ON lhs.Code = labr.Heading

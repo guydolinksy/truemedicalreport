@@ -232,10 +232,7 @@ class SqlToDal(object):
             test_type_name=row["TestName"],
             category_id=category,
             category_name=CATEGORIES_IN_HEBREW.get(category, CATEGORIES_IN_HEBREW[LabCategories.unknown.value]),
-            test_tube_id=9,
-            min_warn_bar=row["NormMinimum"],
-            max_warn_bar=row["NormMaximum"],
-            panic=row["Panic"],
+            range=row["Range"],
             result=row["Result"],
             units=row["Units"],
             status=status

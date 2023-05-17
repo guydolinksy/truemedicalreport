@@ -51,9 +51,9 @@ export const PatientInfo = ({onError}) => {
 
     const {matched, matching} = useContext(hashMatchContext);
 
-    const [title, setTitle] = useState();
+    const [{title, className}, setHeader] = useState({});
     return <Drawer title={title} placement={"left"} visible={matched(['info'])} onClose={() => navigate('#')}
-                   size={500}>
+                   className={className} size={500}>
         <UserTheme>
             {matched(['info']) &&
                 <patientDataContext.Provider url={`/api/patients/${matching(['info'])[0]}/info`} defaultValue={{
@@ -73,7 +73,7 @@ export const PatientInfo = ({onError}) => {
                         pulse: []
                     }, visits: [], notifications: [], labs: [], imaging: [], referrals: []
                 }} onError={onError}>
-                    {() => <InternalPatientCard patient={matching(['info'])[0]} setTitle={setTitle}/>}
+                    {() => <InternalPatientCard patient={matching(['info'])[0]} setHeader={setHeader}/>}
                 </patientDataContext.Provider>}
         </UserTheme>
     </Drawer>
@@ -98,20 +98,25 @@ const FullMeasure = ({patient, measure, icon, latest, data, title, graphProps}) 
         <MeasureGraph data={data} title={title} graphProps={graphProps}/>
     </List.Item>
 }
-const InternalPatientCard = ({patient, setTitle}) => {
+const InternalPatientCard = ({patient, setHeader}) => {
+    const {user} = useContext(loginContext);
     const {value, loading} = useContext(patientDataContext.context);
     const {matched, matching} = useContext(hashMatchContext);
     useEffect(() => {
         if (loading)
-            setTitle('')
+            setHeader({title: ''})
         else {
             let gender = {
                 male: 'בן',
                 female: 'בת',
             }[value.info.gender];
-            setTitle(`${value.info.name}, ${gender} (${value.info.age || 'גיל לא ידוע'}), ת.ז. ${value.info.id_}:`);
+            setHeader({
+                title: user.anonymous ? `${gender} (${value.info.age || 'גיל לא ידוע'})`:
+                    `${value.info.name}, ${gender} (${value.info.age || 'גיל לא ידוע'}), ת.ז. ${value.info.id_}:`,
+                className: `gender-${value.info.gender}`
+            });
         }
-    }, [value, loading, setTitle]);
+    }, [value, loading, setHeader]);
     if (loading)
         return <Spin/>
     return <Collapse defaultActiveKey={['basic'].concat(...matching(['info', patient]).slice(0, 1))}>
@@ -215,7 +220,7 @@ const InternalPatientCard = ({patient, setTitle}) => {
         </Panel>
         {value.plugins.map(({key, title, url}) =>
             <Panel key={key} header={title}>
-                <iframe style={{border: "none", width: "100%", height: "200px"}} title={title} src={url}/>
+                <iframe style={{border: "none", width: "100%", height: "250px"}} title={title} src={url}/>
             </Panel>
         )}
     </Collapse>
