@@ -2,10 +2,7 @@ import React, {useContext, useEffect, useRef, useState} from "react";
 import {Badge, Button, Card, Carousel, Empty, List, Popover, Space, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
-    faAnchorCircleCheck,
-    faBridgeCircleCheck,
-    faCheck, faCheckCircle,
-    faCircleCheck,
+    faCheckCircle,
     faWarning,
 } from "@fortawesome/free-solid-svg-icons";
 import {ArrowLeftOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
@@ -94,6 +91,7 @@ export const PatientStatus = ({patient, style}) => {
     const [arrivalClass, setArrivalClass] = useState(undefined);
     const {trackEvent} = useMatomo()
 
+
     useEffect(() => {
         if (moment().subtract(2, "hours").isAfter(value.admission.arrival))
             setArrivalClass('warn-text')
@@ -106,7 +104,10 @@ export const PatientStatus = ({patient, style}) => {
     }}>
         <div style={{whiteSpace: "nowrap", display: "flex",alignItems:"center", overflowX: "hidden"}}>
             {value.protocol && value.protocol.active &&
-                <FontAwesomeIcon icon={faCheckCircle} style={{marginLeft:"0.3rem", color:"#40a9ff"}} />}
+                            <Tooltip overlay={`מצב פרוטוקול - ${value.intake.complaint}`}>
+                                <FontAwesomeIcon icon={faCheckCircle} style={{marginLeft:"0.3rem", color:"#40a9ff"}} />
+                            </Tooltip>
+}
             {!!value.severity.value && <span><Tooltip overlay='דחיפות'>
                 <span>(<strong>{value.severity.value}</strong>)</span>
             </Tooltip>&nbsp;</span>}
