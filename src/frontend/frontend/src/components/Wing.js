@@ -46,9 +46,9 @@ const highlighter = new Highlighter('root');
 const {Panel} = Collapse;
 const {Item} = List;
 const badgeClass = {
-    1: 'status-badge status-error',
-    2: 'status-badge status-warn',
-    3: 'status-badge status-success',
+    0: 'status-badge status-success',
+    1: 'status-badge status-warn',
+    2: 'status-badge status-error',
 }
 
 const WingLayout = ({department, wing, details, onError}) => {

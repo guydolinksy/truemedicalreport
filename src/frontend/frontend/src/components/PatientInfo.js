@@ -21,6 +21,14 @@ const themes = {['dark-theme']: darkTheme, ['light-theme']: lightTheme}
 
 const {Panel} = Collapse;
 const fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;";
+
+const labStatuses = {
+    1: 'הוזמן',
+    2: 'שויכו דגימות',
+    3: 'בעבודה',
+    4: 'תוצאות',
+}
+
 const MeasureGraph = ({data, title, graphProps}) => {
     const {userSettings} = useContext(loginContext);
     (themes[userSettings.theme] || (x => x))(Highcharts);
@@ -187,7 +195,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
                 <p key={i} style={{
                     animation: matched(['info', patient, 'labs', `lab-${i}`]) ? 'highlight 2s ease-out' : undefined
                 }}>
-                    {lab.category} - {lab.status} - <RelativeTime style={{fontSize: 12}} date={lab.at}/>
+                    {lab.category} - {labStatuses[lab.status]} - <RelativeTime style={{fontSize: 12}} date={lab.ordered_at}/>
                 </p>
             ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
         </Panel>

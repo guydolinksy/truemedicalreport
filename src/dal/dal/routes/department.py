@@ -7,7 +7,7 @@ from sentry_sdk import capture_exception, capture_message
 
 from common.data_models.department import Department
 from common.data_models.image import Image
-from common.data_models.labs import Laboratory
+from common.data_models.labs import LabCategory
 from common.data_models.measures import Measure
 from common.data_models.medicine import Medicine
 from common.data_models.patient import ExternalPatient, Intake
@@ -105,12 +105,12 @@ async def update_referrals(department: str, at: str = Body(..., embed=True),
 
 
 @department_router.post("/{department}/labs")
-async def update_labs(labs: Dict[str, List[Laboratory]] = Body(..., embed=True),
+async def update_labs(labs: Dict[str, Dict[str, LabCategory]] = Body(..., embed=True),
                       dal: MedicalDal = Depends(medical_dal)):
     for patient in labs:
         try:
             logger.info(f"upsert labs for {patient}")
-            await dal.upsert_labs(patient_id=patient, new_labs=labs[patient])
+            await dal.upsert_labs(patient_id=patient, new_categories=labs[patient])
         except PatientNotFound:
             msg = f"Cannot update patient {patient} labs"
             capture_message(msg)
