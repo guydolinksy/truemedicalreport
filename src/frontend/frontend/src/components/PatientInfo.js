@@ -185,7 +185,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                 <span>מעבדה</span>
                 <div><Badge style={{backgroundColor: '#1890ff'}} count={value.labs.length} size={"small"}/></div>
-                <Tooltip overlay={"צפה.י בקמיליון"}>
+                {value.lab_link && <Tooltip overlay={"צפה.י בקמיליון"}>
                     <FontAwesomeIcon icon={faWindowRestore} onClick={e => {
                         modal.info({
                             icon: null,
@@ -201,13 +201,13 @@ const InternalPatientCard = ({patient, setHeader}) => {
                                     width: "100%",
                                     height: 0.75 * window.document.documentElement.clientHeight
                                 }}
-                                src="http://neverssl.com"
+                                src={value.lab_link}
                             />
                         })
                         trackEvent({category: 'external-lab', action: 'click-event'})
                         e.stopPropagation();
                     }}/>
-                </Tooltip>
+                </Tooltip>}
             </div>
         }>
             {value.labs.length ? value.labs.map((lab, i) =>
