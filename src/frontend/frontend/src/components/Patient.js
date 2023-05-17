@@ -1,7 +1,13 @@
 import React, {useContext, useEffect, useRef, useState} from "react";
 import {Badge, Button, Card, Carousel, Empty, List, Popover, Space, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faWarning,} from "@fortawesome/free-solid-svg-icons";
+import {
+    faAnchorCircleCheck,
+    faBridgeCircleCheck,
+    faCheck, faCheckCircle,
+    faCircleCheck,
+    faWarning,
+} from "@fortawesome/free-solid-svg-icons";
 import {ArrowLeftOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
 import {createContext} from "../hooks/DataContext";
 import {useLocation, useNavigate} from "react-router";
@@ -72,7 +78,7 @@ const PatientAge = ({patient}) => {
         female: 'בת',
     }
     return !patient || loading ? null : <span>
-        {genderedAge[value.info.gender]}&nbsp;
+        ,&nbsp;{genderedAge[value.info.gender]}&nbsp;
         <Tooltip overlay={
             value.info.birthdate ? <Moment date={value.info.birthdate} format={"DD/MM/YYYY"}/> : "לא ידוע"
         }>
@@ -98,7 +104,9 @@ export const PatientStatus = ({patient, style}) => {
         trackEvent({category: 'patient-complaint', action: 'click-event'});
         e.stopPropagation();
     }}>
-        <div style={{whiteSpace: "nowrap", display: "flex", overflowX: "hidden"}}>
+        <div style={{whiteSpace: "nowrap", display: "flex",alignItems:"center", overflowX: "hidden"}}>
+            {value.protocol && value.protocol.active &&
+                <FontAwesomeIcon icon={faCheckCircle} style={{marginLeft:"0.3rem", color:"#40a9ff"}} />}
             {!!value.severity.value && <span><Tooltip overlay='דחיפות'>
                 <span>(<strong>{value.severity.value}</strong>)</span>
             </Tooltip>&nbsp;</span>}
@@ -124,7 +132,7 @@ export const ProtocolStatus = ({patient}) => {
     }}>
         {value.protocol && value.protocol.items && value.protocol.items.length ? value.protocol.items.map(item => {
             let data = value.protocol.values[item.key];
-            return <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
+            return <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between", alignItems:"center"}}>
                 <div style={{display: "flex", flexFlow: "row nowrap", whiteSpace: "nowrap", overflowX: "hidden"}}>
                     <div>{item.name}:&nbsp;</div>
                     <div style={{overflowX: "hidden", textOverflow: "ellipsis"}}>

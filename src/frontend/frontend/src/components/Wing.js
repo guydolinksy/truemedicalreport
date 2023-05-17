@@ -211,7 +211,7 @@ const WingStatus = ({department}) => {
                             placeholder={'חיפוש:'}/>
                     <Divider style={{marginTop: 10, marginBottom: 10}}/>
                     <div style={filterTagsContainerStyle}>
-                        <b style={{whiteSpace: "nowrap"}}>מטפל.ת:</b>
+                        <b style={{whiteSpace: "nowrap"}}>רופא.ה:</b>
                         {value.filters.doctors.map(filter => <CheckableTag
                             key={filter.key}
                             checked={selectedDoctors.indexOf(filter.key) > -1}
