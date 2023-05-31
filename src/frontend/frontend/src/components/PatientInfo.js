@@ -1,4 +1,4 @@
-import {Badge, Collapse, Drawer, Empty, List, Radio, Spin, Timeline, Tooltip, Modal, Space} from "antd";
+import {Badge, Collapse, Drawer, Empty, List, Modal, Radio, Space, Spin, Timeline} from "antd";
 import React, {useContext, useEffect, useState} from "react";
 import {useNavigate} from "react-router";
 import Moment from "react-moment";
@@ -15,7 +15,8 @@ import {
     faHeartPulse,
     faPercent,
     faTemperatureHalf,
-    faWindowRestore, faXRay
+    faWindowRestore,
+    faXRay
 } from "@fortawesome/free-solid-svg-icons";
 import {htmlModal, iframeModal} from "./modals";
 import {patientDataContext, PatientStatus, PatientWarning} from "./Patient";
@@ -40,14 +41,37 @@ const labStatuses = {
 
 const NORMAL_LAB_RANGE = "N";
 
-const displayLab = (lab, i, statusesToConsiderAsBad) => {
-    const results = Object.values(lab.results);
-    const rangeCounts = {};
+const RANGE_CODE_TO_DESCRIPTION = {
+    "H": "High",
+    "L": "Low",
+    "VH": "Very High",
+    "VL": "Very Low",
+    "PH": "Panic High",
+    "PL": "Panic Low",
+    "JESUS": "Call the nearby priest"
+}
 
-    results.forEach(result => {
-        rangeCounts[result.range] = (rangeCounts[result.range] || 0) + 1
+const RANGE_CODE_TO_COLOR = {
+    "H": "gray",
+    "L": "gray",
+    "VH": "yellow",
+    "VL": "yellow",
+    "PH": "red",
+    "PL": "red",
+}
+
+const displayLab = (lab, i, rangesToConsiderAsBad) => {
+    const rangeToResults = {};
+
+    Object.values(lab.results).forEach(result => {
+        if (!rangeToResults.hasOwnProperty(result.range)) {
+            rangeToResults[result.range] = []
+        }
+
+        rangeToResults[result.range].push(result);
     })
-    const ranges = Object.keys(rangeCounts);
+
+    const ranges = Object.keys(rangeToResults);
 
     let badgeText;
     let badgeColor;
@@ -61,16 +85,29 @@ const displayLab = (lab, i, statusesToConsiderAsBad) => {
         badgeText = "✓"
         badgeColor = "green"
     } else {
-        const badResultsCount = statusesToConsiderAsBad.map(status => rangeCounts[status] || 0).reduce((a, b) => a + b)
+        const badResultsCount = rangesToConsiderAsBad.map(status => rangeToResults[status] || [])
+            .map(results => results.length)
+            .reduce((a, b) => a + b)
+
         badgeText = badResultsCount.toString();
         badgeColor = "red"
     }
 
+    const displayedResults = rangesToConsiderAsBad.map(range => (rangeToResults[range] || [])).flatMap((result, index) => {
+        const range = result.range;
+        return <p key={index}>
+            `${RANGE_CODE_TO_DESCRIPTION[range]} ${result.test_type_name}: <span style={{backgroundColor: RANGE_CODE_TO_COLOR[range]}}>${result.result.trim()}</span> ${result.units.trim()}`
+        </p>
+    })
+
     return <p key={i} style={{
         animation: matched(['info', patient, 'labs', `lab-${i}`]) ? 'highlight 2s ease-out' : undefined
     }}>
-        <Badge style={{backgroundColor: badgeColor}} text={badgeText} size={"small"}/>
-        {lab.category} - {labStatuses[lab.status]} - <RelativeTime style={{fontSize: 12}} date={lab.ordered_at}/>
+        <p>
+            <Badge style={{backgroundColor: badgeColor}} text={badgeText} size={"small"}/>
+            {lab.category} - {labStatuses[lab.status]} - <RelativeTime style={{fontSize: 12}} date={lab.ordered_at}/>
+        </p>
+        {displayedResults}
     </p>
 }
 
