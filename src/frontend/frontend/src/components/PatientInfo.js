@@ -38,6 +38,42 @@ const labStatuses = {
     4: 'תוצאות',
 }
 
+const NORMAL_LAB_RANGE = "N";
+
+const displayLab = (lab, i, statusesToConsiderAsBad) => {
+    const results = Object.values(lab.results);
+    const rangeCounts = {};
+
+    results.forEach(result => {
+        rangeCounts[result.range] = (rangeCounts[result.range] || 0) + 1
+    })
+    const ranges = Object.keys(rangeCounts);
+
+    let badgeText;
+    let badgeColor;
+
+    if (ranges.length === 0) {
+        // No results
+        badgeText = "-";
+        badgeColor = "gray"
+    } else if (ranges === [NORMAL_LAB_RANGE]) {
+        // Everything normal
+        badgeText = "✓"
+        badgeColor = "green"
+    } else {
+        const badResultsCount = statusesToConsiderAsBad.map(status => rangeCounts[status] || 0).reduce((a, b) => a + b)
+        badgeText = badResultsCount.toString();
+        badgeColor = "red"
+    }
+
+    return <p key={i} style={{
+        animation: matched(['info', patient, 'labs', `lab-${i}`]) ? 'highlight 2s ease-out' : undefined
+    }}>
+        <Badge style={{backgroundColor: badgeColor}} text={badgeText} size={"small"}/>
+        {lab.category} - {labStatuses[lab.status]} - <RelativeTime style={{fontSize: 12}} date={lab.ordered_at}/>
+    </p>
+}
+
 const MeasureGraph = ({data, title, graphProps}) => {
     const {userSettings} = useContext(loginContext);
     (themes[userSettings.theme] || (x => x))(Highcharts);
@@ -206,11 +242,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
             </div>
         }>
             {value.labs.length ? value.labs.map((lab, i) =>
-                <p key={i} style={{
-                    animation: matched(['info', patient, 'labs', `lab-${i}`]) ? 'highlight 2s ease-out' : undefined
-                }}>
-                    {lab.category} - {labStatuses[lab.status]} - <RelativeTime style={{fontSize: 12}} date={lab.ordered_at}/>
-                </p>
+                displayLab(lab, i, ["PH", "PL", "VH", "VL"])
             ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
         </Panel>
         <Panel key={'imaging'} header={
