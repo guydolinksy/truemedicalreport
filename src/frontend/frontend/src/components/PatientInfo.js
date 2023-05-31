@@ -1,4 +1,4 @@
-import {Badge, Collapse, Drawer, Empty, List, Radio, Spin, Timeline, Tooltip, Modal} from "antd";
+import {Badge, Collapse, Drawer, Empty, List, Radio, Spin, Timeline, Tooltip, Modal, Space} from "antd";
 import React, {useContext, useEffect, useState} from "react";
 import {useNavigate} from "react-router";
 import Moment from "react-moment";
@@ -199,8 +199,10 @@ const InternalPatientCard = ({patient, setHeader}) => {
         <Panel key={'labs'} header={
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
                 <span>מעבדה</span>
-                <div><Badge style={{backgroundColor: '#1890ff'}} count={value.labs.length} size={"small"}/></div>
-                {iframeModal(modal, faWindowRestore, "צפה.י בקמיליון", value.lab_link)}
+                <Space align="center">
+                    <Badge style={{backgroundColor: '#1890ff'}} count={value.labs.length} size={"small"}/>
+                    {iframeModal(modal, faWindowRestore, "צפה.י בקמיליון", value.lab_link)}
+                </Space>
             </div>
         }>
             {value.labs.length ? value.labs.map((lab, i) =>
