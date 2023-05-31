@@ -1,4 +1,4 @@
-import {Badge, Collapse, Drawer, Empty, List, Radio, Spin, Timeline, Tooltip, Modal, Space} from "antd";
+import {Badge, Collapse, Drawer, Empty, List, Modal, Radio, Space, Spin, Timeline} from "antd";
 import React, {useContext, useEffect, useState} from "react";
 import {useNavigate} from "react-router";
 import Moment from "react-moment";
@@ -15,7 +15,8 @@ import {
     faHeartPulse,
     faPercent,
     faTemperatureHalf,
-    faWindowRestore, faXRay
+    faWindowRestore,
+    faXRay
 } from "@fortawesome/free-solid-svg-icons";
 import {htmlModal, iframeModal} from "./modals";
 import {patientDataContext, PatientStatus, PatientWarning} from "./Patient";
@@ -36,6 +37,78 @@ const labStatuses = {
     2: 'שויכו דגימות',
     3: 'בעבודה',
     4: 'תוצאות',
+}
+
+const NORMAL_LAB_RANGE = "N";
+
+const RANGE_CODE_TO_DESCRIPTION = {
+    "H": "High",
+    "L": "Low",
+    "VH": "Very High",
+    "VL": "Very Low",
+    "PH": "Panic High",
+    "PL": "Panic Low",
+    "JESUS": "Call the nearby priest"
+}
+
+const RANGE_CODE_TO_COLOR = {
+    "H": "gray",
+    "L": "gray",
+    "VH": "yellow",
+    "VL": "yellow",
+    "PH": "red",
+    "PL": "red",
+}
+
+const displayLab = (lab, i, rangesToConsiderAsBad) => {
+    const rangeToResults = {};
+
+    Object.values(lab.results).forEach(result => {
+        if (!rangeToResults.hasOwnProperty(result.range)) {
+            rangeToResults[result.range] = []
+        }
+
+        rangeToResults[result.range].push(result);
+    })
+
+    const ranges = Object.keys(rangeToResults);
+
+    let badgeText;
+    let badgeColor;
+
+    if (ranges.length === 0) {
+        // No results
+        badgeText = "-";
+        badgeColor = "gray"
+    } else if (ranges === [NORMAL_LAB_RANGE]) {
+        // Everything normal
+        badgeText = "✓"
+        badgeColor = "green"
+    } else {
+        const badResultsCount = rangesToConsiderAsBad.map(status => rangeToResults[status] || [])
+            .map(results => results.length)
+            .reduce((a, b) => a + b)
+
+        badgeText = badResultsCount.toString();
+        badgeColor = "red"
+    }
+
+    const displayedResults = rangesToConsiderAsBad.map(range => (rangeToResults[range] || [])).flatMap((result, index) => {
+        const range = result.range;
+        return <p key={index}>
+            `${RANGE_CODE_TO_DESCRIPTION[range]} ${result.test_type_name}: <span style={{backgroundColor: RANGE_CODE_TO_COLOR[range]}}>${result.result.trim()}</span> ${result.units.trim()}`
+        </p>
+    })
+
+    return <p key={i} style={{
+        animation: matched(['info', patient, 'labs', `lab-${i}`]) ? 'highlight 2s ease-out' : undefined
+    }}>
+        <p>
+            <Badge style={{backgroundColor: badgeColor}} text={badgeText} size={"small"}/>
+            {lab.category} - {labStatuses[lab.status]} - <RelativeTime style={{fontSize: 12}} date={lab.ordered_at}/>
+        </p>
+        {displayedResults}
+    </p>
 }
 
 const MeasureGraph = ({data, title, graphProps}) => {
@@ -119,7 +192,12 @@ const InternalPatientCard = ({patient, setHeader}) => {
     const {user} = useContext(loginContext);
     const {value, loading} = useContext(patientDataContext.context);
     const {matched, matching} = useContext(hashMatchContext);
-    const [modal, modalContext] = Modal.useModal();
+
+    const [modal, modalContext] = Modal.useModal({
+        closeable: true,
+        maskClosable: true,
+    });
+
     const {trackEvent} = useMatomo()
     useEffect(() => {
         if (loading)
@@ -206,11 +284,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
             </div>
         }>
             {value.labs.length ? value.labs.map((lab, i) =>
-                <p key={i} style={{
-                    animation: matched(['info', patient, 'labs', `lab-${i}`]) ? 'highlight 2s ease-out' : undefined
-                }}>
-                    {lab.category} - {labStatuses[lab.status]} - <RelativeTime style={{fontSize: 12}} date={lab.ordered_at}/>
-                </p>
+                displayLab(lab, i, ["PH", "PL", "VH", "VL"])
             ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
         </Panel>
         <Panel key={'imaging'} header={
