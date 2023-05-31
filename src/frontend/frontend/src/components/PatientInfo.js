@@ -192,7 +192,12 @@ const InternalPatientCard = ({patient, setHeader}) => {
     const {user} = useContext(loginContext);
     const {value, loading} = useContext(patientDataContext.context);
     const {matched, matching} = useContext(hashMatchContext);
-    const [modal, modalContext] = Modal.useModal();
+
+    const [modal, modalContext] = Modal.useModal({
+        closeable: true,
+        maskClosable: true,
+    });
+
     const {trackEvent} = useMatomo()
     useEffect(() => {
         if (loading)
