@@ -185,7 +185,7 @@ ev.Medical_Record AS MedicalRecord,
 toh.External_Order_No AS OrderNumber,
 toh.Order_Status AS OrderStatus, 
 toh.Order_Date AS OrderDate, 
-toh.Entry_Date AS EntryDate, 
+toh.Entry_Date AS EntryDate
 from Chameleon.dbo.TestOrderHeading AS toh
 INNER JOIN chameleon.dbo.emergancyvisits AS ev ON ev.patient = toh.Patient 
 WHERE ev.Delete_Date  IS NULL

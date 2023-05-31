@@ -530,14 +530,13 @@ class MedicalDal:
                         if item.key not in patient.protocol.values or patient.protocol.values[item.key].at < at:
                             updated.protocol.values[item.key] = ProtocolValue(value=value, at=at)
 
-                if cat.status == LabStatus.analyzed.value:
-                    for notification in cat.to_notifications():
-                        await self.db.notifications.update_one(
-                            {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
-                        )
-                        logger.info("current time:{} - notification time: {} - {}",
-                                    datetime.datetime.utcnow(), notification.at, notification.message)
-                    await publish("notification", patient.oid)
+                for notification in cat.to_notifications():
+                    await self.db.notifications.update_one(
+                        {"notification_id": notification.notification_id}, {"$set": notification.dict()}, upsert=True
+                    )
+                    logger.info("current time:{} - notification time: {} - {}",
+                                datetime.datetime.utcnow(), notification.at, notification.message)
+                await publish("notification", patient.oid)
 
                 for key, warning in cat.get_updated_warnings(
                         {key: warning for key, warning in patient.warnings.items() if key.startswith('lab#')}

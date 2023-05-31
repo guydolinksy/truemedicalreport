@@ -74,7 +74,7 @@ class LabCategory(BaseModel):
     category: str
     category_display_name: str
     patient_id: str
-    status: str = LabStatus.ordered.value
+    status: LabStatus = LabStatus.ordered.value
     results: Dict[str, Laboratory] = {}
 
     @property
@@ -118,7 +118,7 @@ class LabCategory(BaseModel):
                     link=None,  # "Add in the future",
                     level=NotificationLevel.abnormal if not result.range == 'PL' else NotificationLevel.panic,
                 ))
-        return res if res else [LabsNotification(
+        return res if res or self.status != LabStatus.analyzed.value else [LabsNotification(
             static_id=self.get_instance_id(),
             patient_id=self.patient_id,
             at=max(datetime.datetime.fromisoformat(l.result_at) for l in self.results.values()).isoformat(),

@@ -203,7 +203,7 @@ class SqlToDal(object):
                             2: LabStatus.analyzed.value,
                             5: LabStatus.ordered.value,
                             6: LabStatus.collected.value,
-                        }[row['OrderNumber']]
+                        }[row['OrderStatus']]
                         statuses[re.sub(r'[^[0-9]', '', row['OrderNumber'])] = status
 
                         if status == LabStatus.analyzed.value:
@@ -219,7 +219,7 @@ class SqlToDal(object):
                         )
                         orders.setdefault(row['MedicalRecord'], {}).setdefault(lc.key, lc)
                     except KeyError as e:
-                        msg = f"Lab from category '{row['Category']}' isn't exists in internal mapping " \
+                        msg = f"Lab from category '{row['OrderNumber']}' isn't exists in internal mapping " \
                               f"for medical record {row['MedicalRecord']}"
                         capture_message(msg, level="warning")
                         logger.error(msg)
