@@ -629,14 +629,18 @@ class MedicalDal:
                 updated.dict(include={"awaiting", 'protocol'}, exclude_unset=True),
             )
 
-    async def upsert_treatment(self, external_id: str, treatment: Treatment):
+    async def upsert_treatment(self, external_id: str, update: Treatment):
         patient = await self.get_patient({"external_id": external_id})
 
         updated = patient.copy()
-        updated.treatment = treatment
-        if treatment.destination:
+
+        treatment = updated.treatment.dict(exclude_unset=True)
+        treatment.update(**update.dict(exclude_unset=True))
+
+        updated.treatment = Treatment(**treatment)
+        if updated.treatment.destination:
             updated.status = Status.decided.value
-        elif treatment.doctors:
+        elif updated.treatment.doctors:
             updated.status = Status.undecided.value
         else:
             updated.status = Status.unassigned.value
@@ -686,4 +690,5 @@ class MedicalDal:
                     if not measure.effect.at_ or measure.effect.at_ < medicine.given_:
                         measure.effect = MeasureEffect(kind=effect.kind, label=medicine.description, at=medicine.given)
 
-        await self.atomic_update_patient({"_id": ObjectId(patient.oid)}, updated.dict(include={"awaiting", "measures"}))
+        await self.atomic_update_patient({"_id": ObjectId(patient.oid)},
+                                         updated.dict(include={"awaiting", "measures"}, exclude_unset=True))

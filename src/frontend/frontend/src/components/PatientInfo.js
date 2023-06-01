@@ -60,7 +60,7 @@ const RANGE_CODE_TO_COLOR = {
     "PL": "red",
 }
 
-const displayLab = (lab, i, rangesToConsiderAsBad) => {
+const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
     const rangeToResults = {};
 
     Object.values(lab.results).forEach(result => {
@@ -93,7 +93,7 @@ const displayLab = (lab, i, rangesToConsiderAsBad) => {
         badgeColor = "red"
     }
 
-    const displayedResults = rangesToConsiderAsBad.map(range => (rangeToResults[range] || [])).flatMap((result, index) => {
+    const displayedResults = rangesToConsiderAsBad.map(range => (rangeToResults[range] || [])).flat().map((result, index) => {
         const range = result.range;
         return <p key={index}>
             `${RANGE_CODE_TO_DESCRIPTION[range]} ${result.test_type_name}: <span style={{backgroundColor: RANGE_CODE_TO_COLOR[range]}}>${result.result.trim()}</span> ${result.units.trim()}`
@@ -284,7 +284,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
             </div>
         }>
             {value.labs.length ? value.labs.map((lab, i) =>
-                displayLab(lab, i, ["PH", "PL", "VH", "VL"])
+                displayLab(lab, i, ["PH", "PL", "VH", "VL"], matched, patient)
             ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
         </Panel>
         <Panel key={'imaging'} header={
