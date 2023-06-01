@@ -75,7 +75,7 @@ const PatientAge = ({patient}) => {
         female: 'בת',
     }
     return !patient || loading ? null : <span>
-        ,&nbsp;{genderedAge[value.info.gender]}&nbsp;
+        {genderedAge[value.info.gender]}&nbsp;
         <Tooltip overlay={
             value.info.birthdate ? <Moment date={value.info.birthdate} format={"DD/MM/YYYY"}/> : "לא ידוע"
         }>
