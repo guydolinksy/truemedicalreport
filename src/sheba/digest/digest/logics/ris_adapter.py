@@ -1,8 +1,8 @@
 import oracledb
-from .. import config
-from ..utils.sql_statements import query_ris_imaging
-from ..models.ris_imaging import RisImaging
+
 from common.data_models.image import ImagingTypes
+from ..models.ris_imaging import RisImaging
+from ..utils.sql_statements import query_ris_imaging
 
 modality_type_mapping = {
     "DX": ImagingTypes.xray,
@@ -16,14 +16,17 @@ modality_type_mapping = {
 
 class OracleAdapter:
     def __init__(self, connection_params) -> None:
-        params = oracledb.ConnectParams(password=connection_params["password"], host=connection_params["host"],
-                                        port=connection_params["port"], service_name=connection_params["service_name"],
-                                        user=connection_params["username"])
-        self._conn = oracledb.connect(params=params)
+        self.params = oracledb.ConnectParams(
+            password=connection_params["password"],
+            host=connection_params["host"],
+            port=connection_params["port"],
+            service_name=connection_params["service_name"],
+            user=connection_params["username"]
+        )
 
     def query_imaging(self, accessions: list[str]) -> dict[str, RisImaging]:
         imaging = {}
-        with self._conn.cursor() as cursor:
+        with oracledb.connect(params=self.params).cursor() as cursor:
             results = cursor.execute(query_ris_imaging.format(', '.join(set(accessions))))
             for result in results:
                 imaging[str(result[3])] = RisImaging(

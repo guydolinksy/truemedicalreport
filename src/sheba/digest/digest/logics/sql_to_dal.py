@@ -10,6 +10,7 @@ from requests import HTTPError
 from sentry_sdk import capture_message
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from oracledb.exceptions import DatabaseError
 
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
@@ -184,11 +185,15 @@ class SqlToDal(object):
             logger.exception('Could not run imaging handler.')
 
     def _merge_ris_chameleon_imaging(self, accessions, chameleon_imaging: List[Image]) -> None:
-        ris_imagings: Dict[str, RisImaging] = self._oracle_client.query_imaging(accessions)
-        logger.debug(ris_imagings)
-        for imaging in chameleon_imaging:
-            if ris_image := ris_imagings.get(imaging.external_id, False):
-                imaging.imaging_type = ris_image.imaging_type
+        try:
+            ris_imagings: Dict[str, RisImaging] = self._oracle_client.query_imaging(accessions)
+            logger.debug(ris_imagings)
+            for imaging in chameleon_imaging:
+                if ris_image := ris_imagings.get(imaging.external_id, False):
+                    imaging.imaging_type = ris_image.imaging_type
+        except DatabaseError:
+            capture_message('Could not query RIS.', level="warning")
+            logger.exception('Could not query RIS.')
 
     def update_labs(self, department: Departments):
         try:
