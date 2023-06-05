@@ -29,7 +29,7 @@ class LocalAuthProvider(AuthProvider):
             return User(
                 username=username,
                 auth_provider_name=self.name,
-                is_admin=doc.get('settings', {}).get('is_admin'),
+                is_admin=doc.get('settings', {}).get('is_admin', False),
                 view_only=doc.get('settings', {}).get('view_only', False),
                 anonymous=doc.get('settings', {}).get('anonymous', False),
             ), []

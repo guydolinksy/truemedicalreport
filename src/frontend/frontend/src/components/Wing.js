@@ -36,6 +36,7 @@ import {useViewport} from "./UseViewPort";
 import {Department} from "./Department";
 import {Notification} from "./Notification";
 import {RelativeTime} from "./RelativeTime";
+import {loginContext} from "./LoginContext";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -67,6 +68,7 @@ const WingLayout = ({department, wing, details, onError}) => {
 }
 const WingNotifications = () => {
     const navigate = useNavigate();
+    const {user} = useContext(loginContext);
     const {value} = useContext(wingDataContext.context);
     const [openKeys, setOpenKeys] = useState([]);
     const [unread, setUnread] = useState({});
@@ -106,7 +108,7 @@ const WingNotifications = () => {
         <Collapse onChange={openChange} style={{flex: "1 0 10vh", minHeight: "10vh", overflowY: "overlay"}}>
             {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
                 <>
-                    <span><UserOutlined/>&nbsp;{notification.patient.info.name}</span>
+                <span><UserOutlined/>{!user.anonymous && <span>&nbsp;{notification.patient.info.name}</span>}</span>
                     <br/>
                     <span style={{fontSize: "10px"}}>{notification.preview}</span>
                 </>
