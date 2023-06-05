@@ -20,7 +20,7 @@ import {
     Tooltip,
     Tree
 } from 'antd';
-import {MIN_WIDTH, Patient} from "./Patient";
+import {GENDERED_COLOR, MIN_WIDTH, Patient} from "./Patient";
 import {createContext} from "../hooks/DataContext";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faRightFromBracket,} from "@fortawesome/free-solid-svg-icons";
@@ -108,7 +108,9 @@ const WingNotifications = () => {
         <Collapse onChange={openChange} style={{flex: "1 0 10vh", minHeight: "10vh", overflowY: "overlay"}}>
             {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
                 <>
-                <span><UserOutlined/>{!user.anonymous && <span>&nbsp;{notification.patient.info.name}</span>}</span>
+                    <span style={{color: GENDERED_COLOR[notification.patient.info.gender]}}>
+                        <UserOutlined/>{!user.anonymous && <span>&nbsp;{notification.patient.info.name}</span>}
+                    </span>
                     <br/>
                     <span style={{fontSize: "10px"}}>{notification.preview}</span>
                 </>
