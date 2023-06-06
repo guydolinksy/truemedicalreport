@@ -238,8 +238,8 @@
     background-color: #e5f993;
 }
 
-.dark-theme .status-background.status-unseen {
-    background-color: #1a1a1a;
+.dark-theme .status-background.status-unassigned {
+    background-color: #441d12;
 }
 
 .dark-theme .status-background.status-undecided {
@@ -250,8 +250,8 @@
     background-color: #14240e;
 }
 
-.light-theme .status-background.status-unseen {
-    background-color: #e0dfdf;
+.light-theme .status-background.status-unassigned {
+    background-color: #ffc069;
 }
 
 .light-theme .status-background.status-undecided {

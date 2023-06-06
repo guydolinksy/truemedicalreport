@@ -1,10 +1,7 @@
 import React, {useContext, useEffect, useRef, useState} from "react";
 import {Badge, Button, Card, Carousel, Empty, List, Popover, Space, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {
-    faCheckCircle,
-    faWarning,
-} from "@fortawesome/free-solid-svg-icons";
+import {faCheckCircle, faWarning,} from "@fortawesome/free-solid-svg-icons";
 import {ArrowLeftOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
 import {createContext} from "../hooks/DataContext";
 import {useLocation, useNavigate} from "react-router";
@@ -27,6 +24,10 @@ export const patientDataContext = createContext({
 });
 
 export const MIN_WIDTH = 250, MAX_WIDTH = 500;
+export const GENDERED_COLOR = {
+    male: '#096dd9',
+    female: '#eb2f96',
+}
 
 const Measure = ({patient, measure, icon, title}) => {
     const navigate = useNavigate();
@@ -102,10 +103,10 @@ export const PatientStatus = ({patient, style}) => {
         trackEvent({category: 'patient-complaint', action: 'click-event'});
         e.stopPropagation();
     }}>
-        <div style={{whiteSpace: "nowrap", display: "flex",alignItems:"center", overflowX: "hidden"}}>
+        <div style={{whiteSpace: "nowrap", display: "flex", alignItems: "center", overflowX: "hidden"}}>
             {value.protocol && value.protocol.active &&
                 <Tooltip overlay={`מצב פרוטוקול - ${value.intake.complaint}`}>
-                    <FontAwesomeIcon icon={faCheckCircle} style={{marginLeft:"0.3rem", color:"#40a9ff"}} />
+                    <FontAwesomeIcon icon={faCheckCircle} style={{marginLeft: "0.3rem", color: "#40a9ff"}}/>
                 </Tooltip>}
             {!!value.severity.value && <span><Tooltip overlay='דחיפות'>
                 <span>(<strong>{value.severity.value}</strong>)</span>
@@ -132,7 +133,12 @@ export const ProtocolStatus = ({patient}) => {
     }}>
         {value.protocol && value.protocol.items && value.protocol.items.length ? value.protocol.items.map(item => {
             let data = value.protocol.values[item.key];
-            return <div style={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between", alignItems:"baseline"}}>
+            return <div style={{
+                display: "flex",
+                flexFlow: "row nowrap",
+                justifyContent: "space-between",
+                alignItems: "baseline"
+            }}>
                 <div style={{display: "flex", flexFlow: "row nowrap", whiteSpace: "nowrap", overflowX: "hidden"}}>
                     <div>{item.name}:&nbsp;</div>
                     <div style={{overflowX: "hidden", textOverflow: "ellipsis"}}>
@@ -263,13 +269,9 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
 const PatientHeader = ({patient, avatar}) => {
     const {value} = useContext(patientDataContext.context);
     const {user} = useContext(loginContext);
-    const genderedColor = {
-        male: '#096dd9',
-        female: '#eb2f96'
-    }
     if (!patient)
         return <Button shape={"circle"} type={"text"}>{avatar || <UserOutlined/>}</Button>
-    return <span style={{color:genderedColor[value.info.gender]}}>
+    return <span style={{color: GENDERED_COLOR[value.info.gender]}}>
         {avatar || value.admission.bed || <UserOutlined/>}&nbsp;
         {!user.anonymous && <span>
             <Tooltip overlay={`ת.ז. ${value.info.id_ || 'לא ידוע'}`}>{value.info.name}</Tooltip>,&nbsp;

@@ -20,7 +20,7 @@ import {
     Tooltip,
     Tree
 } from 'antd';
-import {MIN_WIDTH, Patient} from "./Patient";
+import {GENDERED_COLOR, MIN_WIDTH, Patient} from "./Patient";
 import {createContext} from "../hooks/DataContext";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faRightFromBracket,} from "@fortawesome/free-solid-svg-icons";
@@ -36,7 +36,7 @@ import {useViewport} from "./UseViewPort";
 import {Department} from "./Department";
 import {Notification} from "./Notification";
 import {RelativeTime} from "./RelativeTime";
-import {SearchOutlined} from "@ant-design/icons/lib/icons";
+import {loginContext} from "./LoginContext";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -68,6 +68,7 @@ const WingLayout = ({department, wing, details, onError}) => {
 }
 const WingNotifications = () => {
     const navigate = useNavigate();
+    const {user} = useContext(loginContext);
     const {value} = useContext(wingDataContext.context);
     const [openKeys, setOpenKeys] = useState([]);
     const [unread, setUnread] = useState({});
@@ -107,7 +108,9 @@ const WingNotifications = () => {
         <Collapse onChange={openChange} style={{flex: "1 0 10vh", minHeight: "10vh", overflowY: "overlay"}}>
             {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
                 <>
-                    <span><UserOutlined/>&nbsp;{notification.patient.info.name}</span>
+                    <span style={{color: GENDERED_COLOR[notification.patient.info.gender]}}>
+                        <UserOutlined/>{!user.anonymous && <span>&nbsp;{notification.patient.info.name}</span>}
+                    </span>
                     <br/>
                     <span style={{fontSize: "10px"}}>{notification.preview}</span>
                 </>
@@ -284,7 +287,6 @@ const sortFunctions = {
     [undefined]: (i, j) => moment(i.admission.arrival).isAfter(j.admission.arrival) ? 1 : -1
 }
 const WingInner = ({department, wing}) => {
-    const [search, setSearch] = useState('');
     const navigate = useNavigate();
     const {value, flush} = useContext(wingDataContext.context);
 
