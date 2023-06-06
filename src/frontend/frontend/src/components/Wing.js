@@ -36,6 +36,7 @@ import {useViewport} from "./UseViewPort";
 import {Department} from "./Department";
 import {Notification} from "./Notification";
 import {RelativeTime} from "./RelativeTime";
+import {SearchOutlined} from "@ant-design/icons/lib/icons";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -141,16 +142,9 @@ const WingNotifications = () => {
 }
 
 const WingStatus = ({department}) => {
-    const [search, setSearch] = useState('');
     const {value} = useContext(wingDataContext.context);
 
     const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'arrival');
-
-    useEffect(() => {
-        highlighter.apply(search)
-    }, [search]);
-
-
     const [selectedAwaiting, setSelectedAwaiting] = useLocalStorage('selectedAwaiting', []);
     const [selectedDoctors, setSelectedDoctors] = useLocalStorage('selectedDoctors', []);
     const [selectedTreatments, setSelectedTreatments] = useLocalStorage('selectedTreatments', []);
@@ -206,9 +200,6 @@ const WingStatus = ({department}) => {
             <Collapse defaultActiveKey={['1', '2']}
                       style={{height: '100%', display: "flex", flexDirection: "column", overflowY: "scroll"}}>
                 <Panel header={"סינון"} key={1} extra={<FilterOutlined/>}>
-
-                    <Search key={'search'} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
-                            placeholder={'חיפוש:'}/>
                     <Divider style={{marginTop: 10, marginBottom: 10}}/>
                     <div style={filterTagsContainerStyle}>
                         <b style={{whiteSpace: "nowrap"}}>רופא.ה:</b>
@@ -293,6 +284,7 @@ const sortFunctions = {
     [undefined]: (i, j) => moment(i.admission.arrival).isAfter(j.admission.arrival) ? 1 : -1
 }
 const WingInner = ({department, wing}) => {
+    const [search, setSearch] = useState('');
     const navigate = useNavigate();
     const {value, flush} = useContext(wingDataContext.context);
 
@@ -325,9 +317,13 @@ const WingInner = ({department, wing}) => {
     const unassignedPatients = allPatients.filter(({admission}) => !admission.bed);
 
     const patientList = <div style={{display: "flex", flexDirection: "column"}}>
-        {value.department_patients.sort((a, b) => a.info.name.localeCompare(b.info.name)).map((patient, i) =>
+         <Search key={'search'} style={{marginBottom:"0.5rem"}} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
+                            placeholder={'חיפוש:'}/>
+        {value.department_patients.sort((a, b) => a.info.name.localeCompare(b.info.name))
+            .filter((patient)=> patient.info.id_.includes(search) || patient.info.name.includes(search))
+            .map((patient, i) =>
             <Button key={i} onClick={() => navigate(
-                `/department/${patient.admission.department}/wing/${patient.admission.wing}#highlight#${patient.oid}#open`
+                `/departments/${patient.admission.department}/wings/${patient.admission.wing}#highlight#${patient.oid}#open`
             )}>
                 {patient?.info?.name}
             </Button>)}
@@ -340,7 +336,7 @@ const WingInner = ({department, wing}) => {
         <Content className={'content'} style={{height: '100vh', overflowY: 'scroll'}}>
             <Popover placement={"bottomLeft"} content={patientList} title={"מטופלים.ות:"}>
                 <Button type={"primary"} style={{position: "absolute", top: 41, left: 0, width: 40, zIndex: 1000}}
-                        icon={<RightOutlined/>}/>
+                        icon={<SearchOutlined />}/>
             </Popover>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                 {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedTreatments.length || selectedAwaiting.length ?
