@@ -29,7 +29,7 @@ import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
-import {FilterOutlined, PushpinOutlined, RightOutlined, UserOutlined} from "@ant-design/icons";
+import {FilterOutlined, PushpinOutlined, SearchOutlined, UserOutlined} from "@ant-design/icons";
 import {useLocalStorage} from "../hooks/localStorageHook";
 import moment from "moment";
 import {useViewport} from "./UseViewPort";
@@ -288,6 +288,8 @@ const sortFunctions = {
 }
 const WingInner = ({department, wing}) => {
     const navigate = useNavigate();
+    const [search, setSearch] = useState('');
+
     const {value, flush} = useContext(wingDataContext.context);
 
     const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'arrival');
