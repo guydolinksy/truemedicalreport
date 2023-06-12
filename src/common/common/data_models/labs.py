@@ -19,6 +19,25 @@ class LabStatus(Enum):
 CATEGORIES_IN_HEBREW = {
     "Therapeutic  Drugs": "Therapeutic Drugs",
 }
+
+LABS_RESULT_RANGE = {
+    # WBC
+    100109500: {"min": 3, "max": 14},
+    # HBG
+    100109497: {"min": 8, "max": 16},
+    # PLT
+    100109488: {"min": 150, "max": 500},
+    # EOS%
+    100109478: {"min": 0, "max": 1},
+    # EOS abs
+    # 100109477: {"min": 1, "max": 1000},
+    # NEUTRO%
+    100109484: {"min": 1, "max": 10},
+    # NEUTRO abs
+    # 100109483: {"min": 1, "max": 10}
+}
+
+
 #
 # LAB_TEST_TYPE = {
 #     LabCategories.completeBloodCount.value: ["wbc", "rbc", "leukocytes", "neutrophils"],
@@ -86,7 +105,7 @@ class LabCategory(BaseModel):
         return {'at': self.ordered_at, 'category': self.category}
 
     def get_instance_id(self):
-        return f'{self.patient_id}#{self.category}#{self.ordered_at}'.\
+        return f'{self.patient_id}#{self.category}#{self.ordered_at}'. \
             replace(":", "-").replace(".", "-").replace("+", "-")
 
     class Config:
@@ -97,9 +116,18 @@ class LabCategory(BaseModel):
         res = []
         out_of_range = False
         for key, result in self.results.items():
+            if result.test_type_id in LABS_RESULT_RANGE.keys():
+                try:
+                    lab_result = int(result.result)
+                    if not LABS_RESULT_RANGE[result.test_type_id]["min"] < lab_result < \
+                           LABS_RESULT_RANGE[result.test_type_id]["max"]:
+                        out_of_range = True
+                except ValueError:
+                    continue
             if not result.range or result.range == 'N':
                 continue
             out_of_range = True
+            # TODO decide if the special labs needs to be VH or PH or VL, PL
             if result.range == 'VH' or result.range == 'PH':
                 res.append(LabsNotification(
                     static_id=f'{self.get_instance_id()}#{key}',
