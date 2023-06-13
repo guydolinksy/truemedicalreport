@@ -71,7 +71,6 @@ const findWorstRangeColor = (ranges) => {
 }
 
 const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
-    console.log(lab)
     const rangeToResults = {};
     Object.values(lab.results).forEach(result => {
         if (!rangeToResults.hasOwnProperty(result.range)) {
@@ -93,7 +92,7 @@ const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
         // Everything normal
         badgeText = "✓"
         badgeColor = "green"
-    } else if(!ranges.includes("VH") && !ranges.includes("VL") && !ranges.includes("PH") && !ranges.includes("PL")){
+    } else if(!ranges.some(range=>rangesToConsiderAsBad.includes(range))){
         badgeText = "X"
         badgeColor=findWorstRangeColor(ranges)
     } else {

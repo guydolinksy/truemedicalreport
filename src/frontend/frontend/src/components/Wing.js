@@ -338,9 +338,9 @@ const WingInner = ({department, wing}) => {
             <WingStatus department={department}/>
         </Sider>
         <Content className={'content'} style={{height: '100vh', overflowY: 'scroll'}}>
-            <Popover placement={"bottomLeft"} content={patientList} title={"מטופלים.ות:"}>
+            <Popover placement={"topLeft"} content={patientList} title={"מטופלים.ות:"}>
                 <Button type={"primary"} style={{position: "absolute", top: 41, left: 0, width: 40, zIndex: 1000}}
-                        icon={<SearchOutlined />}/>
+                        icon={<SearchOutlined  />}/>
             </Popover>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                 {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedTreatments.length || selectedAwaiting.length ?
