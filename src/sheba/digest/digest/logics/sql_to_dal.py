@@ -64,6 +64,24 @@ SHEBA_IMAGING_LINK = f'{config.care_stream_url}&accession_number={{accession_num
 SHEBA_LABS_LINK = f'{config.chameleon_url}/Chameleon/Asp/Records/LabResults_Modal?Patient={{patient}}'
 
 
+def format_medical_summary_link(
+    *, unit, record_type_code, record_char, record_part, patient_id, medical_record, hospital
+):
+
+    if record_type_code != 10:
+        logger.info(f"Can't format medical summary link - unexpected record type: {record_type_code}")
+        return None
+
+    return f'{config.chameleon_url}/Chameleon/Asp/RecordsMedicalRecord/MedicalRecord' \
+           f'?Unit={unit}' \
+           f'&Record_Type=Emergency' \
+           f'&Record_Char={record_char}' \
+           f'&Record_Part={record_part}' \
+           f'&Patient={patient_id}' \
+           f'&Record={medical_record}' \
+           f'&Hospital={hospital}'
+
+
 class Departments(Enum):
     er = '1184000'
 
@@ -113,6 +131,14 @@ class SqlToDal(object):
                             complaint=row["MainCause"],
                         ),
                         lab_link=SHEBA_LABS_LINK.format(patient=row["PatientID"]),
+                        medical_summary_link=format_medical_summary_link(
+                            unit=row["Unit"],
+                            record_type_code=row["Record_Type"],
+                            record_char=row["Record_Char"],
+                            record_part=row["Answer_Code"],
+                            hospital=row["Hospital"],
+                            medical_record=row["MedicalRecord"]
+                        )
                     ).dict(exclude_unset=True))
             res = requests.post(f'{self.dal_url}/departments/{department.name}/admissions',
                                 json={'admissions': patients})

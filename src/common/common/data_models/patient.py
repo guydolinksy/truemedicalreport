@@ -34,6 +34,7 @@ class ExternalPatient(BaseModel):
     intake: Intake = Intake()
     treatment: Treatment = Treatment()
     lab_link: Optional[str]
+    medical_summary_link: Optional[str]
 
 
 class InternalPatient(BaseModel):

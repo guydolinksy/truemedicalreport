@@ -205,10 +205,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
     const {value, loading} = useContext(patientDataContext.context);
     const {matched, matching} = useContext(hashMatchContext);
 
-    const [modal, modalContext] = Modal.useModal({
-        closeable: true,
-        maskClosable: true,
-    });
+    const [modal, modalContext] = Modal.useModal();
 
     const {trackEvent} = useMatomo()
     useEffect(() => {
@@ -321,12 +318,15 @@ const InternalPatientCard = ({patient, setHeader}) => {
                                                                                           date={referral.at}/>
             </p>) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא נרשמו הפניות'}/>}
         </Panel>
-        <Panel key={'story'} header={'סיפור מטופל'}>
-            <Timeline reverse mode={"left"}>{value.events.map(event =>
-                <Timeline.Item key={event.key} label={<Moment date={event.at} format={'HH:mm DD-MM-YYYY'}/>}>
-                    {event.content}
-                </Timeline.Item>
-            )}</Timeline>
+        <Panel key={'medicalSummary'} header={
+            <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
+                <span>סיכום רפואי</span>
+                <Space align="center">
+                    {iframeModal(modal, faWindowRestore, "צפה.י בקמיליון", value.medical_summary_link)}
+                </Space>
+            </div>
+        }>
+            <p/>
         </Panel>
         {value.plugins.map(({key, title, url}) =>
             <Panel key={key} header={title}>

@@ -13,6 +13,8 @@ export const iframeModal = (modal, faIconName, tooltip, link) => {
                 bodyStyle: {
                     padding: "10px"
                 },
+                closeable: true,
+                maskClosable: true,
                 content: <iframe
                     sandbox="allow-downloads allow-forms allow-popups allow-same-origin allow-scripts"
                     style={{
