@@ -52,17 +52,26 @@ const RANGE_CODE_TO_DESCRIPTION = {
 }
 
 const RANGE_CODE_TO_COLOR = {
-    "H": "gray",
-    "L": "gray",
-    "VH": "yellow",
-    "VL": "yellow",
+    "H": "yellow",
+    "L": "yellow",
+    "VH": "purple",
+    "VL": "purple",
     "PH": "red",
     "PL": "red",
+    "N":"green"
+}
+
+const findWorstRangeColor = (ranges) => {
+    if(ranges.some(range=> range.includes("PH") || range.includes("PL"))) return "red"
+    if(ranges.some(range=> range.includes("VL") || range.includes("VH"))) return "purple"
+    if(ranges.some(range=> range.includes("H") || range.includes("L"))) return "orange"
+    if(ranges.some(range=> range==="N")) return "green"
+    return "red"
+
 }
 
 const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
     const rangeToResults = {};
-
     Object.values(lab.results).forEach(result => {
         if (!rangeToResults.hasOwnProperty(result.range)) {
             rangeToResults[result.range] = []
@@ -72,23 +81,24 @@ const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
     })
 
     const ranges = Object.keys(rangeToResults);
-
     let badgeText;
     let badgeColor;
 
     if (ranges.length === 0) {
         // No results
-        badgeText = "-";
-        badgeColor = "gray"
-    } else if (ranges === [NORMAL_LAB_RANGE]) {
+        badgeText = "";
+        badgeColor = "black"
+    } else if (ranges.every(range => range === "N")) {
         // Everything normal
         badgeText = "✓"
         badgeColor = "green"
+    } else if(!ranges.some(range=>rangesToConsiderAsBad.includes(range))){
+        badgeText = "X"
+        badgeColor=findWorstRangeColor(ranges)
     } else {
         const badResultsCount = rangesToConsiderAsBad.map(status => rangeToResults[status] || [])
             .map(results => results.length)
             .reduce((a, b) => a + b)
-
         badgeText = badResultsCount.toString();
         badgeColor = "red"
     }
@@ -96,18 +106,20 @@ const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
     const displayedResults = rangesToConsiderAsBad.map(range => (rangeToResults[range] || [])).flat().map((result, index) => {
         const range = result.range;
         return <p key={index}>
-            `${RANGE_CODE_TO_DESCRIPTION[range]} ${result.test_type_name}: <span style={{backgroundColor: RANGE_CODE_TO_COLOR[range]}}>${result.result.trim()}</span> ${result.units.trim()}`
+            <span>{RANGE_CODE_TO_DESCRIPTION[range]} {result.test_type_name}: {result.result.trim()} {result.units.trim()}</span>
         </p>
     })
 
     return <p key={i} style={{
-        animation: matched(['info', patient, 'labs', `lab-${i}`]) ? 'highlight 2s ease-out' : undefined
+        animation: matched(['info', patient, 'labs', `lab-${i}`]) ? 'highlight 2s ease-out' : undefined,
+        direction:"rtl"
     }}>
-        <p>
-            <Badge style={{backgroundColor: badgeColor}} text={badgeText} size={"small"}/>
-            {lab.category} - {labStatuses[lab.status]} - <RelativeTime style={{fontSize: 12}} date={lab.ordered_at}/>
+        <p style={{color:badgeColor}}>
+            <span ><Badge style={{backgroundColor:badgeColor}} count={badgeText} /> {lab.category_display_name} {lab.status !== 4 ? ` - ${labStatuses[lab.status]} - ` : !!displayedResults.length && ` - ${labStatuses[lab.status]} - `} <RelativeTime style={{fontSize: 12, float:"left"}} date={lab.ordered_at}/></span>
         </p>
-        {displayedResults}
+        <p style={{marginRight:"2rem"}}>
+            {displayedResults}
+        </p>
     </p>
 }
 

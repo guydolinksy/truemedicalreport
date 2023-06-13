@@ -199,13 +199,39 @@ export const PatientWarning = ({patient, warning, index, style}) => {
 }
 
 const PatientMeasures = ({patient}) => {
-    return <div style={{display: "flex", justifyContent: "space-evenly"}}>
-        <Measure patient={patient} measure={'temperature'} icon={'temperature'} title={'חום'}/>
-        <Measure patient={patient} measure={'blood_pressure'} icon={'bloodPressure'} title={'לחץ דם'}/>
-        <Measure patient={patient} measure={'pulse'} icon={'pulse'} title={'דופק'}/>
-        <Measure patient={patient} measure={'saturation'} icon={'saturation'} title={'סטורציה'}/>
-        <Measure patient={patient} measure={'pain'} icon={'pain'} title={'כאב'}/>
-    </div>
+    const {value} = useContext(patientDataContext.context);
+    console.log(value)
+    return (
+    <div style={{display:"flex", flexDirection:"column"}}>
+        <div style={{display: "flex", justifyContent: "space-evenly"}}>
+            <Measure patient={patient} measure={'temperature'} icon={'temperature'} title={'חום'}/>
+            <Measure patient={patient} measure={'blood_pressure'} icon={'bloodPressure'} title={'לחץ דם'}/>
+            <Measure patient={patient} measure={'pulse'} icon={'pulse'} title={'דופק'}/>
+            <Measure patient={patient} measure={'saturation'} icon={'saturation'} title={'סטורציה'}/>
+            <Measure patient={patient} measure={'pain'} icon={'pain'} title={'כאב'}/>
+        </div>
+        <div style={{display:"flex", justifyContent:"space-between",overflow: "hidden", textOverflow: "ellipsis",padding: "0rem 1rem"}}>
+            {value.treatment.doctors &&
+            <div style={{display:"flex",overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
+                {value.treatment.doctors.map((doctor,index)=>
+                    <Tooltip overlay={doctor} >
+                        <div style={{overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
+                            {`${doctor}${index!==value.treatment.doctors.length-1 ? ',':''}`}
+                        </div>
+                    </Tooltip>)}
+            </div>}
+            {/*{value.referral &&*/}
+            <div style={{display:"flex",overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
+                {["נוירולוג","הביתה"].map((ref,index)=>
+                    <Tooltip overlay={ref} >
+                        <div style={{overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
+                            {`${ref}${index!==1 ? ',':''}`}
+                        </div>
+                    </Tooltip>)}
+            </div>
+        {/*}*/}
+        </div>
+    </div>)
 }
 
 const PatientAwaiting = () => {
