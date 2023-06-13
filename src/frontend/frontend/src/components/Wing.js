@@ -29,7 +29,7 @@ import {PatientInfo} from "./PatientInfo";
 import debounce from 'lodash/debounce';
 import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
-import {FilterOutlined, PushpinOutlined, SearchOutlined, UserOutlined} from "@ant-design/icons";
+import {FilterOutlined, PushpinOutlined, QuestionOutlined, SearchOutlined, UserOutlined} from "@ant-design/icons";
 import {useLocalStorage} from "../hooks/localStorageHook";
 import moment from "moment";
 import {useViewport} from "./UseViewPort";
@@ -320,7 +320,7 @@ const WingInner = ({department, wing}) => {
     )).sort(sortFunctions[wingSortKey]);
     const unassignedPatients = allPatients.filter(({admission}) => !admission.bed);
 
-    const patientList = <div style={{display: "flex", flexDirection: "column"}}>
+    const patientList = <div style={{display: "flex", flexDirection: "column", maxHeight:"30vh", overflowY:"scroll"}}>
          <Search key={'search'} style={{marginBottom:"0.5rem"}} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
                             placeholder={'חיפוש:'}/>
         {value.department_patients.sort((a, b) => a.info.name.localeCompare(b.info.name))
@@ -333,14 +333,21 @@ const WingInner = ({department, wing}) => {
             </Button>)}
     </div>
 
+    const legend = <div>
+        <Badge color={"blue"}>ז'</Badge><span color={"blue"}> - זכר</span>
+    </div>
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
             <WingStatus department={department}/>
         </Sider>
         <Content className={'content'} style={{height: '100vh', overflowY: 'scroll'}}>
-            <Popover placement={"topLeft"} content={patientList} title={"מטופלים.ות:"}>
+            <Popover placement={"leftTop"} content={patientList} title={"מטופלים.ות:"}>
                 <Button type={"primary"} style={{position: "absolute", top: 41, left: 0, width: 40, zIndex: 1000}}
                         icon={<SearchOutlined  />}/>
+            </Popover>
+            <Popover placement={"leftTop"} content={legend} title={"מקרא:"}>
+                <Button type={"primary"} style={{position: "absolute", top: 80, left: 0, width: 40, zIndex: 1000}}
+                        icon={<QuestionOutlined  />}/>
             </Popover>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                 {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedTreatments.length || selectedAwaiting.length ?
