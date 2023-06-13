@@ -34,7 +34,12 @@ SELECT
     rd.Room_Name AS RoomName,
     su.Name AS UnitName,
     ev.Admission_Date AS AdmissionDate,
-    rpp.End_Date
+    rpp.End_Date,
+    ev.Unit,
+    mr.Record_Type,
+    mr.Record_Char,
+    ta.Answer_Code,
+    mr.Hospital
 FROM [chameleon].[dbo].[EmergancyVisits] AS ev
 LEFT JOIN [chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON ev.Medical_Record = rpp.Medical_Record
 LEFT JOIN [chameleon].[dbo].[Patients] AS pat ON ev.patient = pat.patient
@@ -47,6 +52,8 @@ LEFT JOIN [chameleon].[dbo].[V_TableAnswers] AS mc ON mc.Table_Code = 1196 AND m
 LEFT JOIN [chameleon].[dbo].[RoomDetails] AS rd ON rd.Room_Code = rpp.Room AND rd.Unit = rpp.Unit
 LEFT JOIN [chameleon].[dbo].[RoomBeds] AS rb ON rb.Row_ID = rpp.Bed_ID
 LEFT JOIN [chameleon].[dbo].[SystemUnits] AS su ON su.Unit = ev.Unit
+LEFT JOIN [chameleon].[dbo].[MedicalRecords] AS mr ON ev.Medical_Record = mr.Medical_Record
+LEFT JOIN [chameleon].[dbo].[V_TableAnswers] AS ta ON ta.Table_Code = 10 AND ta.Answer_Text = 'רופא' AND ta.Hospital = mr.Hospital AND ta.Unit = ev.Unit
 WHERE 
     ev.Delete_Date IS NULL
     AND rpp.End_Date IS NULL
@@ -232,4 +239,3 @@ WHERE
 query_ris_imaging="""SELECT ORDER_KEY,MODALITY_TYPE_CODE,SPS_CODE,SPS_KEY
 FROM CSHRIS.SITE_M_BI_EXAMS_VIEW 
 WHERE SPS_KEY IN ({})"""
-
