@@ -1,5 +1,9 @@
 from datetime import datetime
+
+import aiohttp
 import pytz
+
+from .. import config
 
 
 def calculate_patient_age(birthdate) -> str:
@@ -19,3 +23,12 @@ def datetime_utc_serializer(datetime_object):
     except AttributeError:
         serialized = None
     return serialized
+
+
+async def post_dal_json(endpoint: str, json_payload: dict) -> dict:
+    assert endpoint.startswith("/")
+
+    async with aiohttp.ClientSession() as session:
+        ret = await session.post(f"{config.dal_url}{endpoint}", json=json_payload)
+        ret.raise_for_status()
+        return await ret.json()

@@ -88,6 +88,7 @@ class Wing(BaseModel):
 class WingSummary(BaseModel):
     details: WingDetails
     filters: WingFilters
+    count: int
 
     class Config:
         orm_mode = True

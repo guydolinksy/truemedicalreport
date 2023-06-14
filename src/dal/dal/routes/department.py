@@ -32,6 +32,7 @@ async def get_department(department: str, medical_dal_: MedicalDal = Depends(med
     return Department(wings=[WingSummary(
         details=wing,
         filters=await medical_dal_.get_wing_filters(department, wing.key),
+        count=len(await medical_dal_.get_wing_patients(department, wing.key)),
     ) for wing in await medical_dal_.get_department_wings(department)])
 
 

@@ -105,7 +105,7 @@ async def init_wings():
 async def init_protocols():
     requests.post(f'{config.dal_url}/config/set', json={
         'key': 'protocols',
-        'version': 0,
+        'version': 1,
         'value': {
             'כאב חזה': [
                 {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': [
@@ -113,17 +113,27 @@ async def init_protocols():
                     'imaging-צילום בית החזה בשכיבה/ישיבה',
                     'imaging-צילום חזה+צבס',
                 ]},
-                {'name': 'טרופונין', 'default': 'לא הוזמן', 'key': 'lab-1', 'keys': ['lab-120104040']},
+                {'name': 'טרופונין', 'default': '-', 'key': 'lab-1', 'keys': ['lab-120104040']},
             ],
             'סינקופה': [
-                {'name': 'טרופונין', 'default': 'לא הוזמן', 'key': 'lab-1', 'keys': ['lab-120104040']},
-                {'name': 'HGB', 'default': 'לא הוזמן', 'key': 'lab-2', 'keys': ['lab-100109497']},
+                {'name': 'טרופונין', 'default': '-', 'key': 'lab-1', 'keys': ['lab-120104040']},
+                {'name': 'HGB', 'default': '-', 'key': 'lab-2', 'keys': ['lab-100109497']},
             ],
             'חום': [
-                {'name': 'CRP', 'default': 'לא הוזמן', 'key': 'lab-1', 'keys': ['lab-120104016']},
-                {'name': 'WBC', 'default': 'לא הוזמן', 'key': 'lab-2', 'keys': ['lab-100109500']},
-                {'name': 'לקטט', 'default': 'לא הוזמן', 'key': 'lab-3', 'keys': ['lab-150108685']},
+                {'name': 'CRP', 'default': '-', 'key': 'lab-1', 'keys': ['lab-120104016']},
+                {'name': 'WBC', 'default': '-', 'key': 'lab-2', 'keys': ['lab-100109500']},
+                {'name': 'לקטט', 'default': '-', 'key': 'lab-3', 'keys': ['lab-150108685']},
             ],
+        }
+    }).raise_for_status()
+
+
+async def init_lab_categories():
+    requests.post(f'{config.dal_url}/config/set', json={
+        'key': 'lab_categories',
+        'version': 0,
+        'value': {
+            "Therapeutic  Drugs": "Therapeutic Drugs",
         }
     }).raise_for_status()
 
@@ -131,3 +141,4 @@ async def init_protocols():
 async def startup():
     await init_wings()
     await init_protocols()
+    await init_lab_categories()

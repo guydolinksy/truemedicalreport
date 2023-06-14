@@ -81,7 +81,10 @@ input:
   external:
     secretName: ''
     secretKey: ''
-  oracle:
+  imaging:
+    secretName: ''
+    secretKey: ''
+  labs:
     secretName: ''
     secretKey: ''
 

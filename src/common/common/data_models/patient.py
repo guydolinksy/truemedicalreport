@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from .esi_score import ESIScore
 from .measures import Measures, FullMeasures
+from .referrals import Referral
 from .status import Status
 from .warnings import PatientWarning
 from .admission import Admission
@@ -46,6 +47,7 @@ class InternalPatient(BaseModel):
     measures: Measures = Measures()
     protocol: Protocol = Protocol()
     notifications: List[Notification] = []
+    referrals: List[Referral] = []
 
     class Config:
         orm_mode = True
@@ -106,7 +108,6 @@ class AggregatePatient(BaseModel):
     visits: List[Any] = []
     imaging: List[Image] = []
     labs: List[LabCategory] = []
-    referrals: List[Any] = []
     events: List[Event] = []
 
     class Config:

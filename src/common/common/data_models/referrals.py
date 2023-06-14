@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from common.data_models.notification import NotificationLevel, Notification, NotificationType
+from .notification import NotificationLevel, Notification, NotificationType
 
 
 class Referral(BaseModel):

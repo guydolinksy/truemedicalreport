@@ -37,6 +37,7 @@ import {Department} from "./Department";
 import {Notification} from "./Notification";
 import {RelativeTime} from "./RelativeTime";
 import {loginContext} from "./LoginContext";
+import {CustomIcon} from "./CustomIcon";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -187,7 +188,7 @@ const WingStatus = ({department}) => {
         <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
             <Card bodyStyle={{display: "flex", padding: '10px'}}>
                 <div style={{display: 'flex', flex: 1, justifyContent: 'space-between'}}>
-                    <span>{value.details.name}</span>
+                    <span>{value.details.name} - <b>{value.patients.length}</b> מטופלים.ות</span>
                     <ul style={{display: 'flex', gap: '0 5px', margin: 0}}>
                         <li>
                             <Tooltip overlay='מחלקות'>
@@ -290,6 +291,7 @@ const WingInner = ({department, wing}) => {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
 
+    const {user} = useContext(loginContext);
     const {value, flush} = useContext(wingDataContext.context);
 
     const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'arrival');
@@ -329,12 +331,24 @@ const WingInner = ({department, wing}) => {
             <Button key={i} onClick={() => navigate(
                 `/departments/${patient.admission.department}/wings/${patient.admission.wing}#highlight#${patient.oid}#open`
             )}>
-                {patient?.info?.name}
+                {user.anonymous ? '---' : patient?.info?.name}
             </Button>)}
     </div>
 
-    const legend = <div>
-        <Badge color={"blue"}>ז'</Badge><span color={"blue"}> - זכר</span>
+    const legend = <div style={{display: "flex", flexDirection: "column", rowGap: 5}}>
+        <div><Badge className={'gender-male ant-drawer-title'}>ישראל ישראלי</Badge> - זכר</div>
+        <div><Badge className={'gender-female ant-drawer-title'}>ישראלה ישראלי</Badge> - נקבה</div>
+        <div><Badge style={{border: "1px solid"}} className={'severity-border severity-1'}>דחיפות 1</Badge></div>
+        <div><Badge style={{border: "1px solid"}} className={'severity-border severity-2'}>דחיפות 2</Badge></div>
+        <div><Badge style={{border: "1px solid"}} className={'severity-border severity-3'}>דחיפות 3</Badge></div>
+        <div><Badge style={{border: "1px solid"}} className={'severity-border severity-4'}>דחיפות 4</Badge></div>
+        <div><Badge style={{border: "1px solid"}} className={'severity-border severity-5'}>דחיפות 5</Badge></div>
+        <div><Badge style={{border: "1px solid"}} className={'status-background status-unassigned'}>לא שויך.ה רופא.ה</Badge></div>
+        <div><Badge style={{border: "1px solid"}} className={'status-background status-undecided'}>שויך.ה רופא.ה אך לא נקבע יעד אשפוז/שחרור</Badge></div>
+        <div><Badge style={{border: "1px solid"}} className={'status-background status-decided'}>שויך.ה רופא.ה ונקבע יעד אשפוז/שחרור</Badge></div>
+        <div><CustomIcon status={"error"} icon={"referral"}/> - הפנייה מתעכבת</div>
+        <div><CustomIcon status={"processing"} icon={"laboratory"}/> - מעבדה בעיבוד</div>
+        <div><CustomIcon status={"success"} icon={"imaging"}/> - הדמייה הושלמה או פוענחה</div>
     </div>
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>

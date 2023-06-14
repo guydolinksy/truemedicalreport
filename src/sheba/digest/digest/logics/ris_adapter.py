@@ -2,7 +2,7 @@ import oracledb
 
 from common.data_models.image import ImagingTypes
 from ..models.ris_imaging import RisImaging
-from ..utils.sql_statements import query_ris_imaging
+from ..utils.sql_statements import query_ris_imaging, query_lab_in_progress
 
 modality_type_mapping = {
     "DX": ImagingTypes.xray,
@@ -35,5 +35,18 @@ class OracleAdapter:
                     sps_code=result[2],
                     accession_number=result[3]
                 )
-
         return imaging
+
+    def query_labs(self, order_numbers: list[str]) -> dict[str, dict]:
+        labs = {}
+        with oracledb.connect(params=self.params).cursor() as cursor:
+            results = cursor.execute(query_lab_in_progress.format(orders=', '.join(set(order_numbers))))
+            for result in results:
+                labs.setdefault(result['OrderNumber'], []).append({
+                    'TestCode': result['TestCode'],
+                    'TestName': result['TestName'],
+                    'OrderNumber': result['OrderNumber'],
+                    'Category': result['Category'],
+                })
+
+        return labs

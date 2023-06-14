@@ -54,11 +54,16 @@ spec:
                   name: {{ .Values.input.external.secretName }}
                   key: {{ .Values.input.external.secretKey }}
               {{- end }}
-            - name: 'ORACLE_CONNECTION'
+            - name: 'IMAGING_CONNECTION'
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.input.oracle.secretName }}
-                  key: {{ .Values.input.oracle.secretKey }}
+                  name: {{ .Values.input.imaging.secretName }}
+                  key: {{ .Values.input.imaging.secretKey }}
+            - name: 'LABS_CONNECTION'
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.input.labs.secretName }}
+                  key: {{ .Values.input.labs.secretKey }}
             - name: 'CHAMELEON_URL'
               value: '"{{ .Values.external.chameleonUrl }}"'
             - name: 'CARE_STREAM_URL'

@@ -285,10 +285,14 @@ class MedicalDal:
 
     async def get_patient(self, patient_query: dict) -> Patient:
         if res := await self.db.patients.find_one(patient_query):
-            return Patient(notifications=sorted([
-                Notification(oid=str(n.pop("_id")), **n)
-                async for n in self.db.notifications.find({"patient_id": res['external_id']})
-            ], key=lambda n: datetime.datetime.fromisoformat(n.at), reverse=True), **res)
+            return Patient(
+                notifications=sorted([
+                    Notification(oid=str(n.pop("_id")), **n)
+                    async for n in self.db.notifications.find({"patient_id": res['external_id']})
+                ], key=lambda n: datetime.datetime.fromisoformat(n.at), reverse=True),
+                referrals=await self.get_patient_referrals(res['external_id']),
+                **res
+            )
 
         raise PatientNotFound()
 
@@ -304,7 +308,6 @@ class MedicalDal:
                 )
             ),
             labs=await self.get_patient_labs(patient.external_id),
-            referrals=await self.get_patient_referrals(patient.external_id),
             events=events,
             visits=visits,
             **patient.dict(),
@@ -508,7 +511,7 @@ class MedicalDal:
         return imaging.status in [ImagingStatus.verified.value, ImagingStatus.analyzed.value,
                                   ImagingStatus.cancelled.value]
 
-    async def upsert_labs(self, patient_id: str, new_categories:  Dict[str, LabCategory]):
+    async def upsert_labs(self, patient_id: str, new_categories: Dict[str, LabCategory]):
         patient = await self.get_patient({"external_id": patient_id})
         updated = patient.copy()
 
@@ -546,7 +549,7 @@ class MedicalDal:
                 updated.awaiting.setdefault(AwaitingTypes.laboratory.value, {}).__setitem__(
                     cat.key,
                     Awaiting(
-                        subtype=cat.category, # TODO subtype
+                        subtype=cat.category,  # TODO subtype
                         name=cat.category_display_name,
                         since=cat.ordered_at,
                         completed=cat.status == LabStatus.analyzed.value,

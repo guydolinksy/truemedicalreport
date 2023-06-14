@@ -198,7 +198,7 @@ export const PatientWarning = ({patient, warning, index, style}) => {
     </div>
 }
 
-const PatientMeasures = ({patient}) => {
+const PatientFooter = ({patient}) => {
     const {value} = useContext(patientDataContext.context);
     console.log(value)
     return (
@@ -211,8 +211,7 @@ const PatientMeasures = ({patient}) => {
             <Measure patient={patient} measure={'pain'} icon={'pain'} title={'כאב'}/>
         </div>
         <div style={{display:"flex", justifyContent:"space-between",overflow: "hidden", textOverflow: "ellipsis",padding: "0rem 1rem"}}>
-            {value.treatment.doctors &&
-            <div style={{display:"flex",overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
+            {value.treatment.doctors.length > 0 && <div style={{display:"flex",overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
                 {value.treatment.doctors.map((doctor,index)=>
                     <Tooltip overlay={doctor} >
                         <div style={{overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
@@ -220,16 +219,14 @@ const PatientMeasures = ({patient}) => {
                         </div>
                     </Tooltip>)}
             </div>}
-            {/*{value.referral &&*/}
-            <div style={{display:"flex",overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
-                {["נוירולוג","הביתה"].map((ref,index)=>
-                    <Tooltip overlay={ref} >
+            {value.referrals.length > 0 && <div style={{display:"flex",overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
+                {value.referrals.map((ref,index)=>
+                    <Tooltip overlay={ref.to} >
                         <div style={{overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
-                            {`${ref}${index!==1 ? ',':''}`}
+                            {`${ref.to}${index!==1 ? ',':''}`}
                         </div>
                     </Tooltip>)}
-            </div>
-        {/*}*/}
+            </div>}
         </div>
     </div>)
 }
@@ -368,7 +365,7 @@ const PatientInner = ({patient, avatar, style}) => {
                     </div>)}
                 </Carousel>
             </Badge.Ribbon>
-            <PatientMeasures patient={patient}/>
+            <PatientFooter patient={patient}/>
         </div>
     </Card>
 }

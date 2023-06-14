@@ -33,10 +33,10 @@ export const Department = ({department}) => {
                     </div>
                 );
                 return <Col key={i} span={12}>
-                    <Card title={wing.details.name} actions={actions} style={{marginBottom: 16}} hoverable
-                          onClick={() =>
-                              navigate(generatePath(WING_URL, {department: department, wing: wing.details.key}))
-                          }/>
+                    <Card title={<span>{wing.details.name} - <b>{wing.count}</b> מטופלים.ות</span>}
+                          actions={actions} style={{marginBottom: 16}} hoverable onClick={() =>
+                        navigate(generatePath(WING_URL, {department: department, wing: wing.details.key}))
+                    }/>
                 </Col>
             })}
         </Row>}

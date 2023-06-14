@@ -182,9 +182,9 @@ WHERE ev.Delete_Date  IS NULL
 AND ev.Release_Time  IS NULL
 AND labr.Delete_Date IS NULL
 and ev.unit = {unit}
+
 and ev.admission_date > GETDATE()-7
 and labr.Result_Entry_Date >= ev.admission_date"""
-
 
 query_lab_orders = """
 select 
@@ -201,6 +201,26 @@ AND toh.Delete_Date IS NULL
 and ev.unit = {unit}
 and ev.admission_date > GETDATE()-7
 and toh.Entry_Date >= ev.admission_date"""
+
+query_lab_in_progress = """
+select trim(p.CODE) as ID_num
+       ,r.TEST_CODE as  TestCode
+       ,r.TEST_NAME as TestName
+       ,o.ORDER_NUM as OrderNumber
+       ,r.RESULT as Result
+       ,r.UNITS as Units
+       ,o.COMPLETION_TIME as ResultTime
+       ,r.PROFILE_NUM as Category
+from autodb.REQUESTS r
+join  autodb.orders o on r.ORDER_CODE=o.ORDER_CODE
+join  autodb.patientcodes p on o.patient_code=p.PATIENT_CODE
+join  autodb.SAMPLES s on r.ORDER_CODE=s.ORDER_CODE and r.LABEL=s.LABEL
+where r.DEPARTMENT=10
+and r.is_panel='N'
+and r.RESULT is null
+and o.ORDER_NUM in ({orders})
+order by o.ENTRY_TIME
+"""
 
 query_doctor_intake = """
 SELECT
@@ -236,6 +256,6 @@ WHERE
        AND mr.Release_Time is null
        AND tc.[Entry_Date] >= mr.Admission_Date"""
 
-query_ris_imaging="""SELECT ORDER_KEY,MODALITY_TYPE_CODE,SPS_CODE,SPS_KEY
+query_ris_imaging = """SELECT ORDER_KEY,MODALITY_TYPE_CODE,SPS_CODE,SPS_KEY
 FROM CSHRIS.SITE_M_BI_EXAMS_VIEW 
 WHERE SPS_KEY IN ({})"""

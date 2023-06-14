@@ -6,16 +6,16 @@ from typing import Dict, List
 
 import logbook
 import requests
+from oracledb.exceptions import DatabaseError
 from requests import HTTPError
 from sentry_sdk import capture_message
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from oracledb.exceptions import DatabaseError
 
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
 from common.data_models.image import ImagingStatus, Image
-from common.data_models.labs import Laboratory, LabStatus, CATEGORIES_IN_HEBREW, LabCategory
+from common.data_models.labs import Laboratory, LabStatus, LabCategory
 from common.data_models.measures import Measure, MeasureType
 from common.data_models.notification import NotificationLevel
 from common.data_models.patient import Intake, ExternalPatient, Person
@@ -25,6 +25,7 @@ from .ris_adapter import OracleAdapter
 from .. import config
 from ..models.ris_imaging import RisImaging
 from ..utils import sql_statements, utils
+from ..utils.utils import post_dal_json
 
 logger = logbook.Logger(__name__)
 
@@ -65,9 +66,8 @@ SHEBA_LABS_LINK = f'{config.chameleon_url}/Chameleon/Asp/Records/LabResults_Moda
 
 
 def format_medical_summary_link(
-    *, unit, record_type_code, record_char, record_part, patient_id, medical_record, hospital
+        *, unit, record_type_code, record_char, record_part, patient_id, medical_record, hospital
 ):
-
     if record_type_code != 10:
         logger.info(f"Can't format medical summary link - unexpected record type: {record_type_code}")
         return None
@@ -87,14 +87,17 @@ class Departments(Enum):
 
 
 class SqlToDal(object):
-    def __init__(self, chameleon_connection=None, dal_url=None, oracle_params=None):
+    def __init__(self, chameleon_connection=None, dal_url=None, labs_params=None, imaging_params=None):
         self.dal_url = dal_url or config.dal_url
 
         chameleon_connection = chameleon_connection or config.chameleon_connection
         self._engine = create_engine(chameleon_connection)
 
-        oracle_connection_params = oracle_params or config.oracle_params
-        self._oracle_client = OracleAdapter(oracle_connection_params)
+        imaging_connection_params = imaging_params or config.imaging_params
+        self._imaging_client = OracleAdapter(imaging_connection_params)
+
+        labs_connection_params = labs_params or config.labs_params
+        self._labs_client = OracleAdapter(labs_connection_params)
 
     @contextlib.contextmanager
     def session(self):
@@ -212,7 +215,7 @@ class SqlToDal(object):
 
     def _merge_ris_chameleon_imaging(self, accessions, chameleon_imaging: List[Image]) -> None:
         try:
-            ris_imagings: Dict[str, RisImaging] = self._oracle_client.query_imaging(accessions)
+            ris_imagings: Dict[str, RisImaging] = self._imaging_client.query_imaging(accessions)
             logger.debug(ris_imagings)
             for imaging in chameleon_imaging:
                 if ris_image := ris_imagings.get(imaging.external_id, False):
@@ -221,8 +224,36 @@ class SqlToDal(object):
             capture_message('Could not query RIS.', level="warning")
             logger.exception('Could not query RIS.')
 
+    def _merge_autodb_chameleon_labs(self, orders: Dict[str, Dict[str, LabCategory]]) -> None:
+        try:
+            order_numbers = [lc.category for mr, lcs in orders.items() for key, lc in lcs.items()]
+            labs = self._labs_client.query_labs(order_numbers=order_numbers)
+            for mr, lcs in orders.items():
+                for key, lc in lcs.items():
+                    for lab in labs.get(lc.category, []):
+                        lc.results.setdefault(lab["TestCode"], Laboratory(
+                            patient_id=mr,
+                            external_id=f'{mr}#{lc.ordered_at}#{lab["TestCode"]}',
+                            ordered_at=lc.ordered_at,
+                            chameleon_id=lab["TestCode"],
+                            result_at=None,
+                            test_type_id=lab['TestCode'],
+                            test_type_name=lab['TestName'],
+                            category=lab['OrderNumber'],
+                            category_display_name=lab['Category'],
+                            result=None,
+                            units=None,
+                            range=None,
+                            panic=None,
+                            status=LabStatus.in_progress,
+                        ))
+        except DatabaseError:
+            capture_message('Could not query AUTODB.', level="warning")
+            logger.exception('Could not query AUTODB.')
+
     def update_labs(self, department: Departments):
         try:
+            lab_category_names = await post_dal_json("/config/get", dict(key='lab_categories', default={}))
             logger.debug('Getting labs for `{}`...', department.name)
             orders = {}
             statuses = {}
@@ -254,26 +285,21 @@ class SqlToDal(object):
                               f"for medical record {row['MedicalRecord']}"
                         capture_message(msg, level="warning")
                         logger.error(msg)
+            self._merge_autodb_chameleon_labs(orders)
             with self.session() as session:
                 for row in session.execute(sql_statements.query_lab_results.format(unit=department.value)):
-                    try:
-                        ordered_at = utils.datetime_utc_serializer(row["OrderDate"])
-                        lc = LabCategory(
-                            ordered_at=ordered_at,
-                            category=row['Category'],
-                            category_display_name=CATEGORIES_IN_HEBREW.get(row['Category'], row['Category']),
-                            patient_id=row['MedicalRecord'],
-                            status=statuses.get(row['OrderNumber'], LabStatus.analyzed.value),
-                            results={}
-                        )
-                        orders.setdefault(row['MedicalRecord'], {}).setdefault(
-                            lc.key, lc
-                        ).results.setdefault(row["TestCode"], self.row_to_lab(row))
-                    except KeyError as e:
-                        msg = f"Lab from category '{row['Category'].strip()}' isn't exists in internal mapping " \
-                              f"for medical record {row['MedicalRecord']}"
-                        capture_message(msg, level="warning")
-                        logger.error(msg)
+                    ordered_at = utils.datetime_utc_serializer(row["OrderDate"])
+                    lc = LabCategory(
+                        ordered_at=ordered_at,
+                        category=row['Category'],
+                        category_display_name=lab_category_names.get(row['Category'], row['Category']),
+                        patient_id=row['MedicalRecord'],
+                        status=statuses.get(row['OrderNumber'], LabStatus.analyzed.value),
+                        results={}
+                    )
+                    orders.setdefault(row['MedicalRecord'], {}).setdefault(
+                        lc.key, lc
+                    ).results[row["TestCode"]] = self.row_to_lab(row, lab_category_names)
             labs = {mr: {c: cat.dict(exclude_unset=True) for c, cat in cats.items()} for mr, cats in orders.items()}
             res = requests.post(f'{self.dal_url}/departments/{department.name}/labs', json={"labs": labs})
             res.raise_for_status()
@@ -282,7 +308,7 @@ class SqlToDal(object):
             logger.exception(f'Could not run labs handler. {e}')
 
     @staticmethod
-    def row_to_lab(row) -> Laboratory:
+    def row_to_lab(row, lab_category_names: Dict[str, str]) -> Laboratory:
         if row["ResultTime"] is None:
             status = LabStatus.ordered
             result_at = None
@@ -306,11 +332,12 @@ class SqlToDal(object):
             test_type_id=row["TestCode"],
             test_type_name=row["TestName"],
             category=category,
-            category_display_name=CATEGORIES_IN_HEBREW.get(category, category),
-            range=row["Range"],
+            category_display_name=lab_category_names.get(category, category),
             result=row["Result"],
             units=row["Units"],
-            status=status
+            range=row["Range"],
+            panic=row["Panic"],
+            status=status,
         )
 
     def update_doctor_intake(self, department: Departments):

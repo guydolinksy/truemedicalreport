@@ -16,10 +16,6 @@ class LabStatus(Enum):
     analyzed = 4
 
 
-CATEGORIES_IN_HEBREW = {
-    "Therapeutic  Drugs": "Therapeutic Drugs",
-}
-
 LABS_RESULT_RANGE = {
     # WBC
     100109500: {"min": 3, "max": 14},
@@ -160,7 +156,7 @@ class LabCategory(BaseModel):
             key = f"lab#{lab.external_id}"
             if key in warnings and not lab.panic:
                 yield key, PatientWarning(**warnings[key].dict(exclude={'acknowledge'}), acknowledge=True)
-            elif key not in warnings and lab.panic:
+            elif key not in warnings and lab.range in ['PH', 'PL']:
                 yield key, PatientWarning(
                     content=f"תוצאת {lab.category_display_name}-{lab.test_type_name} חריגה: {lab.result} {lab.units}",
                     severity=Severity(value=1, at=lab.result_at),
