@@ -1,3 +1,4 @@
+import asyncio
 import contextlib
 import datetime
 import re
@@ -139,8 +140,9 @@ class SqlToDal(object):
                             record_type_code=row["Record_Type"],
                             record_char=row["Record_Char"],
                             record_part=row["Answer_Code"],
+                            patient_id=row["PatientID"],
+                            medical_record=row["MedicalRecord"],
                             hospital=row["Hospital"],
-                            medical_record=row["MedicalRecord"]
                         )
                     ).dict(exclude_unset=True))
             res = requests.post(f'{self.dal_url}/departments/{department.name}/admissions',
@@ -253,7 +255,7 @@ class SqlToDal(object):
 
     def update_labs(self, department: Departments):
         try:
-            lab_category_names = await post_dal_json("/config/get", dict(key='lab_categories', default={}))
+            lab_category_names = asyncio.run(post_dal_json("/config/get", dict(key='lab_categories', default={})))
             logger.debug('Getting labs for `{}`...', department.name)
             orders = {}
             statuses = {}
