@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Type, Any
 
 import logbook
+import pytz
 from bson.objectid import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase as Database, AsyncIOMotorCollection as Collection
 from pydantic import BaseModel
@@ -34,8 +35,9 @@ logger = logbook.Logger(__name__)
 
 def average_date(l):
     dates = [datetime.datetime.fromisoformat(d).timestamp() for d in l if d is not None and d != '']
-    return datetime.datetime.fromtimestamp(sum(dates) / len(dates)).isoformat() if dates else None
-
+    return datetime.datetime.fromtimestamp(
+        sum(dates) / len(dates), pytz.timezone('Asia/Jerusalem')
+    ).isoformat() if dates else None
 
 @dataclass
 class MedicalDal:
@@ -168,7 +170,7 @@ class MedicalDal:
                            WingFilter(
                                key=".".join(["treatment", "ללא"]),
                                count=len(patients) - len(treatment_total),
-                               title="ללא",
+                               title="לא הוחלט",
                                valid=False,
                                icon="treatment",
                            ),

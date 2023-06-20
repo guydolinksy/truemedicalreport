@@ -14,6 +14,7 @@ import {
     faStethoscope,
     faTemperatureHalf,
     faUserNurse,
+    faHouseMedicalCircleCheck,
     faVial,
     IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
@@ -53,6 +54,8 @@ export const CustomIcon = ({status, icon, style}) => {
         return <FontAwesomeIcon style={style} className={className} icon={faImaging}/>
     if (icon === 'laboratory')
         return <FontAwesomeIcon style={style} className={className} icon={faVial}/>
+    if (icon === 'treatment')
+        return <FontAwesomeIcon style={style} className={className} icon={faHouseMedicalCircleCheck}/>
     if (icon === 'doctor')
         return <FontAwesomeIcon style={style} className={className} icon={faStethoscope}/>
     if (icon === 'nurse')

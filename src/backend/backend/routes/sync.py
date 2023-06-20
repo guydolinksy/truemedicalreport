@@ -27,7 +27,8 @@ async def patient_handler(data: dict):
 
     keys = [f"/api/patients/{patient_oid}", f"/api/patients/{patient_oid}/info"]
 
-    if new.get("flagged") != old.get("flagged"):
+    if new.get("flagged") != old.get("flagged") or \
+            new.get("severity", {}).get('value') != old.get("severity", {}).get('value'):
         if admission := old.get("admission", {}):
             keys.append(f"/api/departments/{admission['department']}/wings/{admission['wing']}")
 

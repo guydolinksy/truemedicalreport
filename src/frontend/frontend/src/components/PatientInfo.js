@@ -52,9 +52,9 @@ const RANGE_CODE_TO_DESCRIPTION = {
 const findWorstRangeColor = (ranges) => {
     if(ranges.some(range=> range.includes("HH") || range.includes("LL"))) return "#FF0000"
     if(ranges.some(range=> range.includes("VL") || range.includes("VH"))) return "#FF00FF"
-    if(ranges.some(range=> range.includes("H") || range.includes("L"))) return "#FFFF00"
+    if(ranges.some(range=> range.includes("H") || range.includes("L"))) return "#FFA500"
     if(ranges.some(range=> range==="N")) return "#00FF00"
-    return "red"
+    return "black"
 
 }
 
@@ -79,7 +79,7 @@ const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
     } else if (ranges.every(range => range === "N")) {
         // Everything normal
         badgeText = "✓"
-        badgeColor = "green"
+        badgeColor = findWorstRangeColor(ranges)
     } else if(!ranges.some(range=>rangesToConsiderAsBad.includes(range))){
         badgeText = "X"
         badgeColor=findWorstRangeColor(ranges)
@@ -88,7 +88,7 @@ const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
             .map(results => results.length)
             .reduce((a, b) => a + b)
         badgeText = badResultsCount.toString();
-        badgeColor = "red"
+        badgeColor = findWorstRangeColor(ranges)
     }
 
     const displayedResults = rangesToConsiderAsBad.map(range => (rangeToResults[range] || [])).flat().map((result, index) => {

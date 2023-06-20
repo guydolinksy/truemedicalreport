@@ -16,7 +16,7 @@ export const DepartmentView = () => {
             <Header>
                 <MainMenu/>
             </Header>
-            <Content style={{display: "flex", flexDirection: "column", padding: "50px 350px", rowGap: 50}}>
+            <Content style={{display: "flex", flexDirection: "column", padding: "50px 250px", rowGap: 50}}>
                 <Department department={params.department}/>
             </Content>
         </Layout>

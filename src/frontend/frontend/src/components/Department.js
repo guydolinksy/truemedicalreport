@@ -29,8 +29,8 @@ export const Department = ({department}) => {
                 const actions = [].concat(
                     ...wing.filters.awaiting.map(toActions),
                     ...wing.filters.treatments.filter(filter => filter.key === 'treatment.ללא')
-                ).filter(({key}) => SHOW_ACTIONS.includes(key) || key.startsWith('referrals.')).map(
-                    ({count, title, icon,duration, valid}) => <div>
+                ).filter(({key}) => SHOW_ACTIONS.includes(key) || key.startsWith('referral.')).map(
+                    ({count, title, icon, duration, valid}) => <div>
                         <div style={{fontSize: 12}}>{title}{icon &&
                             <span>&nbsp;<CustomIcon status={'processing'} icon={icon}/></span>}</div>
                         {![null, undefined].includes(duration) && <div style={{userSelect: "none", fontSize: 14}}>

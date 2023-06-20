@@ -148,6 +148,7 @@ const WingNotifications = () => {
 
 const WingStatus = ({department}) => {
     const {value} = useContext(wingDataContext.context);
+    const {userSettings} = useContext(loginContext);
 
     const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'arrival');
     const [selectedAwaiting, setSelectedAwaiting] = useLocalStorage('selectedAwaiting', []);
@@ -262,7 +263,10 @@ const WingStatus = ({department}) => {
                footer={null}
                width='fit-content'
         >
-            <ul style={{display: 'flex', gap: '0 20px', margin: 0}}>
+            <ul style={{display: 'flex', gap: '0 20px', margin: 0}} className={userSettings.theme}>
+                <Suspense fallback={<span/>}>
+                    {userSettings.theme === 'dark-theme' ? <DarkTheme/> : <LightTheme/>}
+                </Suspense>>
                 <Department department={department}/>
             </ul>
         </Modal>
