@@ -16,23 +16,23 @@ class LabStatus(Enum):
     analyzed = 4
 
 
-LABS_RESULT_RANGE = {
-    # WBC
-    100109500: {"min": 3, "max": 14},
-    # HBG
-    100109497: {"min": 8, "max": 16},
-    # PLT
-    100109488: {"min": 150, "max": 500},
-    # EOS%
-    100109478: {"min": 0, "max": 1},
-    # EOS abs
-    # 100109477: {"min": 1, "max": 1000},
-    # NEUTRO%
-    100109484: {"min": 1, "max": 10},
-    # NEUTRO abs
-    # 100109483: {"min": 1, "max": 10}
-}
-
+# LABS_RESULT_RANGE = {
+#     # WBC
+#     100109500: {"min": 3, "max": 14},
+#     # HBG
+#     100109497: {"min": 8, "max": 16},
+#     # PLT
+#     100109488: {"min": 150, "max": 500},
+#     # EOS%
+#     100109478: {"min": 0, "max": 1},
+#     # EOS abs
+#     # 100109477: {"min": 1, "max": 1000},
+#     # NEUTRO%
+#     100109484: {"min": 1, "max": 10},
+#     # NEUTRO abs
+#     # 100109483: {"min": 1, "max": 10}
+# }
+#
 
 #
 # LAB_TEST_TYPE = {
@@ -112,14 +112,14 @@ class LabCategory(BaseModel):
         res = []
         out_of_range = False
         for key, result in self.results.items():
-            if result.test_type_id in LABS_RESULT_RANGE.keys():
-                try:
-                    lab_result = int(result.result)
-                    if not LABS_RESULT_RANGE[result.test_type_id]["min"] < lab_result < \
-                           LABS_RESULT_RANGE[result.test_type_id]["max"]:
-                        out_of_range = True
-                except ValueError:
-                    continue
+            # if result.result and result.test_type_id in LABS_RESULT_RANGE:
+            #     try:
+            #         lab_result = int(result.result)
+            #         if not LABS_RESULT_RANGE[result.test_type_id]["min"] < lab_result < \
+            #                LABS_RESULT_RANGE[result.test_type_id]["max"]:
+            #             out_of_range = True
+            #     except ValueError:
+            #         continue
             if not result.range or result.range == 'N':
                 continue
             out_of_range = True

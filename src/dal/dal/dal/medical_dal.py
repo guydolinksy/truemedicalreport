@@ -39,6 +39,7 @@ def average_date(l):
         sum(dates) / len(dates), pytz.timezone('Asia/Jerusalem')
     ).isoformat() if dates else None
 
+
 @dataclass
 class MedicalDal:
     db: Database
