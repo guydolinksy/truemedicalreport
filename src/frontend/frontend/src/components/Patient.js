@@ -294,7 +294,7 @@ const PatientHeader = ({patient, avatar}) => {
     const {user} = useContext(loginContext);
     if (!patient)
         return <Button shape={"circle"} type={"text"}>{avatar || <UserOutlined/>}</Button>
-    return <span style={{color: GENDERED_COLOR[value.info.gender]}}>
+    return <span className={`gender-${value.info.gender}`}>
         {avatar || value.admission.bed || <UserOutlined/>}&nbsp;
         {!user.anonymous && <span>
             <Tooltip overlay={`ת.ז. ${value.info.id_ || 'לא ידוע'}`}>{value.info.name}</Tooltip>,&nbsp;

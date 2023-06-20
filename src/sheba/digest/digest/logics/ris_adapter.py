@@ -40,13 +40,13 @@ class OracleAdapter:
     def query_labs(self, order_numbers: list[str]) -> dict[str, dict]:
         labs = {}
         with oracledb.connect(params=self.params).cursor() as cursor:
-            results = cursor.execute(query_lab_in_progress.format(orders=', '.join(set(order_numbers))))
+            results = cursor.execute(query_lab_in_progress.format(orders="', '".join(set(order_numbers))))
             for result in results:
-                labs.setdefault(result['OrderNumber'], []).append({
-                    'TestCode': result['TestCode'],
-                    'TestName': result['TestName'],
-                    'OrderNumber': result['OrderNumber'],
-                    'Category': result['Category'],
+                labs.setdefault(result[3], []).append({
+                    'TestCode': result[1],
+                    'TestName': result[2],
+                    'OrderNumber': result[3],
+                    'Category': result[7],
                 })
 
         return labs

@@ -20,6 +20,7 @@ from common.data_models.patient import Patient, ExternalPatient, InternalPatient
 from common.data_models.plugins import PatientInfoPluginDataV1
 from common.data_models.protocol import ProtocolValue, ProtocolItem, Protocol
 from common.data_models.referrals import Referral
+from common.data_models.severity import Severity
 from common.data_models.status import Status
 from common.data_models.treatment import Treatment
 from common.data_models.wing import WingFilter, WingFilters, PatientNotifications, WingDetails
@@ -29,6 +30,11 @@ from .application_dal import ApplicationDal
 from ..routes.publishing import publish
 
 logger = logbook.Logger(__name__)
+
+
+def average_date(l):
+    dates = [datetime.datetime.fromisoformat(d).timestamp() for d in l if d is not None and d != '']
+    return datetime.datetime.fromtimestamp(sum(dates) / len(dates)).isoformat() if dates else None
 
 
 @dataclass
@@ -131,29 +137,28 @@ class MedicalDal:
                     if not data.completed:
                         awaitings.setdefault((awaiting, names[awaiting]), {}).setdefault(
                             (data.subtype, data.name), []
-                        ).append(patient.oid)
+                        ).append([patient.oid, patient.awaiting[awaiting][key].since])
             for doctor in patient.treatment.doctors:
                 doctors.setdefault(doctor, []).append(patient.oid)
             if patient.treatment.destination:
                 treatments.setdefault(patient.treatment.destination, []).append(patient.oid)
         doctor_total = set(p for patients in doctors.values() for p in patients)
         treatment_total = set(p for patients in treatments.values() for p in patients)
-        awaiting_total = set(p for keys in awaitings.values() for l in keys.values() for p in l)
+        awaiting_total = set(p for keys in awaitings.values() for l in keys.values() for p, _ in l)
         return WingFilters(
             doctors=[
                         WingFilter(
-                            key="no-physician",
+                            key=".".join(["physician", "ללא"]),
                             count=len(patients) - len(doctor_total),
                             title="ללא",
                             valid=False,
                             icon="doctor",
                         ),
-                    ]
-                    + [
+                    ] + [
                         WingFilter(
-                            key=".".join(["physician", doctor]),
+                            key=".".join(["physician", doctor.replace('.', '')]),
                             count=len(patients),
-                            title=doctor,
+                            title=doctor.replace('.', ''),
                             valid=True,
                             icon="doctor",
                         )
@@ -161,18 +166,17 @@ class MedicalDal:
                     ],
             treatments=[
                            WingFilter(
-                               key="no-treatment",
+                               key=".".join(["treatment", "ללא"]),
                                count=len(patients) - len(treatment_total),
                                title="ללא",
-                               valid=True,
+                               valid=False,
                                icon="treatment",
                            ),
-                       ]
-                       + [
+                       ] + [
                            WingFilter(
-                               key=".".join(["treatment", treatment]),
+                               key=".".join(["treatment", treatment.replace('.', '')]),
                                count=len(patients),
-                               title=treatment,
+                               title=treatment.replace('.', ''),
                                valid=True,
                                icon="treatment",
                            )
@@ -188,10 +192,11 @@ class MedicalDal:
                     children=[
                         WingFilter(
                             key=awaiting,
-                            count=len(set(p for l in keys.values() for p in l)),
+                            count=len(set(p for l in keys.values() for p, _ in l)),
                             icon=awaiting,
                             title=awaiting_name,
                             valid=True,
+                            duration=average_date([d for l in keys.values() for _, d in l]),
                             children=[
                                 WingFilter(
                                     key=".".join([awaiting, key]),
@@ -199,6 +204,7 @@ class MedicalDal:
                                     title=key_name,
                                     icon=awaiting,
                                     valid=True,
+                                    duration=average_date([d for _, d in patients]),
                                 )
                                 for (key, key_name), patients in keys.items()
                             ],
@@ -209,27 +215,23 @@ class MedicalDal:
                 WingFilter(
                     key="not-awaiting",
                     count=len(patients) - len(awaiting_total),
-                    title="לא ממתינים.ות",
+                    title="ממתינים.ות להחלטה",
                     icon="awaiting",
                     valid=False,
                 ),
             ],
             mapping=dict(
                 [(".".join(["treatment", treatment]), patients) for treatment, patients in treatments.items()]
-                + [
-                    ("no-treatment", list({p.oid for p in patients} - treatment_total)),
-                ]
+                + [(".".join(["treatment", "ללא"]), list({p.oid for p in patients} - treatment_total))]
                 + [(".".join(["physician", doctor]), patients) for doctor, patients in doctors.items()]
+                + [(".".join(["physician", "ללא"]), list({p.oid for p in patients} - doctor_total))]
                 + [
-                    ("no-physician", list({p.oid for p in patients} - doctor_total)),
-                ]
-                + [
-                    (".".join([awaiting, key]), patients)
+                    (".".join([awaiting, key]), [p for p, _ in patients])
                     for (awaiting, awaiting_name), keys in awaitings.items()
                     for (key, key_name), patients in keys.items()
                 ]
                 + [
-                    (awaiting, list(set(patient for patients in keys.values() for patient in patients)))
+                    (awaiting, list(set(patient for patients in keys.values() for patient, _ in patients)))
                     for (awaiting, awaiting_name), keys in awaitings.items()
                 ]
                 + [
@@ -345,7 +347,7 @@ class MedicalDal:
         )
 
     async def upsert_patient(self, previous: Patient, patient: ExternalPatient,
-                             protocol_config: Dict[str, List[ProtocolItem]]):
+                             protocol_config: Dict[str, List[ProtocolItem]], at: str):
         if previous and not patient:
             await self._cascade_delete_patient(previous.external_id)
             await publish(Patient.__name__, {
@@ -368,11 +370,15 @@ class MedicalDal:
                     ),
                 )
             else:
+                severity = {}
+                if patient.esi.value != previous.esi.value:
+                    severity = dict(severity=Severity(value=patient.esi.value, at=at).dict(exclude_unset=True))
                 await self.atomic_update_patient(
                     {"_id": ObjectId(previous.oid)},
                     dict(
                         **patient.dict(exclude_unset=True),
                         protocol=protocol,
+                        **severity,
                     )
                 )
 
@@ -581,7 +587,7 @@ class MedicalDal:
             patient = await self.get_patient({"external_id": patient_id})
             updated = patient.copy()
 
-            for item in [item for item in patient.protocol.items if item.match(f'referral-{referral.to}')]:
+            for item in [item for item in patient.protocol.items if item.match(f'referral-{previous.to}')]:
                 if item.key not in patient.protocol.values or patient.protocol.values[item.key].at < at:
                     updated.protocol.values[item.key] = ProtocolValue(value='הפנייה נסגרה', at=at)
 
@@ -600,12 +606,7 @@ class MedicalDal:
                 updated.dict(include={"awaiting", 'protocol'}, exclude_unset=True),
             )
 
-        elif previous and referral:
-            await self.atomic_update_referral(
-                {"external_id": previous.external_id},
-                referral.dict(exclude_unset=True),
-            )
-        elif not previous and referral:
+        elif referral:
             await self.atomic_update_referral(
                 {"external_id": referral.external_id},
                 referral.dict(exclude_unset=True),

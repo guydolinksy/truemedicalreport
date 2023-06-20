@@ -4,7 +4,7 @@ import {useLocation, useNavigate} from "react-router";
 import {Navigate} from "react-router-dom";
 import {useMatomo} from '@datapunt/matomo-tracker-react'
 
-import {Button, Checkbox, Space, Form, Input, Spin} from 'antd';
+import {Button, Checkbox, Form, Input, Space, Spin} from 'antd';
 import {LockOutlined, UserOutlined} from "@ant-design/icons";
 import {LightTheme} from "../themes/ThemeContext";
 
@@ -70,6 +70,7 @@ export const LoginForm = () => {
     const {search} = useLocation();
     const {user, checkUser, loadingUser} = useContext(loginContext);
     const [error, setError] = useState(null);
+    const [hidePassword, setHidePassword] = useState(true);
 
     const [checkingLdapAvailability, setCheckingLdapAvailability] = useState(true);
     const [usingLdapAuth, setUsingLdapAuth] = useState(true);
@@ -120,16 +121,20 @@ export const LoginForm = () => {
 
 
     const credsErrorProps = (error && error.incorrectCredentials) ? {hasFeedback: true, validateStatus: "error"} : {};
-    const errorMsgProps = (error && error.message) ? {hasFeedback: true, validateStatus: "error", help: error.message}: {};
+    const errorMsgProps = (error && error.message) ? {
+        hasFeedback: true,
+        validateStatus: "error",
+        help: error.message
+    } : {};
 
     return <>
         <Suspense fallback={<span/>}>
             <LightTheme/>
         </Suspense>
         {(loadingUser || checkingLdapAvailability) ? <Spin/> : <Form layout="vertical"
-                                       name="login"
-                                       onFinish={onFinish}
-                                       onValuesChange={() => setError(null)}>
+                                                                     name="login"
+                                                                     onFinish={onFinish}
+                                                                     onValuesChange={() => setError(null)}>
             <Form.Item name="username"
                        label="שם משתמש"
                        rules={[{required: true, message: 'נדרש שם משתמש'}]}
@@ -143,14 +148,13 @@ export const LoginForm = () => {
                                // Just helps the user a bit...
                                setUsingLdapAuth(false);
                            }
-                        }
+                       }
                        }
                 />
             </Form.Item>
             <Form.Item name={"password"} label={"סיסמה"} rules={[{required: true, message: 'נדרשת סיסמה'}]}
                        {...credsErrorProps}>
-                <Input
-                    prefix={<LockOutlined/>} type={"password"} autoComplete={"current-password"}  placeholder={"סיסמה"}/>
+                <Input.Password prefix={<LockOutlined/>} autoComplete={"current-password"} placeholder={"סיסמה"}/>
             </Form.Item>
             <Form.Item {...errorMsgProps} >
                 <Space direction="horizontal" size={15}>

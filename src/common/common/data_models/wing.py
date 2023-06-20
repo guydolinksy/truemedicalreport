@@ -31,6 +31,7 @@ class WingFilter(BaseModel):
     count: int
     title: str
     icon: str
+    duration: Optional[str]
     valid: bool = True
     children: List[Any] = list()
 

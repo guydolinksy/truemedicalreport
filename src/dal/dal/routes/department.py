@@ -38,7 +38,7 @@ async def get_department(department: str, medical_dal_: MedicalDal = Depends(med
 
 @department_router.post("/{department}/admissions", tags=["Department"])
 async def update_admissions(department: str, admissions: List[ExternalPatient] = Body(..., embed=True),
-                            dal: MedicalDal = Depends(medical_dal)):
+                            at: str = Body(..., embed=True), dal: MedicalDal = Depends(medical_dal)):
     protocol_config = await dal.get_protocol_config()
     updated = {patient.external_id: patient for patient in admissions}
     existing = {patient.external_id: patient for patient in await dal.get_department_patients(department)}
@@ -47,6 +47,7 @@ async def update_admissions(department: str, admissions: List[ExternalPatient] =
             previous=existing.get(patient_external_id),
             patient=updated.get(patient_external_id),
             protocol_config=protocol_config,
+            at=at,
         )
 
 

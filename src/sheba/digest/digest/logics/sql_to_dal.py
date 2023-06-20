@@ -61,6 +61,19 @@ SHEBA_MEASUREMENT_CODES = {
     61: MeasureType.pain,
     542: MeasureType.enriched_saturation,
 }
+SHEBA_MEASUREMENT_MINIMUMS = {
+    MeasureType.systolic: 90,
+    MeasureType.pulse: 50,
+    MeasureType.temperature: 35,
+    MeasureType.saturation: 93,
+}
+SHEBA_MEASUREMENT_MAXIMUMS = {
+    MeasureType.systolic: 180,
+    MeasureType.pulse: 120,
+    MeasureType.temperature: 38,
+    MeasureType.saturation: 100,
+}
+
 
 SHEBA_IMAGING_LINK = f'{config.care_stream_url}&accession_number={{accession_number}}'
 SHEBA_LABS_LINK = f'{config.chameleon_url}/Chameleon/Asp/Records/LabResults_Modal?Patient={{patient}}'
@@ -110,6 +123,7 @@ class SqlToDal(object):
             logger.debug('Getting admissions for `{}`...', department.name)
 
             patients = []
+            at = datetime.datetime.utcnow().isoformat()
             with self.session() as session:
                 for row in session.execute(sql_statements.query_patient_admission.format(unit=department.value)):
                     patients.append(ExternalPatient(
@@ -146,7 +160,7 @@ class SqlToDal(object):
                         )
                     ).dict(exclude_unset=True))
             res = requests.post(f'{self.dal_url}/departments/{department.name}/admissions',
-                                json={'admissions': patients})
+                                json={'admissions': patients, 'at': at})
             res.raise_for_status()
 
             return {'admissions': patients}
@@ -162,12 +176,13 @@ class SqlToDal(object):
                 for row in session.execute(sql_statements.query_measurements.format(
                         unit=department.value, codes='({})'.format(','.join(map(str, SHEBA_MEASUREMENT_CODES)))
                 )):
+                    code = SHEBA_MEASUREMENT_CODES.get(row['Code'], MeasureType.other)
                     measures.setdefault(row['MedicalRecord'], []).append(Measure(
                         value=row['Result'],
-                        minimum=row['MinValue'],
-                        maximum=row['MaxValue'],
+                        minimum=SHEBA_MEASUREMENT_MINIMUMS.get(code),  # row['MinValue'],
+                        maximum=SHEBA_MEASUREMENT_MAXIMUMS.get(code),  # row['MaxValue'],
                         at=utils.datetime_utc_serializer(row['At']),
-                        type=SHEBA_MEASUREMENT_CODES.get(row['Code'], MeasureType.other),
+                        type=code,
                         external_id=row['MeasureID'],
                     ).dict(exclude_unset=True))
             res = requests.post(f'{self.dal_url}/departments/{department.name}/measurements',

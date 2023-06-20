@@ -349,10 +349,14 @@
     color: #bd1a1a;
 }
 
-.gender-male .ant-drawer-title {
+.gender-male {
     color:#096dd9
 }
 
-.gender-female .ant-drawer-title {
+.gender-female {
     color:#eb2f96
+}
+
+.border-solid{
+    border: 1px solid
 }

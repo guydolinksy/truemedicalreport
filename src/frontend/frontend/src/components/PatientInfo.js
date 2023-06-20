@@ -39,33 +39,21 @@ const labStatuses = {
     4: 'תוצאות',
 }
 
-const NORMAL_LAB_RANGE = "N";
-
 const RANGE_CODE_TO_DESCRIPTION = {
     "H": "High",
     "L": "Low",
     "VH": "Very High",
     "VL": "Very Low",
-    "PH": "Panic High",
-    "PL": "Panic Low",
+    "HH": "Panic High",
+    "LL": "Panic Low",
     "JESUS": "Call the nearby priest"
 }
 
-const RANGE_CODE_TO_COLOR = {
-    "H": "yellow",
-    "L": "yellow",
-    "VH": "purple",
-    "VL": "purple",
-    "PH": "red",
-    "PL": "red",
-    "N":"green"
-}
-
 const findWorstRangeColor = (ranges) => {
-    if(ranges.some(range=> range.includes("PH") || range.includes("PL"))) return "red"
-    if(ranges.some(range=> range.includes("VL") || range.includes("VH"))) return "purple"
-    if(ranges.some(range=> range.includes("H") || range.includes("L"))) return "orange"
-    if(ranges.some(range=> range==="N")) return "green"
+    if(ranges.some(range=> range.includes("HH") || range.includes("LL"))) return "#FF0000"
+    if(ranges.some(range=> range.includes("VL") || range.includes("VH"))) return "#FF00FF"
+    if(ranges.some(range=> range.includes("H") || range.includes("L"))) return "#FFFF00"
+    if(ranges.some(range=> range==="N")) return "#00FF00"
     return "red"
 
 }
@@ -293,7 +281,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
             </div>
         }>
             {value.labs.length ? value.labs.map((lab, i) =>
-                displayLab(lab, i, ["PH", "PL", "VH", "VL"], matched, patient)
+                displayLab(lab, i, ["HH", "LL", "VH", "VL"], matched, patient)
             ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
         </Panel>
         <Panel key={'imaging'} header={

@@ -123,24 +123,24 @@ class LabCategory(BaseModel):
             if not result.range or result.range == 'N':
                 continue
             out_of_range = True
-            # TODO decide if the special labs needs to be VH or PH or VL, PL
-            if result.range == 'VH' or result.range == 'PH':
+            # TODO decide if the special labs needs to be VH or HH or VL, LL
+            if result.range == 'VH' or result.range == 'HH':
                 res.append(LabsNotification(
                     static_id=f'{self.get_instance_id()}#{key}',
                     patient_id=self.patient_id,
                     at=result.result_at,
                     message=f"תוצאת {self.category}-{result.test_type_name} גבוהה: {result.result} {result.units}",
                     link=None,  # TODO "Add in the future",
-                    level=NotificationLevel.abnormal if not result.range == 'PH' else NotificationLevel.panic,
+                    level=NotificationLevel.abnormal if not result.range == 'HH' else NotificationLevel.panic,
                 ))
-            if result.range == 'VL' or result.range == 'PL':
+            if result.range == 'VL' or result.range == 'LL':
                 res.append(LabsNotification(
                     static_id=f'{self.get_instance_id()}#{key}',
                     patient_id=self.patient_id,
                     at=result.result_at,
                     message=f"תוצאת {self.category}-{result.test_type_name} נמוכה: {result.result} {result.units}",
                     link=None,  # "Add in the future",
-                    level=NotificationLevel.abnormal if not result.range == 'PL' else NotificationLevel.panic,
+                    level=NotificationLevel.abnormal if not result.range == 'LL' else NotificationLevel.panic,
                 ))
         return res if res or self.status != LabStatus.analyzed.value else [LabsNotification(
             static_id=self.get_instance_id(),
@@ -156,8 +156,9 @@ class LabCategory(BaseModel):
             key = f"lab#{lab.external_id}"
             if key in warnings and not lab.panic:
                 yield key, PatientWarning(**warnings[key].dict(exclude={'acknowledge'}), acknowledge=True)
-            elif key not in warnings and lab.range in ['PH', 'PL']:
+            elif key not in warnings and lab.range in ['HH', 'LL']:
                 yield key, PatientWarning(
                     content=f"תוצאת {lab.category_display_name}-{lab.test_type_name} חריגה: {lab.result} {lab.units}",
                     severity=Severity(value=1, at=lab.result_at),
-                    acknowledge=False)
+                    acknowledge=False
+                )

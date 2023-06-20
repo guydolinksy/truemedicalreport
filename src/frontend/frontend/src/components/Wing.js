@@ -1,4 +1,4 @@
-import React, {useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import React, {Suspense, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {
     Badge,
     Button,
@@ -20,7 +20,7 @@ import {
     Tooltip,
     Tree
 } from 'antd';
-import {GENDERED_COLOR, MIN_WIDTH, Patient} from "./Patient";
+import {MIN_WIDTH, Patient} from "./Patient";
 import {createContext} from "../hooks/DataContext";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faRightFromBracket,} from "@fortawesome/free-solid-svg-icons";
@@ -38,6 +38,7 @@ import {Notification} from "./Notification";
 import {RelativeTime} from "./RelativeTime";
 import {loginContext} from "./LoginContext";
 import {CustomIcon} from "./CustomIcon";
+import {DarkTheme, LightTheme} from "../themes/ThemeContext";
 
 const {Search} = Input;
 const {Content, Sider} = Layout;
@@ -109,7 +110,7 @@ const WingNotifications = () => {
         <Collapse onChange={openChange} style={{flex: "1 0 10vh", minHeight: "10vh", overflowY: "overlay"}}>
             {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
                 <>
-                    <span style={{color: GENDERED_COLOR[notification.patient.info.gender]}}>
+                    <span className={`gender-${notification.patient.info.gender}`}>
                         <UserOutlined/>{!user.anonymous && <span>&nbsp;{notification.patient.info.name}</span>}
                     </span>
                     <br/>
@@ -282,7 +283,13 @@ const Patients = ({patients, onError}) => {
 
 const sortFunctions = {
     name: (i, j) => i.info.name.localeCompare(j.info.name),
-    severity: (i, j) => i.severity.value - j.severity.value,
+    severity: (i, j) => {
+        if (![null, undefined].includes(i.severity.value) && ![null, undefined].includes(j.severity.value))
+            return i.severity.value - j.severity.value;
+        else if ([null, undefined].includes(i.severity.value))
+            return [null, undefined].includes(j.severity.value) ? 0 : 1;
+        return -1
+    },
     arrival: (i, j) => moment(i.admission.arrival).isAfter(j.admission.arrival) ? 1 : -1,
     location: (i, j) => moment(i.admission.arrival).isAfter(j.admission.arrival) ? 1 : -1,
     [undefined]: (i, j) => moment(i.admission.arrival).isAfter(j.admission.arrival) ? 1 : -1
@@ -291,7 +298,7 @@ const WingInner = ({department, wing}) => {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
 
-    const {user} = useContext(loginContext);
+    const {user, userSettings} = useContext(loginContext);
     const {value, flush} = useContext(wingDataContext.context);
 
     const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'arrival');
@@ -313,39 +320,53 @@ const WingInner = ({department, wing}) => {
         return totalWidth - siderWidth - value.details.columns.reduce((s, c) => s + c.minWidth, 0) < buffer;
     }, [totalWidth, value, siderWidth]);
 
-    const allPatients = value.patients.filter(({oid}) => !selectedAwaiting.length || selectedAwaiting.find(
+    const allPatients = value.patients.filter(({oid}) => !selectedAwaiting.filter(
+        filter => value.filters.mapping[filter] !== undefined
+    ).length || selectedAwaiting.find(
         filter => (value.filters.mapping[filter] || []).includes(oid)
-    )).filter(({oid}) => !selectedTreatments.length || selectedTreatments.find(
+    )).filter(({oid}) => !selectedTreatments.filter(
+        filter => value.filters.mapping[filter] !== undefined
+    ).length || selectedTreatments.find(
         filter => (value.filters.mapping[filter] || []).includes(oid)
-    )).filter(({oid}) => !selectedDoctors.length || selectedDoctors.find(
+    )).filter(({oid}) => !selectedDoctors.filter(
+        filter => value.filters.mapping[filter] !== undefined
+    ).length || selectedDoctors.find(
         filter => (value.filters.mapping[filter] || []).includes(oid)
     )).sort(sortFunctions[wingSortKey]);
     const unassignedPatients = allPatients.filter(({admission}) => !admission.bed);
 
-    const patientList = <div style={{display: "flex", flexDirection: "column", maxHeight:"30vh", overflowY:"scroll"}}>
-         <Search key={'search'} style={{marginBottom:"0.5rem"}} allowClear onChange={debounce(e => setSearch(e.target.value), 300)}
-                            placeholder={'חיפוש:'}/>
+    const patientList = <div style={{display: "flex", flexDirection: "column", maxHeight: "30vh", overflowY: "scroll"}}
+                             className={userSettings.theme}>
+        <Suspense fallback={<span/>}>
+            {userSettings.theme === 'dark-theme' ? <DarkTheme/> : <LightTheme/>}
+        </Suspense>
+        <Search key={'search'} style={{marginBottom: "0.5rem"}} allowClear
+                onChange={debounce(e => setSearch(e.target.value), 300)}
+                placeholder={'חיפוש:'}/>
         {value.department_patients.sort((a, b) => a.info.name.localeCompare(b.info.name))
-            .filter((patient)=> patient.info.id_.includes(search) || patient.info.name.includes(search))
+            .filter((patient) => patient.info.id_.includes(search) || patient.info.name.includes(search))
             .map((patient, i) =>
-            <Button key={i} onClick={() => navigate(
-                `/departments/${patient.admission.department}/wings/${patient.admission.wing}#highlight#${patient.oid}#open`
-            )}>
-                {user.anonymous ? '---' : patient?.info?.name}
-            </Button>)}
+                <Button key={i} onClick={() => navigate(
+                    `/departments/${patient.admission.department}/wings/${patient.admission.wing}#highlight#${patient.oid}#open`
+                )} className={`gender-${patient?.info?.gender}`}>
+                    {user.anonymous ? '---' : patient?.info?.name}
+                </Button>)}
     </div>
 
-    const legend = <div style={{display: "flex", flexDirection: "column", rowGap: 5}}>
-        <div><Badge className={'gender-male ant-drawer-title'}>ישראל ישראלי</Badge> - זכר</div>
-        <div><Badge className={'gender-female ant-drawer-title'}>ישראלה ישראלי</Badge> - נקבה</div>
-        <div><Badge style={{border: "1px solid"}} className={'severity-border severity-1'}>דחיפות 1</Badge></div>
-        <div><Badge style={{border: "1px solid"}} className={'severity-border severity-2'}>דחיפות 2</Badge></div>
-        <div><Badge style={{border: "1px solid"}} className={'severity-border severity-3'}>דחיפות 3</Badge></div>
-        <div><Badge style={{border: "1px solid"}} className={'severity-border severity-4'}>דחיפות 4</Badge></div>
-        <div><Badge style={{border: "1px solid"}} className={'severity-border severity-5'}>דחיפות 5</Badge></div>
-        <div><Badge style={{border: "1px solid"}} className={'status-background status-unassigned'}>לא שויך.ה רופא.ה</Badge></div>
-        <div><Badge style={{border: "1px solid"}} className={'status-background status-undecided'}>שויך.ה רופא.ה אך לא נקבע יעד אשפוז/שחרור</Badge></div>
-        <div><Badge style={{border: "1px solid"}} className={'status-background status-decided'}>שויך.ה רופא.ה ונקבע יעד אשפוז/שחרור</Badge></div>
+    const legend = <div style={{display: "flex", flexDirection: "column", rowGap: 5}} className={userSettings.theme}>
+        <Suspense fallback={<span/>}>
+            {userSettings.theme === 'dark-theme' ? <DarkTheme/> : <LightTheme/>}
+        </Suspense>
+        <div><Badge className={'gender-male'}>ישראל ישראלי</Badge> - זכר</div>
+        <div><Badge className={'gender-female'}>ישראלה ישראלי</Badge> - נקבה</div>
+        <div><Badge className={'border-solid severity-border severity-1'}>דחיפות 1</Badge></div>
+        <div><Badge className={'border-solid severity-border severity-2'}>דחיפות 2</Badge></div>
+        <div><Badge className={'border-solid severity-border severity-3'}>דחיפות 3</Badge></div>
+        <div><Badge className={'border-solid severity-border severity-4'}>דחיפות 4</Badge></div>
+        <div><Badge className={'border-solid severity-border severity-5'}>דחיפות 5</Badge></div>
+        <div><Badge className={'status-background status-unassigned'}>לא שויך.ה רופא.ה</Badge></div>
+        <div><Badge className={'status-background status-undecided'}>שויך.ה רופא.ה אך אין החלטה על יעד</Badge></div>
+        <div><Badge className={'status-background status-decided'}>שויך.ה רופא.ה והוחלט יעד אשפוז/שחרור</Badge></div>
         <div><CustomIcon status={"error"} icon={"referral"}/> - הפנייה מתעכבת</div>
         <div><CustomIcon status={"processing"} icon={"laboratory"}/> - מעבדה בעיבוד</div>
         <div><CustomIcon status={"success"} icon={"imaging"}/> - הדמייה הושלמה או פוענחה</div>
@@ -357,11 +378,11 @@ const WingInner = ({department, wing}) => {
         <Content className={'content'} style={{height: '100vh', overflowY: 'scroll'}}>
             <Popover placement={"leftTop"} content={patientList} title={"מטופלים.ות:"}>
                 <Button type={"primary"} style={{position: "absolute", top: 41, left: 0, width: 40, zIndex: 1000}}
-                        icon={<SearchOutlined  />}/>
+                        icon={<SearchOutlined/>}/>
             </Popover>
             <Popover placement={"leftTop"} content={legend} title={"מקרא:"}>
                 <Button type={"primary"} style={{position: "absolute", top: 80, left: 0, width: 40, zIndex: 1000}}
-                        icon={<QuestionOutlined  />}/>
+                        icon={<QuestionOutlined/>}/>
             </Popover>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                 {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedTreatments.length || selectedAwaiting.length ?

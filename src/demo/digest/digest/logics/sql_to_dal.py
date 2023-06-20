@@ -1,4 +1,5 @@
 import contextlib
+import datetime
 from enum import Enum
 
 import logbook
@@ -115,6 +116,7 @@ class SqlToDal(object):
             logger.debug('Getting admissions for `{}`...', department.name)
 
             patients = []
+            at = datetime.datetime.utcnow().isoformat()
             with self.session() as session:
                 for row in session.execute(sql_statements.query_patient_admission.format(unit=department.value)):
                     patients.append(ExternalPatient(
@@ -141,7 +143,7 @@ class SqlToDal(object):
                         ),
                     ).dict(exclude_unset=True))
             res = requests.post(f'{self.dal_url}/departments/{department.name}/admissions',
-                                json={'admissions': patients})
+                                json={'admissions': patients, 'at': at})
             res.raise_for_status()
 
             return {'admissions': patients}

@@ -218,7 +218,7 @@ join  autodb.SAMPLES s on r.ORDER_CODE=s.ORDER_CODE and r.LABEL=s.LABEL
 where r.DEPARTMENT=10
 and r.is_panel='N'
 and r.RESULT is null
-and o.ORDER_NUM in ({orders})
+and o.ORDER_NUM in ('{orders}')
 order by o.ENTRY_TIME
 """
 
