@@ -1,4 +1,4 @@
-import {Badge, Collapse, Drawer, Empty, List, Modal, Radio, Space, Spin, Timeline} from "antd";
+import {Badge, Button, Collapse, Drawer, Empty, List, Modal, Radio, Space, Spin, Timeline} from "antd";
 import React, {useContext, useEffect, useState} from "react";
 import {useNavigate} from "react-router";
 import Moment from "react-moment";
@@ -59,6 +59,7 @@ const findWorstRangeColor = (ranges) => {
 }
 
 const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
+
     const rangeToResults = {};
     Object.values(lab.results).forEach(result => {
         if (!rangeToResults.hasOwnProperty(result.range)) {
@@ -90,23 +91,29 @@ const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
         badgeText = badResultsCount.toString();
         badgeColor = findWorstRangeColor(ranges)
     }
-
-    const displayedResults = rangesToConsiderAsBad.map(range => (rangeToResults[range] || [])).flat().map((result, index) => {
+    const formatResults = (result, index) => {
         const range = result.range;
         return <p key={index}>
             <span>{RANGE_CODE_TO_DESCRIPTION[range]} {result.test_type_name}: {result.result.trim()} {result.units.trim()}</span>
         </p>
-    })
+    }
+    const filteredDisplayResults = rangesToConsiderAsBad
+        .map(range => (rangeToResults[range] || [])).flat()
+        .map(formatResults)
+
 
     return <p key={i} style={{
         animation: matched(['info', patient, 'labs', `lab-${i}`]) ? 'highlight 2s ease-out' : undefined,
         direction:"rtl"
     }}>
         <p style={{color:badgeColor}}>
-            <span ><Badge style={{backgroundColor:badgeColor}} count={badgeText} /> {lab.category_display_name} {lab.status !== 4 ? ` - ${labStatuses[lab.status]} - ` : !!displayedResults.length && ` - ${labStatuses[lab.status]} - `} <RelativeTime style={{fontSize: 12, float:"left"}} date={lab.ordered_at}/></span>
+            <span ><Badge style={{backgroundColor:badgeColor}} count={badgeText} />
+                {lab.category_display_name} {lab.status !== 4 ? ` - ${labStatuses[lab.status]} - ` : !!filteredDisplayResults.length && ` - ${labStatuses[lab.status]} - `}
+                <RelativeTime style={{fontSize: 12, float:"left"}} date={lab.ordered_at}/>
+            </span>
         </p>
         <p style={{marginRight:"2rem"}}>
-            {displayedResults}
+            {filteredDisplayResults}
         </p>
     </p>
 }
@@ -192,6 +199,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
     const {user} = useContext(loginContext);
     const {value, loading} = useContext(patientDataContext.context);
     const {matched, matching} = useContext(hashMatchContext);
+    const [displayAllResults, setDisplayAllResults] = useState(false)
 
     const [modal, modalContext] = Modal.useModal();
 
@@ -280,9 +288,16 @@ const InternalPatientCard = ({patient, setHeader}) => {
                 </Space>
             </div>
         }>
-            {value.labs.length ? value.labs.map((lab, i) =>
-                displayLab(lab, i, ["HH", "LL", "VH", "VL"], matched, patient)
-            ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
+            {value.labs.length
+                ? displayAllResults
+                    ? value.labs.map((lab, i) =>
+                displayLab(lab, i, ["HH", "LL", "VH", "VL"], matched, patient))
+                    :value.labs.filter(lab => Object.values(lab.results).some(r=>["HH", "LL", "VH", "VL"].includes(r.range))).map((lab, i) =>
+                displayLab(lab, i, ["HH", "LL", "VH", "VL"], matched, patient))
+                : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
+            <Button onClick={() => setDisplayAllResults(!displayAllResults)}>
+               <span>{displayAllResults ? "הסתר בדיקות" : "הצג בדיקות"}</span>
+            </Button>
         </Panel>
         <Panel key={'imaging'} header={
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
