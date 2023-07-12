@@ -309,7 +309,10 @@ class MedicalDal:
             imaging=await self.get_patient_images(patient.external_id),
             full_measures=(
                 FullMeasures(
-                    measures=[Measure(**d) async for d in self.db.measures.find({"patient_id": patient.external_id})]
+                    measures=[Measure(**d) async for d in self.db.measures.find({
+                        "patient_id": patient.external_id,
+                        "value": {"$ne": None},
+                    })]
                 )
             ),
             labs=await self.get_patient_labs(patient.external_id),
