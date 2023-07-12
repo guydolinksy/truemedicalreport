@@ -173,7 +173,7 @@ labr.Result,
 labr.Units,
 labr.Result_Date AS OrderDate,
 labr.Result_Entry_Date AS ResultTime,
-labr.Range,
+case when labr.Result=N'פסול' then 'X' else labr.Range end as Range,
 rnc.panic AS Panic
 from Results.dbo.LabResults AS labr
 INNER JOIN chameleon.dbo.LabHeadlinesSort AS lhs ON lhs.Code = labr.Heading
