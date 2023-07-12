@@ -26,6 +26,7 @@ import {hashMatchContext} from "./HashMatch";
 import {Notification} from "./Notification";
 import {RelativeTime} from "./RelativeTime";
 import moment from "moment";
+import {HourglassOutlined} from "@ant-design/icons";
 
 highchartsMore(Highcharts);
 const themes = {['dark-theme']: darkTheme, ['light-theme']: lightTheme}
@@ -35,7 +36,7 @@ const fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Ox
 
 const labStatuses = {
     1: 'הוזמן',
-    2: 'שויכו דגימות',
+    2: ' - שויכו דגימות',
     3: 'בעבודה',
     4: 'תוצאות',
 }
@@ -50,16 +51,7 @@ const RANGE_CODE_TO_DESCRIPTION = {
     "JESUS": "Call the nearby priest"
 }
 
-const findWorstRangeColor = (ranges) => {
-    if (ranges.some(range => range.includes("HH") || range.includes("LL"))) return "#FF0000"
-    if (ranges.some(range => range.includes("VL") || range.includes("VH"))) return "#FF00FF"
-    if (ranges.some(range => range.includes("H") || range.includes("L"))) return "#FFA500"
-    if (ranges.some(range => range === "N")) return "#00FF00"
-    return "black"
-
-}
-
-const displayLab = (lab, rangesToConsiderAsBad, matched, patient) => {
+const displayLab = (lab, displayAllResults, matched, patient) => {
 
     const rangeToResults = {};
     Object.values(lab.results).forEach(result => {
@@ -71,50 +63,49 @@ const displayLab = (lab, rangesToConsiderAsBad, matched, patient) => {
     })
 
     const ranges = Object.keys(rangeToResults);
-    let badgeText;
-    let badgeColor;
 
-    if (ranges.length === 0) {
-        // No results
-        badgeText = "";
-        badgeColor = "black"
-    } else if (ranges.every(range => range === "N")) {
-        // Everything normal
-        badgeText = "✓"
-        badgeColor = findWorstRangeColor(ranges)
-    } else if (!ranges.some(range => rangesToConsiderAsBad.includes(range))) {
-        badgeText = "X"
-        badgeColor = findWorstRangeColor(ranges)
-    } else {
-        const badResultsCount = rangesToConsiderAsBad.map(status => rangeToResults[status] || [])
-            .map(results => results.length)
-            .reduce((a, b) => a + b)
-        badgeText = badResultsCount.toString();
-        badgeColor = findWorstRangeColor(ranges)
-    }
-    const formatResults = (result, index) => {
-        const range = result.range;
-        return <p key={index}>
-            <span>{RANGE_CODE_TO_DESCRIPTION[range]} {result.test_type_name}: {result.result} {result.units}</span>
-        </p>
-    }
-    const filteredDisplayResults = rangesToConsiderAsBad
-        .map(range => (rangeToResults[range] || [])).flat()
-        .map(formatResults)
+    let badgeColor = "#000000";
+    if (ranges.some(range => ["HH", "LL"].includes(range)))
+        badgeColor = "#FF0000";
+    else if (ranges.some(range => ["VH", "VL"].includes(range)))
+        badgeColor = "#FF00FF";
+    else if (ranges.some(range => ["H", "L", "X"].includes(range)))
+        badgeColor = "#FFA500";
+    else if (lab.status === 4 && ranges.every(range => range === "N"))
+        badgeColor = "#00FF00";
 
+    const rangesToConsiderAsBad = ["HH", "LL", "VH", "VL"].concat(displayAllResults ? ["H", "L"] : []).map(
+        status => rangeToResults[status] || []
+    )
+
+    let badgeText = <HourglassOutlined/>;
+    if (lab.status === 4) {
+        const badResultsCount = rangesToConsiderAsBad.map(results => results.length).reduce((a, b) => a + b)
+        if (badResultsCount)
+            badgeText = badResultsCount.toString()
+        else if (ranges.every(range => range === "N"))
+            badgeText = "✓";
+        else
+            badgeText = "X";
+    }
 
     return <p key={`${lab.category}-${lab.ordered_at}`} style={{
-        animation: matched(['info', patient, 'labs', lab.patient_id, lab.category, lab.ordered_at.replace(':', '-').replace('+', '-')]) ? 'highlight 2s ease-out' : undefined,
+        animation: matched(['info', patient, 'labs', lab.patient_id, encodeURIComponent(lab.category), lab.ordered_at.replace(/:/g, '-').replace(/\+/g, '-')]) ? 'highlight 2s ease-out' : undefined,
         direction: "rtl"
     }}>
-        <p style={{color: badgeColor}}>
+        <p>
             <span><Badge style={{backgroundColor: badgeColor}} count={badgeText}/>
-                {lab.category_display_name} {lab.status !== 4 ? ` - ${labStatuses[lab.status]} - ` : !!filteredDisplayResults.length && ` - ${labStatuses[lab.status]} - `}
+                {lab.category_display_name} {labStatuses[lab.status]} {ranges.some(range => range === "X") && ' - פסול'}
                 <RelativeTime style={{fontSize: 12, float: "left"}} date={lab.ordered_at}/>
             </span>
         </p>
         <p style={{marginRight: "2rem"}}>
-            {filteredDisplayResults}
+            {rangesToConsiderAsBad.flat().map((result, i) => <p key={i}>
+                <span>{RANGE_CODE_TO_DESCRIPTION[result.range]} {result.test_type_name}: {result.result} {result.units}</span>
+            </p>)}
+            {displayAllResults && (rangeToResults[null] || []).length && <p>
+                הוזמנו: {rangeToResults[null].map(result => result.test_type_name).join(', ')}
+            </p>}
         </p>
     </p>
 }
@@ -291,14 +282,14 @@ const InternalPatientCard = ({patient, setHeader}) => {
                 </Space>
             </div>
         }>
-            {value.labs.length ? value.labs.filter(
-                lab => displayAllResults || Object.values(lab.results).some(r => ["HH", "LL", "VH", "VL"].includes(r.range))
-            ).sort((a, b) => moment(a.ordered_at).isAfter(b.ordered_at) ? 1 : -1).map(
-                lab => displayLab(lab, ["HH", "LL", "VH", "VL"], matched, patient)
-            ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
-            <Button onClick={() => setDisplayAllResults(!displayAllResults)}>
-                <span>{displayAllResults ? "הסתר בדיקות" : "הצג בדיקות"}</span>
-            </Button>
+            {value.labs.length ? <>
+                {value.labs.sort((a, b) => moment(a.ordered_at).isAfter(b.ordered_at) ? 1 : -1).map(
+                    lab => displayLab(lab, displayAllResults, matched, patient)
+                )}
+                <Button onClick={() => setDisplayAllResults(!displayAllResults)}>
+                    <span>{displayAllResults ? "הסתר בדיקות" : "הצג בדיקות"}</span>
+                </Button>
+            </> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
         </Panel>
         <Panel key={'imaging'} header={
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
@@ -318,7 +309,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
         </Panel>
         <Panel key={'referrals'} header={'ייעוץ'}>
             {value.referrals.length ? value.referrals.map((referral, i) => <p key={i}>
-                {referral.to} - {referral.completed ? 'בהמתנה' : 'הושלם'} - <RelativeTime style={{fontSize: 12}}
+                {referral.to} - {referral.completed ? 'הושלם' : 'בהמתנה'} - <RelativeTime style={{fontSize: 12}}
                                                                                           date={referral.at}/>
             </p>) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא נרשמו הפניות'}/>}
         </Panel>

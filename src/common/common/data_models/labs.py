@@ -160,7 +160,7 @@ class LabCategory(BaseModel):
         )]
 
     @staticmethod
-    def _generate_laboratory_message(self, lab_category, out_of_range, fault_laboratory):
+    def _generate_laboratory_message(lab_category, out_of_range, fault_laboratory):
         message = ""
         if out_of_range:
             message = f"תוצאות {lab_category} לא תקינות"

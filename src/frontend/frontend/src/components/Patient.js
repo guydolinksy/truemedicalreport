@@ -212,7 +212,7 @@ const PatientFooter = ({patient}) => {
                 <Measure patient={patient} measure={'saturation'} icon={'saturation'} title={'סטורציה'}/>
                 <Measure patient={patient} measure={'pain'} icon={'pain'} title={'כאב'}/>
             </div>
-            <div style={{
+            {(value.treatment.doctors.length > 0 || value.referrals.length > 0) && <div style={{
                 display: "flex",
                 justifyContent: "space-between",
                 overflow: "hidden",
@@ -230,14 +230,14 @@ const PatientFooter = ({patient}) => {
                     </div>}
                 {value.referrals.length > 0 &&
                     <div style={{display: "flex", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
-                        {value.referrals.map((ref, index) =>
+                        {value.referrals.filter(ref => !ref.completed).map((ref, index) =>
                             <Tooltip overlay={ref.to}>
                                 <div style={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
                                     {index !== 0 ? ',' : ''}{ref.to}
                                 </div>
                             </Tooltip>)}
                     </div>}
-            </div>
+            </div>}
         </div>)
 }
 
