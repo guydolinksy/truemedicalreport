@@ -39,7 +39,8 @@ SELECT
     mr.Record_Type,
     mr.Record_Char,
     ta.Answer_Code,
-    mr.Hospital
+    mr.Hospital,
+    pd.Phone
 FROM [chameleon].[dbo].[EmergancyVisits] AS ev
 LEFT JOIN [chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON ev.Medical_Record = rpp.Medical_Record
 LEFT JOIN [chameleon].[dbo].[Patients] AS pat ON ev.patient = pat.patient

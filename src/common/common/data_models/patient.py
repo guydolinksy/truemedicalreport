@@ -36,6 +36,7 @@ class ExternalPatient(BaseModel):
     treatment: Treatment = Treatment()
     lab_link: Optional[str]
     medical_summary_link: Optional[str]
+    phone:Optional[str]
 
 
 class InternalPatient(BaseModel):

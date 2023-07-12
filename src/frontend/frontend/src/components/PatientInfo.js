@@ -215,7 +215,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
             }[value.info.gender];
             setHeader({
                 title: user.anonymous ? `${gender} (${value.info.age || 'גיל לא ידוע'})` :
-                    `${value.info.name}, ${gender} (${value.info.age || 'גיל לא ידוע'}), ת.ז. ${value.info.id_}:`,
+                    `${value.info.name}, ${gender} (${value.info.age || 'גיל לא ידוע'}), ת.ז. ${value.info.id_} 'טלפון : ${value.info.phone}`,
                 className: `gender-${value.info.gender}`
             });
         }

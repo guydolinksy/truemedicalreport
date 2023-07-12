@@ -134,6 +134,7 @@ class SqlToDal(object):
                             gender='male' if row["Gender"] == 'זכר' else 'female',
                             birthdate=utils.datetime_utc_serializer(row["BirthDate"]),
                             age=utils.calculate_patient_age(row["BirthDate"]),
+                            phone=row["Phone"]
                         ),
                         esi=ESIScore(
                             value=row["ESI"],
