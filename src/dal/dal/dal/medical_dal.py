@@ -451,6 +451,7 @@ class MedicalDal:
     async def upsert_imaging(self, patient_id, previous: Image, imaging: Image):
         patient = await self.get_patient({"external_id": patient_id})
         updated = patient.copy()
+        delete = {}
         if imaging and not previous:
             await self.atomic_update_imaging({"external_id": imaging.external_id}, imaging.dict(exclude_unset=True))
             updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(
@@ -531,7 +532,7 @@ class MedicalDal:
     async def upsert_labs(self, patient_id: str, new_categories: Dict[str, LabCategory]):
         patient = await self.get_patient({"external_id": patient_id})
         updated = patient.copy()
-
+        delete = {}
         labs: Dict[tuple, LabCategory] = {
             c.key: c for c in [LabCategory(**l) async for l in self.db.labs.find({"patient_id": patient_id})]
         }
