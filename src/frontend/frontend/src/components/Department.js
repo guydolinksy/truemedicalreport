@@ -30,7 +30,7 @@ export const Department = ({department}) => {
                     ...wing.filters.awaiting.map(toActions),
                     ...wing.filters.treatments.filter(filter => filter.key === 'treatment.ללא')
                 ).filter(({key}) => SHOW_ACTIONS.includes(key) || key.startsWith('referral.')).map(
-                    ({count, title, icon, duration, valid}) => <div>
+                    ({count, title, icon, duration, valid}) => <div style={{display:"flex",flexDirection:"column"}}>
                         <div style={{fontSize: 12}}>{title}{icon &&
                             <span>&nbsp;<CustomIcon status={'processing'} icon={icon}/></span>}</div>
                         {![null, undefined].includes(duration) && <div style={{userSelect: "none", fontSize: 14}}>
@@ -44,9 +44,11 @@ export const Department = ({department}) => {
                 );
                 return <Col key={i} span={12}>
                     <Card title={<span>{wing.details.name} - <b>{wing.count}</b> מטופלים.ות</span>}
-                          actions={actions} style={{marginBottom: 16}} hoverable onClick={() =>
+                          style={{marginBottom: 16,display:"flex",flexWrap:"wrap",justifyContent:"space-evenly"}} hoverable onClick={() =>
                         navigate(generatePath(WING_URL, {department: department, wing: wing.details.key}))
-                    }/>
+                    }>
+                        {actions}
+                    </Card>
                 </Col>
             })}
         </Row>}
