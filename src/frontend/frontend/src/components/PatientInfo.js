@@ -1,4 +1,4 @@
-import {Badge, Collapse, Drawer, Empty, List, Modal, Radio, Space, Spin, Timeline} from "antd";
+import {Badge, Button, Collapse, Drawer, Empty, List, Modal, Radio, Space, Spin} from "antd";
 import React, {useContext, useEffect, useState} from "react";
 import {useNavigate} from "react-router";
 import Moment from "react-moment";
@@ -25,6 +25,7 @@ import {UserTheme} from "../themes/ThemeContext";
 import {hashMatchContext} from "./HashMatch";
 import {Notification} from "./Notification";
 import {RelativeTime} from "./RelativeTime";
+import moment from "moment";
 
 highchartsMore(Highcharts);
 const themes = {['dark-theme']: darkTheme, ['light-theme']: lightTheme}
@@ -50,15 +51,16 @@ const RANGE_CODE_TO_DESCRIPTION = {
 }
 
 const findWorstRangeColor = (ranges) => {
-    if(ranges.some(range=> range.includes("HH") || range.includes("LL"))) return "#FF0000"
-    if(ranges.some(range=> range.includes("VL") || range.includes("VH"))) return "#FF00FF"
-    if(ranges.some(range=> range.includes("H") || range.includes("L"))) return "#FFA500"
-    if(ranges.some(range=> range==="N")) return "#00FF00"
+    if (ranges.some(range => range.includes("HH") || range.includes("LL"))) return "#FF0000"
+    if (ranges.some(range => range.includes("VL") || range.includes("VH"))) return "#FF00FF"
+    if (ranges.some(range => range.includes("H") || range.includes("L"))) return "#FFA500"
+    if (ranges.some(range => range === "N")) return "#00FF00"
     return "black"
 
 }
 
-const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
+const displayLab = (lab, rangesToConsiderAsBad, matched, patient) => {
+
     const rangeToResults = {};
     Object.values(lab.results).forEach(result => {
         if (!rangeToResults.hasOwnProperty(result.range)) {
@@ -80,9 +82,9 @@ const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
         // Everything normal
         badgeText = "✓"
         badgeColor = findWorstRangeColor(ranges)
-    } else if(!ranges.some(range=>rangesToConsiderAsBad.includes(range))){
+    } else if (!ranges.some(range => rangesToConsiderAsBad.includes(range))) {
         badgeText = "X"
-        badgeColor=findWorstRangeColor(ranges)
+        badgeColor = findWorstRangeColor(ranges)
     } else {
         const badResultsCount = rangesToConsiderAsBad.map(status => rangeToResults[status] || [])
             .map(results => results.length)
@@ -90,23 +92,29 @@ const displayLab = (lab, i, rangesToConsiderAsBad, matched, patient) => {
         badgeText = badResultsCount.toString();
         badgeColor = findWorstRangeColor(ranges)
     }
-
-    const displayedResults = rangesToConsiderAsBad.map(range => (rangeToResults[range] || [])).flat().map((result, index) => {
+    const formatResults = (result, index) => {
         const range = result.range;
         return <p key={index}>
             <span>{RANGE_CODE_TO_DESCRIPTION[range]} {result.test_type_name}: {result.result.trim()} {result.units.trim()}</span>
         </p>
-    })
+    }
+    const filteredDisplayResults = rangesToConsiderAsBad
+        .map(range => (rangeToResults[range] || [])).flat()
+        .map(formatResults)
 
-    return <p key={i} style={{
-        animation: matched(['info', patient, 'labs', `lab-${i}`]) ? 'highlight 2s ease-out' : undefined,
-        direction:"rtl"
+
+    return <p key={`${lab.category}-${lab.ordered_at}`} style={{
+        animation: matched(['info', patient, 'labs', lab.patient_id, lab.category, lab.ordered_at.replace(':', '-').replace('+', '-')]) ? 'highlight 2s ease-out' : undefined,
+        direction: "rtl"
     }}>
-        <p style={{color:badgeColor}}>
-            <span ><Badge style={{backgroundColor:badgeColor}} count={badgeText} /> {lab.category_display_name} {lab.status !== 4 ? ` - ${labStatuses[lab.status]} - ` : !!displayedResults.length && ` - ${labStatuses[lab.status]} - `} <RelativeTime style={{fontSize: 12, float:"left"}} date={lab.ordered_at}/></span>
+        <p style={{color: badgeColor}}>
+            <span><Badge style={{backgroundColor: badgeColor}} count={badgeText}/>
+                {lab.category_display_name} {lab.status !== 4 ? ` - ${labStatuses[lab.status]} - ` : !!filteredDisplayResults.length && ` - ${labStatuses[lab.status]} - `}
+                <RelativeTime style={{fontSize: 12, float: "left"}} date={lab.ordered_at}/>
+            </span>
         </p>
-        <p style={{marginRight:"2rem"}}>
-            {displayedResults}
+        <p style={{marginRight: "2rem"}}>
+            {filteredDisplayResults}
         </p>
     </p>
 }
@@ -192,6 +200,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
     const {user} = useContext(loginContext);
     const {value, loading} = useContext(patientDataContext.context);
     const {matched, matching} = useContext(hashMatchContext);
+    const [displayAllResults, setDisplayAllResults] = useState(false)
 
     const [modal, modalContext] = Modal.useModal();
 
@@ -205,7 +214,7 @@ const InternalPatientCard = ({patient, setHeader}) => {
                 female: 'בת',
             }[value.info.gender];
             setHeader({
-                title: user.anonymous ? `${gender} (${value.info.age || 'גיל לא ידוע'})`:
+                title: user.anonymous ? `${gender} (${value.info.age || 'גיל לא ידוע'})` :
                     `${value.info.name}, ${gender} (${value.info.age || 'גיל לא ידוע'}), ת.ז. ${value.info.id_}:`,
                 className: `gender-${value.info.gender}`
             });
@@ -280,9 +289,14 @@ const InternalPatientCard = ({patient, setHeader}) => {
                 </Space>
             </div>
         }>
-            {value.labs.length ? value.labs.map((lab, i) =>
-                displayLab(lab, i, ["HH", "LL", "VH", "VL"], matched, patient)
+            {value.labs.length ? value.labs.filter(
+                lab => displayAllResults || Object.values(lab.results).some(r => ["HH", "LL", "VH", "VL"].includes(r.range))
+            ).sort((a, b) => moment(a.ordered_at).isAfter(b.ordered_at) ? 1 : -1).map(
+                lab => displayLab(lab, ["HH", "LL", "VH", "VL"], matched, patient)
             ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות מעבדה'}/>}
+            <Button onClick={() => setDisplayAllResults(!displayAllResults)}>
+                <span>{displayAllResults ? "הסתר בדיקות" : "הצג בדיקות"}</span>
+            </Button>
         </Panel>
         <Panel key={'imaging'} header={
             <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>

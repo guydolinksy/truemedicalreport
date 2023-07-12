@@ -200,7 +200,6 @@ export const PatientWarning = ({patient, warning, index, style}) => {
 
 const PatientFooter = ({patient}) => {
     const {value} = useContext(patientDataContext.context);
-    console.log(value)
     return (
     <div style={{display:"flex", flexDirection:"column"}}>
         <div style={{display: "flex", justifyContent: "space-evenly"}}>
