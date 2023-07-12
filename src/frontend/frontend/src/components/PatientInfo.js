@@ -26,19 +26,18 @@ import {hashMatchContext} from "./HashMatch";
 import {Notification} from "./Notification";
 import {RelativeTime} from "./RelativeTime";
 import moment from "moment";
-import {HourglassOutlined} from "@ant-design/icons";
 
 highchartsMore(Highcharts);
-const themes = {['dark-theme']: darkTheme, ['light-theme']: lightTheme}
+const themes = {'dark-theme': darkTheme, 'light-theme': lightTheme}
 
 const {Panel} = Collapse;
 const fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;";
 
 const labStatuses = {
-    1: 'הוזמן',
+    1: ' - הוזמן',
     2: ' - שויכו דגימות',
-    3: 'בעבודה',
-    4: 'תוצאות',
+    3: ' - בעבודה',
+    4: ' - תוצאות',
 }
 
 const RANGE_CODE_TO_DESCRIPTION = {
@@ -78,7 +77,7 @@ const displayLab = (lab, displayAllResults, matched, patient) => {
         status => rangeToResults[status] || []
     )
 
-    let badgeText = <HourglassOutlined/>;
+    let badgeText = '-';
     if (lab.status === 4) {
         const badResultsCount = rangesToConsiderAsBad.map(results => results.length).reduce((a, b) => a + b)
         if (badResultsCount)
@@ -94,7 +93,7 @@ const displayLab = (lab, displayAllResults, matched, patient) => {
         direction: "rtl"
     }}>
         <p>
-            <span><Badge style={{backgroundColor: badgeColor}} count={badgeText}/>
+            <span><Badge style={{backgroundColor: badgeColor}} count={badgeText}/>&nbsp;
                 {lab.category_display_name} {labStatuses[lab.status]} {ranges.some(range => range === "X") && ' - פסול'}
                 <RelativeTime style={{fontSize: 12, float: "left"}} date={lab.ordered_at}/>
             </span>
@@ -103,7 +102,7 @@ const displayLab = (lab, displayAllResults, matched, patient) => {
             {rangesToConsiderAsBad.flat().map((result, i) => <p key={i}>
                 <span>{RANGE_CODE_TO_DESCRIPTION[result.range]} {result.test_type_name}: {result.result} {result.units}</span>
             </p>)}
-            {displayAllResults && (rangeToResults[null] || []).length && <p>
+            {displayAllResults && (rangeToResults[null] || []).length > 0 && <p>
                 הוזמנו: {rangeToResults[null].map(result => result.test_type_name).join(', ')}
             </p>}
         </p>
@@ -283,7 +282,10 @@ const InternalPatientCard = ({patient, setHeader}) => {
             </div>
         }>
             {value.labs.length ? <>
-                {value.labs.sort((a, b) => moment(a.ordered_at).isAfter(b.ordered_at) ? 1 : -1).map(
+                {value.labs.sort(
+                    (a, b) => moment(a.ordered_at).isSame(b.ordered_at) ? 0 :
+                        moment(a.ordered_at).isBefore(b.ordered_at) ? 1 : -1
+                ).map(
                     lab => displayLab(lab, displayAllResults, matched, patient)
                 )}
                 <Button onClick={() => setDisplayAllResults(!displayAllResults)}>

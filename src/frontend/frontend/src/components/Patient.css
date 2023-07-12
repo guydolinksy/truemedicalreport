@@ -1,3 +1,3 @@
-.patient-content + .antd-ribbon-wrapper + .antd-ribbon{
-    top: 4px !important;
+.patient-content > .antd-ribbon-wrapper > .antd-ribbon{
+    top: -10px !important;
 }

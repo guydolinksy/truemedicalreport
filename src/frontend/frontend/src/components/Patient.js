@@ -329,19 +329,21 @@ const PatientInner = ({patient, avatar, style}) => {
     </Tooltip>
     if (hash.split('#').length > 2 && hash.split('#')[2] === patient && ref.current)
         ref.current.scrollIntoViewIfNeeded(true);
-    return loading ? <Spin/> : <div className={`status-bar status-${value.status || 'unassigned'}`}>
+    return loading ? <Spin/> : <div className={`status-bar status-${value.status || 'unassigned'}`} style={{
+        maxWidth: MAX_WIDTH, minWidth: MIN_WIDTH, ...style
+    }}>
         <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
             paddingRight: -4, paddingLeft: -4,
             animation: matched(['highlight', patient]) ?
                 `highlight-${matching(['highlight', patient])[0]} 2s ease-out` :
                 undefined
         }} title={<PatientHeader patient={patient} avatar={avatar}/>} style={{
-            margin: 0, maxWidth: MAX_WIDTH, minWidth: MIN_WIDTH, borderStyle: patient ? "solid" : "dotted", ...style
+            margin: 0, borderStyle: patient ? "solid" : "dotted"
         }} className={`severity-border severity-${value.severity.value || 0}`} hoverable onClick={() => {
             navigate(`#info#${patient}#basic`);
             trackEvent({category: 'patient', action: 'click-event'});
         }} extra={<PatientAwaiting/>}>
-            <PatientStatus patient={patient} style={{padding: "8 12px", gap: 20}}/>
+            <PatientStatus patient={patient} style={{padding: "8px 12px", gap: 20}}/>
             <div className={"patient-content"}>
                 <Badge.Ribbon text={text}
                               color={Object.keys(value.warnings).length ? "red" : value.flagged ? "blue" : "grey"}>
@@ -354,7 +356,7 @@ const PatientInner = ({patient, avatar, style}) => {
                                 userSelect: "none",
                                 padding: "8px 12px",
                                 cursor: "pointer",
-                                height: 98,
+                                height: 82,
                                 overflowY: "overlay"
                             }}>
                                 {value.protocol && value.protocol.active ?
@@ -370,7 +372,7 @@ const PatientInner = ({patient, avatar, style}) => {
                                 userSelect: "none",
                                 cursor: "pointer",
                                 padding: "8px 12px",
-                                height: 98,
+                                height: 82,
                                 overflowY: "overlay"
                             }}/>
                         </div>)}
