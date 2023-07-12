@@ -111,6 +111,7 @@ class LabCategory(BaseModel):
     def to_notifications(self) -> List[LabsNotification]:
         res = []
         out_of_range = False
+        fault_laboratory = False
         for key, result in self.results.items():
             # if result.result and result.test_type_id in LABS_RESULT_RANGE:
             #     try:
@@ -120,7 +121,10 @@ class LabCategory(BaseModel):
             #             out_of_range = True
             #     except ValueError:
             #         continue
-            if not result.range or result.range == 'N':
+            if result.range == 'X':
+                fault_laboratory = True
+                continue
+            elif not result.range or result.range == 'N':
                 continue
             out_of_range = True
             # TODO decide if the special labs needs to be VH or HH or VL, LL
@@ -142,14 +146,29 @@ class LabCategory(BaseModel):
                     link=None,  # "Add in the future",
                     level=NotificationLevel.abnormal if not result.range == 'LL' else NotificationLevel.panic,
                 ))
-        return res if res or self.status != LabStatus.analyzed.value else [LabsNotification(
+        if res:
+            return res
+        if self.status != LabStatus.analyzed.value:
+            return []
+        return [LabsNotification(
             static_id=self.get_instance_id(),
             patient_id=self.patient_id,
             at=max(datetime.datetime.fromisoformat(l.result_at) for l in self.results.values()).isoformat(),
-            message=f"תוצאות {self.category} {'לא ' if out_of_range else ''}תקינות",
+            message=self._generate_laboratory_message(self.category, out_of_range, fault_laboratory),
             link=None,  # "Add in the future",
             level=NotificationLevel.abnormal if out_of_range else NotificationLevel.normal,
         )]
+
+    @staticmethod
+    def _generate_laboratory_message(self, lab_category, out_of_range, fault_laboratory):
+        message = ""
+        if out_of_range:
+            message = f"תוצאות {lab_category} לא תקינות"
+        elif fault_laboratory:
+            message = f"תוצאות {lab_category} פסולות"
+        else:
+            message = f"תוצאות {lab_category} תקינות"
+        return message
 
     def get_updated_warnings(self, warnings: Dict[str, PatientWarning]):
         for id_, lab in self.results.items():
