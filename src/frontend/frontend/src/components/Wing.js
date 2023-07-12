@@ -368,9 +368,9 @@ const WingInner = ({department, wing}) => {
         <div><Badge className={'border-solid severity-border severity-3'}>דחיפות 3</Badge></div>
         <div><Badge className={'border-solid severity-border severity-4'}>דחיפות 4</Badge></div>
         <div><Badge className={'border-solid severity-border severity-5'}>דחיפות 5</Badge></div>
-        <div><Badge className={'status-background status-unassigned'}>לא שויך.ה רופא.ה</Badge></div>
-        <div><Badge className={'status-background status-undecided'}>שויך.ה רופא.ה אך אין החלטה על יעד</Badge></div>
-        <div><Badge className={'status-background status-decided'}>שויך.ה רופא.ה והוחלט יעד אשפוז/שחרור</Badge></div>
+        <div><Badge className={'status-bar status-unassigned'}>&nbps;לא שויך.ה רופא.ה</Badge></div>
+        <div><Badge className={'status-bar status-undecided'}>&nbps;שויך.ה רופא.ה אך אין החלטה על יעד</Badge></div>
+        <div><Badge className={'status-bar status-decided'}>&nbps;שויך.ה רופא.ה והוחלט יעד אשפוז/שחרור</Badge></div>
         <div><CustomIcon status={"error"} icon={"referral"}/> - הפנייה מתעכבת</div>
         <div><CustomIcon status={"processing"} icon={"laboratory"}/> - מעבדה בעיבוד</div>
         <div><CustomIcon status={"success"} icon={"imaging"}/> - הדמייה הושלמה או פוענחה</div>

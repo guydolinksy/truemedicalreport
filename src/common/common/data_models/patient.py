@@ -2,21 +2,21 @@ from typing import Optional, List, Any, Dict
 
 from pydantic import BaseModel
 
-from .esi_score import ESIScore
-from .measures import Measures, FullMeasures
-from .referrals import Referral
-from .status import Status
-from .warnings import PatientWarning
 from .admission import Admission
 from .awaiting import Awaiting, AwaitingTypes
+from .esi_score import ESIScore
 from .event import Event
 from .image import Image
 from .intake import Intake
 from .labs import LabCategory
+from .measures import Measures, FullMeasures
 from .notification import Notification
 from .protocol import Protocol
+from .referrals import Referral
 from .severity import Severity
+from .status import Status
 from .treatment import Treatment
+from .warnings import PatientWarning
 
 
 class Person(BaseModel):
@@ -25,6 +25,7 @@ class Person(BaseModel):
     age: Optional[str]
     gender: Optional[str]
     birthdate: Optional[str]
+    phone: Optional[str]
 
 
 class ExternalPatient(BaseModel):
@@ -36,7 +37,6 @@ class ExternalPatient(BaseModel):
     treatment: Treatment = Treatment()
     lab_link: Optional[str]
     medical_summary_link: Optional[str]
-    phone:Optional[str]
 
 
 class InternalPatient(BaseModel):

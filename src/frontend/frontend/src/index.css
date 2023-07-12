@@ -16,16 +16,25 @@ code {
     from {
         background-color: rgba(119, 81, 255, 0.66);
     }
+    to {
+        background-color: rgba(119, 81, 255, 0.33);
+    }
 }
 @keyframes highlight-open {
     from {
         background-color: rgba(119, 81, 255, 0.66);
+    }
+    to {
+        background-color: rgba(119, 81, 255, 0.33);
     }
 }
 
 @keyframes highlight-close {
     from {
         background-color: rgba(119, 81, 255, 0.66);
+    }
+    to {
+        background-color: rgba(119, 81, 255, 0.33);
     }
 }
 

@@ -238,28 +238,36 @@
     background-color: #e5f993;
 }
 
-.dark-theme .status-background.status-unassigned {
-    background-color: #1a1a1a;
+.dark-theme .status-background {
+    background-color: #050505;
 }
 
-.dark-theme .status-background.status-undecided {
-    background-color: #303a1a;
+.dark-theme .status-bar.status-unassigned {
+    border-right: 8px solid #1a1a1a;
 }
 
-.dark-theme .status-background.status-decided {
-    background-color: #14240e;
+.dark-theme .status-bar.status-undecided {
+    border-right: 8px solid #303a1a;
 }
 
-.light-theme .status-background.status-unassigned {
-    background-color: #e0dfdf;
+.dark-theme .status-bar.status-decided {
+    border-right: 8px solid #14240e;
 }
 
-.light-theme .status-background.status-undecided {
-    background-color: #e5f993;
+.light-theme .status-background {
+    background-color: #F5F5F5;
 }
 
-.light-theme .status-background.status-decided {
-    background-color: #cff5b6;
+.light-theme .status-bar.status-unassigned {
+    border-right: 8px solid #C5C5C5;
+}
+
+.light-theme .status-bar.status-undecided {
+    border-right: 8px solid #F98837;
+}
+
+.light-theme .status-bar.status-decided {
+    border-right: 8px solid #07BC0C;
 }
 
 .collapseNotifications > *:not(:first-child) {

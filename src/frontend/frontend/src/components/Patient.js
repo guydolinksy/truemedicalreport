@@ -15,6 +15,7 @@ import {hashMatchContext} from "./HashMatch";
 import {RelativeTime} from "./RelativeTime"
 import {Notification} from "./Notification";
 import {loginContext} from "./LoginContext";
+import "./Patient.css"
 
 const {Item} = List;
 export const patientDataContext = createContext({
@@ -41,7 +42,7 @@ const Measure = ({patient, measure, icon, title}) => {
         <div>
             <span className={(data && !data.is_valid) ? 'error-text' : undefined}
                   style={{userSelect: "none", fontSize: 14}}>
-                <b>{(data && data.value) ? data.value : '?'}</b>
+                <b>{(data && data.value) ? data.value : '-'}</b>
             </span>&nbsp;{(data && data.effect.kind) &&
             <CustomIcon status={data.is_valid ? 'processing' : 'error'} icon={data.effect.kind}/>}
         </div>
@@ -94,7 +95,9 @@ export const PatientStatus = ({patient, style}) => {
 
 
     useEffect(() => {
-        if (moment().subtract(2, "hours").isAfter(value.admission.arrival))
+        if (moment().subtract(10, "hours").isAfter(value.admission.arrival))
+            setArrivalClass('error-text')
+        else if (moment().subtract(4, "hours").isAfter(value.admission.arrival))
             setArrivalClass('warn-text')
     }, [value.admission.arrival, minutes]);
 
@@ -201,33 +204,41 @@ export const PatientWarning = ({patient, warning, index, style}) => {
 const PatientFooter = ({patient}) => {
     const {value} = useContext(patientDataContext.context);
     return (
-    <div style={{display:"flex", flexDirection:"column"}}>
-        <div style={{display: "flex", justifyContent: "space-evenly"}}>
-            <Measure patient={patient} measure={'temperature'} icon={'temperature'} title={'חום'}/>
-            <Measure patient={patient} measure={'blood_pressure'} icon={'bloodPressure'} title={'לחץ דם'}/>
-            <Measure patient={patient} measure={'pulse'} icon={'pulse'} title={'דופק'}/>
-            <Measure patient={patient} measure={'saturation'} icon={'saturation'} title={'סטורציה'}/>
-            <Measure patient={patient} measure={'pain'} icon={'pain'} title={'כאב'}/>
-        </div>
-        <div style={{display:"flex", justifyContent:"space-between",overflow: "hidden", textOverflow: "ellipsis",padding: "0rem 1rem"}}>
-            {value.treatment.doctors.length > 0 && <div style={{display:"flex",overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
-                {value.treatment.doctors.map((doctor,index)=>
-                    <Tooltip overlay={doctor} >
-                        <div style={{overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
-                            {`${doctor}${index!==value.treatment.doctors.length-1 ? ',':''}`}
-                        </div>
-                    </Tooltip>)}
-            </div>}
-            {value.referrals.length > 0 && <div style={{display:"flex",overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
-                {value.referrals.map((ref,index)=>
-                    <Tooltip overlay={ref.to} >
-                        <div style={{overflow: "hidden", textOverflow: "ellipsis",whiteSpace: "nowrap"}}>
-                            {`${ref.to}${index!==1 ? ',':''}`}
-                        </div>
-                    </Tooltip>)}
-            </div>}
-        </div>
-    </div>)
+        <div style={{display: "flex", flexDirection: "column"}}>
+            <div style={{display: "flex", justifyContent: "space-between", padding: "8px 12px"}}>
+                <Measure patient={patient} measure={'temperature'} icon={'temperature'} title={'חום'}/>
+                <Measure patient={patient} measure={'blood_pressure'} icon={'bloodPressure'} title={'לחץ דם'}/>
+                <Measure patient={patient} measure={'pulse'} icon={'pulse'} title={'דופק'}/>
+                <Measure patient={patient} measure={'saturation'} icon={'saturation'} title={'סטורציה'}/>
+                <Measure patient={patient} measure={'pain'} icon={'pain'} title={'כאב'}/>
+            </div>
+            <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                padding: "0px 12px 8px 12px"
+            }}>
+                {value.treatment.doctors.length > 0 &&
+                    <div style={{display: "flex", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
+                        {value.treatment.doctors.map((doctor, index) =>
+                            <Tooltip overlay={doctor}>
+                                <div style={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
+                                    {index !== 0 ? ',' : ''}{doctor}
+                                </div>
+                            </Tooltip>)}
+                    </div>}
+                {value.referrals.length > 0 &&
+                    <div style={{display: "flex", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
+                        {value.referrals.map((ref, index) =>
+                            <Tooltip overlay={ref.to}>
+                                <div style={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
+                                    {index !== 0 ? ',' : ''}{ref.to}
+                                </div>
+                            </Tooltip>)}
+                    </div>}
+            </div>
+        </div>)
 }
 
 const PatientAwaiting = () => {
@@ -318,55 +329,57 @@ const PatientInner = ({patient, avatar, style}) => {
     </Tooltip>
     if (hash.split('#').length > 2 && hash.split('#')[2] === patient && ref.current)
         ref.current.scrollIntoViewIfNeeded(true);
-    return loading ? <Spin/> : <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
-        paddingRight: -4, paddingLeft: -4,
-        animation: matched(['highlight', patient]) ?
-            `highlight-${matching(['highlight', patient])[0]} 2s ease-out` :
-            undefined
-    }} title={<PatientHeader patient={patient} avatar={avatar}/>} style={{
-        margin: 0, maxWidth: MAX_WIDTH, minWidth: MIN_WIDTH, borderStyle: patient ? "solid" : "dotted", ...style
-    }} className={`severity-border severity-${value.severity.value || 0}`} hoverable onClick={() => {
-        navigate(`#info#${patient}#basic`);
-        trackEvent({category: 'patient', action: 'click-event'});
-    }} extra={<PatientAwaiting/>}>
-        <PatientStatus patient={patient} style={{padding: "0 10px", gap: 20}}/>
-        <div>
-            <Badge.Ribbon text={text}
-                          color={Object.keys(value.warnings).length ? "red" : value.flagged ? "blue" : "grey"}>
-                {value.protocol && value.protocol.attributes && Object.keys(value.protocol.attributes).map((key) =>
-                    <div>{key}:{value.protocol.attributes[key]}</div>)}
-                <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
-                    <div>
-                        <div className={`status-background status-${value.status || 'unassigned'}`} style={{
-                            direction: "rtl",
-                            userSelect: "none",
-                            padding: "16px 30px",
-                            cursor: "pointer",
-                            height: 98,
-                            overflowY: "overlay"
-                        }}>
-                            {value.protocol && value.protocol.active ?
-                                <ProtocolStatus patient={patient}/> :
-                                <NotificationPreview patient={patient}/>}
+    return loading ? <Spin/> : <div className={`status-bar status-${value.status || 'unassigned'}`}>
+        <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
+            paddingRight: -4, paddingLeft: -4,
+            animation: matched(['highlight', patient]) ?
+                `highlight-${matching(['highlight', patient])[0]} 2s ease-out` :
+                undefined
+        }} title={<PatientHeader patient={patient} avatar={avatar}/>} style={{
+            margin: 0, maxWidth: MAX_WIDTH, minWidth: MIN_WIDTH, borderStyle: patient ? "solid" : "dotted", ...style
+        }} className={`severity-border severity-${value.severity.value || 0}`} hoverable onClick={() => {
+            navigate(`#info#${patient}#basic`);
+            trackEvent({category: 'patient', action: 'click-event'});
+        }} extra={<PatientAwaiting/>}>
+            <PatientStatus patient={patient} style={{padding: "8 12px", gap: 20}}/>
+            <div className={"patient-content"}>
+                <Badge.Ribbon text={text}
+                              color={Object.keys(value.warnings).length ? "red" : value.flagged ? "blue" : "grey"}>
+                    {value.protocol && value.protocol.attributes && Object.keys(value.protocol.attributes).map((key) =>
+                        <div>{key}:{value.protocol.attributes[key]}</div>)}
+                    <Carousel autoplay swipeToSlide draggable dotPosition={"top"}>
+                        <div>
+                            <div className={'status-background'} style={{
+                                direction: "rtl",
+                                userSelect: "none",
+                                padding: "8px 12px",
+                                cursor: "pointer",
+                                height: 98,
+                                overflowY: "overlay"
+                            }}>
+                                {value.protocol && value.protocol.active ?
+                                    <ProtocolStatus patient={patient}/> :
+                                    <NotificationPreview patient={patient}/>}
+                            </div>
                         </div>
-                    </div>
-                    {Object.entries(value.warnings).filter(
-                        ([key, {acknowledge}], i) => !acknowledge
-                    ).map(([key, warning], i) => <div key={i}>
-                        <PatientWarning patient={patient} warning={warning} index={i} style={{
-                            direction: "rtl",
-                            userSelect: "none",
-                            cursor: "pointer",
-                            padding: "16px 24px",
-                            height: 98,
-                            overflowY: "overlay"
-                        }}/>
-                    </div>)}
-                </Carousel>
-            </Badge.Ribbon>
-            <PatientFooter patient={patient}/>
-        </div>
-    </Card>
+                        {Object.entries(value.warnings).filter(
+                            ([key, {acknowledge}], i) => !acknowledge
+                        ).map(([key, warning], i) => <div key={i}>
+                            <PatientWarning patient={patient} warning={warning} index={i} style={{
+                                direction: "rtl",
+                                userSelect: "none",
+                                cursor: "pointer",
+                                padding: "8px 12px",
+                                height: 98,
+                                overflowY: "overlay"
+                            }}/>
+                        </div>)}
+                    </Carousel>
+                </Badge.Ribbon>
+                <PatientFooter patient={patient}/>
+            </div>
+        </Card>
+    </div>
 }
 export const Patient = ({patient, loading, avatar, style, onError}) => {
     const placeholder = (content) => <Card type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
