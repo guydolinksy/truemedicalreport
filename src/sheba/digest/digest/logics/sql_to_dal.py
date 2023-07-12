@@ -42,7 +42,7 @@ SHEBA_IMAGING_STATUS = {
     120: ImagingStatus.cancelled,  # בוטל ע"י טכנאי
     122: ImagingStatus.cancelled,  # הפנייה נדחתה
     125: ImagingStatus.ordered,  # הפנייה אושרה
-    127: ImagingStatus.analyzed,  # הפנייה לאישור
+    127: ImagingStatus.ordered,  # הפנייה לאישור
 }
 SHEBA_IMAGING_LEVEL = {
     0: NotificationLevel.normal,
