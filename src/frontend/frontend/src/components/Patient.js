@@ -107,13 +107,13 @@ export const PatientStatus = ({patient, style}) => {
         e.stopPropagation();
     }}>
         <div style={{whiteSpace: "nowrap", display: "flex", alignItems: "center", overflowX: "hidden"}}>
+            {!!value.severity.value && <span><Tooltip overlay='דחיפות'>
+                <span>(<strong>{value.severity.value}</strong>)</span>
+            </Tooltip>&nbsp;</span>}
             {value.protocol && value.protocol.active &&
                 <Tooltip overlay={`מצב פרוטוקול - ${value.intake.complaint}`}>
                     <FontAwesomeIcon icon={faCheckCircle} style={{marginLeft: "0.3rem", color: "#40a9ff"}}/>
                 </Tooltip>}
-            {!!value.severity.value && <span><Tooltip overlay='דחיפות'>
-                <span>(<strong>{value.severity.value}</strong>)</span>
-            </Tooltip>&nbsp;</span>}
             <Tooltip overlay={value.intake.nurse_description}>
                 <span style={{overflowX: "hidden", textOverflow: "ellipsis"}}>{value.intake.complaint}</span>
             </Tooltip>&nbsp;
