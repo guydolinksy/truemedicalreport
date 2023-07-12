@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 from dataclasses import dataclass
-from typing import List, Dict, Type, Any
+from typing import List, Dict, Type, Any, Optional
 
 import logbook
 import pytz
@@ -50,10 +50,11 @@ class MedicalDal:
         await publish(".".join([klass.__name__, attr]), dict(oid=oid, old=old, new=new))
 
     async def _atomic_update(
-            self, klass: Type[BaseModel], collection: Collection, query: dict, new: dict, max_retries=10
+            self, klass: Type[BaseModel], collection: Collection, query: dict, new: dict, delete: dict, max_retries=10
     ) -> None:
 
         update = json_to_dot_notation(new)
+        unset_update = json_to_dot_notation(delete)
         old = None
         old_full = None
 
@@ -61,10 +62,11 @@ class MedicalDal:
             old_full = await collection.find_one(query)
             old = json_to_dot_notation(klass(**old_full).dict(include=set(new), exclude_unset=True)) if old_full else {}
 
-            if all(k in old and update[k] == old[k] for k in update):
+            if all(k in old and update[k] == old[k] for k in update) or unset_update:
                 return
             try:
-                update_result = await collection.update_one({**query, **old}, {"$set": update}, upsert=True)
+                update_result = await collection.update_one({**query, **old}, {"$set": update, "$unset": unset_update},
+                                                            upsert=True)
                 if update_result.modified_count or update_result.upserted_id:
                     break
             except DuplicateKeyError:
@@ -88,21 +90,23 @@ class MedicalDal:
             "new": new_full,
         })
 
-    async def atomic_update_patient(self, query: dict, new: dict) -> None:
-        await self._atomic_update(klass=Patient, collection=self.db.patients, query=query, new=new)
+    async def atomic_update_patient(self, query: dict, new: dict, delete: Optional[dict] = None) -> None:
+        await self._atomic_update(klass=Patient, collection=self.db.patients, query=query, new=new, delete=delete or {})
 
-    async def atomic_update_referral(self, query: dict, new: dict):
-        await self._atomic_update(klass=Referral, collection=self.db.referrals, query=query, new=new)
+    async def atomic_update_referral(self, query: dict, new: dict, delete: Optional[dict] = None):
+        await self._atomic_update(klass=Referral, collection=self.db.referrals, query=query, new=new,
+                                  delete=delete or {})
 
-    async def atomic_update_notification(self, query: dict, new: dict):
-        await self._atomic_update(klass=Notification, collection=self.db.notifications, query=query, new=new)
+    async def atomic_update_notification(self, query: dict, new: dict, delete: Optional[dict] = None):
+        await self._atomic_update(klass=Notification, collection=self.db.notifications, query=query, new=new,
+                                  delete=delete or {})
 
     async def get_protocol_config(self) -> Dict[str, List[ProtocolItem]]:
         return {k: [ProtocolItem(**i) for i in items] for k, items in
                 (await self.application_dal.get_config('protocols', {}))['value'].items()}
 
-    async def atomic_update_imaging(self, query: dict, new: dict):
-        await self._atomic_update(klass=Image, collection=self.db.imaging, query=query, new=new)
+    async def atomic_update_imaging(self, query: dict, new: dict, delete: Optional[dict] = None):
+        await self._atomic_update(klass=Image, collection=self.db.imaging, query=query, new=new, delete=delete or {})
 
     async def get_department_wings(self, department: str) -> List[WingDetails]:
         return [
@@ -448,7 +452,7 @@ class MedicalDal:
         patient = await self.get_patient({"external_id": patient_id})
         updated = patient.copy()
         if imaging and not previous:
-            await self.atomic_update_imaging({"external_id": imaging.external_id}, imaging.dict(exclude_unset=True), )
+            await self.atomic_update_imaging({"external_id": imaging.external_id}, imaging.dict(exclude_unset=True))
             updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(
                 imaging.external_id,
                 Awaiting(
@@ -475,10 +479,11 @@ class MedicalDal:
                 await publish("notification", patient.oid)
         elif previous and not imaging:
             await self.db.imaging.delete_one({"external_id": previous.external_id})
-            del updated.awaiting[AwaitingTypes.imaging.value][previous.external_id]
+            delete = {"awaiting": {AwaitingTypes.imaging.value: {previous.external_id: ""}}}
             await self.atomic_update_patient(
                 {"_id": ObjectId(patient.oid)},
                 updated.dict(include={"awaiting"}, exclude_unset=True),
+                delete=delete
             )
             if previous.status != ImagingStatus.ordered.value:
                 notification = previous.to_notification()
@@ -571,11 +576,11 @@ class MedicalDal:
             else:
                 cat = labs[c]
                 await self.db.labs.delete_one({"patient_id": patient_id, **cat.query_key})
-                del updated.awaiting[AwaitingTypes.laboratory.value][cat.key]
+                delete = {"awaiting": {AwaitingTypes.laboratory.value: {cat.key: ""}}}
 
         await self.atomic_update_patient({"_id": ObjectId(patient.oid)}, updated.dict(
             include={"awaiting", "warnings", 'protocol'}, exclude_unset=True
-        ))
+        ), delete=delete)
 
     async def upsert_referral(self, patient_id, at, previous: Referral, referral: Referral):
         if previous and not referral:
