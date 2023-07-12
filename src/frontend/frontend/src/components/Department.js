@@ -44,10 +44,12 @@ export const Department = ({department}) => {
                 );
                 return <Col key={i} span={12}>
                     <Card title={<span>{wing.details.name} - <b>{wing.count}</b> מטופלים.ות</span>}
-                          style={{marginBottom: 16,display:"flex",flexWrap:"wrap",justifyContent:"space-evenly"}} hoverable onClick={() =>
+                          style={{marginBottom: 16}} hoverable onClick={() =>
                         navigate(generatePath(WING_URL, {department: department, wing: wing.details.key}))
                     }>
-                        {actions}
+                        <div style={{display:"flex",flexWrap:"wrap",justifyContent:"space-evenly"}}>
+                            {actions}
+                        </div>
                     </Card>
                 </Col>
             })}
