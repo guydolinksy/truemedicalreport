@@ -95,7 +95,7 @@ const displayLab = (lab, rangesToConsiderAsBad, matched, patient) => {
     const formatResults = (result, index) => {
         const range = result.range;
         return <p key={index}>
-            <span>{RANGE_CODE_TO_DESCRIPTION[range]} {result.test_type_name}: {result.result.trim()} {result.units.trim()}</span>
+            <span>{RANGE_CODE_TO_DESCRIPTION[range]} {result.test_type_name}: {result.result} {result.units}</span>
         </p>
     }
     const filteredDisplayResults = rangesToConsiderAsBad
