@@ -6,7 +6,7 @@ from .. import config
 async def init_wings():
     requests.post(f'{config.dal_url}/config/set', json={
         'key': 'departments',
-        'version': 0,
+        'version': 1,
         'value': [{
             'name': 'er',
             'key': 1184000,
@@ -87,6 +87,11 @@ async def init_wings():
                     [None] * 7,
                     ["30", None, "31", None, "38", None, "39"],
                 ],
+            }, {
+                'key': 'אגף B4',
+                'name': 'אגף 4',
+                'department': 'er',
+                'blocks': []
             }, {
                 'key': 'אגף הולכים',
                 'name': 'אגף הולכים',
