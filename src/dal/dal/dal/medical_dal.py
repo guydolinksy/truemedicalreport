@@ -451,7 +451,6 @@ class MedicalDal:
     async def upsert_imaging(self, patient_id, previous: Image, imaging: Image):
         patient = await self.get_patient({"external_id": patient_id})
         updated = patient.copy()
-        delete = {}
         if imaging and not previous:
             await self.atomic_update_imaging({"external_id": imaging.external_id}, imaging.dict(exclude_unset=True))
             updated.awaiting.setdefault(AwaitingTypes.imaging.value, {}).__setitem__(
@@ -480,11 +479,11 @@ class MedicalDal:
                 await publish("notification", patient.oid)
         elif previous and not imaging:
             await self.db.imaging.delete_one({"external_id": previous.external_id})
-            delete = {"awaiting": {AwaitingTypes.imaging.value: {previous.external_id: ""}}}
+            updated.awaiting.get(AwaitingTypes.imaging.value, {}).pop(previous.external_id)
             await self.atomic_update_patient(
                 {"_id": ObjectId(patient.oid)},
                 updated.dict(include={"awaiting"}, exclude_unset=True),
-                delete=delete
+                delete={"awaiting": {AwaitingTypes.imaging.value: {previous.external_id: ""}}}
             )
             if previous.status != ImagingStatus.ordered.value:
                 notification = previous.to_notification()
@@ -577,11 +576,12 @@ class MedicalDal:
             else:
                 cat = labs[c]
                 await self.db.labs.delete_one({"patient_id": patient_id, **cat.query_key})
-                delete = {"awaiting": {AwaitingTypes.laboratory.value: {cat.key: ""}}}
+                updated.awaiting.get(AwaitingTypes.laboratory.value, {}).pop(cat.key)
+                delete[cat.key] = ""
 
         await self.atomic_update_patient({"_id": ObjectId(patient.oid)}, updated.dict(
             include={"awaiting", "warnings", 'protocol'}, exclude_unset=True
-        ), delete=delete)
+        ), delete={"awaiting": {AwaitingTypes.laboratory.value: delete}} if delete else None)
 
     async def upsert_referral(self, patient_id, at, previous: Referral, referral: Referral):
         if previous and not referral:
