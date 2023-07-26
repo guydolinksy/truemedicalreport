@@ -121,6 +121,8 @@ async def init_protocols():
                     'imaging-CTA פרוטוקול פרפוזיה כולל מח ואנגיו צוואר ומוח'
                 ]
     HGB_KEYS = ['lab-100109497']
+    CRP_KEYS = ['lab-120104016']
+    WBC_KEYS = ['lab-100109500']
     requests.post(f'{config.dal_url}/config/set', json={
         'key': 'protocols',
         'version': 1,
@@ -134,8 +136,8 @@ async def init_protocols():
                 {'name': 'HGB', 'default': '-', 'key': 'lab-2', 'keys': HGB_KEYS},
             ],
             'חום': [
-                {'name': 'CRP', 'default': '-', 'key': 'lab-1', 'keys': ['lab-120104016']},
-                {'name': 'WBC', 'default': '-', 'key': 'lab-2', 'keys': ['lab-100109500']},
+                {'name': 'CRP', 'default': '-', 'key': 'lab-1', 'keys': CRP_KEYS},
+                {'name': 'WBC', 'default': '-', 'key': 'lab-2', 'keys': WBC_KEYS},
                 {'name': 'לקטט', 'default': '-', 'key': 'lab-3', 'keys': ['lab-150108685']},
             ],
             'תלונה נוירולוגית': [
@@ -160,6 +162,16 @@ async def init_protocols():
             'סחרחורת': [
                 {'name': 'CT מוח', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': HCT_KEYS},
                 {'name': 'HGB', 'default': '-', 'key': 'lab-1', 'keys': HGB_KEYS},
+            ],
+            'תלונות לאחר ניתוח': [
+                {'name': 'WBC', 'default': '-', 'key': 'lab-1', 'keys': WBC_KEYS},
+                {'name': 'CRP', 'default': '-', 'key': 'lab-2', 'keys': CRP_KEYS},
+                {'name': 'HGB', 'default': '-', 'key': 'lab-3', 'keys': HGB_KEYS},
+            ],
+            'כאבי ראש': [
+                {'name': 'CT מוח', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': HCT_KEYS},
+                {'name': 'WBC', 'default': '-', 'key': 'lab-1', 'keys': WBC_KEYS},
+                {'name': 'CRP', 'default': '-', 'key': 'lab-2', 'keys': CRP_KEYS},
             ],
         }
     }).raise_for_status()
