@@ -108,26 +108,53 @@ async def init_wings():
 
 
 async def init_protocols():
+    # Common values
+    CXR_KEYS = [
+                    'imaging-צילום בית החזה בעמידה',
+                    'imaging-צילום בית החזה בשכיבה/ישיבה',
+                    'imaging-צילום חזה+צבס',
+                ]
+    TRPONIN_KEYS = ['lab-120104040']
+    HCT_KEYS = [
+                    'imaging-CT מוח לבירור שבץ-מוחי',
+                    'imaging-CT מוח',
+                    'imaging-CTA פרוטוקול פרפוזיה כולל מח ואנגיו צוואר ומוח'
+                ]
     requests.post(f'{config.dal_url}/config/set', json={
         'key': 'protocols',
         'version': 1,
         'value': {
             'כאב חזה': [
-                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': [
-                    'imaging-צילום בית החזה בעמידה',
-                    'imaging-צילום בית החזה בשכיבה/ישיבה',
-                    'imaging-צילום חזה+צבס',
-                ]},
-                {'name': 'טרופונין', 'default': '-', 'key': 'lab-1', 'keys': ['lab-120104040']},
+                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': CXR_KEYS},
+                {'name': 'טרופונין', 'default': '-', 'key': 'lab-1', 'keys': TRPONIN_KEYS},
             ],
             'סינקופה': [
-                {'name': 'טרופונין', 'default': '-', 'key': 'lab-1', 'keys': ['lab-120104040']},
+                {'name': 'טרופונין', 'default': '-', 'key': 'lab-1', 'keys': TRPONIN_KEYS},
                 {'name': 'HGB', 'default': '-', 'key': 'lab-2', 'keys': ['lab-100109497']},
             ],
             'חום': [
                 {'name': 'CRP', 'default': '-', 'key': 'lab-1', 'keys': ['lab-120104016']},
                 {'name': 'WBC', 'default': '-', 'key': 'lab-2', 'keys': ['lab-100109500']},
                 {'name': 'לקטט', 'default': '-', 'key': 'lab-3', 'keys': ['lab-150108685']},
+            ],
+            'תלונה נוירולוגית': [
+                {'name': 'CT ראש', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': HCT_KEYS},
+            ],
+            'חבלה/נפילה': [
+                {'name': 'CT מוח בלי חומר ניגוד', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': HCT_KEYS},
+                {'name': 'צילום אגן', 'default': 'לא הוזמן', 'key': 'img-2', 'keys': ['imaging-צילום אגן/אגן וירך']},
+                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-3', 'keys': CXR_KEYS},
+            ],
+            'לאחר פרכוס': [
+                {'name': 'CT מוח', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': HCT_KEYS},
+                {'name': 'Total CPK', 'default': '-', 'key': 'lab-1', 'keys': ['lab-100182550']},
+            ],
+            'קוצר נשימה': [
+                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-3', 'keys': CXR_KEYS},
+                {'name': 'pco2', 'default': '-', 'key': 'lab-1', 'keys': ['lab-152808699']},
+                {'name': 'ph', 'default': '-', 'key': 'lab-2', 'keys': ['lab-152808700']},
+                {'name': 'hco3', 'default': '-', 'key': 'lab-3', 'keys': ['lab-152808697']},
+                {'name': 'טרופונין', 'default': '-', 'key': 'lab-4', 'keys': TRPONIN_KEYS}
             ],
         }
     }).raise_for_status()
