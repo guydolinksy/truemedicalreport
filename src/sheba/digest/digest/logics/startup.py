@@ -120,6 +120,7 @@ async def init_protocols():
                     'imaging-CT מוח',
                     'imaging-CTA פרוטוקול פרפוזיה כולל מח ואנגיו צוואר ומוח'
                 ]
+    HGB_KEYS = ['lab-100109497']
     requests.post(f'{config.dal_url}/config/set', json={
         'key': 'protocols',
         'version': 1,
@@ -130,7 +131,7 @@ async def init_protocols():
             ],
             'סינקופה': [
                 {'name': 'טרופונין', 'default': '-', 'key': 'lab-1', 'keys': TRPONIN_KEYS},
-                {'name': 'HGB', 'default': '-', 'key': 'lab-2', 'keys': ['lab-100109497']},
+                {'name': 'HGB', 'default': '-', 'key': 'lab-2', 'keys': HGB_KEYS},
             ],
             'חום': [
                 {'name': 'CRP', 'default': '-', 'key': 'lab-1', 'keys': ['lab-120104016']},
@@ -150,11 +151,15 @@ async def init_protocols():
                 {'name': 'Total CPK', 'default': '-', 'key': 'lab-1', 'keys': ['lab-100182550']},
             ],
             'קוצר נשימה': [
-                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-3', 'keys': CXR_KEYS},
+                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': CXR_KEYS},
                 {'name': 'pco2', 'default': '-', 'key': 'lab-1', 'keys': ['lab-152808699']},
                 {'name': 'ph', 'default': '-', 'key': 'lab-2', 'keys': ['lab-152808700']},
                 {'name': 'hco3', 'default': '-', 'key': 'lab-3', 'keys': ['lab-152808697']},
-                {'name': 'טרופונין', 'default': '-', 'key': 'lab-4', 'keys': TRPONIN_KEYS}
+                {'name': 'טרופונין', 'default': '-', 'key': 'lab-4', 'keys': TRPONIN_KEYS},
+            ],
+            'סחרחורת': [
+                {'name': 'CT מוח', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': HCT_KEYS},
+                {'name': 'HGB', 'default': '-', 'key': 'lab-1', 'keys': HGB_KEYS},
             ],
         }
     }).raise_for_status()
