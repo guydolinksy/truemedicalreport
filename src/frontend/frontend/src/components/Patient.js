@@ -284,15 +284,15 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
     return <Tooltip key={type} overlay={<div>
         <div><b style={{textDecoration: "underline"}}>{AWAITING_TITLE[type]}</b></div>
         {pending.length > 0 && <div><b>ממתין.ה עבור (דקות):</b></div>}
-        {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, since}, i) =>
+        {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, status, since}, i) =>
             <div key={i}>
-                {name} - <RelativeTime date={since}/>
+                {name} - {status} - <RelativeTime date={since}/>
             </div>
         )}
         {pending.length > 0 && completed.length > 0 && <div><br/></div>}
         {completed.length > 0 && <div><b>הושלמו:</b></div>}
-        {completed.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, since}, i) =>
-            <div key={i}>{name}</div>
+        {completed.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, status, since}, i) =>
+            <div key={i}>{name} - {status}</div>
         )}
     </div>}>
         <span><CustomIcon status={status} icon={type}/></span>

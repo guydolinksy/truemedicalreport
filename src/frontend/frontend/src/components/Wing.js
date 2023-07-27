@@ -1,58 +1,28 @@
-import React, {Suspense, useCallback, useContext, useEffect, useMemo, useState} from 'react';
-import {
-    Badge,
-    Button,
-    Card,
-    Col,
-    Collapse,
-    Divider,
-    Empty,
-    Input,
-    Layout,
-    List,
-    Modal,
-    Popover,
-    Radio,
-    Row,
-    Space,
-    Spin,
-    Tag,
-    Tooltip,
-    Tree
-} from 'antd';
+import React, {Suspense, useCallback, useContext, useMemo, useState} from 'react';
+import {Button, Card, Col, Collapse, Empty, Layout, Modal, Popover, Radio, Row, Spin, Tooltip} from 'antd';
 import {MIN_WIDTH, Patient} from "./Patient";
 import {createContext} from "../hooks/DataContext";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faRightFromBracket,} from "@fortawesome/free-solid-svg-icons";
 import {useNavigate} from "react-router";
 import {PatientInfo} from "./PatientInfo";
-import debounce from 'lodash/debounce';
-import {Highlighter} from './Highlighter'
 import {Bed} from "./Bed";
-import {FilterOutlined, PushpinOutlined, QuestionOutlined, SearchOutlined, UserOutlined} from "@ant-design/icons";
+import {FilterOutlined, QuestionOutlined, SearchOutlined} from "@ant-design/icons";
 import {useLocalStorage} from "../hooks/localStorageHook";
 import moment from "moment";
 import {useViewport} from "./UseViewPort";
 import {Department} from "./Department";
-import {Notification} from "./Notification";
-import {RelativeTime} from "./RelativeTime";
 import {loginContext} from "./LoginContext";
-import {CustomIcon} from "./CustomIcon";
 import {DarkTheme, LightTheme} from "../themes/ThemeContext";
+import {WingNotifications} from "./WingNotifications";
+import {PatientList} from "./PatientList";
+import {Legend} from "./Legend";
+import {SortPatients} from "./SortPatients";
 
-const {Search} = Input;
-const {Content, Sider} = Layout;
-const {CheckableTag} = Tag;
-const wingDataContext = createContext(null);
+const {Content, Header} = Layout;
+export const wingDataContext = createContext(null);
 
-const highlighter = new Highlighter('root');
 const {Panel} = Collapse;
-const {Item} = List;
-const badgeClass = {
-    0: 'status-badge status-success',
-    1: 'status-badge status-warn',
-    2: 'status-badge status-error',
-}
 
 const WingLayout = ({department, wing, details, onError}) => {
     return <Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
@@ -68,115 +38,12 @@ const WingLayout = ({department, wing, details, onError}) => {
         </Row>)}
     </Card>
 }
-const WingNotifications = () => {
-    const navigate = useNavigate();
-    const {user} = useContext(loginContext);
-    const {value} = useContext(wingDataContext.context);
-    const [openKeys, setOpenKeys] = useState([]);
-    const [unread, setUnread] = useState({});
-
-    const appendUnread = useCallback((oid, messages) => {
-        console.log('UNREAD', oid, messages)
-        setUnread(p => Object.assign({}, p, {[oid]: (p[oid] || []).concat(messages)}));
-    }, [setUnread]);
-    const markRead = useCallback((oid, static_id) => {
-        setUnread(p => Object.assign({}, p, {[oid]: (p[oid] || []).filter(s => s !== static_id)}));
-    }, [setUnread]);
-
-    const [notifications, setNotifications] = useState(null);
-    useEffect(() => {
-        setNotifications(prevState => Object.assign({}, ...value.notifications.map((n) => {
-            let messages = n.notifications.map(m => m.static_id)
-            if (prevState !== null)
-                appendUnread(n.patient.oid, messages.filter(s => !(prevState[n.patient.oid] || []).includes(s)));
-            return {[n.patient.oid]: messages};
-        })));
-    }, [appendUnread, value.notifications]);
-
-    const openChange = useCallback(key => {
-        let keys = Array.isArray(key) ? key : [key];
-
-        setOpenKeys(prevState => {
-            keys.filter(k => !prevState.includes(k)).forEach(k => navigate(`#highlight#${k}#open`));
-            prevState.filter(k => !keys.includes(k)).forEach(k => navigate(`#highlight#${k}#close`));
-            return keys;
-        })
-    }, [navigate]);
-    if (!value.notifications.length)
-        return <div style={{display: "flex", flex: 1, flexDirection: "column"}}>
-            <Empty style={{height: 'fit-content'}} description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/>
-        </div>
-    return <div style={{display: "flex !important", flexDirection: "column", flex: "1"}}>
-        <Collapse onChange={openChange} style={{flex: "1 0 10vh", minHeight: "10vh", overflowY: "overlay"}}>
-            {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
-                <>
-                    <span className={`gender-${notification.patient.info.gender}`}>
-                        <UserOutlined/>{!user.anonymous && <span>&nbsp;{notification.patient.info.name}</span>}
-                    </span>
-                    <br/>
-                    <span style={{fontSize: "10px"}}>{notification.preview}</span>
-                </>
-            } extra={
-                <div style={{
-                    display: "flex",
-                    flexFlow: "column nowrap",
-                    alignItems: "flex-end",
-                }}>
-                    <RelativeTime style={{fontSize: 12}} date={notification.at}/>
-                    <Space>
-                        {notification.patient.flagged && <PushpinOutlined style={{marginLeft: 0}}/>}
-                        {(unread[notification.patient.oid] || []).length > 0 && <Badge
-                            className={badgeClass[notification.level]}
-                            count={unread[notification.patient.oid].length}
-                            size={"small"}/>}
-                    </Space>
-                </div>
-            }>
-                {notification.notifications.length ? <List>
-                    {notification.notifications.map((message, j) =>
-                        <Item key={`${notification.patient.oid}-${j}`}>
-                            <Notification unread={(unread[notification.patient.oid] || []).includes(message.static_id)}
-                                          markRead={() => markRead(notification.patient.oid, message.static_id)}
-                                          patient={notification.patient.oid} message={message}/>
-                        </Item>
-                    )}
-                </List> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין עדכונים זמינים'}/>}
-            </Panel>)}
-        </Collapse>
-    </div>
-}
 
 const WingStatus = ({department}) => {
     const {value} = useContext(wingDataContext.context);
     const {userSettings} = useContext(loginContext);
 
     const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'arrival');
-    const [selectedAwaiting, setSelectedAwaiting] = useLocalStorage('selectedAwaiting', []);
-    const [selectedDoctors, setSelectedDoctors] = useLocalStorage('selectedDoctors', []);
-    const [selectedTreatments, setSelectedTreatments] = useLocalStorage('selectedTreatments', []);
-
-    const toTree = filter => ({
-        key: filter.key,
-        title: `(${filter.count}) ${filter.title}`,
-        children: (filter.children || []).map(toTree)
-    })
-
-    const handleDoctorFilterChange = (tag, checked) => {
-        const nextSelectedTags = checked ? [...selectedDoctors, tag] : selectedDoctors.filter((t) => t !== tag);
-        setSelectedDoctors(nextSelectedTags);
-    };
-
-    const handleDecisionStatusFilterChange = (tag, checked) => {
-        const nextSelectedTags = checked ? [...selectedTreatments, tag] : selectedTreatments.filter((t) => t !== tag);
-        setSelectedTreatments(nextSelectedTags);
-    };
-
-    const filterTagsContainerStyle = {
-        display: 'flex',
-        flexWrap: "wrap",
-        gap: '5px 0',
-        justifyContent: "space-between",
-    }
 
     const [isDepartmentPeekModelOpen, setIsDepartmentPeekModelOpen] = useState(false);
 
@@ -206,34 +73,6 @@ const WingStatus = ({department}) => {
             <Collapse defaultActiveKey={['1', '2']}
                       style={{height: '100%', display: "flex", flexDirection: "column", overflowY: "scroll"}}>
                 <Panel header={"סינון"} key={1} extra={<FilterOutlined/>}>
-                    <Divider style={{marginTop: 10, marginBottom: 10}}/>
-                    <div style={filterTagsContainerStyle}>
-                        <b style={{whiteSpace: "nowrap"}}>רופא.ה:</b>
-                        {value.filters.doctors.map(filter => <CheckableTag
-                            key={filter.key}
-                            checked={selectedDoctors.indexOf(filter.key) > -1}
-                            onChange={(checked) => handleDoctorFilterChange(filter.key, checked)}
-                        >
-                            {filter.title}
-                        </CheckableTag>)}
-                    </div>
-                    <Divider style={{marginTop: 10, marginBottom: 10}}/>
-                    <div style={filterTagsContainerStyle}>
-                        <b style={{whiteSpace: "nowrap"}}>יעד:</b>
-                        {value.filters.treatments.map(filter => <CheckableTag
-                            key={filter.key}
-                            checked={selectedTreatments.indexOf(filter.key) > -1}
-                            onChange={(checked) => handleDecisionStatusFilterChange(filter.key, checked)}
-                        >
-                            {filter.title}
-                        </CheckableTag>)}
-                    </div>
-                    <Divider style={{marginTop: 10, marginBottom: 10}}/>
-                    <Tree treeData={value.filters.awaiting.map(toTree)} style={{width: '100%'}} checkable multiple
-                          defaultExpandedKeys={value.filters.awaiting.map(x => x.key)}
-                          placeholder="סינון לפי המתנה עבור:" onCheck={setSelectedAwaiting}
-                          checkedKeys={selectedAwaiting}/>
-                    <Divider style={{marginTop: 10, marginBottom: 10}}/>
                     <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
                                  buttonStyle={"solid"}
                                  style={{width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex"}}>
@@ -272,6 +111,7 @@ const WingStatus = ({department}) => {
         </Modal>
     </div>
 };
+
 const Patients = ({patients, onError}) => {
     return <Card key={'overflow'} style={{width: '100%', flex: '1'}}>
         {patients.length ? <div style={{
@@ -300,7 +140,6 @@ const sortFunctions = {
 }
 const WingInner = ({department, wing}) => {
     const navigate = useNavigate();
-    const [search, setSearch] = useState('');
 
     const {user, userSettings} = useContext(loginContext);
     const {value, flush} = useContext(wingDataContext.context);
@@ -339,57 +178,34 @@ const WingInner = ({department, wing}) => {
     )).sort(sortFunctions[wingSortKey]);
     const unassignedPatients = allPatients.filter(({admission}) => !admission.bed);
 
-    const patientList = <div style={{display: "flex", flexDirection: "column", maxHeight: "30vh", overflowY: "scroll"}}
-                             className={userSettings.theme}>
-        <Suspense fallback={<span/>}>
-            {userSettings.theme === 'dark-theme' ? <DarkTheme/> : <LightTheme/>}
-        </Suspense>
-        <Search key={'search'} style={{marginBottom: "0.5rem"}} allowClear
-                onChange={debounce(e => setSearch(e.target.value), 300)}
-                placeholder={'חיפוש:'}/>
-        {value.department_patients.sort((a, b) => a.info.name.localeCompare(b.info.name))
-            .filter((patient) => patient.info.id_.includes(search) || patient.info.name.includes(search))
-            .map((patient, i) =>
-                <Button key={i} onClick={() => navigate(
-                    `/departments/${patient.admission.department}/wings/${patient.admission.wing}#highlight#${patient.oid}#open`
-                )} className={`gender-${patient?.info?.gender}`}>
-                    {user.anonymous ? '---' : patient?.info?.name}
-                </Button>)}
-    </div>
-
-    const legend = <div style={{display: "flex", flexDirection: "column", rowGap: 5}} className={userSettings.theme}>
-        <Suspense fallback={<span/>}>
-            {userSettings.theme === 'dark-theme' ? <DarkTheme/> : <LightTheme/>}
-        </Suspense>
-        <div><Badge className={'gender-male'}>ישראל ישראלי</Badge> - זכר</div>
-        <div><Badge className={'gender-female'}>ישראלה ישראלי</Badge> - נקבה</div>
-        <div><Badge className={'border-solid severity-border severity-1'}>דחיפות 1</Badge></div>
-        <div><Badge className={'border-solid severity-border severity-2'}>דחיפות 2</Badge></div>
-        <div><Badge className={'border-solid severity-border severity-3'}>דחיפות 3</Badge></div>
-        <div><Badge className={'border-solid severity-border severity-4'}>דחיפות 4</Badge></div>
-        <div><Badge className={'border-solid severity-border severity-5'}>דחיפות 5</Badge></div>
-        <div><Badge className={'status-bar status-unassigned'}>&nbps;לא שויך.ה רופא.ה</Badge></div>
-        <div><Badge className={'status-bar status-undecided'}>&nbps;שויך.ה רופא.ה אך אין החלטה על יעד</Badge></div>
-        <div><Badge className={'status-bar status-decided'}>&nbps;שויך.ה רופא.ה והוחלט יעד אשפוז/שחרור</Badge></div>
-        <div><CustomIcon status={"error"} icon={"referral"}/> - הפנייה מתעכבת</div>
-        <div><CustomIcon status={"processing"} icon={"laboratory"}/> - מעבדה בעיבוד</div>
-        <div><CustomIcon status={"success"} icon={"imaging"}/> - הדמייה הושלמה או פוענחה</div>
-    </div>
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
             <WingStatus department={department}/>
         </Sider>
         <Content className={'content'} style={{height: '100vh', overflowY: 'scroll'}}>
-            <Popover placement={"leftTop"} content={patientList} title={"מטופלים.ות:"}>
+            <Popover placement={"leftTop"}
+                     content={<PatientList value={value} user={user} userSettings={userSettings}/>}
+                     title={"מטופלים.ות:"}>
                 <Button type={"primary"} style={{position: "absolute", top: 41, left: 0, width: 40, zIndex: 1000}}
                         icon={<SearchOutlined/>}/>
             </Popover>
-            <Popover placement={"leftTop"} content={legend} title={"מקרא:"}>
+            <Popover placement={"leftTop"}
+                     content={<SortPatients value={value} user={user} userSettings={userSettings}/>} title={"סינון:"}>
                 <Button type={"primary"} style={{position: "absolute", top: 80, left: 0, width: 40, zIndex: 1000}}
+                        icon={<FilterOutlined/>}/>
+            </Popover>
+            <Popover placement={"leftTop"} content={<Legend userSettings={userSettings}/>} title={"מקרא:"}>
+                <Button type={"primary"} style={{position: "absolute", top: 119, left: 0, width: 40, zIndex: 1000}}
                         icon={<QuestionOutlined/>}/>
             </Popover>
             <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
-                {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.length || selectedTreatments.length || selectedAwaiting.length ?
+                {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.filter(
+                    filter => value.filters.mapping[filter] !== undefined
+                ).length || selectedTreatments.filter(
+                    filter => value.filters.mapping[filter] !== undefined
+                ).length || selectedAwaiting.filter(
+                    filter => value.filters.mapping[filter] !== undefined
+                ).length ?
                     <Patients key={'patients'} patients={allPatients} onError={flush}/> : [
                         <WingLayout key={'wing'} department={department} wing={wing} details={value.details}
                                     onError={flush}/>,

@@ -460,6 +460,7 @@ class MedicalDal:
                     name=imaging.title,
                     since=imaging.ordered_at,
                     completed=self._is_imaging_completed(imaging),
+                    status=imaging.status_text,
                     limit=3600,
                 ),
             )
@@ -498,6 +499,7 @@ class MedicalDal:
                     name=imaging.title,
                     since=imaging.ordered_at,
                     completed=self._is_imaging_completed(imaging),
+                    status=imaging.status_text,
                     limit=3600,
                 ),
             )
@@ -570,6 +572,12 @@ class MedicalDal:
                         name=cat.category_display_name,
                         since=cat.ordered_at,
                         completed=cat.status == LabStatus.analyzed.value,
+                        status={
+                            LabStatus.ordered.value: 'הוזמן',
+                            LabStatus.collected.value: 'שויכו דגימות',
+                            LabStatus.in_progress.value: 'בעבודה',
+                            LabStatus.analyzed.value: 'תוצאות',
+                        }.get(cat.status, '?'),
                         limit=3600,
                     ),
                 )
@@ -610,6 +618,7 @@ class MedicalDal:
                     name=updated_referral.to,
                     since=updated_referral.at,
                     completed=updated_referral.completed,
+                    status='סגורה' if updated_referral.completed else 'פתוחה',
                     limit=3600,
                 ),
             )
@@ -637,6 +646,7 @@ class MedicalDal:
                     name=referral.to,
                     since=referral.at,
                     completed=referral.completed,
+                    status='סגורה' if referral.completed else 'פתוחה',
                     limit=3600,
                 ),
             )
@@ -672,8 +682,10 @@ class MedicalDal:
         updated.intake = intake
         if intake.doctor_seen_time:
             updated.awaiting[AwaitingTypes.doctor.value]["exam"].completed = True
+            updated.awaiting[AwaitingTypes.doctor.value]["exam"].status = 'הושלמה'
         if intake.nurse_description:
             updated.awaiting[AwaitingTypes.nurse.value]["exam"].completed = True
+            updated.awaiting[AwaitingTypes.nurse.value]["exam"].status = 'הושלמה'
 
         await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"intake", "awaiting"}, exclude_unset=True)
@@ -695,6 +707,7 @@ class MedicalDal:
                 subtype="הוראות פעילות",
                 name=f"{medicine.label}-{medicine.dosage}",
                 completed=bool(medicine.given),
+                status='ממתין' if medicine.given else 'ניתן',
                 limit=1500,
             )
             updated.awaiting.setdefault(AwaitingTypes.nurse.value, {}).__setitem__(
