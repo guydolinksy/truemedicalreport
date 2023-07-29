@@ -19,7 +19,7 @@ import {PatientList} from "./PatientList";
 import {Legend} from "./Legend";
 import {SortPatients} from "./SortPatients";
 
-const {Content, Header} = Layout;
+const {Content, Sider} = Layout;
 export const wingDataContext = createContext(null);
 
 const {Panel} = Collapse;
