@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from .admission import Admission
 from .awaiting import Awaiting, AwaitingTypes
+from .ecg_record import ECGRecord
 from .esi_score import ESIScore
 from .event import Event
 from .image import Image
@@ -37,6 +38,7 @@ class ExternalPatient(BaseModel):
     treatment: Treatment = Treatment()
     lab_link: Optional[str]
     medical_summary_link: Optional[str]
+    ecg_record: List[ECGRecord] = []
 
 
 class InternalPatient(BaseModel):
