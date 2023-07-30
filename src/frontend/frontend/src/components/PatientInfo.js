@@ -19,7 +19,7 @@ import {
     faXRay
 } from "@fortawesome/free-solid-svg-icons";
 import {htmlModal, iframeModal} from "./modals";
-import {patientDataContext, PatientStatus, PatientWarning} from "./Patient";
+import { patientDataContext, PatientStatus, PatientWarning} from "./Patient";
 import {loginContext} from "./LoginContext";
 import {UserTheme} from "../themes/ThemeContext";
 import {hashMatchContext} from "./HashMatch";
