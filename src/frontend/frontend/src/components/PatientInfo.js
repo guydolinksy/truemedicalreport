@@ -335,8 +335,8 @@ const InternalPatientCard = ({patient, setHeader}) => {
                 <span>בדיקות א.ק.ג</span>
             </div>
         }>
-            {!!value.ecg_record.length
-                ? value.ecg_record.map((record,index) => <EcgRecord record={record} key={index} />)
+            {!!value?.ecg_records?.length
+                ? value.ecg_records.map((record,index) => <EcgRecord record={record} key={index} />)
                 : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות א.ק.ג'}/>
             }
         </Panel>

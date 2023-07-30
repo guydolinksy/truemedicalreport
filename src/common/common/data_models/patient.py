@@ -38,7 +38,7 @@ class ExternalPatient(BaseModel):
     treatment: Treatment = Treatment()
     lab_link: Optional[str]
     medical_summary_link: Optional[str]
-    ecg_record: List[ECGRecord] = []
+    ecg_records: List[ECGRecord] = []
 
 
 class InternalPatient(BaseModel):
