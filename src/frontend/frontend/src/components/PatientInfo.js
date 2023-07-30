@@ -50,6 +50,11 @@ const RANGE_CODE_TO_DESCRIPTION = {
     "JESUS": "Call the nearby priest"
 }
 
+const EcgRecord = ({record}) => <div style={{display:"flex", justifyContent:"space-between"}} key={record.title}>
+    <a style={{cursor:"pointer"}} href={record.link}>{record.title}</a>
+    <RelativeTime style={{fontSize: 12}} date={record.date}/>
+</div>
+
 const displayLab = (lab, displayAllResults, matched, patient) => {
 
     const rangeToResults = {};
@@ -324,6 +329,17 @@ const InternalPatientCard = ({patient, setHeader}) => {
             </div>
         }>
             <p/>
+        </Panel>
+        <Panel key={'ECGs'} header={
+            <div style={{width: '100%', display: "flex", flexFlow: "row nowrap", justifyContent: "space-between"}}>
+                <span>בדיקות א.ק.ג</span>
+            </div>
+        }>
+            {console.log(value)}
+            {!!value?.ecg_records?.length
+                ? value.ecg_records.map((record,index) => <EcgRecord record={record} key={index} />)
+                : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות א.ק.ג'}/>
+            }
         </Panel>
         {value.plugins.map(({key, title, url}) =>
             <Panel key={key} header={title}>
