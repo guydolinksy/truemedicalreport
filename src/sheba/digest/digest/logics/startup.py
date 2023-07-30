@@ -120,6 +120,10 @@ async def init_protocols():
                     'imaging-CT מוח',
                     'imaging-CTA פרוטוקול פרפוזיה כולל מח ואנגיו צוואר ומוח'
                 ]
+    HGB_KEYS = ['lab-100109497']
+    CRP_KEYS = ['lab-120104016']
+    WBC_KEYS = ['lab-100109500']
+
     requests.post(f'{config.dal_url}/config/set', json={
         'key': 'protocols',
         'version': 1,
@@ -130,11 +134,11 @@ async def init_protocols():
             ],
             'סינקופה': [
                 {'name': 'טרופונין', 'default': '-', 'key': 'lab-1', 'keys': TRPONIN_KEYS},
-                {'name': 'HGB', 'default': '-', 'key': 'lab-2', 'keys': ['lab-100109497']},
+                {'name': 'HGB', 'default': '-', 'key': 'lab-2', 'keys': HGB_KEYS},
             ],
             'חום': [
-                {'name': 'CRP', 'default': '-', 'key': 'lab-1', 'keys': ['lab-120104016']},
-                {'name': 'WBC', 'default': '-', 'key': 'lab-2', 'keys': ['lab-100109500']},
+                {'name': 'CRP', 'default': '-', 'key': 'lab-1', 'keys': CRP_KEYS},
+                {'name': 'WBC', 'default': '-', 'key': 'lab-2', 'keys': WBC_KEYS},
                 {'name': 'לקטט', 'default': '-', 'key': 'lab-3', 'keys': ['lab-150108685']},
             ],
             'תלונה נוירולוגית': [
@@ -145,16 +149,33 @@ async def init_protocols():
                 {'name': 'צילום אגן', 'default': 'לא הוזמן', 'key': 'img-2', 'keys': ['imaging-צילום אגן/אגן וירך']},
                 {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-3', 'keys': CXR_KEYS},
             ],
+            'דימום מדרכי עיכול': [
+                {'name': 'המוגלובין', 'default': '-', 'key': 'lab-1', 'keys': HGB_KEYS + ['lab-100107943']},
+            ],
             'לאחר פרכוס': [
                 {'name': 'CT מוח', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': HCT_KEYS},
                 {'name': 'Total CPK', 'default': '-', 'key': 'lab-1', 'keys': ['lab-100182550']},
             ],
             'קוצר נשימה': [
-                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-3', 'keys': CXR_KEYS},
+                {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': CXR_KEYS},
                 {'name': 'pco2', 'default': '-', 'key': 'lab-1', 'keys': ['lab-152808699']},
                 {'name': 'ph', 'default': '-', 'key': 'lab-2', 'keys': ['lab-152808700']},
                 {'name': 'hco3', 'default': '-', 'key': 'lab-3', 'keys': ['lab-152808697']},
-                {'name': 'טרופונין', 'default': '-', 'key': 'lab-4', 'keys': TRPONIN_KEYS}
+                {'name': 'טרופונין', 'default': '-', 'key': 'lab-4', 'keys': TRPONIN_KEYS},
+            ],
+            'סחרחורת': [
+                {'name': 'CT מוח', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': HCT_KEYS},
+                {'name': 'HGB', 'default': '-', 'key': 'lab-1', 'keys': HGB_KEYS},
+            ],
+            'תלונות לאחר ניתוח': [
+                {'name': 'WBC', 'default': '-', 'key': 'lab-1', 'keys': WBC_KEYS},
+                {'name': 'CRP', 'default': '-', 'key': 'lab-2', 'keys': CRP_KEYS},
+                {'name': 'HGB', 'default': '-', 'key': 'lab-3', 'keys': HGB_KEYS},
+            ],
+            'כאבי ראש': [
+                {'name': 'CT מוח', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': HCT_KEYS},
+                {'name': 'WBC', 'default': '-', 'key': 'lab-1', 'keys': WBC_KEYS},
+                {'name': 'CRP', 'default': '-', 'key': 'lab-2', 'keys': CRP_KEYS},
             ],
         }
     }).raise_for_status()
