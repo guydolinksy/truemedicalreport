@@ -56,13 +56,12 @@ class MedicalDal:
         update = json_to_dot_notation(new)
         unset_update = json_to_dot_notation(delete)
         old = None
-        old_full = None
 
         for i in range(max_retries):
             old_full = await collection.find_one(query)
             old = json_to_dot_notation(klass(**old_full).dict(include=set(new), exclude_unset=True)) if old_full else {}
 
-            if all(k in old and update[k] == old[k] for k in update) or unset_update:
+            if all(k in old and update[k] == old[k] for k in update) and not unset_update:
                 return
             try:
                 update_result = await collection.update_one({**query, **old}, {"$set": update, "$unset": unset_update},
