@@ -143,7 +143,7 @@ class MedicalDal:
             AwaitingTypes.laboratory.value: "בדיקות מעבדה",
             AwaitingTypes.referral.value: "הפניות וייעוצים",
         }
-        awaitings, doctors, treatments, waiting_intake = {}, {}, {}, 0
+        awaitings, doctors, treatments, waiting_intake = {}, {}, {}, []
         patients = await self.get_wing_patients(department, wing)
         for patient in patients:
             for awaiting in patient.awaiting:
@@ -156,7 +156,7 @@ class MedicalDal:
                 doctors.setdefault(doctor, []).append(patient.oid)
 
             if await self.is_patient_wait_intake(patient):
-                waiting_intake += 1
+                waiting_intake.append(patient.oid)
             if patient.treatment.destination:
                 treatments.setdefault(patient.treatment.destination, []).append(patient.oid)
 
@@ -239,7 +239,7 @@ class MedicalDal:
                 ),
                 WingFilter(
                     key='waiting-intake',
-                    count=waiting_intake,
+                    count=len(waiting_intake),
                     title="אחות ממיינת",
                     icon="awaiting",
                     valid=False
@@ -262,7 +262,8 @@ class MedicalDal:
                 + [
                     ("awaiting", list(awaiting_total)),
                     ("not-awaiting", list({p.oid for p in patients} - awaiting_total)),
-                ]
+                ] +
+                [("waiting-intake", waiting_intake)]
             ),
         )
 
