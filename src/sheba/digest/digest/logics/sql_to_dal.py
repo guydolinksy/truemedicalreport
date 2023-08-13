@@ -14,7 +14,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from common.data_models.admission import Admission
-from common.data_models.discussion import Note
+from common.data_models.discussion import Note, Discussion
 from common.data_models.esi_score import ESIScore
 from common.data_models.image import ImagingStatus, Image
 from common.data_models.labs import Laboratory, LabStatus, LabCategory
@@ -149,6 +149,7 @@ class SqlToDal(object):
                         intake=Intake(
                             complaint=row["MainCause"],
                         ),
+                        discussion=Discussion(),
                         lab_link=SHEBA_LABS_LINK.format(patient=row["PatientID"]),
                         medical_summary_link=format_medical_summary_link(
                             unit=row["Unit"],
