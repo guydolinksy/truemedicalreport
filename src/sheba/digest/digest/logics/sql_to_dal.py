@@ -220,8 +220,6 @@ class SqlToDal(object):
             self._merge_ris_chameleon_imaging(accessions, imaging)
 
             for image in imaging:
-                logger.debug(
-                    f"Load Imaging for {image.patient_id} - Accession '{image.external_id}' - '{image.dict()}'")
                 patients_imagings.setdefault(image.patient_id, []).append(image.dict(exclude_unset=True))
 
             res = requests.post(f'{self.dal_url}/departments/{department.name}/imaging',
@@ -302,7 +300,6 @@ class SqlToDal(object):
                         msg = f"Lab from category '{row['OrderNumber']}' isn't exists in internal mapping " \
                               f"for medical record {row['MedicalRecord']}"
                         capture_message(msg, level="warning")
-                        logger.error(msg)
             self._merge_autodb_chameleon_labs(orders)
             with self.session() as session:
                 for row in session.execute(sql_statements.query_lab_results.format(unit=department.value)):
@@ -330,14 +327,9 @@ class SqlToDal(object):
         if row["ResultTime"] is None:
             status = LabStatus.ordered
             result_at = None
-            logger.info(
-                f"current: {datetime.datetime.utcnow()} - order: {utils.datetime_utc_serializer(row['OrderDate'])} - status: {status} - lab:{row['Row_ID']}")
-
         else:
             status = LabStatus.analyzed
             result_at = utils.datetime_utc_serializer(row["ResultTime"])
-            logger.info(
-                f"current: {datetime.datetime.utcnow()} - result: {result_at} - status: {status} -  lab:{row['Row_ID']}")
 
         ordered_at = utils.datetime_utc_serializer(row["OrderDate"])
         category = row["Category"].strip()
@@ -368,16 +360,22 @@ class SqlToDal(object):
                         subject=row['Subject'],
                         content=row['MedicalText'],
                         by=f'{row["Title"]} {row["FirstName"]} {row["LastName"]}',
-                        at=row['NoteDate'],
+                        at=utils.datetime_utc_serializer(row['NoteDate']),
                     ))
             res = requests.post(
                 f'{self.dal_url}/departments/{department.name}/discussion',
-                json={'notes': {record: {id_:note.dict(exclude_unset=True) for id_,note in notes[record].items()} for record in notes}}
+                json={'notes': {record: {id_: note.dict(exclude_unset=True) for id_, note in notes[record].items()} for
+                                record in notes}}
             )
             res.raise_for_status()
-            return {'notes': {record: {id_:note.dict(exclude_unset=True) for id_,note in notes[record].items()} for record in notes}}
+            return {
+                'notes': {record: {id_: note.dict(exclude_unset=True) for id_, note in notes[record].items()} for record
+                          in notes}}
         except HTTPError:
             logger.exception('Could not run doctor notes handler.')
+            return {
+                'notes': {record: {id_: note.dict(exclude_unset=True) for id_, note in notes[record].items()} for record
+                          in notes}}
 
     def update_doctor_intake(self, department: Departments):
         try:
