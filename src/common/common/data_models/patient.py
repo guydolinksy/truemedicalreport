@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from .admission import Admission
 from .awaiting import Awaiting, AwaitingTypes
+from .discussion import Discussion
 from .esi_score import ESIScore
 from .event import Event
 from .image import Image
@@ -34,6 +35,7 @@ class ExternalPatient(BaseModel):
     esi: ESIScore = ESIScore()
     admission: Admission = Admission()
     intake: Intake = Intake()
+    discussion: Discussion = Discussion()
     treatment: Treatment = Treatment()
     lab_link: Optional[str]
     medical_summary_link: Optional[str]

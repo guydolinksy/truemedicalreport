@@ -94,7 +94,7 @@ class LabCategory(BaseModel):
 
     @property
     def key(self):
-        return f"{self.category}-{self.ordered_at.replace('.', '-').replace(':', '-')}"
+        return f"{self.category}-{self.ordered_at.replace('.', '-').replace(':', '-').replace('+', '-')}"
 
     @property
     def query_key(self):

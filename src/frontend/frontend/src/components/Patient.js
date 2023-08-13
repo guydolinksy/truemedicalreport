@@ -203,6 +203,11 @@ export const PatientWarning = ({patient, warning, index, style}) => {
 
 const PatientFooter = ({patient}) => {
     const {value} = useContext(patientDataContext.context);
+    const notes = value.discussion.notes || {};
+    const subjectNotes = Object.assign({}, ...value.referrals.map(ref => ({
+        [ref.to]: notes.find(note => note.subject === ref.to) || undefined
+    }))); // TODO
+    const unpairedNotes = Object.values(notes); // TODO
     return (
         <div style={{display: "flex", flexDirection: "column"}}>
             <div style={{display: "flex", justifyContent: "space-between", padding: "8px 12px"}}>
@@ -231,11 +236,22 @@ const PatientFooter = ({patient}) => {
                 {value.referrals.length > 0 &&
                     <div style={{display: "flex", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
                         {value.referrals.filter(ref => !ref.completed).map((ref, index) =>
-                            <Tooltip overlay={ref.to}>
+                            <Tooltip overlay={subjectNotes[ref.to] ? <div>
+                                <div>{ref.to} (<Moment date={subjectNotes[ref.to].at}/>):</div>
+                                <div>{subjectNotes[ref.to].content}</div>
+                            </div> : ref.to}>
                                 <div style={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
                                     {index !== 0 ? ',' : ''}{ref.to}
                                 </div>
                             </Tooltip>)}
+                    </div>}
+                {unpairedNotes.length &&
+                    <div>
+                        <Tooltip overlay={"TODO"} >
+                            <div>
+                                +
+                            </div>
+                        </Tooltip>
                     </div>}
             </div>}
         </div>)

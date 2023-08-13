@@ -13,6 +13,7 @@ from pymongo.errors import DuplicateKeyError
 from common.data_models.awaiting import Awaiting, AwaitingTypes
 from common.data_models.event import Event
 from common.data_models.image import Image, ImagingStatus, ImagingTypes
+from common.data_models.intake import Note
 from common.data_models.labs import LabCategory, LabStatus
 from common.data_models.measures import Measure, MeasureType, FullMeasures, Latest, ExpectedEffect, MeasureEffect
 from common.data_models.medicine import Medicine
@@ -688,6 +689,18 @@ class MedicalDal:
 
         await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"intake", "awaiting"}, exclude_unset=True)
+        )
+
+    async def upsert_discussion(self, patient_id: str, notes: List[Note]):
+        patient = await self.get_patient({"external_id": patient_id})
+
+        updated = patient.copy()
+        for note in notes:
+            if updated.discussion.notes[note.by] and updated.discussion.notes[note.by].at_ < note.at_:
+                updated.discussion.notes[note.by] = note
+
+        await self.atomic_update_patient(
+            {"_id": ObjectId(patient.oid)}, updated.dict(include={"discussion"}, exclude_unset=True)
         )
 
     async def get_medicine_effects(self) -> Dict[str, List[ExpectedEffect]]:
