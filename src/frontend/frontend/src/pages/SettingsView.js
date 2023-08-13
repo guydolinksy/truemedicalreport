@@ -5,6 +5,7 @@ import {loginContext, LoginRequired} from "../components/LoginContext";
 import {ChangePasswordCard} from "../components/settings/ChangePasswordCard";
 import {AuthenticationCard} from "../components/settings/AuthenticationCard";
 import {DisplayCard} from "../components/settings/DisplayCard";
+import {DepartmentItemsCard} from "../components/settings/DepartmentItemsCard";
 
 const {Header, Content} = Layout;
 
@@ -27,6 +28,7 @@ export const SettingsView = () => {
                 }}>
                     {user && user.canChangePassword && <ChangePasswordCard/>}
                     {user && <DisplayCard/>}
+                    {user && <DepartmentItemsCard/>}
                     {user && user.is_admin && <AuthenticationCard/>}
                 </Col>
             </Content>

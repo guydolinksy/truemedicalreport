@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from pymongo.errors import DuplicateKeyError
 
 from common.data_models.awaiting import Awaiting, AwaitingTypes
+from common.data_models.discussion import Note
 from common.data_models.event import Event
 from common.data_models.image import Image, ImagingStatus, ImagingTypes
 from common.data_models.labs import LabCategory, LabStatus
