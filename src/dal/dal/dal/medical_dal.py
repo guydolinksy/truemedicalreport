@@ -13,7 +13,7 @@ from pymongo.errors import DuplicateKeyError
 from common.data_models.awaiting import Awaiting, AwaitingTypes
 from common.data_models.event import Event
 from common.data_models.image import Image, ImagingStatus, ImagingTypes
-from common.data_models.intake import Note
+from common.data_models.discussion import Note
 from common.data_models.labs import LabCategory, LabStatus
 from common.data_models.measures import Measure, MeasureType, FullMeasures, Latest, ExpectedEffect, MeasureEffect
 from common.data_models.medicine import Medicine
