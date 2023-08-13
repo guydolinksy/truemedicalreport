@@ -1,7 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="TMR Sheba" type="CompoundRunConfigurationType">
     <toRun name="Local for Dev [sheba]" type="docker-deploy" />
-    <toRun name="frontend" type="js.build_tools.npm" />
     <toRun name="backend" type="PythonConfigurationType" />
     <toRun name="dal" type="PythonConfigurationType" />
     <toRun name="digest [sheba]" type="PythonConfigurationType" />
