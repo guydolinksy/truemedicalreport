@@ -225,7 +225,7 @@ order by o.ENTRY_TIME
 
 query_doctor_notes = """
 Select  dfu.Subject
-,dfu.Description_Text as Text
+,dfu.Description_Text as MedicalText
 ,dfu.Entry_Date as NoteDate
 ,dfu.DailyFollowUp_ID as FollowUpID
 ,dfu.[Medical_Record] AS MedicalRecord
