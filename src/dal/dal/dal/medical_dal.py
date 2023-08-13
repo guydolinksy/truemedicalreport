@@ -710,13 +710,13 @@ class MedicalDal:
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"intake", "awaiting"}, exclude_unset=True)
         )
 
-    async def upsert_discussion(self, patient_id: str, notes: List[Note]):
+    async def upsert_discussion(self, patient_id: str, notes: Dict[str,Note]):
         patient = await self.get_patient({"external_id": patient_id})
 
         updated = patient.copy()
-        for note in notes:
-            if updated.discussion.notes[note.by] and updated.discussion.notes[note.by].at_ < note.at_:
-                updated.discussion.notes[note.by] = note
+        for id_,note in notes.items():
+            if updated.discussion.notes.get(id_) and updated.discussion.notes.get(id_).at_ < note.at_:
+                updated.discussion.notes[id_] = note
 
         await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"discussion"}, exclude_unset=True)

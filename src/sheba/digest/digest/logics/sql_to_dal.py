@@ -75,7 +75,6 @@ SHEBA_MEASUREMENT_MAXIMUMS = {
     MeasureType.saturation: 100,
 }
 
-
 SHEBA_IMAGING_LINK = f'{config.care_stream_url}&accession_number={{accession_number}}'
 SHEBA_LABS_LINK = f'{config.chameleon_url}/Chameleon/Asp/Records/LabResults_Modal?Patient={{patient}}'
 
@@ -365,18 +364,18 @@ class SqlToDal(object):
             notes = {}
             with self.session() as session:
                 for row in session.execute(sql_statements.query_doctor_notes.format(unit=department.value)):
-                    notes.setdefault(row['MedicalRecord'], {}).setdefault(row['Physician'], []).append(Note(
+                    notes.setdefault(row['MedicalRecord'], {}).__setitem__(row['FollowUpID'], Note(
                         subject=row['Subject'],
                         content=row['MedicalText'],
-                        by=row['Physician'],
-                        at=row['DocumentingTime'],
+                        by=f'{row["Title"]} {row["FirstName"]} {row["LastName"]}',
+                        at=row['NoteDate'],
                     ))
             res = requests.post(
                 f'{self.dal_url}/departments/{department.name}/discussion',
-                json={'notes': {record: [note.dict(exclude_unset=True) for note in notes[record]] for record in notes}}
+                json={'notes': {record: {id_:note.dict(exclude_unset=True) for id_,note in notes[record].items()} for record in notes}}
             )
             res.raise_for_status()
-            return {'notes': {record: [note.dict(exclude_unset=True) for note in notes[record]] for record in notes}}
+            return {'notes': {record: {id_:note.dict(exclude_unset=True) for id_,note in notes[record].items()} for record in notes}}
         except HTTPError:
             logger.exception('Could not run doctor notes handler.')
 

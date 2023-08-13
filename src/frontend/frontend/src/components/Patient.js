@@ -205,7 +205,7 @@ const PatientFooter = ({patient}) => {
     const {value} = useContext(patientDataContext.context);
     const notes = value.discussion.notes || {};
     const subjectNotes = Object.assign({}, ...value.referrals.map(ref => ({
-        [ref.to]: notes.find(note => note.subject === ref.to) || undefined
+        [ref.to]: Object.values(notes).find(note => note.subject === ref.to) || undefined
     }))); // TODO
     const unpairedNotes = Object.values(notes); // TODO
     return (
