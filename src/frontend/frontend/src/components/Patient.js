@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useRef, useState} from "react";
-import {Badge, Button, Card, Carousel, Empty, List, Popover, Space, Spin, Tooltip} from "antd";
+import {Badge, Button, Card, Carousel, Empty, List, notification, Popover, Space, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle, faWarning,} from "@fortawesome/free-solid-svg-icons";
 import {ArrowLeftOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
@@ -314,6 +314,22 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
         <span><CustomIcon status={status} icon={type}/></span>
     </Tooltip>
 }
+export const handleCopyToClipboard = (event,text) => {
+    event.stopPropagation()
+    try {
+      navigator.clipboard.writeText(text);
+      openNotification('success', 'תעודת הזהות הועתקה');
+    } catch (err) {
+      openNotification('error', 'קרתה תקלה בהעתקת תעודת הזהות');
+    }
+  };
+
+ export const openNotification = (type, message) => {
+    notification[type]({
+      message: message,
+      duration: 3, // Display duration in seconds
+    });
+  }
 
 const PatientHeader = ({patient, avatar}) => {
     const {value} = useContext(patientDataContext.context);
@@ -323,7 +339,10 @@ const PatientHeader = ({patient, avatar}) => {
     return <span className={`gender-${value.info.gender}`}>
         {avatar || value.admission.bed || <UserOutlined/>}&nbsp;
         {!user.anonymous && <span>
-            <Tooltip overlay={`ת.ז. ${value.info.id_ || 'לא ידוע'}`}>{value.info.name}</Tooltip>,&nbsp;
+            <Tooltip overlay={<div onClick={(event) => handleCopyToClipboard(event,value.info.id_)}>
+                    {`ת.ז. ${value.info.id_ || 'לא ידוע'}`}
+                </div>}>
+                {value.info.name}</Tooltip>,&nbsp;
         </span>}
         <PatientAge patient={patient}/>
     </span>
