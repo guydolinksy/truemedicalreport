@@ -149,7 +149,6 @@ class SqlToDal(object):
                         intake=Intake(
                             complaint=row["MainCause"],
                         ),
-                        discussion=Discussion(),
                         lab_link=SHEBA_LABS_LINK.format(patient=row["PatientID"]),
                         medical_summary_link=format_medical_summary_link(
                             unit=row["Unit"],

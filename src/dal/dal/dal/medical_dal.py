@@ -13,7 +13,7 @@ from pymongo.errors import DuplicateKeyError
 from common.data_models.awaiting import Awaiting, AwaitingTypes
 from common.data_models.event import Event
 from common.data_models.image import Image, ImagingStatus, ImagingTypes
-from common.data_models.discussion import Note
+from common.data_models.discussion import Note, Discussion
 from common.data_models.labs import LabCategory, LabStatus
 from common.data_models.measures import Measure, MeasureType, FullMeasures, Latest, ExpectedEffect, MeasureEffect
 from common.data_models.medicine import Medicine
@@ -714,6 +714,9 @@ class MedicalDal:
         patient = await self.get_patient({"external_id": patient_id})
 
         updated = patient.copy()
+
+        updated.discussion = Discussion(**updated.discussion.dict())
+
         for id_, note in notes.items():
             if not updated.discussion.notes.get(id_) or updated.discussion.notes.get(id_).at_ < note.at_:
                 updated.discussion.notes[id_] = note
