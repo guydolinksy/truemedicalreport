@@ -105,7 +105,7 @@ const WingStatus = ({department}) => {
             <ul style={{display: 'flex', gap: '0 20px', margin: 0}} className={userSettings.theme}>
                 <Suspense fallback={<span/>}>
                     {userSettings.theme === 'dark-theme' ? <DarkTheme/> : <LightTheme/>}
-                </Suspense>>
+                </Suspense>
                 <Department department={department}/>
             </ul>
         </Modal>
@@ -148,6 +148,7 @@ const WingInner = ({department, wing}) => {
     const [selectedAwaiting, setSelectedAwaiting] = useLocalStorage('selectedAwaiting', []);
     const [selectedDoctors, setSelectedDoctors] = useLocalStorage('selectedDoctors', []);
     const [selectedTreatments, setSelectedTreatments] = useLocalStorage('selectedTreatments', []);
+    const [selectedTime, setSelectedTime] = useLocalStorage('selectedTime', []);
 
     const onInfoError = useCallback(() => {
         flush(true)
@@ -174,6 +175,10 @@ const WingInner = ({department, wing}) => {
     )).filter(({oid}) => !selectedDoctors.filter(
         filter => value.filters.mapping[filter] !== undefined
     ).length || selectedDoctors.find(
+        filter => (value.filters.mapping[filter] || []).includes(oid)
+    )).filter(({oid}) => !selectedTime.filter(
+        filter => value.filters.mapping[filter] !== undefined
+    ).length || selectedTime.find(
         filter => (value.filters.mapping[filter] || []).includes(oid)
     )).sort(sortFunctions[wingSortKey]);
     const unassignedPatients = allPatients.filter(({admission}) => !admission.bed);
@@ -204,6 +209,8 @@ const WingInner = ({department, wing}) => {
                 ).length || selectedTreatments.filter(
                     filter => value.filters.mapping[filter] !== undefined
                 ).length || selectedAwaiting.filter(
+                    filter => value.filters.mapping[filter] !== undefined
+                ).length || selectedTime.filter(
                     filter => value.filters.mapping[filter] !== undefined
                 ).length ?
                     <Patients key={'patients'} patients={allPatients} onError={flush}/> : [

@@ -129,6 +129,10 @@ class MedicalDal:
         return patients
 
     async def get_wing_filters(self, department: str, wing: str) -> WingFilters:
+        def _time_difference(arvl_time):
+            dt = datetime.datetime.fromisoformat(arvl_time)
+            now = datetime.datetime.now(datetime.timezone.utc) + dt.utcoffset()
+            return ((now - dt).total_seconds()) / 3600
         names = {
             AwaitingTypes.doctor.value: "צוות רפואי",
             AwaitingTypes.nurse.value: "צוות סיעודי",
@@ -136,7 +140,7 @@ class MedicalDal:
             AwaitingTypes.laboratory.value: "בדיקות מעבדה",
             AwaitingTypes.referral.value: "הפניות וייעוצים",
         }
-        awaitings, doctors, treatments = {}, {}, {}
+        awaitings, doctors, treatments, time_since_arrival = {}, {}, {}, {}
         patients = await self.get_wing_patients(department, wing)
         for patient in patients:
             for awaiting in patient.awaiting:
@@ -149,6 +153,15 @@ class MedicalDal:
                 doctors.setdefault(doctor, []).append(patient.oid)
             if patient.treatment.destination:
                 treatments.setdefault(patient.treatment.destination, []).append(patient.oid)
+            time_diff = _time_difference(patient.admission.arrival)
+            if time_diff < 1:
+                time_since_arrival.setdefault("0-1", []).append(patient.oid)
+            elif time_diff < 6:
+                time_since_arrival.setdefault("1-6", []).append(patient.oid)
+            elif time_diff < 10:
+                time_since_arrival.setdefault("6-10", []).append(patient.oid)
+            else:
+                time_since_arrival.setdefault("10+", []).append(patient.oid)
         doctor_total = set(p for patients in doctors.values() for p in patients)
         treatment_total = set(p for patients in treatments.values() for p in patients)
         awaiting_total = set(p for keys in awaitings.values() for l in keys.values() for p, _ in l)
@@ -227,6 +240,15 @@ class MedicalDal:
                     valid=False,
                 ),
             ],
+            time_since_arrival= [
+                           WingFilter(
+                               key=".".join(["time_since", time_since.replace('.', '')]),
+                               count=len(patients),
+                               title=f"ממתינים.ות {time_since} שעות",
+                               icon="awaiting"
+                           )
+                           for time_since, patients in time_since_arrival.items()
+                       ],
             mapping=dict(
                 [(".".join(["treatment", treatment]), patients) for treatment, patients in treatments.items()]
                 + [(".".join(["treatment", "ללא"]), list({p.oid for p in patients} - treatment_total))]
@@ -245,6 +267,7 @@ class MedicalDal:
                     ("awaiting", list(awaiting_total)),
                     ("not-awaiting", list({p.oid for p in patients} - awaiting_total)),
                 ]
+                + [(".".join(["time_since", time_since]), patients) for time_since, patients in time_since_arrival.items()]
             ),
         )
 
