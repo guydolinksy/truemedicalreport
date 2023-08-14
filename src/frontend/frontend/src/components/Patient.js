@@ -16,6 +16,7 @@ import {RelativeTime} from "./RelativeTime"
 import {Notification} from "./Notification";
 import {loginContext} from "./LoginContext";
 import "./Patient.css"
+import {Watchable} from "./Watchable";
 
 const {Item} = List;
 export const patientDataContext = createContext({
@@ -60,7 +61,9 @@ const Measure = ({patient, measure, icon, title}) => {
         } : null}>
             <CustomIcon style={{fontSize: 12}} icon={icon}/>&nbsp;
             <span className={(data && !data.is_valid) ? 'error-text' : undefined}>
-                {(data && data.value) ? data.value : '?'}
+                <Watchable watchKey={`measure#${measure}`} updateAt={data ? data.at : null}>
+                    {(data && data.value) ? data.value : '?'}
+                </Watchable>
             </span>{(data && data.effect.kind) && <span>
                 &nbsp;<CustomIcon style={{fontSize: 12}} status={data.is_valid ? 'processing' : 'error'}
                                   icon={data.effect.kind}/>
