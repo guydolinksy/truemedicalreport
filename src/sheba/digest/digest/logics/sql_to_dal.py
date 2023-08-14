@@ -75,7 +75,6 @@ SHEBA_MEASUREMENT_MAXIMUMS = {
     MeasureType.saturation: 100,
 }
 
-
 SHEBA_IMAGING_LINK = f'{config.care_stream_url}&accession_number={{accession_number}}'
 SHEBA_LABS_LINK = f'{config.chameleon_url}/Chameleon/Asp/Records/LabResults_Modal?Patient={{patient}}'
 

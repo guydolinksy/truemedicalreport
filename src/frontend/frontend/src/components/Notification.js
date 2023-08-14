@@ -5,6 +5,7 @@ import {RelativeTime} from "./RelativeTime";
 import useModal from "antd/es/modal/useModal";
 import {iframeModal} from "./modals";
 import {faPlus} from "@fortawesome/free-solid-svg-icons";
+import {Watchable} from "./Watchable";
 
 export const Notification = ({patient, message, unread, markRead, showExternalLink, ...props}) => {
     const {navigate} = useNavigate();
@@ -20,7 +21,9 @@ export const Notification = ({patient, message, unread, markRead, showExternalLi
             e.stopPropagation()
         }} {...props}>
             {unread && <span><Badge status={'processing'}/>&nbsp;</span>}
-            <span className={message.danger ? 'warn-text' : undefined}>{message.message}</span>
+            <Watchable watchKey={`${message.type}#${message.static_id}`} updateAt={message.at}>
+                <span className={message.danger ? 'warn-text' : undefined}>{message.message}</span>
+            </Watchable>
         </a>
         {showExternalLink && iframeModal(modal, faPlus, "צפה.י במערכת חיצונית", message.link)}
         <RelativeTime style={{fontSize: 12}} date={message.at}/>

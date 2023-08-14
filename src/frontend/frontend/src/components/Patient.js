@@ -245,9 +245,9 @@ const PatientFooter = ({patient}) => {
                                 </div>
                             </Tooltip>)}
                     </div>}
-                {unpairedNotes.length &&
+                {unpairedNotes.length > 0 &&
                     <div>
-                        <Tooltip overlay={"TODO"} >
+                        <Tooltip overlay={"TODO"}>
                             <div>
                                 +
                             </div>
@@ -314,22 +314,22 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
         <span><CustomIcon status={status} icon={type}/></span>
     </Tooltip>
 }
-export const handleCopyToClipboard = (event,text) => {
+export const handleCopyToClipboard = (event, text) => {
     event.stopPropagation()
     try {
-      navigator.clipboard.writeText(text);
-      openNotification('success', 'תעודת הזהות הועתקה');
+        navigator.clipboard.writeText(text);
+        openNotification('success', 'תעודת הזהות הועתקה');
     } catch (err) {
-      openNotification('error', 'קרתה תקלה בהעתקת תעודת הזהות');
+        openNotification('error', 'קרתה תקלה בהעתקת תעודת הזהות');
     }
-  };
+};
 
- export const openNotification = (type, message) => {
+export const openNotification = (type, message) => {
     notification[type]({
-      message: message,
-      duration: 3, // Display duration in seconds
+        message: message,
+        duration: 3, // Display duration in seconds
     });
-  }
+}
 
 const PatientHeader = ({patient, avatar}) => {
     const {value} = useContext(patientDataContext.context);
@@ -339,9 +339,9 @@ const PatientHeader = ({patient, avatar}) => {
     return <span className={`gender-${value.info.gender}`}>
         {avatar || value.admission.bed || <UserOutlined/>}&nbsp;
         {!user.anonymous && <span>
-            <Tooltip overlay={<div onClick={(event) => handleCopyToClipboard(event,value.info.id_)}>
-                    {`ת.ז. ${value.info.id_ || 'לא ידוע'}`}
-                </div>}>
+            <Tooltip overlay={<div onClick={(event) => handleCopyToClipboard(event, value.info.id_)}>
+                {`ת.ז. ${value.info.id_ || 'לא ידוע'}`}
+            </div>}>
                 {value.info.name}</Tooltip>,&nbsp;
         </span>}
         <PatientAge patient={patient}/>
@@ -365,7 +365,7 @@ const PatientInner = ({patient, avatar, style}) => {
     if (hash.split('#').length > 2 && hash.split('#')[2] === patient && ref.current)
         ref.current.scrollIntoViewIfNeeded(true);
     return loading ? <Spin/> : <div className={`status-bar status-${value.status || 'unassigned'}`} style={{
-        maxWidth: MAX_WIDTH, minWidth: MIN_WIDTH, ...style
+        maxWidth: MAX_WIDTH, minWidth: MIN_WIDTH, display: 'flex', ...style
     }}>
         <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
             paddingRight: -4, paddingLeft: -4,

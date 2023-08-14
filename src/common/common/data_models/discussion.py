@@ -14,5 +14,6 @@ class Note(BaseModel):
     def at_(self):
         return datetime.datetime.fromisoformat(self.at) if self.at else None
 
+
 class Discussion(BaseModel):
     notes: Dict[str, Note] = {}
