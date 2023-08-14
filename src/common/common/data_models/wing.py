@@ -43,6 +43,7 @@ class WingFilters(BaseModel):
     awaiting: List[WingFilter]
     doctors: List[WingFilter]
     treatments: List[WingFilter]
+    time_since_arrival: List[WingFilter]
     mapping: Dict[str, List[str]]
 
     class Config:
