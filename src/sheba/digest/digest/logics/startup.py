@@ -129,7 +129,7 @@ async def init_protocols():
 
     requests.post(f'{config.dal_url}/config/set', json={
         'key': 'protocols',
-        'version': 1,
+        'version': 2,
         'value': {
             'כאב חזה': [
                 {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': CXR_KEYS},

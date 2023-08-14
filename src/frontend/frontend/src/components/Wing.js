@@ -120,7 +120,7 @@ const Patients = ({patients, onError}) => {
             gridTemplateColumns: `repeat(auto-fill, minmax(${MIN_WIDTH}px, 1fr))`
         }}>
             {patients.map(patient => <Patient key={patient.oid} patient={patient.oid}
-                                              style={{flex: '1', minWidth: MIN_WIDTH}} onError={onError}/>)}
+                                              style={{minWidth: MIN_WIDTH}} onError={onError}/>)}
         </div> : <Empty description={false} image={Empty.PRESENTED_IMAGE_SIMPLE}/>}
     </Card>
 }

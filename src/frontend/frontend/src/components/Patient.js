@@ -16,6 +16,7 @@ import {RelativeTime} from "./RelativeTime"
 import {Notification} from "./Notification";
 import {loginContext} from "./LoginContext";
 import "./Patient.css"
+import {Watchable} from "./Watchable";
 
 const {Item} = List;
 export const patientDataContext = createContext({
@@ -60,7 +61,9 @@ const Measure = ({patient, measure, icon, title}) => {
         } : null}>
             <CustomIcon style={{fontSize: 12}} icon={icon}/>&nbsp;
             <span className={(data && !data.is_valid) ? 'error-text' : undefined}>
-                {(data && data.value) ? data.value : '?'}
+                <Watchable watchKey={`measure#${measure}`} updateAt={data ? data.at : null}>
+                    {(data && data.value) ? data.value : '?'}
+                </Watchable>
             </span>{(data && data.effect.kind) && <span>
                 &nbsp;<CustomIcon style={{fontSize: 12}} status={data.is_valid ? 'processing' : 'error'}
                                   icon={data.effect.kind}/>
@@ -205,7 +208,7 @@ const PatientFooter = ({patient}) => {
     const {value} = useContext(patientDataContext.context);
     const notes = value.discussion.notes || {};
     const subjectNotes = Object.assign({}, ...value.referrals.map(ref => ({
-        [ref.to]: notes.find(note => note.subject === ref.to) || undefined
+        [ref.to]: Object.values(notes).find(note => note.subject === ref.to) || undefined
     }))); // TODO
     const unpairedNotes = Object.values(notes); // TODO
     return (
@@ -245,9 +248,9 @@ const PatientFooter = ({patient}) => {
                                 </div>
                             </Tooltip>)}
                     </div>}
-                {unpairedNotes.length &&
+                {unpairedNotes.length > 0 &&
                     <div>
-                        <Tooltip overlay={"TODO"} >
+                        <Tooltip overlay={"TODO"}>
                             <div>
                                 +
                             </div>
@@ -314,22 +317,22 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
         <span><CustomIcon status={status} icon={type}/></span>
     </Tooltip>
 }
-export const handleCopyToClipboard = (event,text) => {
+export const handleCopyToClipboard = (event, text) => {
     event.stopPropagation()
     try {
-      navigator.clipboard.writeText(text);
-      openNotification('success', 'תעודת הזהות הועתקה');
+        navigator.clipboard.writeText(text);
+        openNotification('success', 'תעודת הזהות הועתקה');
     } catch (err) {
-      openNotification('error', 'קרתה תקלה בהעתקת תעודת הזהות');
+        openNotification('error', 'קרתה תקלה בהעתקת תעודת הזהות');
     }
-  };
+};
 
- export const openNotification = (type, message) => {
+export const openNotification = (type, message) => {
     notification[type]({
-      message: message,
-      duration: 3, // Display duration in seconds
+        message: message,
+        duration: 3, // Display duration in seconds
     });
-  }
+}
 
 const PatientHeader = ({patient, avatar}) => {
     const {value} = useContext(patientDataContext.context);
@@ -339,9 +342,9 @@ const PatientHeader = ({patient, avatar}) => {
     return <span className={`gender-${value.info.gender}`}>
         {avatar || value.admission.bed || <UserOutlined/>}&nbsp;
         {!user.anonymous && <span>
-            <Tooltip overlay={<div onClick={(event) => handleCopyToClipboard(event,value.info.id_)}>
-                    {`ת.ז. ${value.info.id_ || 'לא ידוע'}`}
-                </div>}>
+            <Tooltip overlay={<div onClick={(event) => handleCopyToClipboard(event, value.info.id_)}>
+                {`ת.ז. ${value.info.id_ || 'לא ידוע'}`}
+            </div>}>
                 {value.info.name}</Tooltip>,&nbsp;
         </span>}
         <PatientAge patient={patient}/>
@@ -365,7 +368,7 @@ const PatientInner = ({patient, avatar, style}) => {
     if (hash.split('#').length > 2 && hash.split('#')[2] === patient && ref.current)
         ref.current.scrollIntoViewIfNeeded(true);
     return loading ? <Spin/> : <div className={`status-bar status-${value.status || 'unassigned'}`} style={{
-        maxWidth: MAX_WIDTH, minWidth: MIN_WIDTH, ...style
+        maxWidth: MAX_WIDTH, minWidth: MIN_WIDTH, display: 'flex', ...style
     }}>
         <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
             paddingRight: -4, paddingLeft: -4,
