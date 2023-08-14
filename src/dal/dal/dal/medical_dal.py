@@ -13,7 +13,7 @@ from pymongo.errors import DuplicateKeyError
 from common.data_models.awaiting import Awaiting, AwaitingTypes
 from common.data_models.event import Event
 from common.data_models.image import Image, ImagingStatus, ImagingTypes
-from common.data_models.discussion import Note
+from common.data_models.discussion import Note, Discussion
 from common.data_models.labs import LabCategory, LabStatus
 from common.data_models.measures import Measure, MeasureType, FullMeasures, Latest, ExpectedEffect, MeasureEffect
 from common.data_models.medicine import Medicine
@@ -128,6 +128,13 @@ class MedicalDal:
         ]
         return patients
 
+    async def is_patient_wait_intake(self, patient):
+        measures = []
+        for measure in patient.measures.dict().values():
+            # check if all the values of measure is null
+            measures.append(True) if not measure["value"] else measures.append(False)
+        return all(measures) and not patient.intake.complaint
+
     async def get_wing_filters(self, department: str, wing: str) -> WingFilters:
         names = {
             AwaitingTypes.doctor.value: "צוות רפואי",
@@ -136,7 +143,7 @@ class MedicalDal:
             AwaitingTypes.laboratory.value: "בדיקות מעבדה",
             AwaitingTypes.referral.value: "הפניות וייעוצים",
         }
-        awaitings, doctors, treatments = {}, {}, {}
+        awaitings, doctors, treatments, waiting_intake = {}, {}, {}, []
         patients = await self.get_wing_patients(department, wing)
         for patient in patients:
             for awaiting in patient.awaiting:
@@ -147,8 +154,12 @@ class MedicalDal:
                         ).append([patient.oid, patient.awaiting[awaiting][key].since])
             for doctor in patient.treatment.doctors:
                 doctors.setdefault(doctor, []).append(patient.oid)
+
+            if await self.is_patient_wait_intake(patient):
+                waiting_intake.append(patient.oid)
             if patient.treatment.destination:
                 treatments.setdefault(patient.treatment.destination, []).append(patient.oid)
+
         doctor_total = set(p for patients in doctors.values() for p in patients)
         treatment_total = set(p for patients in treatments.values() for p in patients)
         awaiting_total = set(p for keys in awaitings.values() for l in keys.values() for p, _ in l)
@@ -226,6 +237,13 @@ class MedicalDal:
                     icon="awaiting",
                     valid=False,
                 ),
+                WingFilter(
+                    key='waiting-intake',
+                    count=len(waiting_intake),
+                    title="אחות ממיינת",
+                    icon="awaiting",
+                    valid=False
+                )
             ],
             mapping=dict(
                 [(".".join(["treatment", treatment]), patients) for treatment, patients in treatments.items()]
@@ -244,7 +262,8 @@ class MedicalDal:
                 + [
                     ("awaiting", list(awaiting_total)),
                     ("not-awaiting", list({p.oid for p in patients} - awaiting_total)),
-                ]
+                ] +
+                [("waiting-intake", waiting_intake)]
             ),
         )
 
@@ -691,13 +710,16 @@ class MedicalDal:
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"intake", "awaiting"}, exclude_unset=True)
         )
 
-    async def upsert_discussion(self, patient_id: str, notes: List[Note]):
+    async def upsert_discussion(self, patient_id: str, notes: Dict[str, Note]):
         patient = await self.get_patient({"external_id": patient_id})
 
         updated = patient.copy()
-        for note in notes:
-            if updated.discussion.notes[note.by] and updated.discussion.notes[note.by].at_ < note.at_:
-                updated.discussion.notes[note.by] = note
+
+        updated.discussion = Discussion(**updated.discussion.dict())
+
+        for id_, note in notes.items():
+            if not updated.discussion.notes.get(id_) or updated.discussion.notes.get(id_).at_ < note.at_:
+                updated.discussion.notes[id_] = note
 
         await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"discussion"}, exclude_unset=True)
