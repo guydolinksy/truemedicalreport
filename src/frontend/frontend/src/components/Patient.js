@@ -368,7 +368,7 @@ const PatientInner = ({patient, avatar, style}) => {
     if (hash.split('#').length > 2 && hash.split('#')[2] === patient && ref.current)
         ref.current.scrollIntoViewIfNeeded(true);
     return loading ? <Spin/> : <div className={`status-bar status-${value.status || 'unassigned'}`} style={{
-        maxWidth: MAX_WIDTH, minWidth: MIN_WIDTH, display: 'flex', ...style
+        maxWidth: MAX_WIDTH, minWidth: MIN_WIDTH, display: 'flex', flexDirection: "column", ...style
     }}>
         <Card ref={ref} type={"inner"} size={"small"} bodyStyle={{padding: 0}} headStyle={{
             paddingRight: -4, paddingLeft: -4,
