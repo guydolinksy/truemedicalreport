@@ -98,7 +98,19 @@ def get_user(user: User = Depends(login_manager), user_settings_=Depends(user_se
             view_only=user.view_only,
             anonymous=user.anonymous,
         ),
-        userSettings=dict(theme=getattr(user_settings_, "display", {}).get("theme", "light-theme")),
+        userSettings=dict(
+            theme=getattr(user_settings_, "display", {}).get("theme", "light-theme"),
+            statistics=getattr(user_settings_, "display", {}).get("statistics", {'default': [
+                ('^physician\\.(?!ללא$).*$', False),
+                ('^treatment\\.(?!ללא$).*$', False),
+                ('^awaiting$', False),
+                ('^awaiting\\.doctor$', False),
+                ('^awaiting\\.nurse$', False),
+                ('^awaiting\\.imaging$', False),
+                ('^awaiting\\.referral$', False),
+                ('^awaiting\\.laboratory\\..*$', False),
+            ]})
+        ),
     )
 
 

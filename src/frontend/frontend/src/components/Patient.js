@@ -376,7 +376,7 @@ const PatientInner = ({patient, avatar, style}) => {
                 `highlight-${matching(['highlight', patient])[0]} 2s ease-out` :
                 undefined
         }} title={<PatientHeader patient={patient} avatar={avatar}/>} style={{
-            margin: 0, borderStyle: patient ? "solid" : "dotted"
+            margin: 0, borderStyle: patient ? "solid" : "dotted", flex: 1,
         }} className={`severity-border severity-${value.severity.value || 0}`} hoverable onClick={() => {
             navigate(`#info#${patient}#basic`);
             trackEvent({category: 'patient', action: 'click-event'});

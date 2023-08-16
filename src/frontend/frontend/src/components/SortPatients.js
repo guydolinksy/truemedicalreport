@@ -63,7 +63,7 @@ export const SortPatients = ({value}) => {
         <Divider style={{marginTop: 10, marginBottom: 10}}/>
         <div style={filterTagsContainerStyle}>
             <b style={{whiteSpace: "nowrap"}}>זמן במיון:</b>
-            {value.filters.time.map(filter => <CheckableTag
+            {value.filters.time_since_arrival.map(filter => <CheckableTag
                 key={filter.key}
                 checked={selectedTime.indexOf(filter.key) > -1}
                 onChange={(checked) => handleTimeFilterChange(filter.key, checked)}
