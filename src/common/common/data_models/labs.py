@@ -94,7 +94,7 @@ class LabCategory(BaseModel):
 
     @property
     def key(self):
-        return f"{self.category}-{self.ordered_at.replace('.', '-').replace(':', '-')}"
+        return f"{self.category}-{self.ordered_at.replace('.', '-').replace(':', '-').replace('+', '-')}"
 
     @property
     def query_key(self):
@@ -148,27 +148,16 @@ class LabCategory(BaseModel):
                 ))
         if res:
             return res
-        if self.status != LabStatus.analyzed.value:
+        if self.status != LabStatus.analyzed.value or not fault_laboratory:
             return []
         return [LabsNotification(
             static_id=self.get_instance_id(),
             patient_id=self.patient_id,
             at=max(datetime.datetime.fromisoformat(l.result_at) for l in self.results.values()).isoformat(),
-            message=self._generate_laboratory_message(self.category, out_of_range, fault_laboratory),
+            message=f"תוצאות {self.category} פסולות",
             link=None,  # "Add in the future",
             level=NotificationLevel.abnormal if out_of_range else NotificationLevel.normal,
         )]
-
-    @staticmethod
-    def _generate_laboratory_message(lab_category, out_of_range, fault_laboratory):
-        message = ""
-        if out_of_range:
-            message = f"תוצאות {lab_category} לא תקינות"
-        elif fault_laboratory:
-            message = f"תוצאות {lab_category} פסולות"
-        else:
-            message = f"תוצאות {lab_category} תקינות"
-        return message
 
     def get_updated_warnings(self, warnings: Dict[str, PatientWarning]):
         for id_, lab in self.results.items():

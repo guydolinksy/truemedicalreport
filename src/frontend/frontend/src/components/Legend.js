@@ -1,0 +1,26 @@
+import React, {Suspense} from "react";
+import {DarkTheme, LightTheme} from "../themes/ThemeContext";
+import {Badge} from "antd";
+import {CustomIcon} from "./CustomIcon";
+
+
+export const Legend = ({userSettings}) => {
+    return <div style={{display: "flex", flexDirection: "column", rowGap: 5}} className={userSettings.theme}>
+        <Suspense fallback={<span/>}>
+            {userSettings.theme === 'dark-theme' ? <DarkTheme/> : <LightTheme/>}
+        </Suspense>
+        <div><Badge className={'gender-male'}>ישראל ישראלי</Badge> - זכר</div>
+        <div><Badge className={'gender-female'}>ישראלה ישראלי</Badge> - נקבה</div>
+        <div><Badge className={'border-solid severity-border severity-1'}>דחיפות 1</Badge></div>
+        <div><Badge className={'border-solid severity-border severity-2'}>דחיפות 2</Badge></div>
+        <div><Badge className={'border-solid severity-border severity-3'}>דחיפות 3</Badge></div>
+        <div><Badge className={'border-solid severity-border severity-4'}>דחיפות 4</Badge></div>
+        <div><Badge className={'border-solid severity-border severity-5'}>דחיפות 5</Badge></div>
+        <div><Badge className={'status-bar status-unassigned'}>&nbps;לא שויך.ה רופא.ה</Badge></div>
+        <div><Badge className={'status-bar status-undecided'}>&nbps;שויך.ה רופא.ה אך אין החלטה על יעד</Badge></div>
+        <div><Badge className={'status-bar status-decided'}>&nbps;שויך.ה רופא.ה והוחלט יעד אשפוז/שחרור</Badge></div>
+        <div><CustomIcon status={"error"} icon={"referral"}/> - הפנייה מתעכבת</div>
+        <div><CustomIcon status={"processing"} icon={"laboratory"}/> - מעבדה בעיבוד</div>
+        <div><CustomIcon status={"success"} icon={"imaging"}/> - הדמייה הושלמה או פוענחה</div>
+    </div>
+}

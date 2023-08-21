@@ -19,7 +19,7 @@ import {
     faXRay
 } from "@fortawesome/free-solid-svg-icons";
 import {htmlModal, iframeModal} from "./modals";
-import {patientDataContext, PatientStatus, PatientWarning} from "./Patient";
+import { patientDataContext, PatientStatus, PatientWarning} from "./Patient";
 import {loginContext} from "./LoginContext";
 import {UserTheme} from "../themes/ThemeContext";
 import {hashMatchContext} from "./HashMatch";
@@ -335,8 +335,8 @@ const InternalPatientCard = ({patient, setHeader}) => {
                 <span>בדיקות א.ק.ג</span>
             </div>
         }>
-            {!!value.ecg_record.length
-                ? value.ecg_record.map((record,index) => <EcgRecord record={record} key={index} />)
+            {!!value?.ecg_records?.length
+                ? value.ecg_records.map((record,index) => <EcgRecord record={record} key={index} />)
                 : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'לא הוזמנו בדיקות א.ק.ג'}/>
             }
         </Panel>

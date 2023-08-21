@@ -87,6 +87,17 @@ def update_treatment(department: Departments, dal: SqlToDal = Depends(dal_update
 @register(period=datetime.timedelta(seconds=60), start_immediately=True)
 @safe(logger)
 @inject_dependencies(department=Departments.er)
+@updater_router.post("/doctor_notes", status_code=http.HTTPStatus.ACCEPTED)
+def update_doctor_notes(department: Departments, dal: SqlToDal = Depends(dal_updater)):
+    logger.debug("Update Doctor Notes...")
+    res = dal.update_doctor_notes(department=department)
+    logger.debug("Done.")
+    return res
+
+
+@register(period=datetime.timedelta(seconds=60), start_immediately=True)
+@safe(logger)
+@inject_dependencies(department=Departments.er)
 @updater_router.post("/doctor_intake", status_code=http.HTTPStatus.ACCEPTED)
 def update_doctor_intake(department: Departments, dal: SqlToDal = Depends(dal_updater)):
     logger.debug("Update Doctor Intake Info...")

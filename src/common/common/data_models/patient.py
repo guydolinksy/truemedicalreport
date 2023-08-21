@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from .admission import Admission
 from .awaiting import Awaiting, AwaitingTypes
 from .ecg_record import ECGRecord
+from .discussion import Discussion
 from .esi_score import ESIScore
 from .event import Event
 from .image import Image
@@ -35,10 +36,11 @@ class ExternalPatient(BaseModel):
     esi: ESIScore = ESIScore()
     admission: Admission = Admission()
     intake: Intake = Intake()
+    discussion: Discussion = Discussion()
     treatment: Treatment = Treatment()
     lab_link: Optional[str]
     medical_summary_link: Optional[str]
-    ecg_record: List[ECGRecord] = []
+    ecg_records: List[ECGRecord] = []
 
 
 class InternalPatient(BaseModel):
@@ -64,11 +66,11 @@ class InternalPatient(BaseModel):
             awaiting={
                 AwaitingTypes.doctor.value: {
                     'exam': Awaiting(subtype='exam', name='בדיקת צוות רפואי', since=patient.admission.arrival or "",
-                                     limit=1500)
+                                     status='לא בוצעה', limit=1500)
                 },
                 AwaitingTypes.nurse.value: {
                     'exam': Awaiting(subtype='exam', name='בדיקת צוות סיעודי', since=patient.admission.arrival or "",
-                                     limit=1500)
+                                     status='לא בוצעה', limit=1500)
                 },
             },
             flagged=False,

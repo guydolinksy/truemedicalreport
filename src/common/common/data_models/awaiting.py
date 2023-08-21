@@ -8,6 +8,7 @@ class Awaiting(BaseModel):
     name: str = 'u'
     since: str = ''
     limit: int = 30
+    status: str = ''
     completed: bool = False
 
     class Config:

@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useRef, useState} from "react";
-import {Badge, Button, Card, Carousel, Empty, List, Popover, Space, Spin, Tooltip} from "antd";
+import {Badge, Button, Card, Carousel, Empty, List, notification, Popover, Space, Spin, Tooltip} from "antd";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle, faWarning,} from "@fortawesome/free-solid-svg-icons";
 import {ArrowLeftOutlined, FlagFilled, UserOutlined} from '@ant-design/icons';
@@ -203,6 +203,11 @@ export const PatientWarning = ({patient, warning, index, style}) => {
 
 const PatientFooter = ({patient}) => {
     const {value} = useContext(patientDataContext.context);
+    const notes = value.discussion.notes || {};
+    const subjectNotes = Object.assign({}, ...value.referrals.map(ref => ({
+        [ref.to]: notes.find(note => note.subject === ref.to) || undefined
+    }))); // TODO
+    const unpairedNotes = Object.values(notes); // TODO
     return (
         <div style={{display: "flex", flexDirection: "column"}}>
             <div style={{display: "flex", justifyContent: "space-between", padding: "8px 12px"}}>
@@ -231,11 +236,22 @@ const PatientFooter = ({patient}) => {
                 {value.referrals.length > 0 &&
                     <div style={{display: "flex", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
                         {value.referrals.filter(ref => !ref.completed).map((ref, index) =>
-                            <Tooltip overlay={ref.to}>
+                            <Tooltip overlay={subjectNotes[ref.to] ? <div>
+                                <div>{ref.to} (<Moment date={subjectNotes[ref.to].at}/>):</div>
+                                <div>{subjectNotes[ref.to].content}</div>
+                            </div> : ref.to}>
                                 <div style={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
                                     {index !== 0 ? ',' : ''}{ref.to}
                                 </div>
                             </Tooltip>)}
+                    </div>}
+                {unpairedNotes.length &&
+                    <div>
+                        <Tooltip overlay={"TODO"} >
+                            <div>
+                                +
+                            </div>
+                        </Tooltip>
                     </div>}
             </div>}
         </div>)
@@ -284,20 +300,36 @@ const PatientAwaitingIcon = ({awaitings, type}) => {
     return <Tooltip key={type} overlay={<div>
         <div><b style={{textDecoration: "underline"}}>{AWAITING_TITLE[type]}</b></div>
         {pending.length > 0 && <div><b>ממתין.ה עבור (דקות):</b></div>}
-        {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, since}, i) =>
+        {pending.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, status, since}, i) =>
             <div key={i}>
-                {name} - <RelativeTime date={since}/>
+                {name} - {status} - <RelativeTime date={since}/>
             </div>
         )}
         {pending.length > 0 && completed.length > 0 && <div><br/></div>}
         {completed.length > 0 && <div><b>הושלמו:</b></div>}
-        {completed.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, since}, i) =>
-            <div key={i}>{name}</div>
+        {completed.sort((a, b) => a.since > b.since ? 1 : -1).map(({name, status, since}, i) =>
+            <div key={i}>{name} - {status}</div>
         )}
     </div>}>
         <span><CustomIcon status={status} icon={type}/></span>
     </Tooltip>
 }
+export const handleCopyToClipboard = (event,text) => {
+    event.stopPropagation()
+    try {
+      navigator.clipboard.writeText(text);
+      openNotification('success', 'תעודת הזהות הועתקה');
+    } catch (err) {
+      openNotification('error', 'קרתה תקלה בהעתקת תעודת הזהות');
+    }
+  };
+
+ export const openNotification = (type, message) => {
+    notification[type]({
+      message: message,
+      duration: 3, // Display duration in seconds
+    });
+  }
 
 const PatientHeader = ({patient, avatar}) => {
     const {value} = useContext(patientDataContext.context);
@@ -307,7 +339,10 @@ const PatientHeader = ({patient, avatar}) => {
     return <span className={`gender-${value.info.gender}`}>
         {avatar || value.admission.bed || <UserOutlined/>}&nbsp;
         {!user.anonymous && <span>
-            <Tooltip overlay={`ת.ז. ${value.info.id_ || 'לא ידוע'}`}>{value.info.name}</Tooltip>,&nbsp;
+            <Tooltip overlay={<div onClick={(event) => handleCopyToClipboard(event,value.info.id_)}>
+                    {`ת.ז. ${value.info.id_ || 'לא ידוע'}`}
+                </div>}>
+                {value.info.name}</Tooltip>,&nbsp;
         </span>}
         <PatientAge patient={patient}/>
     </span>

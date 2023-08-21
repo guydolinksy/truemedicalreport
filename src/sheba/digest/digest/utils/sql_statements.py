@@ -223,6 +223,26 @@ and o.ORDER_NUM in ('{orders}')
 order by o.ENTRY_TIME
 """
 
+query_doctor_notes = """
+SELECT
+    d.[Medical_Record] AS MedicalRecord,
+    d.[Description_Text] AS MedicalText,
+    d.[Entry_Date] AS DocumentingTime,
+    d.[Physician] AS Physician,
+    d.[Subject] AS Subject
+FROM [Chameleon].[dbo].[Descriptions] AS d
+JOIN [Chameleon].[dbo].[EmergancyVisits] AS mr ON d.Medical_Record = mr.Medical_Record
+JOIN [Chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON mr.Medical_Record = rpp.Medical_Record
+WHERE
+    d.Delete_Date IS NULL
+    AND d.Field = 254
+    AND rpp.End_Date IS NULL
+    AND mr.Unit = {unit}
+       AND mr.Delete_Date is null
+       AND mr.Release_Time is null
+       AND d.[Entry_Date] >= mr.Admission_Date
+"""
+
 query_doctor_intake = """
 SELECT
     d.[Medical_Record] AS MedicalRecord,

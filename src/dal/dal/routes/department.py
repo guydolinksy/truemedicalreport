@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Body
 from sentry_sdk import capture_exception, capture_message
 
 from common.data_models.department import Department
+from common.data_models.discussion import Note
 from common.data_models.image import Image
 from common.data_models.labs import LabCategory
 from common.data_models.measures import Measure
@@ -132,6 +133,18 @@ async def update_intake(department: str, intakes: Dict[str, Intake] = Body(..., 
             logger.debug('Cannot update patient {} intake - Patient not found', patient)
         except Exception as e:
             logger.exception(f"update intake failed - intake {intake} patient {patient}")
+
+
+@department_router.post("/{department}/discussion")
+async def update_discussion(department: str, notes: Dict[str, List[Note]] = Body(..., embed=True),
+                            dal: MedicalDal = Depends(medical_dal)):
+    for patient, notes_by_user in notes.items():
+        try:
+            await dal.upsert_discussion(patient, notes_by_user)
+        except PatientNotFound:
+            logger.debug('Cannot update patient {} discussion - Patient not found', patient)
+        except Exception as e:
+            logger.exception(f"update discussion failed - discussion {notes_by_user} patient {patient}")
 
 
 @department_router.post("/{department}/treatments", status_code=http.HTTPStatus.OK)

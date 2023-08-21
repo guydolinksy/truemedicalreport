@@ -14,6 +14,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from common.data_models.admission import Admission
+from common.data_models.discussion import Note
 from common.data_models.esi_score import ESIScore
 from common.data_models.image import ImagingStatus, Image
 from common.data_models.labs import Laboratory, LabStatus, LabCategory
@@ -357,6 +358,27 @@ class SqlToDal(object):
             panic=row["Panic"],
             status=status,
         )
+
+    def update_doctor_notes(self, department: Departments):
+        try:
+            logger.debug('Getting doctor notes for `{}`...', department.name)
+            notes = {}
+            with self.session() as session:
+                for row in session.execute(sql_statements.query_doctor_notes.format(unit=department.value)):
+                    notes.setdefault(row['MedicalRecord'], {}).setdefault(row['Physician'], []).append(Note(
+                        subject=row['Subject'],
+                        content=row['MedicalText'],
+                        by=row['Physician'],
+                        at=row['DocumentingTime'],
+                    ))
+            res = requests.post(
+                f'{self.dal_url}/departments/{department.name}/discussion',
+                json={'notes': {record: [note.dict(exclude_unset=True) for note in notes[record]] for record in notes}}
+            )
+            res.raise_for_status()
+            return {'notes': {record: [note.dict(exclude_unset=True) for note in notes[record]] for record in notes}}
+        except HTTPError:
+            logger.exception('Could not run doctor notes handler.')
 
     def update_doctor_intake(self, department: Departments):
         try:

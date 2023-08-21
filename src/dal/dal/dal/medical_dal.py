@@ -57,13 +57,12 @@ class MedicalDal:
         update = json_to_dot_notation(new)
         unset_update = json_to_dot_notation(delete)
         old = None
-        old_full = None
 
         for i in range(max_retries):
             old_full = await collection.find_one(query)
             old = json_to_dot_notation(klass(**old_full).dict(include=set(new), exclude_unset=True)) if old_full else {}
 
-            if all(k in old and update[k] == old[k] for k in update) or unset_update:
+            if all(k in old and update[k] == old[k] for k in update) and not unset_update:
                 return
             try:
                 update_result = await collection.update_one({**query, **old}, {"$set": update, "$unset": unset_update},
@@ -461,6 +460,7 @@ class MedicalDal:
                     name=imaging.title,
                     since=imaging.ordered_at,
                     completed=self._is_imaging_completed(imaging),
+                    status=imaging.status_text,
                     limit=3600,
                 ),
             )
@@ -499,6 +499,7 @@ class MedicalDal:
                     name=imaging.title,
                     since=imaging.ordered_at,
                     completed=self._is_imaging_completed(imaging),
+                    status=imaging.status_text,
                     limit=3600,
                 ),
             )
@@ -571,6 +572,12 @@ class MedicalDal:
                         name=cat.category_display_name,
                         since=cat.ordered_at,
                         completed=cat.status == LabStatus.analyzed.value,
+                        status={
+                            LabStatus.ordered.value: 'הוזמן',
+                            LabStatus.collected.value: 'שויכו דגימות',
+                            LabStatus.in_progress.value: 'בעבודה',
+                            LabStatus.analyzed.value: 'תוצאות',
+                        }.get(cat.status, '?'),
                         limit=3600,
                     ),
                 )
@@ -611,6 +618,7 @@ class MedicalDal:
                     name=updated_referral.to,
                     since=updated_referral.at,
                     completed=updated_referral.completed,
+                    status='סגורה' if updated_referral.completed else 'פתוחה',
                     limit=3600,
                 ),
             )
@@ -638,6 +646,7 @@ class MedicalDal:
                     name=referral.to,
                     since=referral.at,
                     completed=referral.completed,
+                    status='סגורה' if referral.completed else 'פתוחה',
                     limit=3600,
                 ),
             )
@@ -673,11 +682,25 @@ class MedicalDal:
         updated.intake = intake
         if intake.doctor_seen_time:
             updated.awaiting[AwaitingTypes.doctor.value]["exam"].completed = True
+            updated.awaiting[AwaitingTypes.doctor.value]["exam"].status = 'הושלמה'
         if intake.nurse_description:
             updated.awaiting[AwaitingTypes.nurse.value]["exam"].completed = True
+            updated.awaiting[AwaitingTypes.nurse.value]["exam"].status = 'הושלמה'
 
         await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"intake", "awaiting"}, exclude_unset=True)
+        )
+
+    async def upsert_discussion(self, patient_id: str, notes: List[Note]):
+        patient = await self.get_patient({"external_id": patient_id})
+
+        updated = patient.copy()
+        for note in notes:
+            if updated.discussion.notes[note.by] and updated.discussion.notes[note.by].at_ < note.at_:
+                updated.discussion.notes[note.by] = note
+
+        await self.atomic_update_patient(
+            {"_id": ObjectId(patient.oid)}, updated.dict(include={"discussion"}, exclude_unset=True)
         )
 
     async def get_medicine_effects(self) -> Dict[str, List[ExpectedEffect]]:
@@ -696,6 +719,7 @@ class MedicalDal:
                 subtype="הוראות פעילות",
                 name=f"{medicine.label}-{medicine.dosage}",
                 completed=bool(medicine.given),
+                status='ממתין' if medicine.given else 'ניתן',
                 limit=1500,
             )
             updated.awaiting.setdefault(AwaitingTypes.nurse.value, {}).__setitem__(
