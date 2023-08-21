@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from pymongo.errors import DuplicateKeyError
 
 from common.data_models.awaiting import Awaiting, AwaitingTypes
-from common.data_models.discussion import Note
+from common.data_models.discussion import Note, Discussion
 from common.data_models.event import Event
 from common.data_models.image import Image, ImagingStatus, ImagingTypes
 from common.data_models.labs import LabCategory, LabStatus
@@ -128,7 +128,19 @@ class MedicalDal:
         ]
         return patients
 
+    async def is_patient_wait_intake(self, patient):
+        measures = []
+        for measure in patient.measures.dict().values():
+            # check if all the values of measure is null
+            measures.append(True) if not measure["value"] else measures.append(False)
+        return all(measures) and not patient.intake.complaint
+
     async def get_wing_filters(self, department: str, wing: str) -> WingFilters:
+        def _time_difference(arvl_time):
+            return ((
+                            datetime.datetime.now(tz=pytz.UTC) - datetime.datetime.fromisoformat(arvl_time)
+                    ).total_seconds()) / 3600
+
         names = {
             AwaitingTypes.doctor.value: "צוות רפואי",
             AwaitingTypes.nurse.value: "צוות סיעודי",
@@ -136,7 +148,7 @@ class MedicalDal:
             AwaitingTypes.laboratory.value: "בדיקות מעבדה",
             AwaitingTypes.referral.value: "הפניות וייעוצים",
         }
-        awaitings, doctors, treatments = {}, {}, {}
+        awaitings, doctors, treatments, waiting_intake, time_since_arrival = {}, {}, {}, [], {}
         patients = await self.get_wing_patients(department, wing)
         for patient in patients:
             for awaiting in patient.awaiting:
@@ -147,8 +159,20 @@ class MedicalDal:
                         ).append([patient.oid, patient.awaiting[awaiting][key].since])
             for doctor in patient.treatment.doctors:
                 doctors.setdefault(doctor, []).append(patient.oid)
+
+            if await self.is_patient_wait_intake(patient):
+                waiting_intake.append(patient.oid)
             if patient.treatment.destination:
                 treatments.setdefault(patient.treatment.destination, []).append(patient.oid)
+            time_diff = _time_difference(patient.admission.arrival)
+            if time_diff < 1:
+                time_since_arrival.setdefault("0-1", []).append(patient.oid)
+            elif time_diff < 6:
+                time_since_arrival.setdefault("1-6", []).append(patient.oid)
+            elif time_diff < 10:
+                time_since_arrival.setdefault("6-10", []).append(patient.oid)
+            else:
+                time_since_arrival.setdefault("10+", []).append(patient.oid)
         doctor_total = set(p for patients in doctors.values() for p in patients)
         treatment_total = set(p for patients in treatments.values() for p in patients)
         awaiting_total = set(p for keys in awaitings.values() for l in keys.values() for p, _ in l)
@@ -198,7 +222,7 @@ class MedicalDal:
                     icon="awaiting",
                     children=[
                         WingFilter(
-                            key=awaiting,
+                            key=".".join(['awaiting', awaiting]),
                             count=len(set(p for l in keys.values() for p, _ in l)),
                             icon=awaiting,
                             title=awaiting_name,
@@ -206,7 +230,7 @@ class MedicalDal:
                             duration=average_date([d for l in keys.values() for _, d in l]),
                             children=[
                                 WingFilter(
-                                    key=".".join([awaiting, key]),
+                                    key=".".join(['awaiting', awaiting, key]),
                                     count=len(patients),
                                     title=key_name,
                                     icon=awaiting,
@@ -226,6 +250,22 @@ class MedicalDal:
                     icon="awaiting",
                     valid=False,
                 ),
+                WingFilter(
+                    key='waiting-intake',
+                    count=len(waiting_intake),
+                    title="אחות ממיינת",
+                    icon="awaiting",
+                    valid=False
+                )
+            ],
+            time_since_arrival=[
+                WingFilter(
+                    key=".".join(["time_since", time_since.replace('.', '')]),
+                    count=len(patients),
+                    title=f"ממתינים.ות {time_since} שעות",
+                    icon="awaiting"
+                )
+                for time_since, patients in time_since_arrival.items()
             ],
             mapping=dict(
                 [(".".join(["treatment", treatment]), patients) for treatment, patients in treatments.items()]
@@ -233,17 +273,22 @@ class MedicalDal:
                 + [(".".join(["physician", doctor]), patients) for doctor, patients in doctors.items()]
                 + [(".".join(["physician", "ללא"]), list({p.oid for p in patients} - doctor_total))]
                 + [
-                    (".".join([awaiting, key]), [p for p, _ in patients])
+                    (".".join(['awaiting', awaiting, key]), [p for p, _ in patients])
                     for (awaiting, awaiting_name), keys in awaitings.items()
                     for (key, key_name), patients in keys.items()
                 ]
                 + [
-                    (awaiting, list(set(patient for patients in keys.values() for patient, _ in patients)))
+                    (".".join(['awaiting', awaiting]), list(set(patient for patients in keys.values() for patient, _ in patients)))
                     for (awaiting, awaiting_name), keys in awaitings.items()
                 ]
                 + [
                     ("awaiting", list(awaiting_total)),
                     ("not-awaiting", list({p.oid for p in patients} - awaiting_total)),
+                ] +
+                [("waiting-intake", waiting_intake)]
+                + [
+                    (".".join(["time_since", time_since]), patients)
+                    for time_since, patients in time_since_arrival.items()
                 ]
             ),
         )
@@ -691,13 +736,16 @@ class MedicalDal:
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"intake", "awaiting"}, exclude_unset=True)
         )
 
-    async def upsert_discussion(self, patient_id: str, notes: List[Note]):
+    async def upsert_discussion(self, patient_id: str, notes: Dict[str, Note]):
         patient = await self.get_patient({"external_id": patient_id})
 
         updated = patient.copy()
-        for note in notes:
-            if updated.discussion.notes[note.by] and updated.discussion.notes[note.by].at_ < note.at_:
-                updated.discussion.notes[note.by] = note
+
+        updated.discussion = Discussion(**updated.discussion.dict())
+
+        for id_, note in notes.items():
+            if not updated.discussion.notes.get(id_) or updated.discussion.notes.get(id_).at_ < note.at_:
+                updated.discussion.notes[id_] = note
 
         await self.atomic_update_patient(
             {"_id": ObjectId(patient.oid)}, updated.dict(include={"discussion"}, exclude_unset=True)

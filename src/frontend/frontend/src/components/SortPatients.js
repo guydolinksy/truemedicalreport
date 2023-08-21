@@ -8,6 +8,7 @@ export const SortPatients = ({value}) => {
     const [selectedAwaiting, setSelectedAwaiting] = useLocalStorage('selectedAwaiting', []);
     const [selectedDoctors, setSelectedDoctors] = useLocalStorage('selectedDoctors', []);
     const [selectedTreatments, setSelectedTreatments] = useLocalStorage('selectedTreatments', []);
+    const [selectedTime, setSelectedTime] = useLocalStorage('selectedTime', []);
 
     const toTree = filter => ({
         key: filter.key,
@@ -23,6 +24,11 @@ export const SortPatients = ({value}) => {
     const handleDecisionStatusFilterChange = (tag, checked) => {
         const nextSelectedTags = checked ? [...selectedTreatments, tag] : selectedTreatments.filter((t) => t !== tag);
         setSelectedTreatments(nextSelectedTags);
+    };
+
+    const handleTimeFilterChange = (tag, checked) => {
+        const nextSelectedTags = checked ? [...selectedTime, tag] : selectedTime.filter((t) => t !== tag);
+        setSelectedTime(nextSelectedTags);
     };
 
     const filterTagsContainerStyle = {
@@ -50,6 +56,17 @@ export const SortPatients = ({value}) => {
                 key={filter.key}
                 checked={selectedTreatments.indexOf(filter.key) > -1}
                 onChange={(checked) => handleDecisionStatusFilterChange(filter.key, checked)}
+            >
+                {filter.title}
+            </CheckableTag>)}
+        </div>
+        <Divider style={{marginTop: 10, marginBottom: 10}}/>
+        <div style={filterTagsContainerStyle}>
+            <b style={{whiteSpace: "nowrap"}}>זמן במיון:</b>
+            {value.filters.time_since_arrival.map(filter => <CheckableTag
+                key={filter.key}
+                checked={selectedTime.indexOf(filter.key) > -1}
+                onChange={(checked) => handleTimeFilterChange(filter.key, checked)}
             >
                 {filter.title}
             </CheckableTag>)}

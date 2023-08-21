@@ -19,6 +19,7 @@ from .severity import Severity
 from .status import Status
 from .treatment import Treatment
 from .warnings import PatientWarning
+from .watch import WatchKey
 
 
 class Person(BaseModel):
@@ -53,6 +54,7 @@ class InternalPatient(BaseModel):
     protocol: Protocol = Protocol()
     notifications: List[Notification] = []
     referrals: List[Referral] = []
+    watching: Dict[str, Optional[WatchKey]] = {}
 
     class Config:
         orm_mode = True

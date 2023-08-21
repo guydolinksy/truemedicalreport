@@ -224,23 +224,24 @@ order by o.ENTRY_TIME
 """
 
 query_doctor_notes = """
-SELECT
-    d.[Medical_Record] AS MedicalRecord,
-    d.[Description_Text] AS MedicalText,
-    d.[Entry_Date] AS DocumentingTime,
-    d.[Physician] AS Physician,
-    d.[Subject] AS Subject
-FROM [Chameleon].[dbo].[Descriptions] AS d
-JOIN [Chameleon].[dbo].[EmergancyVisits] AS mr ON d.Medical_Record = mr.Medical_Record
+Select  dfu.Subject
+,dfu.Description_Text as MedicalText
+,dfu.Entry_Date as NoteDate
+,dfu.DailyFollowUp_ID as FollowUpID
+,dfu.[Medical_Record] AS MedicalRecord
+,u.Title
+,u.First_Name as FirstName 
+,u.Last_Name as LastName
+from [Chameleon].[dbo].DailyFollowUp dfu
+JOIN [Chameleon].[dbo].[EmergancyVisits] AS mr ON dfu.Medical_Record = mr.Medical_Record
 JOIN [Chameleon].[dbo].[RoomPlacmentPatient] AS rpp ON mr.Medical_Record = rpp.Medical_Record
-WHERE
-    d.Delete_Date IS NULL
-    AND d.Field = 254
-    AND rpp.End_Date IS NULL
-    AND mr.Unit = {unit}
-       AND mr.Delete_Date is null
-       AND mr.Release_Time is null
-       AND d.[Entry_Date] >= mr.Admission_Date
+JOIN [Chameleon].[dbo].Users as u ON dfu.Entry_User=u.Code
+Where dfu.Delete_Date IS NULL
+and rpp.End_Date IS NULL
+and mr.Unit={unit}
+and mr.Release_Time IS NULL
+and dfu.Entry_Date > mr.Admission_Date
+
 """
 
 query_doctor_intake = """

@@ -30,6 +30,10 @@
     background-color: #000d17;
 }
 
+.dark-theme .status-color.status-processing {
+    color: #002b64;
+}
+
 .dark-theme .status-color.status-success {
     color: #006400;
 }
@@ -44,6 +48,10 @@
 
 .dark-theme .status-color.status-error {
     color: #8b0000;
+}
+
+.light-theme .status-color.status-processing {
+    color: #1890ff;
 }
 
 .light-theme .status-color.status-success {

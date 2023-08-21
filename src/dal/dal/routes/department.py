@@ -136,15 +136,15 @@ async def update_intake(department: str, intakes: Dict[str, Intake] = Body(..., 
 
 
 @department_router.post("/{department}/discussion")
-async def update_discussion(department: str, notes: Dict[str, List[Note]] = Body(..., embed=True),
+async def update_discussion(department: str, notes: Dict[str, Dict[str, Note]] = Body(..., embed=True),
                             dal: MedicalDal = Depends(medical_dal)):
-    for patient, notes_by_user in notes.items():
+    for patient, notes_by_id in notes.items():
         try:
-            await dal.upsert_discussion(patient, notes_by_user)
+            await dal.upsert_discussion(patient, notes_by_id)
         except PatientNotFound:
             logger.debug('Cannot update patient {} discussion - Patient not found', patient)
         except Exception as e:
-            logger.exception(f"update discussion failed - discussion {notes_by_user} patient {patient}")
+            logger.exception(f"update discussion failed - discussion {notes_by_id} patient {patient}")
 
 
 @department_router.post("/{department}/treatments", status_code=http.HTTPStatus.OK)

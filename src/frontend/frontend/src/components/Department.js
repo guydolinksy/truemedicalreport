@@ -1,3 +1,5 @@
+import React, {useContext} from "react";
+import {Card, Col, Row, Spin, Tooltip} from "antd";
 import React from "react";
 import {Button, Card, Col, Row, Spin, Tooltip} from "antd";
 import {generatePath} from "react-router-dom";
@@ -8,6 +10,7 @@ import {useNavigate} from "react-router";
 import {CustomIcon} from "./CustomIcon";
 import Moment from "react-moment";
 import {CloseCircleOutlined} from "@ant-design/icons";
+import {loginContext} from "./LoginContext";
 
 const SHOW_ACTIONS = ['not-awaiting', 'doctor.exam', 'nurse.exam', 'imaging', 'laboratory', 'treatment.ללא'];
 
@@ -15,6 +18,7 @@ const departmentDataContext = createContext(null);
 export const Department = ({department}) => {
     const uri = `/api/departments/${department}`;
     const navigate = useNavigate();
+    const {userSettings} = useContext(loginContext);
 
     return <departmentDataContext.Provider url={uri} defaultValue={{wings: []}}>
         {({loading, value}) => <Row gutter={16}>
@@ -27,11 +31,17 @@ export const Department = ({department}) => {
                     duration: filter.duration,
                     valid: filter.valid,
                 })].concat(...(filter.children || []).map(toActions))
-                console.log({wing})
                 const actions = [].concat(
+                    ...wing.filters.doctors.map(toActions),
                     ...wing.filters.awaiting.map(toActions),
-                    ...wing.filters.treatments.filter(filter => filter.key === 'treatment.ללא')
-                ).filter(({key}) => SHOW_ACTIONS.includes(key) || key.startsWith('referral.')).map(
+                    ...wing.filters.treatments.map(toActions),
+                    ...wing.filters.time_since_arrival.map(toActions),
+                ).filter(({key}) => {
+                    const filters = [].concat(userSettings.statistics[wing.oid] || [], userSettings.statistics.default || []);
+                    if (filters.some(([regex, result]) => result && key.match(regex)))
+                        return true
+                    return !filters.some(([regex, result]) => !result && key.match(regex));
+                }).map(
                     ({count, title, icon, duration, valid}) => <div
                         style={{display:"flex",flexDirection:"column", alignItems:"center", padding:5,border:"1px solid $f0f0f0"}}>
                         <div className="departmentActionItem" style={{alignSelf: "start"}}>{<CloseCircleOutlined />}</div>
