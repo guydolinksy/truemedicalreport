@@ -24,7 +24,7 @@ export const DepartmentItemsCard = () => {
     }, []);
 
     const onFinish = useCallback((values) => {
-        Axios.post('/api/settings/department-items', values).then(() => {
+        Axios.post('/api/settings/statistics', values).then(() => {
             setSuccess(true);
             document.location.reload();
         }).catch(error => {
@@ -57,7 +57,7 @@ export const DepartmentItemsCard = () => {
                     }
                 }))]}>
                     <Checkbox.Group>
-                        {initialValue.map(value=>renderValue(value))}
+                        {!!initialValue?.length && initialValue.map(value=>renderValue(value))}
                     </Checkbox.Group>
                 </Form.Item>
                 <Form.Item>
