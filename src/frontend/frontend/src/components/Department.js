@@ -1,15 +1,29 @@
 import React, {useContext} from "react";
-import {Card, Col, Progress, Row, Spin, Tooltip} from "antd";
+import {Button, Card, Col, Row, Progress, Spin, Tooltip} from "antd";
 import {generatePath} from "react-router-dom";
-
 import {createContext} from "../hooks/DataContext";
 import {WING_URL} from "../pages/WingView";
 import {useNavigate} from "react-router";
 import {CustomIcon} from "./CustomIcon";
 import Moment from "react-moment";
+import {CloseCircleOutlined} from "@ant-design/icons";
 import {loginContext} from "./LoginContext";
+import Axios from "axios";
 
 const SHOW_ACTIONS = ['not-awaiting', 'doctor.exam', 'nurse.exam', 'imaging', 'laboratory', 'treatment.ללא'];
+const hideSetting = (e,setting) => {
+        if (e.stopPropagation) e.stopPropagation();
+    console.log(setting)
+    Axios.post('/api/settings/statistics', {values:setting}).then(() => {
+        console.log("success")
+        document.location.reload();
+        }).catch(error => {
+            if (Axios.isCancel(error))
+                return;
+        console.log("failed")
+        });
+
+}
 
 const departmentDataContext = createContext(null);
 export const Department = ({department, wingId, onOk}) => {
@@ -47,6 +61,7 @@ export const Department = ({department, wingId, onOk}) => {
                             padding: 5,
                             border: "1px solid $f0f0f0"
                         }}>
+                        <div className="departmentActionItem" onClick={(e)=>{hideSetting(e,key)}} style={{alignSelf: "start"}}>{<CloseCircleOutlined />}</div>
                         <div style={{fontSize: 12}}>{title}{icon &&
                             <span>&nbsp;<CustomIcon status={'processing'} icon={icon}/></span>}</div>
                         {![null, undefined].includes(duration) && <div style={{userSelect: "none", fontSize: 14}}>

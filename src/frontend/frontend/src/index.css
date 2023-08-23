@@ -11,6 +11,10 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+.departmentActionItem svg:hover{
+    background-color: #add8e68a;
+    border-radius: 50%;
+}
 
 @keyframes highlight {
     from {
