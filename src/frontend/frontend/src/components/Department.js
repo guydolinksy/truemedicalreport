@@ -1,5 +1,5 @@
 import React, {useContext} from "react";
-import {Card, Col, Row, Spin, Tooltip} from "antd";
+import {Card, Col, Progress, Row, Spin, Tooltip} from "antd";
 import {generatePath} from "react-router-dom";
 
 import {createContext} from "../hooks/DataContext";
@@ -12,7 +12,7 @@ import {loginContext} from "./LoginContext";
 const SHOW_ACTIONS = ['not-awaiting', 'doctor.exam', 'nurse.exam', 'imaging', 'laboratory', 'treatment.ללא'];
 
 const departmentDataContext = createContext(null);
-export const Department = ({department}) => {
+export const Department = ({department, wingId, onOk}) => {
     const uri = `/api/departments/${department}`;
     const navigate = useNavigate();
     const {userSettings} = useContext(loginContext);
@@ -40,7 +40,13 @@ export const Department = ({department}) => {
                     return !filters.some(([regex, result]) => !result && key.match(regex));
                 }).map(
                     ({count, title, icon, duration, valid}) => <div
-                        style={{display:"flex",flexDirection:"column", alignItems:"center", padding:5,border:"1px solid $f0f0f0"}}>
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            padding: 5,
+                            border: "1px solid $f0f0f0"
+                        }}>
                         <div style={{fontSize: 12}}>{title}{icon &&
                             <span>&nbsp;<CustomIcon status={'processing'} icon={icon}/></span>}</div>
                         {![null, undefined].includes(duration) && <div style={{userSelect: "none", fontSize: 14}}>
@@ -52,12 +58,21 @@ export const Department = ({department}) => {
                              style={{userSelect: "none", fontSize: 14}}>{count}</div>
                     </div>
                 );
+                const untreated = (wing.filters.mapping['treatment.ללא'] || []).length,
+                    discharged = (wing.filters.mapping['treatment.שחרור'] || []).length,
+                    hospitalized = wing.count - untreated - discharged;
                 return <Col key={i} span={12}>
-                    <Card title={<span>{wing.details.name} - <b>{wing.count}</b> מטופלים.ות</span>}
-                          style={{marginBottom: 16}} hoverable onClick={() =>
-                        navigate(generatePath(WING_URL, {department: department, wing: wing.details.key}))
-                    }>
-                        <div style={{display:"flex",flexWrap:"wrap",justifyContent:"center",gap:"1rem"}}>
+                    <Card title={<span>
+                        {wing.details.name} - <b>{wing.count}</b> מטופלים.ות
+                        <Tooltip title={`${untreated} ללא החלטה / ${hospitalized} אשפוז / ${discharged} שחרור`}>
+                            <Progress percent={100 * (discharged + hospitalized) / wing.count}
+                                      success={{percent: 100 * discharged / wing.count}}/>
+                        </Tooltip>
+                    </span>} style={{marginBottom: 16}} hoverable onClick={() =>
+                        navigate(wingId === wing.details.key && onOk ? () => onOk() :
+                            generatePath(WING_URL, {department: department, wing: wing.details.key}))
+                    } headStyle={wingId === wing.details.key ? {backgroundColor: '#5f9ea0'} : {}}>
+                        <div style={{display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "1rem"}}>
                             {actions}
                         </div>
                     </Card>

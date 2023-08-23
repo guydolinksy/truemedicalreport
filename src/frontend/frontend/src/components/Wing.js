@@ -39,7 +39,7 @@ const WingLayout = ({department, wing, details, onError}) => {
     </Card>
 }
 
-const WingStatus = ({department}) => {
+const WingStatus = ({department, wing}) => {
     const {value} = useContext(wingDataContext.context);
     const {userSettings} = useContext(loginContext);
 
@@ -106,7 +106,7 @@ const WingStatus = ({department}) => {
                 <Suspense fallback={<span/>}>
                     {userSettings.theme === 'dark-theme' ? <DarkTheme/> : <LightTheme/>}
                 </Suspense>
-                <Department department={department}/>
+                <Department department={department} wingId={wing} onOk={() => setIsDepartmentPeekModelOpen(false)}/>
             </ul>
         </Modal>
     </div>
@@ -185,7 +185,7 @@ const WingInner = ({department, wing}) => {
 
     return <Layout>
         <Sider breakpoint={"lg"} width={siderWidth}>
-            <WingStatus department={department}/>
+            <WingStatus department={department} wing={wing}/>
         </Sider>
         <Content className={'content'} style={{height: '100vh', overflowY: 'scroll'}}>
             <Popover placement={"leftTop"}

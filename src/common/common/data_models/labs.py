@@ -133,7 +133,7 @@ class LabCategory(BaseModel):
                     static_id=f'{self.get_instance_id()}#{key}',
                     patient_id=self.patient_id,
                     at=result.result_at,
-                    message=f"תוצאת {self.category}-{result.test_type_name} גבוהה: {result.result} {result.units}",
+                    message=f"{result.test_type_name} גבוה: {result.result} {result.units}",
                     link=None,  # TODO "Add in the future",
                     level=NotificationLevel.abnormal if not result.range == 'HH' else NotificationLevel.panic,
                 ))
@@ -142,7 +142,7 @@ class LabCategory(BaseModel):
                     static_id=f'{self.get_instance_id()}#{key}',
                     patient_id=self.patient_id,
                     at=result.result_at,
-                    message=f"תוצאת {self.category}-{result.test_type_name} נמוכה: {result.result} {result.units}",
+                    message=f"{result.test_type_name} נמוך: {result.result} {result.units}",
                     link=None,  # "Add in the future",
                     level=NotificationLevel.abnormal if not result.range == 'LL' else NotificationLevel.panic,
                 ))
@@ -154,7 +154,7 @@ class LabCategory(BaseModel):
             static_id=self.get_instance_id(),
             patient_id=self.patient_id,
             at=max(datetime.datetime.fromisoformat(l.result_at) for l in self.results.values()).isoformat(),
-            message=f"תוצאות {self.category} פסולות",
+            message=f"{self.category} פסול",
             link=None,  # "Add in the future",
             level=NotificationLevel.abnormal if out_of_range else NotificationLevel.normal,
         )]
@@ -166,7 +166,7 @@ class LabCategory(BaseModel):
                 yield key, PatientWarning(**warnings[key].dict(exclude={'acknowledge'}), acknowledge=True)
             elif key not in warnings and lab.range in ['HH', 'LL']:
                 yield key, PatientWarning(
-                    content=f"תוצאת {lab.category_display_name}-{lab.test_type_name} חריגה: {lab.result} {lab.units}",
+                    content=f"{lab.test_type_name} חריג: {lab.result} {lab.units}",
                     severity=Severity(value=1, at=lab.result_at),
                     acknowledge=False
                 )

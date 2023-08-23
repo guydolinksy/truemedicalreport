@@ -206,11 +206,19 @@ export const PatientWarning = ({patient, warning, index, style}) => {
 
 const PatientFooter = ({patient}) => {
     const {value} = useContext(patientDataContext.context);
-    const notes = value.discussion.notes || {};
+    const notes = value.discussion.notes || {},
+        descMotes = Object.keys(notes).sort((a, b)=>
+            moment(notes[a].at).isSame(notes[b].at) ? 0 : moment(notes[a].at).isAfter(notes[b].at) ? 1 : -1
+        );
+    const doctorNotes = Object.assign({}, ...value.treatment.doctors.map(doctor => ({
+        [doctor]: descMotes.find(note => notes[note].by === doctor && !notes[note].subject) || undefined
+    })));
     const subjectNotes = Object.assign({}, ...value.referrals.map(ref => ({
-        [ref.to]: Object.values(notes).find(note => note.subject === ref.to) || undefined
-    }))); // TODO
-    const unpairedNotes = Object.values(notes); // TODO
+        [ref.to]: descMotes.find(note => notes[note].subject === ref.to) || undefined
+    })));
+    const unpairedNotes = descMotes.filter(note =>
+        !Object.values(doctorNotes).includes(note) && Object.values(subjectNotes).includes(note)
+    );
     return (
         <div style={{display: "flex", flexDirection: "column"}}>
             <div style={{display: "flex", justifyContent: "space-between", padding: "8px 12px"}}>
@@ -220,43 +228,63 @@ const PatientFooter = ({patient}) => {
                 <Measure patient={patient} measure={'saturation'} icon={'saturation'} title={'סטורציה'}/>
                 <Measure patient={patient} measure={'pain'} icon={'pain'} title={'כאב'}/>
             </div>
-            {(value.treatment.doctors.length > 0 || value.referrals.length > 0) && <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                padding: "0px 12px 8px 12px"
-            }}>
-                {value.treatment.doctors.length > 0 &&
-                    <div style={{display: "flex", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
-                        {value.treatment.doctors.map((doctor, index) =>
-                            <Tooltip overlay={doctor}>
-                                <div style={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
-                                    {index !== 0 ? ',' : ''}{doctor}
+            {(value.treatment.doctors.length > 0 || value.referrals.length > 0 || unpairedNotes.length > 0) &&
+                <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    padding: "0px 12px 8px 12px"
+                }}>
+                    {value.treatment.doctors.length > 0 &&
+                        <div style={{
+                            display: "flex",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap"
+                        }}>
+                            {value.treatment.doctors.map((doctor, index) =>
+                                <Tooltip overlay={doctorNotes[doctor] ? <div>
+                                    <div>{doctor} (<RelativeTime date={doctorNotes[doctor].at}/>):</div>
+                                    <div>{subjectNotes[doctor].content}</div>
+                                </div> : doctor}>
+                                    <div style={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
+                                        {index !== 0 ? ',' : ''}{doctor}
+                                    </div>
+                                </Tooltip>)}
+                        </div>}
+                    {value.referrals.length > 0 &&
+                        <div style={{
+                            display: "flex",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap"
+                        }}>
+                            {value.referrals.filter(ref => !ref.completed).map((ref, index) =>
+                                <Tooltip overlay={subjectNotes[ref.to] ? <div>
+                                    <div>{ref.to} (<RelativeTime date={subjectNotes[ref.to].at}/>):</div>
+                                    <div>{subjectNotes[ref.to].content}</div>
+                                </div> : ref.to}>
+                                    <div style={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
+                                        {index !== 0 ? ',' : ''}{ref.to}
+                                    </div>
+                                </Tooltip>)}
+                        </div>}
+                    {unpairedNotes.length > 0 &&
+                        <div>
+                            <Tooltip overlay={<div style={{maxWidth: '50vw', maxHeight: '50vh'}}>
+                                {unpairedNotes.map(note => <div>
+                                    <div>{unpairedNotes[note].by} {unpairedNotes[note].subject ? `- ${unpairedNotes[note].subject}` : ''}
+                                        (<RelativeTime date={unpairedNotes[note].at}/>):</div>
+                                    <div>{unpairedNotes[note].content}</div>
+                                </div>)}
+                            </div>}>
+                                <div>
+                                    +
                                 </div>
-                            </Tooltip>)}
-                    </div>}
-                {value.referrals.length > 0 &&
-                    <div style={{display: "flex", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
-                        {value.referrals.filter(ref => !ref.completed).map((ref, index) =>
-                            <Tooltip overlay={subjectNotes[ref.to] ? <div>
-                                <div>{ref.to} (<Moment date={subjectNotes[ref.to].at}/>):</div>
-                                <div>{subjectNotes[ref.to].content}</div>
-                            </div> : ref.to}>
-                                <div style={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
-                                    {index !== 0 ? ',' : ''}{ref.to}
-                                </div>
-                            </Tooltip>)}
-                    </div>}
-                {unpairedNotes.length > 0 &&
-                    <div>
-                        <Tooltip overlay={"TODO"}>
-                            <div>
-                                +
-                            </div>
-                        </Tooltip>
-                    </div>}
-            </div>}
+                            </Tooltip>
+                        </div>}
+                </div>}
         </div>)
 }
 

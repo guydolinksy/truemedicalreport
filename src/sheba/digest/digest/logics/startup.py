@@ -129,7 +129,7 @@ async def init_protocols():
 
     requests.post(f'{config.dal_url}/config/set', json={
         'key': 'protocols',
-        'version': 2,
+        'version': 3,
         'value': {
             'כאב חזה': [
                 {'name': 'צילום חזה', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': CXR_KEYS},
@@ -143,6 +143,12 @@ async def init_protocols():
                 {'name': 'CRP', 'default': '-', 'key': 'lab-1', 'keys': CRP_KEYS},
                 {'name': 'WBC', 'default': '-', 'key': 'lab-2', 'keys': WBC_KEYS},
                 {'name': 'לקטט', 'default': '-', 'key': 'lab-3', 'keys': ['lab-150108685']},
+            ],
+            'ספסיס': [
+                {'name': 'CRP', 'default': '-', 'key': 'lab-1', 'keys': CRP_KEYS},
+                {'name': 'WBC', 'default': '-', 'key': 'lab-2', 'keys': WBC_KEYS},
+                {'name': 'לקטט', 'default': '-', 'key': 'lab-3', 'keys': ['lab-150108685']},
+                {'name': 'חום', 'default': '-', 'key': 'measure-1', 'keys': TEMPERATURE_KEYS},
             ],
             'תלונה נוירולוגית': [
                 {'name': 'CT ראש', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': HCT_KEYS},
@@ -181,13 +187,26 @@ async def init_protocols():
                 {'name': 'CT מוח', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': HCT_KEYS},
                 {'name': 'HGB', 'default': '-', 'key': 'lab-1', 'keys': HGB_KEYS},
             ],
-            'כאב בטן': [
+            'כאבי בטן': [
                 {'name': 'WBC', 'default': '-', 'key': 'lab-1', 'keys': WBC_KEYS},
                 {'name': 'CRP', 'default': '-', 'key': 'lab-2', 'keys': CRP_KEYS},
                 {'name': 'US בטן', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': US_STOMACH_KEYS},
             ],
             'תלונות לאחר ניתוח': [
                 {'name': 'WBC', 'default': '-', 'key': 'lab-1', 'keys': WBC_KEYS},
+                {'name': 'CRP', 'default': '-', 'key': 'lab-2', 'keys': CRP_KEYS},
+                {'name': 'HGB', 'default': '-', 'key': 'lab-3', 'keys': HGB_KEYS},
+            ],
+            'צלוליטיס': [
+                {'name': 'WBC', 'default': '-', 'key': 'lab-1', 'keys': WBC_KEYS},
+                {'name': 'CRP', 'default': '-', 'key': 'lab-2', 'keys': CRP_KEYS},
+                {'name': 'חום', 'default': '-', 'key': 'measure-1', 'keys': TEMPERATURE_KEYS},
+            ],
+            'חשד לשבץ מוחי טרי': [
+                {'name': 'CT מוח', 'default': 'לא הוזמן', 'key': 'img-1', 'keys': HCT_KEYS},
+            ],
+            'חולשה': [
+                {'name': 'טרופונין', 'default': '-', 'key': 'lab-1', 'keys': TRPONIN_KEYS},
                 {'name': 'CRP', 'default': '-', 'key': 'lab-2', 'keys': CRP_KEYS},
                 {'name': 'HGB', 'default': '-', 'key': 'lab-3', 'keys': HGB_KEYS},
             ],
