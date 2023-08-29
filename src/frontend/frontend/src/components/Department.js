@@ -11,8 +11,8 @@ import {loginContext} from "./LoginContext";
 import Axios from "axios";
 
 const SHOW_ACTIONS = ['not-awaiting', 'doctor.exam', 'nurse.exam', 'imaging', 'laboratory', 'treatment.ללא'];
+export const isTrue = (booleanString) => booleanString === "True"
 const hideSetting = (e,setting,userSettings,userName,wing) => {
-    console.log(wing)
     const prevSettings = userSettings?.statistics[wing] || []
     if (e.stopPropagation) e.stopPropagation();
    // const propertyName = `${userName}.display.statistics.${wing}`;
@@ -23,12 +23,10 @@ const hideSetting = (e,setting,userSettings,userName,wing) => {
         }
     };
     Axios.post('/api/settings/display', updateData).then(() => {
-        console.log("success")
         document.location.reload();
         }).catch(error => {
-            if (Axios.isCancel(error))
-                return;
-        console.log("failed")
+            // if (Axios.isCancel(error))
+
         });
 
 }
@@ -57,15 +55,12 @@ export const Department = ({department}) => {
                     ...wing.filters.time_since_arrival.map(toActions),
                 ).filter(({key}) => {
                     const filters = [].concat(userSettings.statistics[wing.details.key] || [], userSettings.statistics.default || []);
-                    console.log({filters})
                     if (filters.some(([regex, result]) => {
-                        console.log({regex, result, key})
-                        return result && (key.match(regex) || key === regex)
+                        return isTrue(result) && (key.match(regex) || key === regex)
                     }))
                         return true
                     return !filters.some(([regex, result]) => {
-                        console.log({regex, result, key})
-                        return !result && (key.match(regex) || key === regex)
+                        return !isTrue(result) && (key.match(regex) || key === regex)
                     });
                 }).map(
                     ({count, title, icon, duration, valid, key}) => <div
