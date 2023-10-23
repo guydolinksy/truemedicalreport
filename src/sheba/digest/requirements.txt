@@ -2,11 +2,10 @@ fastapi_offline
 uvicorn==0.17.6
 sqlalchemy
 logbook
-common
 pyodbc
 mssql
 faker
-fastapi-utils
 pytz
 sentry_sdk
+pydantic==2.4.2
 oracledb

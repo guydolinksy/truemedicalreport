@@ -21,7 +21,7 @@ export const createContext = (defaultValue) => {
                 onReconnectStop: (e) => {
                     console.log('reconnect', e)
                     notification.error({
-                        duration: 0,
+                        duration: 10,
                         message: 'שגיאה בעדכון נתונים',
                         description: 'המידע המוצג אינו מתעדכן עקב שגיאת חיבור, יש לרענן את העמוד.'
                     })
@@ -53,7 +53,7 @@ export const createContext = (defaultValue) => {
             }
         }, [lastJsonMessage, url, flush]);
 
-        const update = useCallback((path, newValue) => {
+        const update = useCallback((path, newValue, type) => {
             const deepReplace = (path, data, value) => {
                 if (!path.length) {
                     return value
@@ -63,7 +63,7 @@ export const createContext = (defaultValue) => {
             }
             setValue(prevState => {
                 const newData = deepReplace(path.slice().reverse(), prevState.value, newValue)
-                Axios.post(updateURL || url, {data: newData, path: path, value: newValue}).catch(error => {
+                Axios.post(updateURL || url, {data: newData, path: path, value: newValue, type_: type}).catch(error => {
                     console.error("update error", error)
                 });
                 return {loading: prevState.loading, value: newData}

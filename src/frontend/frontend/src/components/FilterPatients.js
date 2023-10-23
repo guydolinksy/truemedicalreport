@@ -4,7 +4,7 @@ import {useLocalStorage} from "../hooks/localStorageHook";
 
 const {CheckableTag} = Tag;
 
-export const SortPatients = ({value}) => {
+export const FilterPatients = ({value}) => {
     const [selectedAwaiting, setSelectedAwaiting] = useLocalStorage('selectedAwaiting', []);
     const [selectedDoctors, setSelectedDoctors] = useLocalStorage('selectedDoctors', []);
     const [selectedTreatments, setSelectedTreatments] = useLocalStorage('selectedTreatments', []);

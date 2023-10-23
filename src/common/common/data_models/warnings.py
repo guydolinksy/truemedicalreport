@@ -1,9 +1,8 @@
-from pydantic import BaseModel
+from .base import Diffable
+from .severity import Severity
 
-from common.data_models.severity import Severity
 
-
-class PatientWarning(BaseModel):
+class PatientWarning(Diffable):
     content: str
     severity: Severity
     acknowledge: bool = False

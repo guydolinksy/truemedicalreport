@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends
 
 from .auth import login_manager
 from ..logics.utils import fetch_dal_json
-
 wing_router = APIRouter()
+
 
 logger = logbook.Logger(__name__)
 

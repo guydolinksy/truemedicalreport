@@ -4,15 +4,14 @@
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
+      <env name="PYTHONUNBUFFERED" value="1" />
       <env name="DAL_CONNECTION" value="&quot;http://localhost:8081/dal&quot;" />
       <env name="DEBUG" value="0" />
       <env name="PORT" value="8080" />
-      <env name="PYTHONUNBUFFERED" value="1" />
       <env name="SYNC_CONNECTION" value="&quot;ws://localhost:8081/dal/sync/ws&quot;" />
       <env name="REDIS_CONNECTION" value="&quot;redis://localhost:6379/1&quot;" />
     </envs>
     <option name="SDK_HOME" value="$USER_HOME$/.virtualenvs/truemedicalreport/bin/python" />
-    <option name="SDK_NAME" value="Python 3.10 (truemedicalreport)" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -25,6 +24,44 @@
     <option name="MODULE_MODE" value="true" />
     <option name="REDIRECT_INPUT" value="false" />
     <option name="INPUT_FILE" value="" />
+    <method v="2" />
+  </configuration>
+  <configuration default="false" name="backend" type="docker-deploy" factoryName="docker-image" folderName="local" server-name="Docker">
+    <deployment type="docker-image">
+      <settings>
+        <option name="imageTag" value="docker-virtual.artifactory.arc-devops.sheba.gov.il/guydo/tmr-backend:dev" />
+        <option name="containerName" value="tmr-backend" />
+        <option name="envVars">
+          <list>
+            <DockerEnvVarImpl>
+              <option name="name" value="DAL_CONNECTION" />
+              <option name="value" value="&quot;http://tmr-dal:80/dal&quot;" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="MONGO_CONNECTION" />
+              <option name="value" value="&quot;mongodb://tmr-mongodb:27017&quot;" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="REDIS_CONNECTION" />
+              <option name="value" value="&quot;redis://tmr-redis/1&quot;" />
+            </DockerEnvVarImpl>
+          </list>
+        </option>
+        <option name="commandLineOptions" value="--link tmr-mongodb:tmr-mongodb --link tmr-dal:tmr-dal --link tmr-redis:tmr-redis" />
+        <option name="volumeBindings">
+          <list>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/opt/backend/backend" />
+              <option name="hostPath" value="C:\Users\322358847\Documents\projects\truemedicalreport\src\backend\backend" />
+            </DockerVolumeBindingImpl>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/opt/common/common" />
+              <option name="hostPath" value="C:\Users\322358847\Documents\projects\truemedicalreport\src\common\common" />
+            </DockerVolumeBindingImpl>
+          </list>
+        </option>
+      </settings>
+    </deployment>
     <method v="2" />
   </configuration>
 </component>

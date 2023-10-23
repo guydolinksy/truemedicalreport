@@ -1,10 +1,10 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from .base import Diffable
 
 
-class Admission(BaseModel):
-    arrival: Optional[str]
-    department: Optional[str]
-    wing: Optional[str]
-    bed: Optional[str]
+class Admission(Diffable):
+    arrival: str
+    department_id: str
+    wing_id: Optional[str] = None
+    bed: Optional[str] = None

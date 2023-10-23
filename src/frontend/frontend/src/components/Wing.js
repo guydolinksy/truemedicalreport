@@ -1,145 +1,132 @@
-import React, {Suspense, useCallback, useContext, useMemo, useState} from 'react';
-import {Button, Card, Col, Collapse, Empty, Layout, Modal, Popover, Radio, Row, Spin, Tooltip} from 'antd';
+import React, {useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import {Button, Card, Col, Collapse, Drawer, Empty, Layout, Popover, Radio, Row} from 'antd';
 import {MIN_WIDTH, Patient} from "./Patient";
-import {createContext} from "../hooks/DataContext";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faRightFromBracket,} from "@fortawesome/free-solid-svg-icons";
-import {useNavigate} from "react-router";
+import {useLocation, useNavigate} from "react-router-dom";
 import {PatientInfo} from "./PatientInfo";
 import {Bed} from "./Bed";
-import {FilterOutlined, QuestionOutlined, SearchOutlined} from "@ant-design/icons";
+import {FilterOutlined, SortAscendingOutlined} from "@ant-design/icons";
 import {useLocalStorage} from "../hooks/localStorageHook";
 import moment from "moment";
 import {useViewport} from "./UseViewPort";
-import {Department} from "./Department";
 import {loginContext} from "./LoginContext";
-import {DarkTheme, LightTheme} from "../themes/ThemeContext";
 import {WingNotifications} from "./WingNotifications";
-import {PatientList} from "./PatientList";
 import {Legend} from "./Legend";
-import {SortPatients} from "./SortPatients";
+import {FilterPatients} from "./FilterPatients";
+import {wingDataContext} from "../pages/WingView";
+import {hashMatchContext} from "./HashMatch";
+import {MCIForm} from "./MCI/MCIForm";
 
-const {Content, Sider} = Layout;
-export const wingDataContext = createContext(null);
+const {Content} = Layout;
 
 const {Panel} = Collapse;
 
-const WingLayout = ({department, wing, details, onError}) => {
-    return <Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
-        {(details.rows || []).map((row, i) => <Row key={i} style={row} wrap={false}>
-            {(details.columns || []).map((column, j) =>
-                details.beds[i][j] === null ? <div key={`filler-${j}`} style={column}/> :
-                    <Bed key={`bed-${details.beds[i][j]}`} style={column} admission={{
-                        department: department,
-                        wing: wing,
-                        bed: details.beds[i][j]
-                    }} onError={onError}/>
-            )}
-        </Row>)}
-    </Card>
+const WingLayout = ({department, wing, mci, details, onError, unassignedPatients}) => {
+    return [
+        <Card key={'grid'} style={{width: '100%', marginBottom: 16}}>
+            {(details.rows || []).map((row, i) => <Row key={i} style={row} wrap={false}>
+                {(details.columns || []).map((column, j) =>
+                    details.beds[i][j] === null ? <div key={`filler-${j}`} style={column}/> :
+                        <Bed key={`bed-${details.beds[i][j]}`} style={column} admission={{
+                            department: department,
+                            wing: wing,
+                            bed: details.beds[i][j]
+                        }} onError={onError}/>
+                )}
+            </Row>)}
+        </Card>,
+        <Card key={'overflow'} style={{width: '100%', flex: '1 0 300px', overflowY: 'auto'}}>
+            <Patients patients={unassignedPatients} mci={mci} style={{
+                display: "grid",
+                gridGap: 16,
+                gridTemplateColumns: `repeat(auto-fill, minmax(${MIN_WIDTH}px, 1fr))`
+            }}/>
+        </Card>
+    ]
 }
+const StatusLayout = ({patients, mci}) => {
 
-const WingStatus = ({department, wing}) => {
     const {value} = useContext(wingDataContext.context);
-    const {userSettings} = useContext(loginContext);
-
-    const [wingSortKey, setWingSortKey] = useLocalStorage('wingSortKey', 'arrival');
-
-    const [isDepartmentPeekModelOpen, setIsDepartmentPeekModelOpen] = useState(false);
-
-    return <div style={{
-        display: "flex",
-        flexDirection: "column",
-        height: '100vh',
-        // overflowY: "hidden",
-        justifyContent: "space-between",
-    }}>
-        <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
-            <Card bodyStyle={{display: "flex", padding: '10px'}}>
-                <div style={{display: 'flex', flex: 1, justifyContent: 'space-between'}}>
-                    <span>{value.details.name} - <b>{value.patients.length}</b> מטופלים.ות</span>
-                    <ul style={{display: 'flex', gap: '0 5px', margin: 0}}>
-                        <li>
-                            <Tooltip overlay='מחלקות'>
-                                <FontAwesomeIcon onClick={(evt) => {
-                                    evt.stopPropagation();
-                                    setIsDepartmentPeekModelOpen(true);
-                                }} icon={faRightFromBracket} style={{cursor: 'pointer'}}/>
-                            </Tooltip>
-                        </li>
-                    </ul>
-                </div>
-            </Card>
-            <Collapse defaultActiveKey={['1', '2']}
-                      style={{height: '100%', display: "flex", flexDirection: "column", overflowY: "scroll"}}>
-                <Panel header={"סינון"} key={1} extra={<FilterOutlined/>}>
-                    <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
-                                 buttonStyle={"solid"}
-                                 style={{width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex"}}>
-                        <Radio.Button value={"arrival"} style={{flex: "1 1 50px", textAlign: "center"}}>
-                            <span style={{whiteSpace: "nowrap"}}>זמן קבלה</span>
-                        </Radio.Button>
-                        <Radio.Button value={"location"} style={{flex: "1 1 30px", textAlign: "center"}}>
-                            <span style={{whiteSpace: "nowrap"}}>מיקום</span>
-                        </Radio.Button>
-                        <Radio.Button value={"name"} style={{flex: "1 1 50px", textAlign: "center"}}>
-                            <span style={{whiteSpace: "nowrap"}}>שם מלא</span>
-                        </Radio.Button>
-                        <Radio.Button value={"severity"} style={{flex: "1 1 35px", textAlign: "center"}}>
-                            <span style={{whiteSpace: "nowrap"}}>דחיפות</span>
-                        </Radio.Button>
-                    </Radio.Group>
-                </Panel>
-                <Panel className="collapseNotifications" header="עדכונים" key="2" collapsible={"disabled"}
-                       showArrow={false} style={{display: "flex", flexDirection: "column", flex: 1}}>
-                    <WingNotifications/>
-                </Panel>
-            </Collapse>
-        </div>
-        <Modal title="נתוני מחלקה"
-               open={isDepartmentPeekModelOpen}
-               onCancel={() => setIsDepartmentPeekModelOpen(false)}
-               footer={null}
-               width='fit-content'
-        >
-            <ul style={{display: 'flex', gap: '0 20px', margin: 0}} className={userSettings.theme}>
-                <Suspense fallback={<span/>}>
-                    {userSettings.theme === 'dark-theme' ? <DarkTheme/> : <LightTheme/>}
-                </Suspense>
-                <Department department={department} wingId={wing} onOk={() => setIsDepartmentPeekModelOpen(false)}/>
-            </ul>
-        </Modal>
-    </div>
-};
-
-const Patients = ({patients, onError}) => {
-    return <Card key={'overflow'} style={{width: '100%', flex: '1'}}>
-        {patients.length ? <div style={{
-            display: "grid",
-            gridGap: 16,
-            gridTemplateColumns: `repeat(auto-fill, minmax(${MIN_WIDTH}px, 1fr))`
-        }}>
-            {patients.map(patient => <Patient key={patient.oid} patient={patient.oid}
-                                              style={{minWidth: MIN_WIDTH}} onError={onError}/>)}
-        </div> : <Empty description={false} image={Empty.PRESENTED_IMAGE_SIMPLE}/>}
-    </Card>
+    const needAttention = patients.filter(
+        patient => Object.values(value.patients[patient].watching).find(watchKey => watchKey.triggered)
+    )
+    const unassigned = patients.filter(
+        patient => !needAttention.includes(patient) && value.patients[patient].status === 'unassigned'
+    )
+    const undecided = patients.filter(
+        patient => !needAttention.includes(patient) && value.patients[patient].status === 'undecided'
+    )
+    const decided = patients.filter(
+        patient => !needAttention.includes(patient) && value.patients[patient].status === 'decided'
+    )
+    return [
+        <Card size={'small'} key={'needAttention'} style={{width: '100%', marginBottom: 16}}
+              title={`ממתינים עבורך (${needAttention.length})`}
+              bodyStyle={!needAttention.length ? {display: 'none'} : {}}>
+            {needAttention.length > 0 && <Patients patients={needAttention} mci={mci} style={{
+                display: "grid",
+                gridGap: 16,
+                gridTemplateColumns: `repeat(auto-fill, minmax(${MIN_WIDTH}px, 1fr))`
+            }} showAttention/>}
+        </Card>,
+        <Card size={'small'} key={'unassigned'} style={{width: '100%', marginBottom: 16}}
+              title={`ללא שיוך לרופא.ה (${unassigned.length})`}
+              bodyStyle={!unassigned.length ? {display: 'none'} : {}}>
+            {unassigned.length > 0 && <Patients patients={unassigned} mci={mci} style={{
+                display: "grid",
+                gridGap: 16,
+                gridTemplateColumns: `repeat(auto-fill, minmax(${MIN_WIDTH}px, 1fr))`
+            }}/>}
+        </Card>,
+        <Card size={'small'} key={'undecided'} style={{width: '100%', marginBottom: 16}}
+              title={`ללא החלטה על יעד (${undecided.length})`}
+              bodyStyle={!undecided.length ? {display: 'none'} : {}}>
+            {undecided.length > 0 && <Patients patients={undecided} mci={mci} style={{
+                display: "grid",
+                gridGap: 16,
+                gridTemplateColumns: `repeat(auto-fill, minmax(${MIN_WIDTH}px, 1fr))`
+            }}/>}
+        </Card>,
+        <Card size={'small'} key={'decided'} style={{width: '100%', marginBottom: 16}}
+              title={`ממתין לאשפוז/שחרור (${decided.length})`}
+              bodyStyle={!decided.length ? {display: 'none'} : {}}>
+            {decided.length > 0 && <Patients patients={decided} mci={mci} style={{
+                display: "grid",
+                gridGap: 16,
+                gridTemplateColumns: `repeat(auto-fill, minmax(${MIN_WIDTH}px, 1fr))`
+            }}/>}
+        </Card>,
+    ]
 }
 
-const sortFunctions = {
-    name: (i, j) => i.info.name.localeCompare(j.info.name),
-    severity: (i, j) => {
-        if (![null, undefined].includes(i.severity.value) && ![null, undefined].includes(j.severity.value))
-            return i.severity.value - j.severity.value;
-        else if ([null, undefined].includes(i.severity.value))
-            return [null, undefined].includes(j.severity.value) ? 0 : 1;
-        return -1
-    },
-    arrival: (i, j) => moment(i.admission.arrival).isAfter(j.admission.arrival) ? 1 : -1,
-    location: (i, j) => moment(i.admission.arrival).isAfter(j.admission.arrival) ? 1 : -1,
-    [undefined]: (i, j) => moment(i.admission.arrival).isAfter(j.admission.arrival) ? 1 : -1
+const Patients = ({patients, onError, style, showAttention, mci}) => {
+    return patients.length ? <div style={style}>
+        {patients.map(oid => <Patient key={oid} patient={oid} style={{minWidth: MIN_WIDTH}} onError={onError}
+                                      showAttention={showAttention} mci={mci}/>)}
+    </div> : <Empty description={false} image={Empty.PRESENTED_IMAGE_SIMPLE}/>
+
+
 }
-const WingInner = ({department, wing}) => {
+
+const sortFunctions = (patients, sortKey) => {
+    return {
+        name: (i, j) => patients[i].info.name.localeCompare(patients[j].info.name),
+        severity: (i, j) => {
+            if (![null, undefined].includes(patients[i].severity) && ![null, undefined].includes(patients[j].value))
+                return patients[i].severity.value - patients[j].severity.value;
+            else if ([null, undefined].includes(patients[i].value))
+                return [null, undefined].includes(patients[j].value) ? 0 : 1;
+            return -1
+        },
+        arrival: (i, j) => moment(patients[i].admission.arrival).isAfter(patients[j].admission.arrival) ? 1 : -1,
+        status: (i, j) => moment(patients[i].admission.arrival).isAfter(patients[j].admission.arrival) ? 1 : -1,
+        location: (i, j) => moment(patients[i].admission.arrival).isAfter(patients[j].admission.arrival) ? 1 : -1,
+        [undefined]: (i, j) => moment(patients[i].admission.arrival).isAfter(patients[j].admission.arrival) ? 1 : -1
+    }[sortKey]
+}
+export const Wing = ({department, wing}) => {
+    const mci = department === 'mci';
     const navigate = useNavigate();
+    const {hash} = useLocation();
 
     const {user, userSettings} = useContext(loginContext);
     const {value, flush} = useContext(wingDataContext.context);
@@ -164,72 +151,96 @@ const WingInner = ({department, wing}) => {
         return totalWidth - siderWidth - value.details.columns.reduce((s, c) => s + c.minWidth, 0) < buffer;
     }, [totalWidth, value, siderWidth]);
 
-    const allPatients = value.patients.filter(({oid}) => !selectedAwaiting.filter(
+    const allPatients = Object.keys(value.patients).filter(oid => !selectedAwaiting.filter(
         filter => value.filters.mapping[filter] !== undefined
     ).length || selectedAwaiting.find(
         filter => (value.filters.mapping[filter] || []).includes(oid)
-    )).filter(({oid}) => !selectedTreatments.filter(
+    )).filter(oid => !selectedTreatments.filter(
         filter => value.filters.mapping[filter] !== undefined
     ).length || selectedTreatments.find(
         filter => (value.filters.mapping[filter] || []).includes(oid)
-    )).filter(({oid}) => !selectedDoctors.filter(
+    )).filter(oid => !selectedDoctors.filter(
         filter => value.filters.mapping[filter] !== undefined
     ).length || selectedDoctors.find(
         filter => (value.filters.mapping[filter] || []).includes(oid)
-    )).filter(({oid}) => !selectedTime.filter(
+    )).filter(oid => !selectedTime.filter(
         filter => value.filters.mapping[filter] !== undefined
     ).length || selectedTime.find(
         filter => (value.filters.mapping[filter] || []).includes(oid)
-    )).sort(sortFunctions[wingSortKey]);
-    const unassignedPatients = allPatients.filter(({admission}) => !admission.bed);
+    )).sort(sortFunctions(value.patients, wingSortKey));
+    const unassignedPatients = allPatients.filter(oid => !value.patients[oid].admission.bed);
 
-    return <Layout>
-        <Sider breakpoint={"lg"} width={siderWidth}>
-            <WingStatus department={department} wing={wing}/>
-        </Sider>
-        <Content className={'content'} style={{height: '100vh', overflowY: 'scroll'}}>
-            <Popover placement={"leftTop"}
-                     content={<PatientList value={value} user={user} userSettings={userSettings}/>}
-                     title={"מטופלים.ות:"}>
-                <Button type={"primary"} style={{position: "absolute", top: 41, left: 0, width: 40, zIndex: 1000}}
-                        icon={<SearchOutlined/>}/>
-            </Popover>
-            <Popover placement={"leftTop"}
-                     content={<SortPatients value={value} user={user} userSettings={userSettings}/>} title={"סינון:"}>
-                <Button type={"primary"} style={{position: "absolute", top: 80, left: 0, width: 40, zIndex: 1000}}
-                        icon={<FilterOutlined/>}/>
-            </Popover>
-            <Popover placement={"leftTop"} content={<Legend userSettings={userSettings}/>} title={"מקרא:"}>
-                <Button type={"primary"} style={{position: "absolute", top: 119, left: 0, width: 40, zIndex: 1000}}
-                        icon={<QuestionOutlined/>}/>
-            </Popover>
-            <Col style={{padding: 16, height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
-                {isForceTabletMode || wingSortKey !== 'location' || selectedDoctors.filter(
+
+    const [{title, className}, setHeader] = useState({});
+    const {matched} = useContext(hashMatchContext);
+
+    return <>
+        <Content className={'content'} style={{flex: 1, display: 'flex', overflowY: 'scroll', padding: '0 20px'}}>
+            <Col style={{padding: 16, flex: 1, display: 'flex', flexFlow: 'column nowrap'}}>
+                {!isForceTabletMode && wingSortKey === 'location' && !selectedDoctors.filter(
                     filter => value.filters.mapping[filter] !== undefined
-                ).length || selectedTreatments.filter(
+                ).length && !selectedTreatments.filter(
                     filter => value.filters.mapping[filter] !== undefined
-                ).length || selectedAwaiting.filter(
+                ).length && !selectedAwaiting.filter(
                     filter => value.filters.mapping[filter] !== undefined
-                ).length || selectedTime.filter(
+                ).length && !selectedTime.filter(
                     filter => value.filters.mapping[filter] !== undefined
-                ).length ?
-                    <Patients key={'patients'} patients={allPatients} onError={flush}/> : [
-                        <WingLayout key={'wing'} department={department} wing={wing} details={value.details}
-                                    onError={flush}/>,
-                        <Patients key={'patients'} patients={unassignedPatients} onError={flush}/>
-                    ]}
+                ).length ? <WingLayout department={department} wing={wing} details={value.details}
+                                       onError={flush} unassignedPatients={unassignedPatients} mci={mci}/> :
+                    wingSortKey !== 'status' ? <Patients patients={allPatients} onError={flush} style={{
+                            display: "grid",
+                            gridGap: 16,
+                            gridTemplateColumns: `repeat(auto-fill, minmax(${MIN_WIDTH}px, 1fr))`
+                        }} mci={mci}/> :
+                        <StatusLayout department={department} wing={wing} onError={flush} patients={allPatients}
+                                      mci={mci}/>
+
+                }
             </Col>
         </Content>
-        <PatientInfo onError={onInfoError}/>
-    </Layout>
+        <Popover placement={"leftTop"}
+                 content={<FilterPatients value={value} user={user} userSettings={userSettings}/>}
+                 title={"סינון תצוגת אגף"}>
+            <Button type={"primary"} style={{position: "absolute", top: 80, left: 0, width: 40, zIndex: 1000}}
+                    icon={<FilterOutlined/>}/>
+        </Popover>
+        <Popover placement={"leftTop"}
+                 content={
+                     <Radio.Group value={wingSortKey} onChange={e => setWingSortKey(e.target.value)}
+                                  buttonStyle={"solid"}
+                                  style={{width: '100%', flexDirection: "row", flexWrap: "nowrap", display: "flex"}}>
+                         <Radio.Button value={"arrival"} style={{flex: "1 1 50px", textAlign: "center"}}>
+                             <span style={{whiteSpace: "nowrap"}}>לפי זמן קבלה</span>
+                         </Radio.Button>
+                         <Radio.Button value={"location"} style={{flex: "1 1 30px", textAlign: "center"}}>
+                             <span style={{whiteSpace: "nowrap"}}>לפי מיקום</span>
+                         </Radio.Button>
+                         <Radio.Button value={"name"} style={{flex: "1 1 50px", textAlign: "center"}}>
+                             <span style={{whiteSpace: "nowrap"}}>לפי שם מלא</span>
+                         </Radio.Button>
+                         <Radio.Button value={"severity"} style={{flex: "1 1 35px", textAlign: "center"}}>
+                             <span style={{whiteSpace: "nowrap"}}>לפי דחיפות</span>
+                         </Radio.Button>
+                         <Radio.Button value={"status"} style={{flex: "1 1 35px", textAlign: "center"}}>
+                             <span style={{whiteSpace: "nowrap"}}>לפי סטטוס</span>
+                         </Radio.Button>
+                     </Radio.Group>
+                 } title={"מיון תצוגת אגף"}>
+            <Button type={"primary"} style={{position: "absolute", top: 121, left: 0, width: 40, zIndex: 1000}}
+                    icon={<SortAscendingOutlined/>}/>
+        </Popover>
+        <Drawer title={title} placement={"left"} visible={matched(['info'])}
+                onClose={() => navigate('#')} className={className} size={500}>
+            {mci ? <MCIForm setHeader={setHeader} onError={onInfoError}/> :
+                <PatientInfo setHeader={setHeader} onError={onInfoError}/>}
+        </Drawer>
+        <Drawer title={'מקרא'} placement={"left"} visible={hash === '#help'} onClose={() => navigate('#')}>
+            <Legend userSettings={userSettings}/>
+        </Drawer>
+        <Drawer title={'עדכונים'} placement={"left"} visible={matched(['notifications'])} onClose={() => navigate('#')}>
+            <WingNotifications/>
+        </Drawer>
+    </>
 };
 
-export const Wing = ({department, wing, onError}) => {
-    const uri = `/api/departments/${department}/wings/${wing}`;
 
-    return <wingDataContext.Provider url={uri} defaultValue={
-        {patients: [], details: {}, filters: {mapping: {}, filters: []}, notifications: []}
-    } onError={onError}>
-        {({loading}) => loading ? <Spin/> : <WingInner department={department} wing={wing} onError={onError}/>}
-    </wingDataContext.Provider>
-}

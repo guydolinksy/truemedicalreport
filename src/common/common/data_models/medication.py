@@ -1,10 +1,12 @@
 import datetime
-
-from pydantic import BaseModel
 from typing import Optional
 
+from pydantic import computed_field
 
-class Medicine(BaseModel):
+from .base import Diffable
+
+
+class Medication(Diffable):
     label: Optional[str]
     dosage: Optional[str]
     given: Optional[str]
@@ -22,5 +24,7 @@ class Medicine(BaseModel):
     def description(self):
         return f'{self.dosage} {self.label}'
 
-    def get_instance_id(self):
+    @computed_field
+    @property
+    def external_id(self) -> str:
         return f'{self.label}#{self.since.replace(":", "-").replace(".", "-")}'

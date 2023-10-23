@@ -1,4 +1,13 @@
-query_treatment = """
+from enum import Enum
+
+
+class DestinationsQuery(int, Enum):
+    MEDICAL_RECORD = 0
+    DECISION = 1
+    UNIT_NAME = 2
+
+
+query_destinations = """
 SELECT
     ev.Medical_Record AS MedicalRecord,
     de.Answer_Text AS Decision,
@@ -20,6 +29,40 @@ WHERE
             AND atd.Delete_Date is null
  """
 
+
+class PatientAdmissionQuery(int, Enum):
+    MEDICAL_RECORD = 0
+    FULL_NAME = 1
+    NATIONAL_ID = 2
+    PATIENT_ID = 3
+    BIRTH_DATE = 4
+    GENDER = 5
+    ESI = 6
+    MAIN_CAUSE = 7
+    BED_NAME = 8
+    ROOM_NAME = 9
+    # UNIT_NAME = 10
+    # ADMISSION_DATE = 11
+    # END_DATE = 12
+    # UNIT = 13
+    # RECORD_TYPE = 14
+    # RECORD_CHAR = 15
+    # ANSWER_CODE = 16
+    # HOSPITAL = 17
+    # PHONE = 18
+
+    ROOM_CODE = 10
+    UNIT_NAME = 11
+    ADMISSION_DATE = 12
+    END_DATE = 13
+    UNIT = 14
+    RECORD_TYPE = 15
+    RECORD_CHAR = 16
+    ANSWER_CODE = 17
+    HOSPITAL = 18
+    PHONE = 19
+
+
 query_patient_admission = """
 SELECT
     ev.Medical_Record as MedicalRecord,
@@ -32,6 +75,7 @@ SELECT
     mc.Answer_Text AS MainCause,
     rb.Bed_Name AS BedName,
     rd.Room_Name AS RoomName,
+    rd.Room_Code AS RoomCode,
     su.Name AS UnitName,
     ev.Admission_Date AS AdmissionDate,
     rpp.End_Date,
@@ -59,8 +103,20 @@ WHERE
     ev.Delete_Date IS NULL
     AND rpp.End_Date IS NULL
     AND rpp.Unit = {unit}
-	AND ev.Release_Time is null
+    AND ev.Release_Time is null
 """
+
+
+class MeasurementsQuery(int, Enum):
+    MEASURE_ID = 0
+    MEDICAL_RECORD = 1
+    RESULT = 2
+    MIN_VALUE = 3
+    MAX_VALUE = 4
+    AT = 5
+    CODE = 6
+
+
 query_measurements = """
 SELECT
     CONCAT(m.Parameter, '#',CONVERT(VARCHAR(33), m.Monitor_Date, 126)) AS MeasureID,
@@ -107,8 +163,21 @@ WHERE
     AND rpp.End_Date IS NULL
     AND rpp.Unit = {unit}
     AND m.Parameter IN {codes}
-	AND ev.Release_Time is null
+    AND ev.Release_Time is null
 """
+
+
+class ImagesQuery(int, Enum):
+    ORDER_NUMBER = 0
+    ORDER_DATE = 1
+    MEDICAL_RECORD = 2
+    ENTRY_DATE = 3
+    TEST_NAME = 4
+    ORDER_STATUS = 5
+    RESULT = 6
+    PANIC = 7
+    ACCESSION_NUMBER = 8
+
 
 query_images = """
 
@@ -139,6 +208,17 @@ and ev.Delete_Date is null
 and ato.Test_Date <= GETDATE()
 """
 
+
+class ReferralsQuery(int, Enum):
+    REFERRAL_ID = 0
+    MEDICAL_RECORD = 1
+    REFERRAL_DATE = 2
+    MEDICAL_LICENSE = 3
+    TITLE = 4
+    FIRST_NAME = 5
+    LAST_NAME = 6
+
+
 query_referrals = """
             SELECT
     rd.[Row_Id] AS ReferralId,
@@ -161,13 +241,27 @@ WHERE
             AND mr.Delete_Date is null
 """
 
+
+class LabResultsQuery(int, Enum):
+    MEDICAL_RECORD = 0
+    TEST_CODE = 1
+    CATEGORY = 2
+    TEST_NAME = 3
+    ORDER_NUMBER = 4
+    RESULT = 5
+    UNITS = 6
+    ORDER_DATE = 7
+    RESULT_TIME = 8
+    RANGE = 9
+    PANIC = 10
+
+
 query_lab_results = """
 select 
 ev.Medical_Record AS MedicalRecord,
 labr.test_code AS TestCode,
 lhs.Name AS Category, 
 labr.Test_Name AS TestName,
-labr.Row_ID,
 labr.Label_No as OrderNumber,
 labr.Result,
 labr.Units,
@@ -187,6 +281,15 @@ and ev.unit = {unit}
 and ev.admission_date > GETDATE()-7
 and labr.Result_Entry_Date >= ev.admission_date"""
 
+
+class LabOrdersQuery(int, Enum):
+    MEDICAL_RECORD = 0
+    ORDER_NUMBER = 1
+    ORDER_STATUS = 2
+    ORDER_DATE = 3
+    ENTRY_DATE = 4
+
+
 query_lab_orders = """
 select 
 ev.Medical_Record AS MedicalRecord,
@@ -203,15 +306,20 @@ and ev.unit = {unit}
 and ev.admission_date > GETDATE()-7
 and toh.Entry_Date >= ev.admission_date"""
 
+
+class LabInProgressQuery(int, Enum):
+    TEST_CODE = 0
+    TEST_NAME = 1
+    ORDER_NUMBER = 2
+    CATEGORY = 3
+
+
 query_lab_in_progress = """
-select trim(p.CODE) as ID_num
-       ,r.TEST_CODE as  TestCode
-       ,r.TEST_NAME as TestName
-       ,o.ORDER_NUM as OrderNumber
-       ,r.RESULT as Result
-       ,r.UNITS as Units
-       ,o.COMPLETION_TIME as ResultTime
-       ,r.PROFILE_NUM as Category
+select 
+ r.TEST_CODE as TestCode
+,r.TEST_NAME as TestName
+,o.ORDER_NUM as OrderNumber
+,r.PROFILE_NUM as Category
 from autodb.REQUESTS r
 join  autodb.orders o on r.ORDER_CODE=o.ORDER_CODE
 join  autodb.patientcodes p on o.patient_code=p.PATIENT_CODE
@@ -223,8 +331,21 @@ and o.ORDER_NUM in ('{orders}')
 order by o.ENTRY_TIME
 """
 
+
+class DoctorNotesQuery(int, Enum):
+    SUBJECT = 0
+    MEDICAL_TEXT = 1
+    NOTE_DATE = 2
+    FOLLOW_UP_ID = 3
+    MEDICAL_RECORD = 4
+    TITLE = 5
+    FIRST_NAME = 6
+    LAST_NAME = 7
+
+
 query_doctor_notes = """
-Select  dfu.Subject
+Select 
+ dfu.Subject
 ,dfu.Description_Text as MedicalText
 ,dfu.Entry_Date as NoteDate
 ,dfu.DailyFollowUp_ID as FollowUpID
@@ -244,6 +365,13 @@ and dfu.Entry_Date > mr.Admission_Date
 
 """
 
+
+class DoctorIntakeQuery(int, Enum):
+    MEDICAL_RECORD = 0
+    MEDICAL_TEXT = 1
+    DOCUMENTING_TIME = 2
+
+
 query_doctor_intake = """
 SELECT
     d.[Medical_Record] AS MedicalRecord,
@@ -262,8 +390,17 @@ WHERE
        AND d.[Entry_Date] >= mr.Admission_Date
 """
 
+
+class NurseIntakeQuery(int, Enum):
+    REFERRAL_CODE = 0
+    MEDICAL_RECORD = 1
+    MEDICAL_TEXT = 2
+    DOCUMENTING_TIME = 3
+
+
 query_nurse_intake = """
        SELECT
+    tc.[Referral_Code] as ReferralCode,
     tc.[Medical_Record] AS MedicalRecord,
     tc.Remarks AS MedicalText,
     tc.[Entry_Date] AS DocumentingTime
@@ -278,6 +415,28 @@ WHERE
        AND mr.Release_Time is null
        AND tc.[Entry_Date] >= mr.Admission_Date"""
 
-query_ris_imaging = """SELECT ORDER_KEY,MODALITY_TYPE_CODE,SPS_CODE,SPS_KEY
+
+class RISImagingQuery(int, Enum):
+    ORDER_KEY = 0
+    MODALITY_TYPE_CODE = 1
+    SPS_CODE = 2
+    SPS_KEY = 3
+
+
+query_ris_imaging = """SELECT 
+ORDER_KEY
+,MODALITY_TYPE_CODE
+,SPS_CODE
+,SPS_KEY
 FROM CSHRIS.SITE_M_BI_EXAMS_VIEW 
 WHERE SPS_KEY IN ({})"""
+
+
+class MedicationsQuery(int, Enum):
+    MEDICAL_RECORD = 0
+
+
+query_medications = '''select
+                      ev.Medical_Record 
+                      from [Chameleon].[dbo].[EmergancyVisits] AS ev
+                       where 1=0'''

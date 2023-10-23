@@ -345,6 +345,11 @@
 }
 
 
+.dark-theme .ok-text {
+    font-weight: bold;
+    color: #73ff69;
+}
+
 .dark-theme .warn-text {
     font-weight: bold;
     color: #ffc069;
@@ -353,6 +358,11 @@
 .dark-theme .error-text {
     font-weight: bold;
     color: #bd1a1a;
+}
+
+.light-theme .ok-text {
+    font-weight: bold;
+    color: #1d5e07;
 }
 
 .light-theme .warn-text {
@@ -366,13 +376,17 @@
 }
 
 .gender-male {
-    color:#096dd9 !important;
+    color: #096dd9 !important;
 }
 
 .gender-female {
-    color:#eb2f96 !important;
+    color: #eb2f96 !important;
 }
 
-.border-solid{
+.border-solid {
     border: 1px solid;
+}
+
+.ant-progress-inner {
+    background-color: #c8c8c8 !important;
 }

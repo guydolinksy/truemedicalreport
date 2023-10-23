@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="redis" type="docker-deploy" factoryName="docker-image" folderName="local" server-name="Docker">
+    <deployment type="docker-image">
+      <settings>
+        <option name="imageTag" value="docker-virtual.artifactory.arc-devops.sheba.gov.il/bitnami/redis" />
+        <option name="containerName" value="tmr-redis" />
+        <option name="envVars">
+          <list>
+            <DockerEnvVarImpl>
+              <option name="name" value="ALLOW_EMPTY_PASSWORD" />
+              <option name="value" value="yes" />
+            </DockerEnvVarImpl>
+          </list>
+        </option>
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>

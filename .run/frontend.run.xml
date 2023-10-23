@@ -14,4 +14,25 @@
     </envs>
     <method v="2" />
   </configuration>
+  <configuration default="false" name="frontend" type="docker-deploy" factoryName="docker-image" folderName="local" server-name="Docker">
+    <deployment type="docker-image">
+      <settings>
+        <option name="imageTag" value="docker-virtual.artifactory.arc-devops.sheba.gov.il/guydo/tmr-frontend:dev" />
+        <option name="containerName" value="tmr-frontend" />
+        <option name="volumeBindings">
+          <list>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/opt/frontend/frontend/public" />
+              <option name="hostPath" value="C:\Users\322358847\Documents\projects\truemedicalreport\src\frontend\frontend\public" />
+            </DockerVolumeBindingImpl>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/opt/frontend/frontend/src" />
+              <option name="hostPath" value="C:\Users\322358847\Documents\projects\truemedicalreport\src\frontend\frontend\src" />
+            </DockerVolumeBindingImpl>
+          </list>
+        </option>
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
 </component>

@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import {Badge} from "antd";
-import {useNavigate} from "react-router";
+import {useNavigate} from "react-router-dom";
 import {RelativeTime} from "./RelativeTime";
 import useModal from "antd/es/modal/useModal";
 import {iframeModal} from "./modals";
@@ -8,7 +8,7 @@ import {faPlus} from "@fortawesome/free-solid-svg-icons";
 import {Watchable} from "./Watchable";
 
 export const Notification = ({patient, message, unread, markRead, showExternalLink, ...props}) => {
-    const {navigate} = useNavigate();
+    const navigate = useNavigate();
     const [modal, modalContext] = useModal();
     useEffect(() => {
         let task = setTimeout(markRead || (() => {

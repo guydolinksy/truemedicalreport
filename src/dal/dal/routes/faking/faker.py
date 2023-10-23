@@ -2,14 +2,15 @@ import datetime as dt
 import itertools as it
 from typing import Tuple, Optional, Iterable
 
-from faker import Faker
 from faker.providers import BaseProvider
 from fastapi import APIRouter, Depends, Body
 
 from common.data_models.admission import Admission
 from common.data_models.esi_score import ESIScore
 from common.data_models.intake import Intake
-from common.data_models.patient import ExternalPatient, Person
+from common.data_models.patient import Patient
+from common.data_models.person import Person
+from faker import Faker
 from .faker_consts import ER_DEPARTMENT, WINGS_LAYOUT, WING_KEYS, ALL_BEDS
 from ...clients import medical_dal, application_dal
 from ...consts import DAL_FAKER_TAG_NAME
@@ -58,7 +59,7 @@ class MedicalPropertiesProvider(BaseProvider):
         bed = self.random_element(wing_beds)
         return wing_key, bed
 
-    def external_patient(self, wing: str, bed: str) -> ExternalPatient:
+    def external_patient(self, wing: str, bed: str) -> Patient:
         patient_birthdate = dt.datetime.combine(
             _faker.date_of_birth(),
             _faker.time_object(),
@@ -71,7 +72,7 @@ class MedicalPropertiesProvider(BaseProvider):
 
         admitted_at = _faker.past_datetime("-30m").replace(tzinfo=dt.timezone.utc).isoformat()
 
-        return ExternalPatient(
+        return Patient(
             external_id=patient_id,
             info=Person(
                 id_=patient_id,
@@ -95,7 +96,7 @@ class MedicalPropertiesProvider(BaseProvider):
             ),
         )
 
-    def external_patients(self, count: int) -> Iterable[ExternalPatient]:
+    def external_patients(self, count: int) -> Iterable[Patient]:
         for wing, bed in self.random_elements(ALL_BEDS, count, unique=True):
             yield self.external_patient(wing, bed)
 

@@ -13,8 +13,8 @@ export const HashMatch = ({children}) => {
     const [matched, matching] = useMemo(() => {
         let parts = hash.split('#').slice(1);
         return [
-            match => parts.length >= match.length && !match.some((m, i) => parts[i] !== m),
-            match => parts.length >= match.length && !match.some((m, i) => parts[i] !== m) ? parts.slice(match.length) : [],
+            match => parts.length >= match.length && !match.some((m, i) => m !== null && parts[i] !== m),
+            match => parts.length >= match.length && !match.some((m, i) =>  m !== null && parts[i] !== m) ? parts.slice(match.length) : [],
         ]
     }, [hash])
 

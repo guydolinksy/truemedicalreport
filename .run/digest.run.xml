@@ -1,0 +1,52 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="digest" type="docker-deploy" factoryName="docker-image" folderName="local" server-name="Docker">
+    <deployment type="docker-image">
+      <settings>
+        <option name="imageTag" value="docker-virtual.artifactory.arc-devops.sheba.gov.il/guydo/tmr-sheba-digest:dev" />
+        <option name="containerName" value="tmr-digest" />
+        <option name="envVars">
+          <list>
+            <DockerEnvVarImpl>
+              <option name="name" value="CARE_STREAM_URL" />
+              <option name="value" value="&quot;https://eagle.arc-beta.sheba.gov.il/portal/default.aspx?user_name=9999999999&amp;password=ABPKFCHFOGIEJFALBEIIKGGJNKCMPJOB&amp;password_encrypted=true&quot;" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="CHAMELEON_CONNECTION" />
+              <option name="value" value="&quot;mssql+pyodbc://Tmr_App:Tmr_App%40!@sbwnd81c.sheba.gov.il:1433/Chameleon?driver=ODBC+Driver+18+for+SQL+Server&amp;trustServerCertificate=yes&quot;" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="DAL_CONNECTION" />
+              <option name="value" value="&quot;http://tmr-dal:80/dal&quot;" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="IMAGING_CONNECTION" />
+              <option name="value" value="{&#10;  &quot;username&quot;: &quot;INNOVAT_BI&quot;,&#10;  &quot;password&quot;: &quot;dd2g123!&quot;,&#10;  &quot;host&quot;: &quot;172.21.4.79&quot;,&#10;  &quot;port&quot;: 1521,&#10;  &quot;service_name&quot;: &quot;CSHRIS&quot;&#10;}" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="LABS_CONNECTION" />
+              <option name="value" value="{&#10;  &quot;username&quot;: &quot;AUTODB_USER&quot;,&#10;  &quot;password&quot;: &quot;autodb1212&quot;,&#10;  &quot;host&quot;: &quot;172.21.2.208&quot;,&#10;  &quot;port&quot;: 1521,&#10;  &quot;service_name&quot;: &quot;dwh&quot;&#10;}" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="CHAMELEON_URL" />
+              <option name="value" value="&quot;https://octopus.arc-beta.sheba.gov.il&quot;" />
+            </DockerEnvVarImpl>
+          </list>
+        </option>
+        <option name="commandLineOptions" value="--link tmr-dal:tmr-dal" />
+        <option name="volumeBindings">
+          <list>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/opt/digest/digest" />
+              <option name="hostPath" value="C:\Users\322358847\Documents\projects\truemedicalreport\src\sheba\digest\digest" />
+            </DockerVolumeBindingImpl>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/opt/common/common" />
+              <option name="hostPath" value="C:\Users\322358847\Documents\projects\truemedicalreport\src\common\common" />
+            </DockerVolumeBindingImpl>
+          </list>
+        </option>
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>

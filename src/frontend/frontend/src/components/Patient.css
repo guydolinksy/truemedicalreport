@@ -1,3 +1,3 @@
-.patient-content > .ant-ribbon-wrapper > .ant-ribbon{
-    top: -10px !important;
+.ant-ribbon-wrapper {
+    height: 100%;
 }

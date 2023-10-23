@@ -1,7 +1,6 @@
 import contextlib
 from typing import Tuple, Set, List, Any, Dict
 
-import ldap
 import logbook
 import pydantic.dataclasses
 from cachetools import cached, TTLCache
@@ -9,6 +8,7 @@ from ldap.ldapobject import LDAPObject
 from pydantic import ValidationError
 from pymongo.collection import Collection
 
+import ldap
 from .base import AuthProvider
 from ..exceptions import UnauthorizedException, InvalidSettingsException, ForbiddenException
 from ..user import User
@@ -140,11 +140,11 @@ class LdapAuthProvider(AuthProvider):
             with settings.handle_ldap_exceptions(extra="finding user groups"):
                 for group_dn in [settings.admin_group_dn, settings.user_group_dn]:
                     if ldap_connection.search_s(
-                        settings.users_base,
-                        ldap.SCOPE_SUBTREE,
-                        # Recursive search is extremely slow, optimizing by filtering only for the wanted groups
-                        f"(&(memberOf:{LDAP_MATCHING_RULE_IN_CHAIN}:={group_dn})({user_filter}))",
-                        attrlist=[""],
+                            settings.users_base,
+                            ldap.SCOPE_SUBTREE,
+                            # Recursive search is extremely slow, optimizing by filtering only for the wanted groups
+                            f"(&(memberOf:{LDAP_MATCHING_RULE_IN_CHAIN}:={group_dn})({user_filter}))",
+                            attrlist=[""],
                     ):
                         groups.append(group_dn)
         elif LDAP_MEMBER_IN_GROUP_ATTRIBUTE in user_object:

@@ -1,6 +1,6 @@
 import React, {Suspense, useCallback, useContext, useEffect, useState} from "react";
 import Axios from 'axios';
-import {useLocation, useNavigate} from "react-router";
+import {useLocation, useNavigate} from "react-router-dom";
 import {Navigate} from "react-router-dom";
 import {useMatomo} from '@datapunt/matomo-tracker-react'
 
@@ -116,6 +116,7 @@ export const LoginForm = () => {
         }
 
         let next = (new URLSearchParams(search)).get('next');
+        console.log('REDIRECT')
         navigate(next ? decodeURIComponent(next) : '/');
     }, [user, search, navigate])
 

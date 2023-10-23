@@ -1,7 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional
+from .base import Diffable
 
 
-class ESIScore(BaseModel):
-    value: Optional[int]
-    at: Optional[str]
+class ESIScore(Diffable):
+    value: int
+    at: str
+

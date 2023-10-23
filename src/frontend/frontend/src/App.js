@@ -2,16 +2,15 @@ import './App.css';
 import React, {useEffect} from "react";
 import {ConfigProvider, Layout} from 'antd';
 import {LoginProvider} from "./components/LoginContext";
-import {BrowserRouter as Router, generatePath, Route, Routes} from 'react-router-dom';
-import {Navigate} from 'react-router';
+import {BrowserRouter as Router, generatePath, Route, Routes, Navigate} from 'react-router-dom';
 import {WING_URL, WingView} from "./pages/WingView";
 import {LOGIN_URL, LoginView} from "./pages/LoginView";
 import {DEPARTMENT_URL, DepartmentView} from "./pages/DepartmentView";
-import {SETTINGS_URL, SettingsView} from "./pages/SettingsView";
 import {useMatomo} from "@datapunt/matomo-tracker-react";
 import {UserTheme} from "./themes/ThemeContext";
 import {HashMatch} from "./components/HashMatch";
 import {TimeContextProvider} from "./components/RelativeTime";
+import {MAIN_URL, MainView} from "./pages/MainView";
 
 function App() {
     const {trackPageView} = useMatomo();
@@ -29,17 +28,15 @@ function App() {
                             <LoginProvider>
                                 {({user}) =>
                                     <UserTheme>
-                                        <Layout style={{height: '100%'}}>
-                                            <Routes>
-                                                <Route path={LOGIN_URL} element={<LoginView/>}/>
-                                                <Route path={WING_URL} element={<WingView/>}/>
-                                                <Route path={DEPARTMENT_URL} element={<DepartmentView/>}/>
-                                                <Route path={SETTINGS_URL} element={<SettingsView/>}/>
-                                                <Route path={'*'} element={<Navigate to={generatePath(
-                                                    DEPARTMENT_URL, {department: (user && user.department) || "er"}
-                                                )}/>}/>
-                                            </Routes>
-                                        </Layout>
+                                        <Routes>
+                                            <Route path={LOGIN_URL} element={<LoginView/>}/>
+                                            <Route element={<MainView/>}>
+                                                <Route path={DEPARTMENT_URL} element={<DepartmentView/>}>
+                                                    <Route path={WING_URL} element={<WingView/>}/>
+                                                </Route>
+                                                <Route path={'*'} element={<Navigate to={MAIN_URL}/>}/>
+                                            </Route>
+                                        </Routes>
                                     </UserTheme>
                                 }
                             </LoginProvider>

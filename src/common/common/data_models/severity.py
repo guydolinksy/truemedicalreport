@@ -1,8 +1,6 @@
-from typing import Optional
-
-from pydantic import BaseModel
+from .base import Diffable
 
 
-class Severity(BaseModel):
-    value: Optional[int]
-    at: Optional[str]
+class Severity(Diffable):
+    value: int
+    at: str

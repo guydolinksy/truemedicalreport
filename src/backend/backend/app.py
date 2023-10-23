@@ -4,7 +4,6 @@ from fastapi_offline import FastAPIOffline
 from logbook import StreamHandler
 
 from common.tracing import setup_sentry
-
 from . import config
 
 
@@ -20,6 +19,7 @@ def create_app() -> FastAPIOffline:
     from .routes.plugins import plugins_router
     from .routes.patient import patient_router
     from .routes.department import department_router
+    from .routes.mci import mci_router
     from .routes.sync import sync_router
     from .routes.settings import settings_router
     from .routes.tracing import tracing_router
@@ -28,6 +28,7 @@ def create_app() -> FastAPIOffline:
     app_.include_router(plugins_router, prefix="/api/plugins")
     app_.include_router(patient_router, prefix="/api/patients")
     app_.include_router(department_router, prefix="/api/departments")
+    app_.include_router(mci_router, prefix="/api/mci")
     app_.include_router(sync_router, prefix="/api/sync")
     app_.include_router(settings_router, prefix="/api/settings")
     app_.include_router(tracing_router, prefix="/api/tracing")

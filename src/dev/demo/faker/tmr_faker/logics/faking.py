@@ -18,7 +18,7 @@ from .. import config
 logger = logbook.Logger(__name__)
 
 
-class Departments(Enum):
+class Departments(str, Enum):
     er = '1184000'
 
 

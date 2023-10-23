@@ -1,8 +1,8 @@
 import logbook
 from fastapi import APIRouter, Body
 
+from common.data_models.plugin import PatientInfoPluginConfig
 from ..logics.utils import post_dal_json, fetch_dal_json
-from common.data_models.patient import PatientInfoPluginConfig
 
 plugins_router = APIRouter()
 

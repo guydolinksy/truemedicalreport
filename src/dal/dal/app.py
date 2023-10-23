@@ -5,9 +5,8 @@ from logbook import StreamHandler
 from sentry_sdk.integrations.pymongo import PyMongoIntegration
 
 from common.tracing import setup_sentry
-
-from .consts import DAL_FAKER_TAG_NAME
 from . import config
+from .consts import DAL_FAKER_TAG_NAME
 
 
 def create_app() -> FastAPIOffline:
@@ -35,14 +34,18 @@ def create_app() -> FastAPIOffline:
     from .routes.config import config_router
     from .routes.patient import patient_router
     from .routes.department import department_router
+    from .routes.mci import mci_router
     from .routes.publishing import publish_router
     from .routes.faking import faker_router
+    from .routes.gql_example import gql_router
 
     app_.include_router(config_router, prefix="/dal/config")
     app_.include_router(patient_router, prefix="/dal/patients")
     app_.include_router(department_router, prefix="/dal/departments")
+    app_.include_router(mci_router, prefix="/dal/mci")
     app_.include_router(publish_router, prefix="/dal/publishing")
     app_.include_router(faker_router, prefix="/dal/faker")
+    app_.include_router(gql_router, prefix="/dal/gql")
 
     return app_
 

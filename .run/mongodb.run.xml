@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="mongodb" type="docker-deploy" factoryName="docker-image" folderName="local" server-name="Docker">
+    <deployment type="docker-image">
+      <settings>
+        <option name="imageTag" value="docker-virtual.artifactory.arc-devops.sheba.gov.il/bitnami/mongodb" />
+        <option name="containerName" value="tmr-mongodb" />
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>

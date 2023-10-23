@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from .base import Diffable
 
 
-class Event(BaseModel):
+class Event(Diffable):
     key: str
     content: str
     at: str

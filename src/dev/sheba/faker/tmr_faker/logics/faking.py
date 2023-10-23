@@ -259,16 +259,16 @@ class FakeMain(object):
         for patient in patients:
             patient_id = patient
             order_date = datetime.datetime.utcnow()
-            type_ = random.choice(list(ImagingTypes)).value
+            type_ = random.choice(list(ImagingTypes))
             type_name = {
-                ImagingTypes.ct.value: 'CT',
-                ImagingTypes.ultrasound.value: 'US',
-                ImagingTypes.xray.value: 'צילום'
+                ImagingTypes.ct: 'CT',
+                ImagingTypes.ultrasound: 'US',
+                ImagingTypes.xray: 'צילום'
             }
             location = random.choice(['ראש', 'אגן', 'בית החזה בשכיבה/ישיבה', 'מוח', 'בטן', 'עמוד שדרה'])
             description = f'{type_name[type_]} {location}'
-            status = random.choice(list(ImagingStatus)).value
-            level = random.choice(list(NotificationLevel)).value
+            status = random.choice(list(ImagingStatus))
+            level = random.choice(list(NotificationLevel))
             order_number = random.randint(1000000000000, 9999999999999)
             # link = self.faker.url()
             with self.session() as session:
@@ -298,7 +298,7 @@ class FakeMain(object):
             for test_type_id, test_type_name in enumerate(LAB_TEST_TYPE[category]):
                 patient_id = patient
                 order_date = order_date
-                # test_type_id = f'{category.value}{test_type_id:04}'
+                # test_type_id = f'{category}{test_type_id:04}'
                 test_type_name = test_type_name
                 if step > 30:
                     collection_date = collection_date
@@ -349,7 +349,7 @@ class FakeMain(object):
             with self.session() as session:
                 if session.query(ChameleonMedicalText).filter(
                         (ChameleonMedicalText.patient_id == patient) &
-                        (ChameleonMedicalText.medical_text_code == FreeTextCodes.NURSE_SUMMARY.value)
+                        (ChameleonMedicalText.medical_text_code == FreeTextCodes.NURSE_SUMMARY)
                 ).first():
                     continue
             patient_medical_text = ChameleonMedicalText(
@@ -359,8 +359,8 @@ class FakeMain(object):
                 documenting_time=datetime.datetime.utcnow(),
                 documenting_user=random.randint(200, 5800),
                 unit_name=Units.ER.name,
-                unit=Units.ER.value,
-                medical_text_code=FreeTextCodes.NURSE_SUMMARY.value,
+                unit=Units.ER,
+                medical_text_code=FreeTextCodes.NURSE_SUMMARY,
                 medical_text_title=FreeTextCodes.NURSE_SUMMARY.name,
                 medical_text=random.choice([
                     """ בדרך כלל בריא, חווה כאבים בצד שמאל מאתמול בערב. מלווה בכאבי ראש וסחרחורות לסירוגין""",
@@ -394,8 +394,8 @@ class FakeMain(object):
                 documenting_time=datetime.datetime.utcnow(),
                 documenting_user=random.randint(200, 5800),
                 unit_name=Units.ER.name,
-                unit=Units.ER.value,
-                medical_text_code=FreeTextCodes.DOCTOR_VISIT.value,
+                unit=Units.ER,
+                medical_text_code=FreeTextCodes.DOCTOR_VISIT,
                 medical_text_title=FreeTextCodes.DOCTOR_VISIT.name,
                 medical_text="נבדק",
             )

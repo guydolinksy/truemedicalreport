@@ -1,12 +1,12 @@
-from typing import List
+from typing import List, Dict
 
-from pydantic import BaseModel
+from .base import Diffable
+from .patient import Patient
+from .wing import Wing
 
-from common.data_models.wing import WingSummary
 
-
-class Department(BaseModel):
-    wings: List[WingSummary]
-
-    class Config:
-        orm_mode = True
+class Department(Diffable):
+    key: str
+    name: str
+    wings: List[Wing]
+    patients: Dict[str, Patient]

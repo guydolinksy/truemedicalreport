@@ -3,9 +3,8 @@ from typing import List
 
 import logbook
 import sentry_sdk
-from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
-
+from sentry_sdk.integrations.fastapi import FastApiIntegration
 
 logger = logbook.Logger("tracing")
 

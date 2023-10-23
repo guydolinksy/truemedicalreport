@@ -1,2 +1,2 @@
-from .routes import router
 from .register import register
+from .routes import router

@@ -15,4 +15,4 @@ def application_dal() -> ApplicationDal:
 
 
 def medical_dal(application_dal_: ApplicationDal = Depends(application_dal)) -> MedicalDal:
-    return MedicalDal(db=mongo_client().medical, application_dal=application_dal_)
+    return MedicalDal(db=mongo_client().medical, settings_db=mongo_client().app, application_dal=application_dal_)
