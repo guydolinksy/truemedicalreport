@@ -2,7 +2,7 @@ import oracledb
 
 from common.data_models.image import ImagingTypes
 from ..models.ris_imaging import RisImaging
-from ..utils.sql_statements import query_ris_imaging, query_lab_in_progress
+from ..utils.sql_statements import query_ris_imaging, query_lab_in_progress, RISImagingQuery, LabInProgressQuery
 
 modality_type_mapping = {
     "DX": ImagingTypes.xray,
@@ -15,7 +15,9 @@ modality_type_mapping = {
 
 
 class OracleAdapter:
+
     def __init__(self, connection_params) -> None:
+
         self.params = oracledb.ConnectParams(
             password=connection_params["password"],
             host=connection_params["host"],
@@ -29,12 +31,16 @@ class OracleAdapter:
         with oracledb.connect(params=self.params).cursor() as cursor:
             results = cursor.execute(query_ris_imaging.format(', '.join(set(accessions))))
             for result in results:
-                imaging[str(result[3])] = RisImaging(
-                    order_number=result[0],
-                    imaging_type=modality_type_mapping.get(result[1], ImagingTypes.unknown),
-                    sps_code=result[2],
-                    accession_number=result[3]
+                i = RisImaging(
+                    order_number=str(result[RISImagingQuery.ORDER_KEY]),
+                    imaging_type=modality_type_mapping.get(
+                        result[RISImagingQuery.MODALITY_TYPE_CODE],
+                        ImagingTypes.unknown
+                    ),
+                    sps_code=result[RISImagingQuery.SPS_CODE],
+                    accession_number=str(result[RISImagingQuery.SPS_KEY]),
                 )
+                imaging[i.external_id] = i
         return imaging
 
     def query_labs(self, order_numbers: list[str]) -> dict[str, dict]:
@@ -42,11 +48,10 @@ class OracleAdapter:
         with oracledb.connect(params=self.params).cursor() as cursor:
             results = cursor.execute(query_lab_in_progress.format(orders="', '".join(set(order_numbers))))
             for result in results:
-                labs.setdefault(result[3], []).append({
-                    'TestCode': result[1],
-                    'TestName': result[2],
-                    'OrderNumber': result[3],
-                    'Category': result[7],
+                labs.setdefault(str(result[LabInProgressQuery.ORDER_NUMBER]), []).append({
+                    LabInProgressQuery.TEST_CODE: result[LabInProgressQuery.TEST_CODE],
+                    LabInProgressQuery.TEST_NAME: result[LabInProgressQuery.TEST_NAME],
+                    LabInProgressQuery.CATEGORY: result[LabInProgressQuery.CATEGORY],
                 })
 
         return labs

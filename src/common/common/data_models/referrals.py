@@ -1,51 +1,32 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import computed_field
 
+from .base import Diffable
 from .notification import NotificationLevel, Notification, NotificationType
 
 
-class Referral(BaseModel):
-    patient_id: str
-
-    external_id: str
+class Referral(Diffable):
     to: str
     at: str
-    completed: bool = False
+    completed_at: Optional[str] = None
 
-    class Config:
-        orm_mode = True
 
-    def __init__(self, **kwargs):
-        if '_id' in kwargs:
-            kwargs['oid'] = str(kwargs.pop('_id'))
-        super(Referral, self).__init__(**kwargs)
-
-    def get_instance_id(self):
+    @computed_field
+    @property
+    def external_id(self) -> str:
         return f'referral#{self.at.replace(":", "-").replace(".", "-")}'
 
-    def to_notification(self):
-        message = "הפנייה ל"
-        message += self.to
-        message += " הסתיימה"
-
-        return ReferralsNotification(
+    def to_notifications(self):
+        n = ReferralsNotification(
             static_id=self.external_id,
-            patient_id=self.patient_id,
             at=self.at,
-            message=message,
+            message=f"הפנייה ל{self.to} הסתיימה",
             level=NotificationLevel.normal
         )
+        return {n.static_id: n}
 
 
 class ReferralsNotification(Notification):
+    type_: NotificationType = NotificationType.referral
 
-    @classmethod
-    def get_id(cls, **kwargs):
-        return {kwargs['type'].value: kwargs['static_id']}
-
-    def __init__(self, **kwargs):
-        kwargs['type'] = NotificationType.referral
-        if 'notification_id' not in kwargs:
-            kwargs['notification_id'] = self.get_id(**kwargs)
-        super(ReferralsNotification, self).__init__(**kwargs)

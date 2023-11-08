@@ -8,7 +8,7 @@ with open(os.path.join(os.path.dirname(__file__), 'requirements.txt'), 'r') as s
 if __name__ == '__main__':
     setup(
         name='common',
-        version='0.1.0',
+        version='0.1.1',
         packages=find_packages(),
         install_requires=requirements
     )

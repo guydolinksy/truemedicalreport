@@ -2,13 +2,15 @@ import asyncio
 import json
 from asyncio import Task
 from collections import defaultdict
-from types import NoneType
+try:
+    from types import NoneType
+except ImportError:
+    NoneType = type(None)
 from typing import Callable, Any, TypeVar, Union, List, Dict, Awaitable, Optional
 
-from fastapi import APIRouter
-from broadcaster import Broadcast
 import logbook
-
+from broadcaster import Broadcast
+from fastapi import APIRouter
 
 logger = logbook.Logger(__name__)
 

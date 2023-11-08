@@ -1,6 +1,5 @@
 import itertools as it
 
-
 ER_DEPARTMENT = "er"
 WINGS_LAYOUT = {
     "אגף B1": {

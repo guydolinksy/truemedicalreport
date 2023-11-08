@@ -1,8 +1,10 @@
-from typing import Optional
-
-from pydantic import BaseModel
+from .base import Diffable, ParsableMixin
 
 
-class Severity(BaseModel):
-    value: Optional[int]
-    at: Optional[str]
+class Severity(Diffable, ParsableMixin):
+    value: int
+    at: str
+
+    @classmethod
+    def parse(cls, value) -> 'ParsableMixin':
+        return cls(**value)

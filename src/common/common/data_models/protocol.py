@@ -1,10 +1,10 @@
 from typing import List, Dict
 
-from pydantic import BaseModel
+from .base import Diffable
 
 
-class ProtocolItem(BaseModel):
-    keys: List[str] = list()
+class ProtocolItem(Diffable):
+    keys: List[str] = []
     key: str
     name: str
     default: str
@@ -13,12 +13,17 @@ class ProtocolItem(BaseModel):
         return key in self.keys
 
 
-class ProtocolValue(BaseModel):
+class ProtocolValue(Diffable):
     value: str
     at: str
 
 
-class Protocol(BaseModel):
+class Protocol(Diffable):
     active: bool = False
-    items: List[ProtocolItem] = list()
-    values: Dict[str, ProtocolValue] = dict()
+    items: List[ProtocolItem] = []
+    values: Dict[str, ProtocolValue] = {}
+
+    async def match_protocol(self, key, value, at):
+        for item in self.items:
+            if item.match(key) and (item.key not in self.values or self.values[item.key].at < at):
+                self.values[item.key] = ProtocolValue(value=value, at=at)

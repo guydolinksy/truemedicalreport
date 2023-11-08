@@ -1,8 +1,11 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 
-from pydantic import BaseModel
+from .base import Diffable
+from .medication import Medication
 
 
-class Treatment(BaseModel):
-    destination: Optional[str]
-    doctors: List[str] = list()
+class Treatment(Diffable):
+    destination: Optional[str] = None
+    doctors: List[str] = []
+    medications: Dict[str, Medication] = {}
+

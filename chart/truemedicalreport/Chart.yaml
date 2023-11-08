@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: develop-c082b60
+appVersion: 2.2.0
 dependencies:
 - condition: ingress-nginx.enabled
   name: ingress-nginx
@@ -22,4 +22,4 @@ dependencies:
 description: A helm chart for True Medical Report
 name: truemedicalreport
 type: application
-version: 1.0.0
+version: 1.1.0

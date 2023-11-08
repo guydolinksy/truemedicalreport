@@ -22,18 +22,17 @@ subscribe = create_subscriber(sync_router, config.redis_connection)
 @subscribe(Patient.__name__)
 async def patient_handler(data: dict):
     patient_oid = data["oid"]
-    old = data.get("old") or {}
-    new = data.get("new") or {}
+    if not (new := data.get("new")):
+        return
 
-    keys = [f"/api/patients/{patient_oid}", f"/api/patients/{patient_oid}/info"]
-
-    if new.get("flagged") != old.get("flagged") or \
-            new.get("severity", {}).get('value') != old.get("severity", {}).get('value'):
-        if admission := old.get("admission", {}):
-            keys.append(f"/api/departments/{admission['department']}/wings/{admission['wing']}")
-
-        if admission := new.get("admission", {}):
-            keys.append(f"/api/departments/{admission['department']}/wings/{admission['wing']}")
+    admission = Admission(**new['admission'])
+    keys = {
+        f"/api/departments/",
+        f"/api/patients/{patient_oid}",
+        f"/api/patients/{patient_oid}/info",
+        f"/api/departments/{admission.department_id}",
+        f"/api/departments/{admission.department_id}/wings/{admission.wing_id or 'wingless'}"
+    }
 
     await notify(keys)
 
@@ -48,9 +47,9 @@ async def admission_handler(data: dict) -> None:
 
         admission = Admission(**data[k])
         keys.update({
-            f"/api/departments/{admission.department}",
-            f"/api/departments/{admission.department}/wings/{admission.wing}",
-            f"/api/departments/{admission.department}/wings/{admission.wing}/beds/{admission.bed}",
+            f"/api/departments/{admission.department_id}",
+            f"/api/departments/{admission.department_id}/wings/{admission.wing_id}",
+            f"/api/departments/{admission.department_id}/wings/{admission.wing_id}/beds/{admission.bed}",
         })
 
     await notify(keys)

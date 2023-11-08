@@ -10,11 +10,11 @@ import {
     faHeart,
     faHeartPulse,
     faHourglass,
+    faHouseMedicalCircleCheck,
     faPercentage,
     faStethoscope,
     faTemperatureHalf,
     faUserNurse,
-    faHouseMedicalCircleCheck,
     faVial,
     IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";

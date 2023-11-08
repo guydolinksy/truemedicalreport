@@ -1,11 +1,12 @@
-import {useNavigate} from "react-router";
-import React, {useCallback, useContext, useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
+import React, {useCallback, useContext, useState} from "react";
 import {loginContext} from "./LoginContext";
 import {Badge, Collapse, Empty, List, Space} from "antd";
 import {PushpinOutlined, UserOutlined} from "@ant-design/icons";
 import {RelativeTime} from "./RelativeTime";
 import {Notification} from "./Notification";
-import {wingDataContext} from "./Wing";
+import {wingDataContext} from "../contexts/WingContext";
+import moment from "moment";
 
 const {Panel} = Collapse;
 const {Item} = List;
@@ -20,75 +21,69 @@ export const WingNotifications = () => {
     const {user} = useContext(loginContext);
     const {value} = useContext(wingDataContext.context);
     const [openKeys, setOpenKeys] = useState([]);
-    const [unread, setUnread] = useState({});
+    const [read, setRead] = useState({});
 
-    const appendUnread = useCallback((oid, messages) => {
-        console.log('UNREAD', oid, messages)
-        setUnread(p => Object.assign({}, p, {[oid]: (p[oid] || []).concat(messages)}));
-    }, [setUnread]);
     const markRead = useCallback((oid, static_id) => {
-        setUnread(p => Object.assign({}, p, {[oid]: (p[oid] || []).filter(s => s !== static_id)}));
-    }, [setUnread]);
+        setRead(p => Object.assign({}, p, {[oid]: (p[oid] || []).concat(static_id)}));
+    }, [setRead]);
 
-    const [notifications, setNotifications] = useState(null);
-    useEffect(() => {
-        setNotifications(prevState => Object.assign({}, ...value.notifications.map((n) => {
-            let messages = n.notifications.map(m => m.static_id)
-            if (prevState !== null)
-                appendUnread(n.patient.oid, messages.filter(s => !(prevState[n.patient.oid] || []).includes(s)));
-            return {[n.patient.oid]: messages};
-        })));
-    }, [appendUnread, value.notifications]);
 
     const openChange = useCallback(key => {
         let keys = Array.isArray(key) ? key : [key];
 
         setOpenKeys(prevState => {
-            keys.filter(k => !prevState.includes(k)).forEach(k => navigate(`#highlight#${k}#open`));
-            prevState.filter(k => !keys.includes(k)).forEach(k => navigate(`#highlight#${k}#close`));
+            keys.filter(k => !prevState.includes(k)).forEach(k => navigate(`#notifications#${k}#open`));
+            prevState.filter(k => !keys.includes(k)).forEach(k => navigate(`#notifications#${k}#close`));
             return keys;
         })
     }, [navigate]);
-    if (!value.notifications.length)
-        return <div style={{display: "flex", flex: 1, flexDirection: "column"}}>
+
+
+    return value.patients.length ?
+        <div style={{display: "flex !important", flexDirection: "column", flex: "1"}}>
+            <Collapse onChange={openChange} style={{flex: "1 0 10vh", minHeight: "10vh", overflowY: "overlay"}}>
+                {value.patients.filter(({patient}) => patient.notifications.length).map(({oid, patient}) => {
+                    const {patient: last} = patient.notifications.sort(
+                        (k1, k2) => moment(k1.notification.at).isAfter(k2.notification.at) ? 1 : -1
+                    ).pop();
+                    const worst = patient.notifications.sort(
+                        (k1, k2) => moment(k1.notification.level).isAfter(k2.notification.level) ? 1 : -1
+                    ).pop();
+                    const unread = patient.notifications.filter(m => (read[oid] || []).includes(m.key))
+                    return <Panel key={oid} header={<>
+                    <span className={`gender-${patient.info.gender}`}>
+                        <UserOutlined/>{!user.anonymous && <span>&nbsp;{patient.info.name}</span>}
+                    </span>
+                        <br/>
+                        <span style={{fontSize: "10px"}}>{last.message}</span>
+                    </>} extra={<div style={{
+                        display: "flex",
+                        flexFlow: "column nowrap",
+                        alignItems: "flex-end",
+                    }}>
+                        <RelativeTime style={{fontSize: 12}} date={last.at}/>
+                        <Space>
+                            {patient.flagged && <PushpinOutlined style={{marginLeft: 0}}/>}
+                            {unread.length > 0 &&
+                                <Badge className={badgeClass[worst]} count={unread.length} size={"small"}/>}
+                        </Space>
+                    </div>}>
+                        <List>
+                            {patient.notifications.length ? patient.notifications.sort(
+                                (k1, k2) => moment(k1.notification.at).isAfter(k2.notification.at) ? 1 : -1
+                            ).map(({key, message}, j) =>
+                                <Item key={`${oid}-${j}`}>
+                                    <Notification
+                                        unread={unread.includes(message.static_id)}
+                                        markRead={() => markRead(oid, message.static_id)}
+                                        patient={oid} message={message}/>
+                                </Item>
+                            ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין עדכונים זמינים'}/>}
+                        </List>
+                    </Panel>
+                })}
+            </Collapse>
+        </div> : <div style={{display: "flex", flex: 1, flexDirection: "column"}}>
             <Empty style={{height: 'fit-content'}} description={'אין התרעות'} image={Empty.PRESENTED_IMAGE_SIMPLE}/>
         </div>
-    return <div style={{display: "flex !important", flexDirection: "column", flex: "1"}}>
-        <Collapse onChange={openChange} style={{flex: "1 0 10vh", minHeight: "10vh", overflowY: "overlay"}}>
-            {value.notifications.map((notification) => <Panel key={notification.patient.oid} header={
-                <>
-                    <span className={`gender-${notification.patient.info.gender}`}>
-                        <UserOutlined/>{!user.anonymous && <span>&nbsp;{notification.patient.info.name}</span>}
-                    </span>
-                    <br/>
-                    <span style={{fontSize: "10px"}}>{notification.preview}</span>
-                </>
-            } extra={
-                <div style={{
-                    display: "flex",
-                    flexFlow: "column nowrap",
-                    alignItems: "flex-end",
-                }}>
-                    <RelativeTime style={{fontSize: 12}} date={notification.at}/>
-                    <Space>
-                        {notification.patient.flagged && <PushpinOutlined style={{marginLeft: 0}}/>}
-                        {(unread[notification.patient.oid] || []).length > 0 && <Badge
-                            className={badgeClass[notification.level]}
-                            count={unread[notification.patient.oid].length}
-                            size={"small"}/>}
-                    </Space>
-                </div>
-            }>
-                {notification.notifications.length ? <List>
-                    {notification.notifications.map((message, j) =>
-                        <Item key={`${notification.patient.oid}-${j}`}>
-                            <Notification unread={(unread[notification.patient.oid] || []).includes(message.static_id)}
-                                          markRead={() => markRead(notification.patient.oid, message.static_id)}
-                                          patient={notification.patient.oid} message={message}/>
-                        </Item>
-                    )}
-                </List> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'אין עדכונים זמינים'}/>}
-            </Panel>)}
-        </Collapse>
-    </div>
 }

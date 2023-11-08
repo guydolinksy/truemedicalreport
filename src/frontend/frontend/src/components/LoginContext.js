@@ -1,14 +1,13 @@
-import React, {Suspense, useCallback, useContext, useEffect, useState} from "react";
+import React, {Suspense, useCallback, useContext, useEffect, useState, createContext} from "react";
 import Axios from 'axios';
-import {useLocation, useNavigate} from "react-router";
-import {Navigate} from "react-router-dom";
+import {Navigate, useLocation, useNavigate} from "react-router-dom";
 import {useMatomo} from '@datapunt/matomo-tracker-react'
 
 import {Button, Checkbox, Form, Input, Space, Spin} from 'antd';
 import {LockOutlined, UserOutlined} from "@ant-design/icons";
 import {LightTheme} from "../themes/ThemeContext";
 
-export const loginContext = React.createContext({});
+export const loginContext = createContext({});
 
 export const LoginProvider = ({...props}) => {
 
@@ -42,12 +41,6 @@ export const LoginProvider = ({...props}) => {
         {props.children({user: user, userSettings: userSettings, checkUser: checkUser, loadingUser: loading, ...props})}
     </loginContext.Provider>
 }
-
-export const withLogin = Component => ({...props}) => {
-    return <loginContext.Consumer>{({user, userSettings, checkUser, loadingUser}) =>
-        <Component user={user} userSettings={userSettings} checkUser={checkUser} loadingUser={loadingUser} {...props}/>
-    }</loginContext.Consumer>
-};
 
 export const LoginRequired = ({...props}) => {
     const {user, loadingUser} = useContext(loginContext);
@@ -116,6 +109,7 @@ export const LoginForm = () => {
         }
 
         let next = (new URLSearchParams(search)).get('next');
+        console.log('REDIRECT')
         navigate(next ? decodeURIComponent(next) : '/');
     }, [user, search, navigate])
 

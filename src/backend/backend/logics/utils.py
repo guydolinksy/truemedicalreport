@@ -1,8 +1,10 @@
-from typing import List
-
 import aiohttp
+import logbook
+from typing import List, Any, Iterable
 
 from .. import config
+
+logger = logbook.Logger(__name__)
 
 
 def prepare_update_object(path: List[str], value: any) -> dict:

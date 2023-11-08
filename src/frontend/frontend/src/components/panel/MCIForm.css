@@ -1,0 +1,14 @@
+.first-child-flex-1 > .ant-space-item:first-child {
+    flex: 1;
+}
+
+.mci-data.ant-space-vertical > .ant-space-item {
+    width: 100%;
+}
+
+.mci-data.ant-space-horizontal > .ant-space-item {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+}

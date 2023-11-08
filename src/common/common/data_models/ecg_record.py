@@ -1,7 +1,10 @@
 from typing import Optional
-from pydantic import BaseModel
 
-class ECGRecord(BaseModel):
+from .base import Diffable
+
+
+class ECGRecord(Diffable):
     date: Optional[str]
     link: Optional[str]
     title: Optional[str]
+

@@ -16,6 +16,7 @@ global: &global
     mongo: &mongo-fullname tmr-mongodb
     redis: &redis-fullname tmr-redis
     dal: &dal-fullname tmr-dal
+    ingest: &ingest-fullname tmr-dal-ingest
     backend: &backend-fullname tmr-backend
     frontend: &frontend-fullname tmr-frontend
     digest: &digest-fullname tmr-digest
@@ -23,6 +24,7 @@ global: &global
     mongo: 27017
     redis: 6379
     dal: 80
+    ingest: 80
     backend: 80
     frontend: 80
     digest: 80
@@ -35,10 +37,23 @@ dal:
     secretName: ''
     secretKey: ''
     caCertConfigMapName: ''
+ingest:
+  global:
+    <<: *global
+  fullnameOverride: *ingest-fullname
+  sentry:
+    enabled: false
+    secretName: ''
+    secretKey: ''
+    caCertConfigMapName: ''
 backend:
   global:
     <<: *global
   fullnameOverride: *backend-fullname
+  input:
+    arc:
+      secretName: ''
+      secretValue: ''
   sentry:
     enabled: false
     secretName: ''

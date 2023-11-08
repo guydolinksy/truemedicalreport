@@ -1,15 +1,14 @@
-import asyncio
 from datetime import timedelta
 
 import logbook
 
-from .routes import router
 from .logics.tasks import start, tasks, ScheduledTask
+from .routes import router
 
 logger = logbook.Logger(__name__)
 
 
-def register(period: timedelta, start_immediately=False):
+def register(period: timedelta, start_immediately=True):
     def _decorator(func):
         tasks[func.__name__] = ScheduledTask(code=func, task=None, period=period)
 

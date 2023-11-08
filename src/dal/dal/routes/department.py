@@ -1,21 +1,17 @@
-import http
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 import logbook
 from fastapi import APIRouter, Depends, Body
 from sentry_sdk import capture_exception, capture_message
 
-from common.data_models.department import Department
 from common.data_models.discussion import Note
 from common.data_models.image import Image
 from common.data_models.labs import LabCategory
 from common.data_models.measures import Measure
-from common.data_models.medicine import Medicine
-from common.data_models.patient import ExternalPatient, Intake
+from common.data_models.medication import Medication
+from common.data_models.patient import ExternalData, Intake
 from common.data_models.referrals import Referral
-from common.data_models.treatment import Treatment
-from common.data_models.wing import WingSummary
-from common.utilities.exceptions import PatientNotFound
+from common.utilities.exceptions import PatientNotFoundException
 from .wing import wing_router
 from ..clients import medical_dal
 from ..dal.medical_dal import MedicalDal
@@ -27,29 +23,28 @@ department_router.include_router(wing_router, prefix="/{department}/wings")
 logger = logbook.Logger(__name__)
 
 
-@department_router.get("/{department}", tags=["Department"], response_model=Department,
-                       response_model_exclude_unset=True)
-async def get_department(department: str, medical_dal_: MedicalDal = Depends(medical_dal)) -> Department:
-    return Department(wings=[WingSummary(
-        details=wing,
-        filters=await medical_dal_.get_wing_filters(department, wing.key),
-        count=len(await medical_dal_.get_wing_patients(department, wing.key)),
-    ) for wing in await medical_dal_.get_department_wings(department)])
+@department_router.post('/mci/intake')
+async def intake_mci_patients(intake: List[str] = Body(..., embed=True),
+                              medical_dal_: MedicalDal = Depends(medical_dal)) -> None:
+    logger.debug('MCI {} ', intake)
+    return await medical_dal_.update_mci_patients(intake)
 
 
-@department_router.post("/{department}/admissions", tags=["Department"])
-async def update_admissions(department: str, admissions: List[ExternalPatient] = Body(..., embed=True),
-                            at: str = Body(..., embed=True), dal: MedicalDal = Depends(medical_dal)):
-    protocol_config = await dal.get_protocol_config()
+@department_router.post("/{department}/admissions")
+async def update_admissions(department: str, admissions: List[ExternalData] = Body(..., embed=True),
+                            dal: MedicalDal = Depends(medical_dal)):
     updated = {patient.external_id: patient for patient in admissions}
-    existing = {patient.external_id: patient for patient in await dal.get_department_patients(department)}
-    for patient_external_id in set(updated) | set(existing):
-        await dal.upsert_patient(
-            previous=existing.get(patient_external_id),
+    existing = {patient['external_id'] async for _, patient in dal.get_patient_members(
+        query={"admission.department_id": department}, members={'external_id'}
+    )}
+    for patient_external_id in set(updated):
+        await dal.upsert_admission(
+            external_id=patient_external_id,
             patient=updated.get(patient_external_id),
-            protocol_config=protocol_config,
-            at=at,
         )
+    for patient_external_id in existing - set(updated):
+        logger.debug('DROPPING {}', patient_external_id)
+        await dal.upsert_admission(external_id=patient_external_id, patient=None)
 
 
 @department_router.post("/{department}/measurements", tags=["Department"])
@@ -58,29 +53,21 @@ async def update_measurements(measurements: Dict[str, List[Measure]] = Body(...,
     for patient in measurements:
         try:
             await dal.upsert_measurements(patient_id=patient, measures=measurements[patient])
-        except PatientNotFound:
+        except PatientNotFoundException:
             msg = f"Cannot update patient {patient} measurements - Patient not found"
             capture_message(msg, level="warning")
-            logger.debug(msg)
         except Exception as e:
             capture_exception(e, level="warning")
             logger.exception(f"update measurements failed - patient {patient} measurements {measurements[patient]}")
 
 
 @department_router.post("/{department}/imaging")
-async def update_imaging(department: str, images: Dict[str, List[Image]] = Body(..., embed=True),
+async def update_imaging(department: str, images: Dict[str, Dict[str, Image]] = Body(..., embed=True),
                          dal: MedicalDal = Depends(medical_dal)):
     for patient in images:
         try:
-            updated = {image.external_id: image for image in images[patient]}
-            existing = {image.external_id: image for image in await dal.get_patient_images(patient)}
-
-            for image in set(updated) | set(existing):
-                await dal.upsert_imaging(patient,
-                                         previous=existing.get(image),
-                                         imaging=updated.get(image))
-
-        except PatientNotFound:
+            await dal.upsert_imaging(patient, images=images[patient])
+        except PatientNotFoundException:
             logger.debug('Cannot update patient {} images - Patient not found', patient)
         except Exception:
             logger.exception(f"update imaging failed - patient {patient}")
@@ -88,20 +75,14 @@ async def update_imaging(department: str, images: Dict[str, List[Image]] = Body(
 
 @department_router.post("/{department}/referrals")
 async def update_referrals(department: str, at: str = Body(..., embed=True),
-                           referrals: Dict[str, List[Referral]] = Body(..., embed=True),
+                           referrals: Dict[str, Dict[str, Referral]] = Body(..., embed=True),
                            dal: MedicalDal = Depends(medical_dal)):
-    for patient in referrals:
+    for patient in set(referrals) | {p['external_id'] async for _, p in dal.get_patient_members(
+            query={"admission.department_id": department}, members={'external_id'}
+    )}:
         try:
-            updated = {referral.external_id: referral for referral in referrals[patient]}
-            existing = {referral.external_id: referral for referral in await dal.get_patient_referrals(patient)}
-            for referral in set(updated) | set(existing):
-                await dal.upsert_referral(
-                    patient_id=patient, at=at,
-                    previous=existing.get(referral),
-                    referral=updated.get(referral)
-                )
-
-        except PatientNotFound:
+            await dal.upsert_referral(patient_id=patient, at=at, referrals=referrals.get(patient, {}))
+        except PatientNotFoundException:
             logger.debug('Cannot update patient {} referrals', patient)
         except Exception as e:
             logger.exception(f"update referrals failed - patient {patient}")
@@ -113,26 +94,37 @@ async def update_labs(labs: Dict[str, Dict[str, LabCategory]] = Body(..., embed=
     for patient in labs:
         try:
             logger.info(f"upsert labs for {patient}")
-            await dal.upsert_labs(patient_id=patient, new_categories=labs[patient])
-        except PatientNotFound:
+            await dal.upsert_labs(patient_id=patient, labs=labs[patient])
+        except PatientNotFoundException:
             msg = f"Cannot update patient {patient} labs"
             capture_message(msg)
-            logger.debug(msg)
         except Exception as e:
             capture_exception(e, level="warning")
             logger.exception(f"update labs failed - patient {patient}")
 
 
-@department_router.post("/{department}/intake")
-async def update_intake(department: str, intakes: Dict[str, Intake] = Body(..., embed=True),
-                        dal: MedicalDal = Depends(medical_dal)):
+@department_router.post("/{department}/intake_nurse")
+async def update_intake_nurse(department: str, intakes: Dict[str, Intake] = Body(..., embed=True),
+                              dal: MedicalDal = Depends(medical_dal)):
     for patient, intake in intakes.items():
         try:
-            await dal.upsert_intake(patient, intake)
-        except PatientNotFound:
-            logger.debug('Cannot update patient {} intake - Patient not found', patient)
+            await dal.upsert_intake_nurse(patient, intake)
+        except PatientNotFoundException:
+            logger.debug('Cannot update patient {} intake nurse - Patient not found', patient)
         except Exception as e:
-            logger.exception(f"update intake failed - intake {intake} patient {patient}")
+            logger.exception(f"update intake failed - intake nurse {intake} patient {patient}")
+
+
+@department_router.post("/{department}/intake_doctor")
+async def update_intake_doctor(department: str, intakes: Dict[str, Intake] = Body(..., embed=True),
+                               dal: MedicalDal = Depends(medical_dal)):
+    for patient, intake in intakes.items():
+        try:
+            await dal.upsert_intake_doctor(patient, intake)
+        except PatientNotFoundException:
+            logger.debug('Cannot update patient {} intake doctor - Patient not found', patient)
+        except Exception as e:
+            logger.exception(f"update intake failed - intake doctor {intake} patient {patient}")
 
 
 @department_router.post("/{department}/discussion")
@@ -141,29 +133,41 @@ async def update_discussion(department: str, notes: Dict[str, Dict[str, Note]] =
     for patient, notes_by_id in notes.items():
         try:
             await dal.upsert_discussion(patient, notes_by_id)
-        except PatientNotFound:
+        except PatientNotFoundException:
             logger.debug('Cannot update patient {} discussion - Patient not found', patient)
         except Exception as e:
             logger.exception(f"update discussion failed - discussion {notes_by_id} patient {patient}")
 
 
-@department_router.post("/{department}/treatments", status_code=http.HTTPStatus.OK)
-async def update_treatments(department: str, treatments: Dict[str, Treatment] = Body(...),
-                            dal: MedicalDal = Depends(medical_dal)):
-    for record in treatments:
+@department_router.post("/{department}/destinations")
+async def update_destinations(department: str, destinations: Dict[str, Optional[str]] = Body(..., embed=True),
+                              dal: MedicalDal = Depends(medical_dal)):
+    for record in destinations:
         try:
-            await dal.upsert_treatment(record, treatments[record])
-        except PatientNotFound:
-            logger.debug('Cannot update patient {} treatments - Patient not found', record)
+            await dal.upsert_destination(record, destinations[record])
+        except PatientNotFoundException:
+            logger.debug('Cannot update patient {} destinations - Patient not found', record)
         except Exception as e:
-            logger.exception(f"update treatments failed - record {record}")
+            logger.exception(f"update destinations failed - record {record}")
 
 
-@department_router.post("/{department}/medicines")
-async def update_medicines(department: str, medications: Dict[str, List[Medicine]] = Body(...),
-                           dal: MedicalDal = Depends(medical_dal)):
+@department_router.post("/{department}/doctors")
+async def update_doctors(department: str, doctors: Dict[str, List[str]] = Body(..., embed=True),
+                         dal: MedicalDal = Depends(medical_dal)):
+    for record in doctors:
+        try:
+            await dal.upsert_doctors(record, doctors[record])
+        except PatientNotFoundException:
+            logger.debug('Cannot update patient {} doctors - Patient not found', record)
+        except Exception as e:
+            logger.exception(f"update doctors failed - record {record}")
+
+
+@department_router.post("/{department}/medications")
+async def update_medications(department: str, medications: Dict[str, List[Medication]] = Body(..., embed=True),
+                             dal: MedicalDal = Depends(medical_dal)):
     for patient in medications:
         try:
-            await dal.upsert_medicines(patient, medications[patient])
-        except PatientNotFound:
-            logger.debug('Cannot update patient {} medicines - Patient not found', patient)
+            await dal.upsert_medications(patient, medications[patient])
+        except PatientNotFoundException:
+            logger.debug('Cannot update patient {} medications - Patient not found', patient)

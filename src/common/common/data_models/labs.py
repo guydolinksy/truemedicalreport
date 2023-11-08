@@ -1,15 +1,16 @@
 import datetime
 from enum import Enum
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 
-from pydantic import BaseModel
+from pydantic import computed_field
 
-from common.data_models.notification import NotificationLevel, Notification, NotificationType
-from common.data_models.warnings import PatientWarning
+from .base import Diffable
+from .notification import NotificationLevel, Notification, NotificationType
 from .severity import Severity
+from .warnings import PatientWarning
 
 
-class LabStatus(Enum):
+class LabStatus(int, Enum):
     ordered = 1
     collected = 2
     in_progress = 3
@@ -46,11 +47,8 @@ class LabStatus(Enum):
 # }
 
 
-class Laboratory(BaseModel):
-    patient_id: str
-    external_id: str
+class Laboratory(Diffable):
     ordered_at: str
-    chameleon_id: Optional[str]
     result_at: Optional[str]
     test_type_id: int
     test_type_name: str
@@ -62,54 +60,38 @@ class Laboratory(BaseModel):
     panic: Optional[bool]
     status: LabStatus
 
+    @computed_field
     @property
-    def category_key(self):
-        return self.ordered_at, self.category
+    def external_id(self) -> str:
+        return f"{self.test_type_id}"
 
-    class Config:
-        orm_mode = True
-        use_enum_values = True
+    @property
+    def result_at_(self):
+        return datetime.datetime.fromisoformat(self.result_at) if self.result_at else None
 
 
 class LabsNotification(Notification):
-
-    @classmethod
-    def get_id(cls, **kwargs):
-        return {kwargs['type'].value: kwargs['static_id']}
-
-    def __init__(self, **kwargs):
-        kwargs['type'] = NotificationType.lab
-        if 'notification_id' not in kwargs:
-            kwargs['notification_id'] = self.get_id(**kwargs)
-        super(LabsNotification, self).__init__(**kwargs)
+    type_: NotificationType = NotificationType.lab
 
 
-class LabCategory(BaseModel):
+class LabCategory(Diffable):
     ordered_at: str
     category: str
     category_display_name: str
-    patient_id: str
-    status: LabStatus = LabStatus.ordered.value
+    status: LabStatus = LabStatus.ordered
     results: Dict[str, Laboratory] = {}
 
+    @computed_field
     @property
-    def key(self):
+    def external_id(self) -> str:
         return f"{self.category}-{self.ordered_at.replace('.', '-').replace(':', '-').replace('+', '-')}"
 
     @property
     def query_key(self):
         return {'at': self.ordered_at, 'category': self.category}
 
-    def get_instance_id(self):
-        return f'{self.patient_id}#{self.category}#{self.ordered_at}'. \
-            replace(":", "-").replace(".", "-").replace("+", "-")
-
-    class Config:
-        orm_mode = True
-        use_enum_values = True
-
-    def to_notifications(self) -> List[LabsNotification]:
-        res = []
+    def to_notifications(self) -> Dict[str, LabsNotification]:
+        res = {}
         out_of_range = False
         fault_laboratory = False
         for key, result in self.results.items():
@@ -129,35 +111,36 @@ class LabCategory(BaseModel):
             out_of_range = True
             # TODO decide if the special labs needs to be VH or HH or VL, LL
             if result.range == 'VH' or result.range == 'HH':
-                res.append(LabsNotification(
-                    static_id=f'{self.get_instance_id()}#{key}',
-                    patient_id=self.patient_id,
+                l = LabsNotification(
+                    static_id=f'{self.external_id}#{key}',
                     at=result.result_at,
-                    message=f"תוצאת {self.category}-{result.test_type_name} גבוהה: {result.result} {result.units}",
+                    message=f"{result.test_type_name} גבוה: {result.result} {result.units}",
                     link=None,  # TODO "Add in the future",
                     level=NotificationLevel.abnormal if not result.range == 'HH' else NotificationLevel.panic,
-                ))
+                )
+                res[l.static_id] = l
             if result.range == 'VL' or result.range == 'LL':
-                res.append(LabsNotification(
-                    static_id=f'{self.get_instance_id()}#{key}',
-                    patient_id=self.patient_id,
+                l = LabsNotification(
+                    static_id=f'{self.external_id}#{key}',
                     at=result.result_at,
-                    message=f"תוצאת {self.category}-{result.test_type_name} נמוכה: {result.result} {result.units}",
+                    message=f"{result.test_type_name} נמוך: {result.result} {result.units}",
                     link=None,  # "Add in the future",
                     level=NotificationLevel.abnormal if not result.range == 'LL' else NotificationLevel.panic,
-                ))
+                )
+                res[l.static_id] = l
         if res:
             return res
-        if self.status != LabStatus.analyzed.value or not fault_laboratory:
-            return []
-        return [LabsNotification(
-            static_id=self.get_instance_id(),
-            patient_id=self.patient_id,
+        if self.status != LabStatus.analyzed or not fault_laboratory:
+            return {}
+        l = LabsNotification(
+            static_id=self.external_id,
             at=max(datetime.datetime.fromisoformat(l.result_at) for l in self.results.values()).isoformat(),
-            message=f"תוצאות {self.category} פסולות",
+            message=f"{self.category} פסול",
             link=None,  # "Add in the future",
             level=NotificationLevel.abnormal if out_of_range else NotificationLevel.normal,
-        )]
+        )
+
+        return {l.static_id: l}
 
     def get_updated_warnings(self, warnings: Dict[str, PatientWarning]):
         for id_, lab in self.results.items():
@@ -166,7 +149,7 @@ class LabCategory(BaseModel):
                 yield key, PatientWarning(**warnings[key].dict(exclude={'acknowledge'}), acknowledge=True)
             elif key not in warnings and lab.range in ['HH', 'LL']:
                 yield key, PatientWarning(
-                    content=f"תוצאת {lab.category_display_name}-{lab.test_type_name} חריגה: {lab.result} {lab.units}",
+                    content=f"{lab.test_type_name} חריג: {lab.result} {lab.units}",
                     severity=Severity(value=1, at=lab.result_at),
                     acknowledge=False
                 )

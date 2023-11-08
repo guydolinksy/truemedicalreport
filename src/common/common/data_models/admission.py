@@ -1,10 +1,14 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from .base import Diffable, ParsableMixin
 
 
-class Admission(BaseModel):
-    arrival: Optional[str]
-    department: Optional[str]
-    wing: Optional[str]
-    bed: Optional[str]
+class Admission(Diffable, ParsableMixin):
+    arrival: str
+    department_id: str
+    wing_id: Optional[str] = None
+    bed: Optional[str] = None
+
+    @classmethod
+    def parse(cls, value) -> 'ParsableMixin':
+        return cls(**value)

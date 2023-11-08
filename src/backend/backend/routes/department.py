@@ -1,15 +1,57 @@
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends
 
-from common.data_models.department import Department
+from .. import config
 from .auth import login_manager
 from .wing import wing_router
-from ..logics.utils import fetch_dal_json
+from common.graphql.graphql import GraphQLModel, GraphQLQuery
 
 department_router = APIRouter()
 
 department_router.include_router(wing_router, prefix='/{department}/wings')
 
 
-@department_router.get("/{department}", response_model=Department, response_model_exclude_unset=True)
-async def get_department(department: str, _=Depends(login_manager)) -> dict:
-    return await fetch_dal_json(f"/departments/{department}")
+class GetDepartmentQueryResponseWingFilterItem(GraphQLModel):
+    key: str
+    icon: str
+    count: int
+    title: str
+    duration: Optional[str]
+    valid: bool
+    parent: Optional[str]
+
+
+class GetDepartmentQueryResponseFilterMapping(GraphQLModel):
+    key: str
+    values: List[str]
+
+
+class GetDepartmentQueryResponseWingFilters(GraphQLModel):
+    doctors: List[GetDepartmentQueryResponseWingFilterItem]
+    awaiting: List[GetDepartmentQueryResponseWingFilterItem]
+    treatments: List[GetDepartmentQueryResponseWingFilterItem]
+    time_since_arrival: List[GetDepartmentQueryResponseWingFilterItem]
+    mapping: List[GetDepartmentQueryResponseFilterMapping]
+
+
+class GetDepartmentQueryResponseWing(GraphQLModel):
+    key: str
+    name: str
+    filters: GetDepartmentQueryResponseWingFilters
+    patients_count: int
+
+
+class GetDepartmentQueryResponseWings(GraphQLModel):
+    wings: List[GetDepartmentQueryResponseWing]
+
+
+class GetDepartment(GraphQLQuery):
+    getWings: GetDepartmentQueryResponseWings
+
+
+@department_router.get("/{department}")
+async def get_department(department: str, _=Depends(login_manager)) -> GetDepartment:
+    return await GetDepartment.run_query(config.graphql_url, {
+        f'getWings(department: "{department}")': GetDepartmentQueryResponseWings,
+    })

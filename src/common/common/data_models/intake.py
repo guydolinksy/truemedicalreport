@@ -1,10 +1,11 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from .base import Diffable
 
 
-class Intake(BaseModel):
-    complaint: Optional[str]
-    nurse_description: Optional[str]
-    nurse_seen_time: Optional[str]
-    doctor_seen_time: Optional[str]
+class Intake(Diffable):
+    complaint: Optional[str] = None
+    nurse_description: Optional[str] = None
+    nurse_seen_time: Optional[str] = None
+    doctor_seen_time: Optional[str] = None
+
