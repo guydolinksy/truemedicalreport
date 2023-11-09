@@ -50,7 +50,7 @@ export const MCISection = ({config}) => {
           }], 'MCIList');
       };
       return () => {
-        if (option.customizers?.length) {
+        if (option.customizers?.length && option.customizers[0].type === 'location') {
           setModalProps({ customizer: option.customizers[0], isOpen: true, onEnd: onDone, onCancel })
           return;
         }
