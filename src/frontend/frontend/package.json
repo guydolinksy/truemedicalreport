@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "description": "Frontend",
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom"
+  },
   "dependencies": {
     "@ant-design/colors": "^6.0.0",
     "@ant-design/icons": "^4.7.0",
@@ -35,6 +39,7 @@
     "react-scripts": "^5.0.1",
     "react-timer-hook": "^3.0.5",
     "react-use-websocket": "^3.0.0",
+    "reactjs-human-body": "0.0.8",
     "serve": "^14.0.1",
     "web-vitals": "^2.1.4"
   },

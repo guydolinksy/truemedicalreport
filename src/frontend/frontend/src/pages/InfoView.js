@@ -1,10 +1,10 @@
 import React, {useCallback} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
-import {Info} from "../components/panel/Info";
 import {Layout} from 'antd';
+import {Info} from "../components/panel/Info";
+import {patientDataContext} from "../components/card/PatientBase";
 
 const {Content} = Layout;
-import {patientDataContext} from "../components/card/PatientBase";
 
 const MIN_WIDTH = 300;
 
