@@ -3,35 +3,36 @@ import requests
 from digest import config
 
 CHECKBOX = 'checkbox'
+RADIO = 'radio'
 COLLAPSE = 'collapse'
 DEFAULT = [
     dict(
-        key='details',
-        name='פרטים',
+        key='occupation',
+        name='עיסוק',
+        type=RADIO,
         options=[
             dict(
                 key='soldier',
                 name='חייל',
-                default=False,
-                type=CHECKBOX,
             ),
             dict(
                 key='civilian',
                 name='אזרח',
-                default=False,
-                type=CHECKBOX,
             ),
+        ],
+    ),
+    dict(
+        key='transport',
+        name='הגעה',
+        type=RADIO,
+        options=[
             dict(
                 key='by_air',
                 name='מסוק',
-                default=False,
-                type=CHECKBOX,
             ),
             dict(
                 key='by_car',
                 name='אמבולנס',
-                default=False,
-                type=CHECKBOX,
             ),
         ],
     ),
@@ -411,163 +412,12 @@ DEFAULT = [
                 type=CHECKBOX,
             ),
         ],
-    ), dict(
-        key='destination',
-        name='יעד',
-        options=[
-            dict(
-                key='er_imaging',
-                name='הדמייה במלר"ד',
-                default=False,
-                type=CHECKBOX,
-            ),
-            dict(
-                key='operating_room',
-                name='חדר ניתוח',
-                default=False,
-                type=CHECKBOX,
-            ),
-            dict(
-                key='general_imaging',
-                name='הדמייה באתר בירורים',
-                default=False,
-                type=CHECKBOX,
-            ),
-            dict(
-                key='intensive_care',
-                name='טיפול נמרץ כללי',
-                default=False,
-                type=CHECKBOX,
-            ),
-            dict(
-                key='cardiac_intensive_care',
-                name='טיפול נמרץ לב',
-                default=False,
-                type=CHECKBOX,
-            ),
-            dict(
-                key='hospitalization',
-                name='אשפוז',
-                default=False,
-                type=COLLAPSE,
-                children=[
-                    dict(
-                        key='trauma_unit',
-                        name='יחידת הטראומה',
-                        default=False,
-                        type=CHECKBOX,
-                    ), dict(
-                        key='surgical_b',
-                        name='כירוגיה ב',
-                        default=False,
-                        type=CHECKBOX,
-                    ), dict(
-                        key='surgical_c',
-                        name='כירוגיה ג',
-                        default=False,
-                        type=CHECKBOX,
-                    ), dict(
-                        key='neurosurgical',
-                        name='נוירוכירוגיה',
-                        default=False,
-                        type=CHECKBOX,
-                    ), dict(
-                        key='orthopedics_a',
-                        name='אורתופדיה א',
-                        default=False,
-                        type=CHECKBOX,
-                    ), dict(
-                        key='orthopedics_b',
-                        name='אורתופדיה ב',
-                        default=False,
-                        type=CHECKBOX,
-                    ), dict(
-                        key='hand_palm',
-                        name='כף יד',
-                        default=False,
-                        type=CHECKBOX,
-                    ), dict(
-                        key='mouth_and_jaw',
-                        name='פה ולסת',
-                        default=False,
-                        type=CHECKBOX,
-                    ), dict(
-                        key='ent',
-                        name='אף אוזן גרון',
-                        default=False,
-                        type=CHECKBOX,
-                    ), dict(
-                        key='urology',
-                        name='אורולוגיה',
-                        default=False,
-                        type=CHECKBOX,
-                    ), dict(
-                        key='chest_and_blood_vessels',
-                        name='חזה וכלי דם',
-                        default=False,
-                        type=CHECKBOX,
-                    ), dict(
-                        key='pediatric',
-                        name='ילדים',
-                        default=False,
-                        type=CHECKBOX,
-                    ), dict(
-                        key='pediatric_icu',
-                        name='טיפול נמרץ ילדים',
-                        default=False,
-                        type=CHECKBOX,
-                    ),
-                    dict(
-                        key='internal_medicine_a',
-                        name='פנימית א',
-                        default=False,
-                        type=CHECKBOX,
-                    ),
-                    dict(
-                        key='internal_medicine_b',
-                        name='פנימית ב',
-                        default=False,
-                        type=CHECKBOX,
-                    ),
-                    dict(
-                        key='internal_medicine_c',
-                        name='פנימית ג',
-                        default=False,
-                        type=CHECKBOX,
-                    ),
-                    dict(
-                        key='internal_medicine_d',
-                        name='פנימית ד',
-                        default=False,
-                        type=CHECKBOX,
-                    ),
-                    dict(
-                        key='internal_medicine_e',
-                        name='פנימית ה',
-                        default=False,
-                        type=CHECKBOX,
-                    ),
-                    dict(
-                        key='internal_medicine_f',
-                        name='פנימית ו',
-                        default=False,
-                        type=CHECKBOX,
-                    ),
-                    dict(
-                        key='internal_medicine_h',
-                        name='פנימית ט',
-                        default=False,
-                        type=CHECKBOX,
-                    ),
-                ],
-            ),
-        ],
     )]
 
 
 async def init_mci_form():
     requests.post(f'{config.dal_url}/config/set', json={
         'key': 'mci_form',
-        'version': 1,
+        'version': 11,
         'value': DEFAULT,
     }).raise_for_status()

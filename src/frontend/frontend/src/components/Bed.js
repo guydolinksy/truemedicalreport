@@ -1,15 +1,16 @@
-import {Patient} from "./Patient";
+import {Patient} from "./card/Patient";
 import React from "react";
-import {createContext} from "../hooks/DataContext";
+import {createDataContext} from "../contexts/DataContext";
 
-const bedContext = createContext(null);
+const bedContext = createDataContext();
 
 export const Bed = ({admission, style, onError}) => {
     const url = `/api/departments/${admission.department_id}/wings/${admission.wing_id}/beds/${admission.bed}`;
 
-    return <bedContext.Provider url={url} defaultValue={{patient: null}} onError={onError}>
-        {({loading, value, flush}) => {
-            return <Patient loading={loading} patient={value.patient} avatar={admission.bed} style={style} onError={flush}/>
+    return <bedContext.Provider url={url} onError={onError}>
+        {({value, flush}) => {
+            return <Patient patient={value.getBed?.patient} avatar={admission.bed} style={style}
+                            onError={flush}/>
         }}
     </bedContext.Provider>
 }

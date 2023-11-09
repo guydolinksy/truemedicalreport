@@ -6,8 +6,7 @@ from .base import Diffable
 class Person(Diffable):
     id_: str
     name: str
-    age: Optional[str]
-    gender: Optional[str]
-    birthdate: Optional[str]
-    phone: Optional[str]
-
+    age: Optional[str] = None
+    gender: Optional[str] = None
+    birthdate: Optional[str] = None
+    phone: Optional[str] = None

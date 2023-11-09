@@ -9,7 +9,7 @@ from .esi_score import ESIScore
 from .image import Image
 from .intake import Intake
 from .labs import LabCategory
-from .mci import MCIBooleanValue, MCIStringValue
+from .mci import MCIBooleanValue, MCIStringValue, MCIResult, MCI
 from .measures import Measures, FullMeasures
 from .notification import Notification
 from .person import Person
@@ -50,14 +50,15 @@ class Patient(AtomicUpdate, ExternalData):
     protocol: Protocol = Protocol()
     notifications: Dict[str, Notification] = {}
     referrals: Dict[str, Referral] = {}
-
+    source_identity: Optional[str] = None
     watching: Dict[str, Optional[WatchKey]] = {}
 
     full_measures: FullMeasures = FullMeasures()
     imaging: Dict[str, Image] = {}
     labs: Dict[str, LabCategory] = {}
     visits: List[Any] = []
-    mci: Dict[str, Union[MCIBooleanValue, MCIStringValue]] = {}
+    mci: MCI = MCI()
+    mci_results: List[MCIResult] = []
     comment: Optional[str] = None
 
     async def awaiting_intake(self):

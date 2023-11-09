@@ -33,6 +33,14 @@
         <option name="envVars">
           <list>
             <DockerEnvVarImpl>
+              <option name="name" value="ARC_CONNECTION" />
+              <option name="value" value="REDACTED" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="DEBUG" />
+              <option name="value" value="1" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
               <option name="name" value="MONGO_CONNECTION" />
               <option name="value" value="&quot;mongodb://tmr-mongodb:27017&quot;" />
             </DockerEnvVarImpl>
@@ -47,11 +55,11 @@
           <list>
             <DockerVolumeBindingImpl>
               <option name="containerPath" value="/opt/dal/dal" />
-              <option name="hostPath" value="C:\Users\322358847\Documents\projects\truemedicalreport\src\dal\dal" />
+              <option name="hostPath" value="$PROJECT_DIR$/src/dal/dal" />
             </DockerVolumeBindingImpl>
             <DockerVolumeBindingImpl>
               <option name="containerPath" value="/opt/common/common" />
-              <option name="hostPath" value="C:\Users\322358847\Documents\projects\truemedicalreport\src\common\common" />
+              <option name="hostPath" value="$PROJECT_DIR$/src/common/common" />
             </DockerVolumeBindingImpl>
           </list>
         </option>

@@ -45,6 +45,10 @@
               <option name="name" value="REDIS_CONNECTION" />
               <option name="value" value="&quot;redis://tmr-redis/1&quot;" />
             </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="GRAPHQL_CONNECTION" />
+              <option name="value" value="&quot;http://tmr-dal:80/dal/graphql&quot;" />
+            </DockerEnvVarImpl>
           </list>
         </option>
         <option name="commandLineOptions" value="--link tmr-mongodb:tmr-mongodb --link tmr-dal:tmr-dal --link tmr-redis:tmr-redis" />
@@ -52,11 +56,11 @@
           <list>
             <DockerVolumeBindingImpl>
               <option name="containerPath" value="/opt/backend/backend" />
-              <option name="hostPath" value="C:\Users\322358847\Documents\projects\truemedicalreport\src\backend\backend" />
+              <option name="hostPath" value="$PROJECT_DIR$/src/backend/backend" />
             </DockerVolumeBindingImpl>
             <DockerVolumeBindingImpl>
               <option name="containerPath" value="/opt/common/common" />
-              <option name="hostPath" value="C:\Users\322358847\Documents\projects\truemedicalreport\src\common\common" />
+              <option name="hostPath" value="$PROJECT_DIR$/src/common/common" />
             </DockerVolumeBindingImpl>
           </list>
         </option>

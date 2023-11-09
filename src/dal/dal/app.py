@@ -37,7 +37,8 @@ def create_app() -> FastAPIOffline:
     from .routes.mci import mci_router
     from .routes.publishing import publish_router
     from .routes.faking import faker_router
-    from .routes.gql_example import gql_router
+    from .routes.graphql.server import graphql_router
+    from .routes.trauma import trauma_router
 
     app_.include_router(config_router, prefix="/dal/config")
     app_.include_router(patient_router, prefix="/dal/patients")
@@ -45,7 +46,8 @@ def create_app() -> FastAPIOffline:
     app_.include_router(mci_router, prefix="/dal/mci")
     app_.include_router(publish_router, prefix="/dal/publishing")
     app_.include_router(faker_router, prefix="/dal/faker")
-    app_.include_router(gql_router, prefix="/dal/gql")
+    app_.include_router(graphql_router, prefix="/dal/graphql")
+    app_.include_router(trauma_router, prefix="/dal/trauma")
 
     return app_
 

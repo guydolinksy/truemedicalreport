@@ -45,6 +45,11 @@ spec:
               value: '"mongodb://{{ .Values.global.fullname.mongo }}:{{ .Values.global.servicePort.mongo }}"'
             - name: 'REDIS_CONNECTION'
               value: '"redis://{{ .Values.global.fullname.redis }}-master:{{ .Values.global.servicePort.redis }}/0"'
+            - name: 'ARC_CONNECTION'
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.input.arc.secretName }}
+                  key: {{ .Values.input.arc.secretKey }}
             - name: 'PORT'
               value: '80'
             - name: 'DEBUG'

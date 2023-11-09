@@ -28,7 +28,7 @@ class ImagingStatus(int, Enum):
 
 
 class ImagingNotification(Notification):
-    type: NotificationType = NotificationType.imaging
+    type_: NotificationType = NotificationType.imaging
 
 
 class Image(Diffable):

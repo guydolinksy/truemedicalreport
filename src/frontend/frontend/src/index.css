@@ -11,7 +11,8 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
-.departmentActionItem svg:hover{
+
+.departmentActionItem svg:hover {
     background-color: #add8e68a;
     border-radius: 50%;
 }
@@ -24,6 +25,7 @@ code {
         background-color: rgba(119, 81, 255, 0.33);
     }
 }
+
 @keyframes highlight-open {
     from {
         background-color: rgba(119, 81, 255, 0.66);
@@ -42,10 +44,6 @@ code {
     }
 }
 
-.ant-menu-item .ant-input-wrapper .anticon {
-    margin-left: 0;
-}
-
 .marquee {
     margin: 0 auto;
     white-space: nowrap;
@@ -61,7 +59,7 @@ code {
     animation-play-state: paused;
 }
 
-.marquee:hover> span {
+.marquee:hover > span {
     animation: marquee 8s linear infinite;
     animation-play-state: running;
 }
@@ -80,13 +78,14 @@ code {
         transform: translate(0%, 0);
     }
 }
+
 @keyframes marquee-reset {
     0% {
         transform: translate(0%, 0);
     }
 }
 
-ul{
+ul {
     padding: 0;
     list-style: none;
 }

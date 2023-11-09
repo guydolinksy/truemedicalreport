@@ -1,10 +1,10 @@
 import datetime
 from typing import Optional
 
-from common.data_models.base import Diffable
+from common.data_models.base import Diffable, ParsableMixin
 
 
-class WatchKey(Diffable):
+class WatchKey(Diffable, ParsableMixin):
     update_at: Optional[str] = None
     triggered: bool = False
     watched: bool = False
@@ -13,3 +13,7 @@ class WatchKey(Diffable):
     @property
     def update_at_(self):
         return datetime.datetime.fromisoformat(self.update_at) if self.update_at else None
+
+    @classmethod
+    def parse(cls, value) -> 'ParsableMixin':
+        return cls(**value)

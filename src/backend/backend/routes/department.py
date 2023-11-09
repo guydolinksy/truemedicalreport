@@ -1,20 +1,63 @@
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends
 
-from common.data_models.department import Department
+from .. import config
 from .auth import login_manager
 from .wing import wing_router
-from ..logics.utils import fetch_dal_json
+from common.graphql.graphql import GraphQLModel, GraphQLQuery
 
 department_router = APIRouter()
 
 department_router.include_router(wing_router, prefix='/{department}/wings')
 
 
-@department_router.get('/')
-async def get_departments():
-    return await fetch_dal_json("/departments/")
+class GetDepartmentQueryResponseViewFilterItem(GraphQLModel):
+    key: str
+    icon: str
+    count: int
+    title: str
+    duration: Optional[str]
+    valid: bool
+    parent: Optional[str]
 
 
-@department_router.get("/{department}", response_model=Department, response_model_exclude_unset=True)
-async def get_department(department: str, _=Depends(login_manager)) -> dict:
-    return await fetch_dal_json(f"/departments/{department}")
+class GetDepartmentQueryResponseFilterMapping(GraphQLModel):
+    key: str
+    values: List[str]
+
+
+class GetDepartmentQueryResponseViewFilters(GraphQLModel):
+    key: str
+    doctors: List[GetDepartmentQueryResponseViewFilterItem]
+    awaiting: List[GetDepartmentQueryResponseViewFilterItem]
+    treatments: List[GetDepartmentQueryResponseViewFilterItem]
+    time_since_arrival: List[GetDepartmentQueryResponseViewFilterItem]
+    mapping: List[GetDepartmentQueryResponseFilterMapping]
+
+
+class GetDepartmentQueryResponseWing(GraphQLModel):
+    key: str
+    name: str
+    patients_count: int
+
+
+class GetDepartmentQueryResponseViewFiltersResult(GraphQLModel):
+    filters: List[GetDepartmentQueryResponseViewFilters]
+
+
+class GetDepartmentQueryResponseWingsResult(GraphQLModel):
+    wings: List[GetDepartmentQueryResponseWing]
+
+
+class GetDepartment(GraphQLQuery):
+    getWings: GetDepartmentQueryResponseWingsResult
+    getViewFilters: GetDepartmentQueryResponseViewFiltersResult
+
+
+@department_router.get("/{department}")
+async def get_department(department: str, _=Depends(login_manager)) -> GetDepartment:
+    return await GetDepartment.run_query(config.graphql_url, {
+        f'getWings(department: "{department}")': GetDepartmentQueryResponseWingsResult,
+        f'getViewFilters(view_type: "wing", department: "{department}")': GetDepartmentQueryResponseViewFiltersResult,
+    })

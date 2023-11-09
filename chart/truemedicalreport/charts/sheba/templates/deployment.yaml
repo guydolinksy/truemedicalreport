@@ -44,7 +44,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: 'DAL_CONNECTION'
-              value: '"http://{{ .Values.global.fullname.dal }}:{{ .Values.global.servicePort.dal }}/dal"'
+              value: '"http://{{ .Values.global.fullname.ingest }}:{{ .Values.global.servicePort.dal }}/dal"'
             - name: 'CHAMELEON_CONNECTION'
               {{- if .Values.input.internal.enabled }}
               value: '"mssql+pyodbc://sa:Password123@{{ .Values.global.fullname.chameleon }}:{{ .Values.global.servicePort.chameleon }}/dwh?driver=ODBC+Driver+18+for+SQL+Server&trustServerCertificate=yes"'

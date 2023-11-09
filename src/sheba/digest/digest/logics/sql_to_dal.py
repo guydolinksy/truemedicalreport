@@ -67,18 +67,18 @@ SHEBA_MEASUREMENT_CODES = {
     542: MeasureType.enriched_saturation,
 }
 SHEBA_MEASUREMENT_MINIMUMS = {
-    MeasureType.systolic: 90,
-    MeasureType.pulse: 50,
-    MeasureType.temperature: 35,
-    MeasureType.saturation: 93,
-    MeasureType.pain: 0,
+    MeasureType.systolic: '90',
+    MeasureType.pulse: '50',
+    MeasureType.temperature: '35',
+    MeasureType.saturation: '93',
+    MeasureType.pain: '0',
 }
 SHEBA_MEASUREMENT_MAXIMUMS = {
-    MeasureType.systolic: 180,
-    MeasureType.pulse: 120,
-    MeasureType.temperature: 38,
-    MeasureType.saturation: 100,
-    MeasureType.pain: 5,
+    MeasureType.systolic: '180',
+    MeasureType.pulse: '120',
+    MeasureType.temperature: '38',
+    MeasureType.saturation: '100',
+    MeasureType.pain: '5',
 }
 
 SHEBA_IMAGING_LINK = f'{config.care_stream_url}&accession_number={{accession_number}}'
@@ -145,7 +145,6 @@ class SqlToDal(object):
                     ) if row[PatientAdmissionQuery.ESI] else None,
                     admission=Admission(
                         department_id=department.value,
-                        # wing=row[PatientAdmissionQuery.ROOM_NAME],
                         wing_id=str(row[PatientAdmissionQuery.ROOM_CODE]),
                         bed=row[PatientAdmissionQuery.BED_NAME],
                         arrival=utils.datetime_utc_serializer(row[PatientAdmissionQuery.ADMISSION_DATE]),
@@ -162,8 +161,7 @@ class SqlToDal(object):
                         patient_id=row[PatientAdmissionQuery.PATIENT_ID],
                         medical_record=row[PatientAdmissionQuery.MEDICAL_RECORD],
                         hospital=row[PatientAdmissionQuery.HOSPITAL],
-                    )
-                ).model_dump(exclude_unset=True))
+                    )).model_dump(exclude_unset=True))
         res = requests.post(f'{self.dal_url}/departments/{department.value}/admissions',
                             json={'admissions': patients, 'at': at})
         try:
@@ -194,7 +192,7 @@ class SqlToDal(object):
         res = requests.post(f'{self.dal_url}/departments/{department.value}/measurements',
                             json={'measurements': measures})
         try:
-            logger.debug(res.json())
+            # logger.debug(res.json())
             res.raise_for_status()
             return {'measurements': measures}
         except HTTPError:
@@ -227,7 +225,7 @@ class SqlToDal(object):
             p: {e: i.model_dump(exclude_unset=True) for e, i in imaging[p].items()} for p in imaging
         }})
         try:
-            logger.debug(res.json())
+            # logger.debug(res.json())
             res.raise_for_status()
             return {'images': imaging}
         except HTTPError:
@@ -236,7 +234,6 @@ class SqlToDal(object):
     def _merge_ris_chameleon_imaging(self, accessions, chameleon_imaging: Dict[str, Dict[str, Image]]) -> None:
         try:
             ris_imagings: Dict[str, RisImaging] = self._imaging_client.query_imaging(accessions)
-            logger.debug(ris_imagings)
 
             for patient in chameleon_imaging:
                 for external_id in chameleon_imaging[patient]:
@@ -319,7 +316,7 @@ class SqlToDal(object):
         labs = {mr: {c: cat.dict(exclude_unset=True) for c, cat in cats.items()} for mr, cats in orders.items()}
         res = requests.post(f'{self.dal_url}/departments/{department.value}/labs', json={"labs": labs})
         try:
-            logger.debug(res.json())
+            # logger.debug(res.json())
             res.raise_for_status()
             return {"labs": labs}
         except HTTPError:
@@ -369,7 +366,7 @@ class SqlToDal(object):
                             record in notes}}
         )
         try:
-            logger.debug(res.json())
+            # logger.debug(res.json())
             res.raise_for_status()
             return {'notes': {
                 record: {id_: note.dict(exclude_unset=True) for id_, note in notes[record].items()} for record in notes
@@ -390,7 +387,7 @@ class SqlToDal(object):
             json={'intakes': {record: infos[record].dict(exclude_unset=True) for record in infos}}
         )
         try:
-            logger.debug(res.json())
+            # logger.debug(res.json())
             res.raise_for_status()
             return {'intakes': {record: infos[record].dict(exclude_unset=True) for record in infos}}
         except HTTPError:
@@ -407,16 +404,14 @@ class SqlToDal(object):
                 intake.nurse_seen_time = utils.datetime_utc_serializer(row[NurseIntakeQuery.DOCUMENTING_TIME]) \
                     if row[NurseIntakeQuery.DOCUMENTING_TIME] else None
 
-                if row[NurseIntakeQuery.REFERRAL_CODE] == SHEBA_MCI_REFERRAL_CODE or (
-                        intake.nurse_description and 'כעת' in intake.nurse_description
-                ):
+                if row[NurseIntakeQuery.REFERRAL_CODE] == SHEBA_MCI_REFERRAL_CODE:
                     mci_patients.append(str(row[NurseIntakeQuery.MEDICAL_RECORD]))
         res = requests.post(
             f'{self.dal_url}/departments/{department.value}/intake_nurse',
             json={'intakes': {record: infos[record].dict(exclude_unset=True) for record in infos}}
         )
         try:
-            logger.debug(res.json())
+            # logger.debug(res.json())
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run nurse intake handler. {}', res.json() if res else '')
@@ -425,7 +420,7 @@ class SqlToDal(object):
             f'{self.dal_url}/departments/mci/intake', json={'intake': mci_patients}
         )
         try:
-            logger.debug(res.json())
+            # logger.debug(res.json())
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run mci hanfler. {}', res.json() if res else '')
@@ -457,7 +452,7 @@ class SqlToDal(object):
         res = requests.post(f'{self.dal_url}/departments/{department.value}/doctors',
                             json={'doctors': doctors})
         try:
-            logger.debug(res.json())
+            # logger.debug(res.json())
             res.raise_for_status()
         except HTTPError:
             logger.exception('Could not run referrals handler. {}', res.json() if res else None)
@@ -466,7 +461,7 @@ class SqlToDal(object):
         res = requests.post(f'{self.dal_url}/departments/{department.value}/referrals',
                             json={'referrals': referrals, 'at': at})
         try:
-            logger.debug(res.json())
+            # logger.debug(res.json())
             res.raise_for_status()
             return {'doctors': doctors, 'referrals': referrals, 'at': at}
         except HTTPError:
@@ -482,7 +477,7 @@ class SqlToDal(object):
         res = requests.post(f'{self.dal_url}/departments/{department.value}/destinations',
                             json=dict(destinations=destinations))
         try:
-            logger.debug(res.json())
+            # logger.debug(res.json())
             res.raise_for_status()
             return {'destinations': destinations}
         except HTTPError:
@@ -495,7 +490,7 @@ class SqlToDal(object):
                 medications[row] = 0
         res = requests.post(f'{self.dal_url}/departments/{department.value}/medications', json=medications)
         try:
-            logger.debug(res.json())
+            # logger.debug(res.json())
             res.raise_for_status()
             return {'medications': medications}
         except HTTPError:

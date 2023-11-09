@@ -4,6 +4,14 @@
       <settings>
         <option name="imageTag" value="docker-virtual.artifactory.arc-devops.sheba.gov.il/bitnami/mongodb" />
         <option name="containerName" value="tmr-mongodb" />
+        <option name="portBindings">
+          <list>
+            <DockerPortBindingImpl>
+              <option name="containerPort" value="27017" />
+              <option name="hostPort" value="27017" />
+            </DockerPortBindingImpl>
+          </list>
+        </option>
       </settings>
     </deployment>
     <method v="2" />

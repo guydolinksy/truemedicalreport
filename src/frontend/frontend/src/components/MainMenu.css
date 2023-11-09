@@ -1,0 +1,3 @@
+.ant-space-item:has(.spacer) {
+    flex: 1;
+}

@@ -28,5 +28,5 @@ class Referral(Diffable):
 
 
 class ReferralsNotification(Notification):
-    type: NotificationType = NotificationType.referral
+    type_: NotificationType = NotificationType.referral
 

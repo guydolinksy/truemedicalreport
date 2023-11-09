@@ -32,3 +32,12 @@ async def post_dal_json(endpoint: str, json_payload: dict) -> dict:
         ret = await session.post(f"{config.dal_url}{endpoint}", json=json_payload)
         ret.raise_for_status()
         return await ret.json()
+
+async def fetch_dal_json(endpoint: str) -> dict:
+    assert endpoint.startswith("/")
+
+    async with aiohttp.ClientSession() as session:
+        ret = await session.get(f"{config.dal_url}{endpoint}")
+        ret.raise_for_status()
+        return await ret.json()
+

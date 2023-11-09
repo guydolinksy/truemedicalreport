@@ -3,10 +3,10 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import {MatomoProvider, createInstance} from '@datapunt/matomo-tracker-react'
+import {createInstance, MatomoProvider} from '@datapunt/matomo-tracker-react'
 import Axios from "axios";
 import * as Sentry from "@sentry/browser";
-import { BrowserTracing } from "@sentry/tracing";
+import {BrowserTracing} from "@sentry/tracing";
 
 let instance = null;
 

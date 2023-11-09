@@ -23,11 +23,11 @@
           <list>
             <DockerVolumeBindingImpl>
               <option name="containerPath" value="/opt/frontend/frontend/public" />
-              <option name="hostPath" value="C:\Users\322358847\Documents\projects\truemedicalreport\src\frontend\frontend\public" />
+              <option name="hostPath" value="$PROJECT_DIR$/src/frontend/frontend/public" />
             </DockerVolumeBindingImpl>
             <DockerVolumeBindingImpl>
               <option name="containerPath" value="/opt/frontend/frontend/src" />
-              <option name="hostPath" value="C:\Users\322358847\Documents\projects\truemedicalreport\src\frontend\frontend\src" />
+              <option name="hostPath" value="$PROJECT_DIR$/src/frontend/frontend/src" />
             </DockerVolumeBindingImpl>
           </list>
         </option>

@@ -1,0 +1,190 @@
+type PatientInfo {
+    id_: String!
+    name: String!
+    gender: String
+}
+
+type Admission {
+    arrival: String!
+    department_id: String!
+    wing_id: String
+    bed: String
+}
+type Severity {
+    value: String!
+    at: String!
+}
+type Notification {
+    key: String!
+    static_id: String!
+    at: String!
+    link: String
+    level: String!
+    type_: String!
+    message: String!
+    danger: Boolean
+}
+type WatchKey {
+    key: String!
+    update_at: String
+    triggered: Boolean!
+    watched: Boolean!
+    message: String
+}
+
+type MCIStringValue {
+    value: String!
+    at: String!
+}
+
+type MCIListItem {
+    key: String!
+    value: String!
+    at: String!
+}
+
+type MCI {
+    occupation: MCIStringValue
+    transport: MCIStringValue
+    diagnosis: [MCIListItem!]!
+    pre_hospital_treatment: [MCIListItem!]!
+    hospital_treatment: [MCIListItem!]!
+    imaging: [MCIListItem!]!
+}
+
+type MCI_Result {
+    real_date: String!
+    execution_date: String!
+    parameter: String!
+    result: String!
+}
+
+type CSSStyle{
+    flex: String
+    height: String
+}
+
+type WingLayout {
+    beds: [String]!
+    rows: String!
+    columns: String!
+}
+type WingDetails {
+    index: String!
+    layout: WingLayout
+}
+
+type ViewFilter {
+    key: String!
+    count: Int
+    title: String!
+    icon: String!
+    duration: String
+    valid: Boolean!
+    parent: String
+}
+type FilterMapping {
+    key: String!
+    values: [String!]!
+}
+type ViewFilters {
+    key: String
+    awaiting: [ViewFilter]!
+    doctors: [ViewFilter]!
+    treatments: [ViewFilter]!
+    time_since_arrival: [ViewFilter]!
+    mapping: [FilterMapping]!
+}
+type Mode {
+    key: String!
+    name: String!
+    short_name: String!
+}
+
+type View {
+    type: String!
+    key: String!
+    name: String!
+    short_name: String!
+    department_id: String
+    wing_id: String
+    color: String
+    patients: [Patient]!
+    patients_count: Int!
+    modes: [Mode!]!
+    default_mode: Mode!
+}
+
+type Department {
+    key: String!
+    name: String!
+    short_name: String!
+    wing_ids: [String]!
+    patients: [Patient!]!
+}
+
+type Wing {
+    key: String
+    department: String!
+    name: String!
+    details: WingDetails!
+    patients: [Patient!]!
+    patients_count: Int!
+}
+
+type Patient {
+    oid: String!
+    info: PatientInfo!
+    comment: String
+    admission: Admission!
+    severity: Severity
+    notifications: [Notification!]!
+    watching: [WatchKey]
+    flagged: Boolean!
+    status: String!
+    mci: MCI!
+    external_id: String!
+    mci_results: [MCI_Result!]
+}
+
+type ViewsResult {
+    views: [View]!
+}
+
+type ViewFiltersResult {
+    filters: [ViewFilters]!
+}
+
+type DepartmentsResult {
+    departments: [Department]!
+}
+
+type WingsResult {
+    wings: [Wing]!
+}
+
+type PatientsResult {
+    patients: [Patient]!
+}
+
+type BedResult {
+    patient: String
+}
+
+type PatientResult {
+    patient: String
+}
+
+schema {
+    query: Query
+}
+
+type Query {
+    getViews: ViewsResult!
+    getViewFilters(view_type: String!, key: String, department: String): ViewFiltersResult!
+    getDepartments(key: String): DepartmentsResult!
+    getWings(department: String, key: String): WingsResult!
+    getPatients(department: String, wing: String, bed: String, view_type: String, view: String, oid: String): PatientsResult!
+    getBed(department: String!, wing: String!, bed: String!): BedResult!
+    getPatient(oid: String!): PatientResult!
+}

@@ -1,10 +1,13 @@
-import {Divider, Tag, Tree} from "antd";
-import React from "react";
+import {Button, Divider, Popover, Tag, Tree} from "antd";
+import React, {useContext} from "react";
 import {useLocalStorage} from "../hooks/localStorageHook";
+import {loginContext} from "./LoginContext";
+import {FilterOutlined} from "@ant-design/icons";
+import {wingDataContext} from "../contexts/WingContext";
 
 const {CheckableTag} = Tag;
 
-export const FilterPatients = ({value}) => {
+export const FilterPatients = ({}) => {
     const [selectedAwaiting, setSelectedAwaiting] = useLocalStorage('selectedAwaiting', []);
     const [selectedDoctors, setSelectedDoctors] = useLocalStorage('selectedDoctors', []);
     const [selectedTreatments, setSelectedTreatments] = useLocalStorage('selectedTreatments', []);
@@ -37,44 +40,51 @@ export const FilterPatients = ({value}) => {
         gap: '5px 0',
         justifyContent: "space-between",
     }
-
-    return <div>
-        <div style={filterTagsContainerStyle}>
-            <b style={{whiteSpace: "nowrap"}}>רופא.ה:</b>
-            {value.filters.doctors.map(filter => <CheckableTag
-                key={filter.key}
-                checked={selectedDoctors.indexOf(filter.key) > -1}
-                onChange={(checked) => handleDoctorFilterChange(filter.key, checked)}
-            >
-                {filter.title}
-            </CheckableTag>)}
-        </div>
-        <Divider style={{marginTop: 10, marginBottom: 10}}/>
-        <div style={filterTagsContainerStyle}>
-            <b style={{whiteSpace: "nowrap"}}>יעד:</b>
-            {value.filters.treatments.map(filter => <CheckableTag
-                key={filter.key}
-                checked={selectedTreatments.indexOf(filter.key) > -1}
-                onChange={(checked) => handleDecisionStatusFilterChange(filter.key, checked)}
-            >
-                {filter.title}
-            </CheckableTag>)}
-        </div>
-        <Divider style={{marginTop: 10, marginBottom: 10}}/>
-        <div style={filterTagsContainerStyle}>
-            <b style={{whiteSpace: "nowrap"}}>זמן במיון:</b>
-            {value.filters.time_since_arrival.map(filter => <CheckableTag
-                key={filter.key}
-                checked={selectedTime.indexOf(filter.key) > -1}
-                onChange={(checked) => handleTimeFilterChange(filter.key, checked)}
-            >
-                {filter.title}
-            </CheckableTag>)}
-        </div>
-        <Divider style={{marginTop: 10, marginBottom: 10}}/>
-        <Tree treeData={value.filters.awaiting.map(toTree)} style={{width: '100%'}} checkable multiple
-              defaultExpandedKeys={value.filters.awaiting.map(x => x.key)}
-              placeholder="סינון לפי המתנה עבור:" onCheck={setSelectedAwaiting}
-              checkedKeys={selectedAwaiting}/>
-    </div>
+    const {user, userSettings} = useContext(loginContext);
+    const {value} = useContext(wingDataContext.context);
+    return <Popover placement={"leftTop"}
+                    content={<div>
+                        <div style={filterTagsContainerStyle}>
+                            <b style={{whiteSpace: "nowrap"}}>רופא.ה:</b>
+                            {value.getWings.wings[0].filters.doctors.map(filter => <CheckableTag
+                                key={filter.key}
+                                checked={selectedDoctors.indexOf(filter.key) > -1}
+                                onChange={(checked) => handleDoctorFilterChange(filter.key, checked)}
+                            >
+                                {filter.title}
+                            </CheckableTag>)}
+                        </div>
+                        <Divider style={{marginTop: 10, marginBottom: 10}}/>
+                        <div style={filterTagsContainerStyle}>
+                            <b style={{whiteSpace: "nowrap"}}>יעד:</b>
+                            {value.getWings.wings[0].filters.treatments.map(filter => <CheckableTag
+                                key={filter.key}
+                                checked={selectedTreatments.indexOf(filter.key) > -1}
+                                onChange={(checked) => handleDecisionStatusFilterChange(filter.key, checked)}
+                            >
+                                {filter.title}
+                            </CheckableTag>)}
+                        </div>
+                        <Divider style={{marginTop: 10, marginBottom: 10}}/>
+                        <div style={filterTagsContainerStyle}>
+                            <b style={{whiteSpace: "nowrap"}}>זמן במיון:</b>
+                            {value.getWings.wings[0].filters.time_since_arrival.map(filter => <CheckableTag
+                                key={filter.key}
+                                checked={selectedTime.indexOf(filter.key) > -1}
+                                onChange={(checked) => handleTimeFilterChange(filter.key, checked)}
+                            >
+                                {filter.title}
+                            </CheckableTag>)}
+                        </div>
+                        <Divider style={{marginTop: 10, marginBottom: 10}}/>
+                        <Tree treeData={value.getWings.wings[0].filters.awaiting.map(toTree)} style={{width: '100%'}}
+                              checkable multiple
+                              defaultExpandedKeys={value.getWings.wings[0].filters.awaiting.map(x => x.key)}
+                              placeholder="סינון לפי המתנה עבור:" onCheck={setSelectedAwaiting}
+                              checkedKeys={selectedAwaiting}/>
+                    </div>}
+                    title={"סינון תצוגת אגף"}>
+        <Button type={"primary"} style={{position: "absolute", top: 80, left: 0, width: 40, zIndex: 1000}}
+                icon={<FilterOutlined/>}/>
+    </Popover>
 }

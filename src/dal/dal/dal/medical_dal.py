@@ -1,21 +1,20 @@
 import datetime
 from dataclasses import dataclass
-from typing import List, Dict, Optional, Any, AsyncIterable, Tuple
+from typing import List, Dict, Optional, Any, AsyncIterable, Tuple, Set
 
 import logbook
 import pytz
+from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase as Database
 from pydantic import BaseModel
 
 from common.data_models.admission import Admission
 from common.data_models.awaiting import Awaiting, AwaitingTypes
 from common.data_models.base import AtomicUpdate
-from common.data_models.bed import Bed
-from common.data_models.department import Department
 from common.data_models.discussion import Note
 from common.data_models.image import Image
 from common.data_models.labs import LabCategory
-from common.data_models.mci import MCIStringValue, MCIBooleanValue
+from common.data_models.mci import MCIStringValue, MCIBooleanValue, MCIListItemValue
 from common.data_models.measures import Measure, FullMeasures, ExpectedEffect
 from common.data_models.medication import Medication
 from common.data_models.patient import Patient, Intake, ExternalData
@@ -25,12 +24,17 @@ from common.data_models.referrals import Referral
 from common.data_models.severity import Severity
 from common.data_models.status import Status
 from common.data_models.watch import WatchKey
-from common.data_models.wing import WingFilter, WingFilters, WingDetails, Wing
+from common.mci import MCI_DEPARTMENT, MCI_INTAKE_MAPPING
 from common.utilities.exceptions import PatientNotFoundException
+
+from ..routes.trauma import get_records
 from .application_dal import ApplicationDal
-from common.mci import MCI_DEPARTMENT, MCIIntakeWing
 
 logger = logbook.Logger(__name__)
+
+CUSTOM_QUERIES = {
+    'trauma': {'mci.hospital_treatment': {'$match': {'key': 'surgical-operation', 'value': {'$ne': None}}}},
+}
 
 
 def average_date(l):
@@ -50,12 +54,247 @@ class MedicalDal:
         return {k: [ProtocolItem(**i) for i in items] for k, items in
                 (await self.application_dal.get_config('protocols', {}))['value'].items()}
 
-    async def get_patients(self, query) -> AsyncIterable[Tuple[str, Patient]]:
-        async for patient in self.db.patients.find(query):
-            yield str(patient.pop('_id')), Patient(**patient)
+    async def get_patient_admissions(self, query) -> AsyncIterable[Tuple[str, str, Optional[str]]]:
+        async for patient in self.db.patients.find(query, {'admission.department_id': 1, 'admission.wing_id': 1}):
+            yield str(patient['_id']), patient['admission']['department_id'], patient['admission']['wing_id']
 
-    async def get_filters(self, patients: Dict[str, Patient]) -> WingFilters:
+    async def get_views(self) -> List[Dict]:
+        admissions = [admission async for admission in self.get_patient_admissions({})]
 
+        view_colors = {}
+        for view in (await self.application_dal.get_config('views', []))['value']:
+            view_colors[view['key']] = view.get('color')
+
+        views = [dict(
+            type='wing',
+            key=f"{w['department']}-{w['key']}",
+            name=w['name'],
+            short_name=w['name'],
+            wing_id=w['key'],
+            department_id=w['department'],
+            patients=w['patients'],
+            patients_count=len(w['patients']),
+            color=view_colors.get(f"W{w['key']}"),
+            modes=[dict(
+                key='patients',
+                name='תצוגת מטופלים',
+                short_name='מטופלים',
+            ), dict(
+                key='layout',
+                name='תצוגת מיקום',
+                short_name='מיקום',
+            ), dict(
+                key='status',
+                name='תצוגת סטטוס',
+                short_name='סטטוס',
+            )],
+            default_mode=dict(
+                key='status',
+                name='תצוגת סטטוס',
+                short_name='סטטוס',
+            ),
+        ) for w in await self.get_wings(admissions=admissions)]
+
+        views += [dict(
+            type='department',
+            key=d['key'],
+            name=d['name'],
+            short_name=d['short_name'],
+            department_id=d['key'],
+            patients=d['patients'],
+            patients_count=len(d['patients']),
+            color=view_colors.get(f"D{d['key']}"),
+            modes=[dict(
+                key='patients',
+                name='תצוגת מטופלים',
+                short_name='מטופלים',
+            ), dict(
+                key='status',
+                name='תצוגת סטטוס',
+                short_name='סטטוס',
+            ), dict(
+                key='department',
+                name='תצוגת אגפים',
+                short_name='אגפים',
+            )],
+            default_mode=dict(
+                key='department',
+                name='תצוגת אגפים',
+                short_name='אגפים',
+            ),
+        ) for d in await self.get_departments(admissions=admissions)]
+
+        views += [dict(
+            type='custom',
+            key=f"trauma",
+            name='מחלקת טראומה',
+            short_name='טראומה',
+            patients=[],
+            patients_count=len([]),
+            modes=[dict(
+                key='trauma',
+                name='תצוגה סיכומית',
+                short_name='סיכומי',
+            )],
+            default_mode=dict(
+                key='trauma',
+                name='תצוגה סיכומית',
+                short_name='סיכומי',
+            ),
+            # patients_count=len(await get_records()),
+        )]
+
+        return views
+
+    async def get_departments(
+            self,
+            key: Optional[str] = None,
+            admissions: Optional[List[Tuple[str, str, str]]] = None
+    ) -> List[Dict]:
+        department_names = {}
+        department_short_names = {}
+        department_indices = {}
+        for department in (await self.application_dal.get_config('departments', []))['value']:
+            department_names[department['key']] = department['name']
+            department_short_names[department['key']] = department['short_name']
+            department_indices[department['key']] = department['index']
+
+        wing_indices = {}
+        for wing in (await self.application_dal.get_config('wings', []))['value']:
+            wing_indices.setdefault(wing['department'], {}).__setitem__(wing['key'], wing.get('index'))
+
+        if not admissions:
+            admissions = [admission async for admission in self.get_patient_admissions(
+                {'admission.department_id': key} if key else {}
+            )]
+
+        return [dict(
+            key=department,
+            name=department_names.get(department, department),
+            short_name=department_short_names.get(department, department),
+            wing_ids=list(sorted(
+                {w for o, d, w in admissions if d == department} | set(wing_indices.get(department, {})),
+                key=lambda w: wing_indices.get(department, {}).get(w, 0), reverse=True
+            )),
+            patients=[dict(oid=o) for o, d, w in admissions if d == department],
+        ) for department in ([key] if key else sorted(
+            {d for o, d, w in admissions} | set(department_names),
+            key=lambda d: department_indices.get(d, 0), reverse=True
+        ))]
+
+    async def get_wings(
+            self,
+            department: Optional[str] = None,
+            key: Optional[str] = None,
+            admissions: Optional[List[Tuple[str, str, str]]] = None,
+    ) -> List[Dict]:
+        wing_names = {}
+        wing_layout = {}
+        wing_indices = {}
+        for wing in (await self.application_dal.get_config('wings', []))['value']:
+            if department and wing['department'] != department:
+                continue
+            wing_names.setdefault(wing['department'], {}).__setitem__(wing['key'], wing['name'])
+            if wing.get('beds') and wing.get('rows') and wing.get('columns'):
+                wing_layout.setdefault(wing['department'], {}).__setitem__(wing['key'], {
+                    'beds': wing['beds'],
+                    'rows': wing['rows'],
+                    'columns': wing['columns'],
+                })
+            wing_indices.setdefault(wing['department'], {}).__setitem__(wing['key'], wing.get('index', 0))
+        if not admissions:
+            admissions = [admission async for admission in self.get_patient_admissions(dict(
+                **{'admission.department_id': department} if department else {},
+                **{'admission.wing_id': key if key != 'wingless' else None} if key else {},
+            ))]
+        res = [dict(
+            key=wing or 'wingless',
+            department=d,
+            name=wing_names.get(d, {}).get(wing, wing or 'ללא אגף'),
+            details=dict(
+                index=wing_indices.get(d, {}).get(wing, 0),
+                layout=wing_layout.get(d, {}).get(wing, None),
+            ),
+            patients=(patients := [dict(oid=o) for o, dp, w in admissions if w == wing and dp == d]),
+            patients_count=len(patients),
+        ) for wing, d in ([(key, department)] if key and department else sorted(
+            {(w, d) for o, d, w in admissions} | set((name, d) for d in wing_names for name in wing_names[d]),
+            key=lambda w_d: wing_indices.get(w_d[1], {}).get(w_d[0], 0), reverse=True
+        ))]
+        return res
+
+    async def get_bed(self, department: str, wing: str, bed: str) -> Optional[str]:
+        async for oid, _ in self.get_patient_members({
+            "admission.department_id": department, "admission.wing_id": wing, "admission.bed": bed
+        }, members={'dummy'}):
+            if oid:
+                return oid
+
+    async def get_patients(self, department: Optional[str], wing: Optional[str], bed: Optional[str],
+                           view_type: Optional[str], view: Optional[str], oid: Optional[str], members: Set[str]):
+        match view_type:
+            case 'department':
+                view_query = {'admission.department_id': view}
+            case 'wing':
+                d, w, = view.split('-', 1)
+                view_query = {'admission.department_id': d, 'admission.wing_id': w if w != 'wingless' else None}
+            case 'custom':
+                view_query = CUSTOM_QUERIES[view]
+            case _:
+                view_query = {}
+
+        patient_members = {key: patient async for key, patient in self.get_patient_members(dict(
+            **{'admission.department_id': department} if department else {},
+            **{'admission.wing_id': wing if wing != 'wingless' else None} if wing else {},
+            **{'admission.bed': bed} if bed else {},
+            **view_query,
+            **{'_id': ObjectId(oid)} if oid else {},
+        ), members=members)}
+        return [dict(
+            oid=o,
+            notifications=[dict(key=key, **value) for key, value in patient.pop('notifications', {}).items()],
+            watching=[dict(key=key, **value) for key, value in patient.pop('watching', {}).items()],
+            **(dict(admission=dict(
+                wing_id=(admission := patient.pop('admission')).pop('wing_id') or 'wingless',
+                **admission
+            )) if 'admission' in members else {}),
+            **patient
+        ) for o, patient in patient_members.items()]
+
+    async def get_wing_filters(self, type_, key, department):
+        match type_:
+            case 'department':
+                patients = {oid: patient async for oid, patient in self.get_patient_entries({
+                    'admission.department_id': key,
+                })}
+                mappings = {key: list(patients)}
+            case 'wing':
+                if key:
+                    d, w = key.split('-', 1)
+                    patients = {oid: patient async for oid, patient in self.get_patient_entries({
+                        'admission.department_id': d,
+                        'admission.wing_id': w if w != 'wingless' else None,
+                    })}
+                    mappings = {key: list(patients)}
+                else:
+                    patients = {oid: patient async for oid, patient in self.get_patient_entries({
+                        'admission.department_id': department,
+                    })}
+                    mappings = {}
+                    for k, v in patients.items():
+                        mappings.setdefault(v.admission.wing_id or 'wingless', []).append(k)
+            case 'custom':
+                patients = {oid: patient async for oid, patient in self.get_patient_entries(CUSTOM_QUERIES[key])}
+                mappings = {key: list(patients)}
+            case _:
+                return []
+        res = []
+        for key, items in mappings.items():
+            res += [dict(key=key, **(await self.get_wing_filters_({k: v for k, v in patients.items() if k in items})))]
+        return res
+
+    @staticmethod
+    async def get_wing_filters_(patients):
         names = {
             AwaitingTypes.doctor: "צוות רפואי",
             AwaitingTypes.nurse: "צוות סיעודי",
@@ -78,10 +317,8 @@ class MedicalDal:
                 waiting_intake.append(oid)
             if patient.treatment.destination:
                 treatments.setdefault(patient.treatment.destination, []).append(oid)
-            time_diff = \
-                (
-                        datetime.datetime.now(tz=pytz.UTC) - datetime.datetime.fromisoformat(patient.admission.arrival)
-                ).total_seconds() / 3600
+            time_diff = (datetime.datetime.now(tz=pytz.UTC) - datetime.datetime.fromisoformat(
+                patient.admission.arrival).astimezone(tz=pytz.UTC)).total_seconds() / 3600
             if time_diff < 1:
                 time_since_arrival.setdefault("0-1", []).append(oid)
             elif time_diff < 6:
@@ -93,9 +330,9 @@ class MedicalDal:
         doctor_total = set(p for patients in doctors.values() for p in patients)
         treatment_total = set(p for patients in treatments.values() for p in patients)
         awaiting_total = set(p for keys in awaitings.values() for l in keys.values() for p, _ in l)
-        return WingFilters(
+        return dict(
             doctors=[
-                        WingFilter(
+                        dict(
                             key=".".join(["physician", "ללא"]),
                             count=len(patients) - len(doctor_total),
                             title="ללא",
@@ -103,7 +340,7 @@ class MedicalDal:
                             icon="doctor",
                         ),
                     ] + [
-                        WingFilter(
+                        dict(
                             key=".".join(["physician", doctor.replace('.', '')]),
                             count=len(patients),
                             title=doctor.replace('.', ''),
@@ -113,7 +350,7 @@ class MedicalDal:
                         for doctor, patients in doctors.items()
                     ],
             treatments=[
-                           WingFilter(
+                           dict(
                                key=".".join(["treatment", "ללא"]),
                                count=len(patients) - len(treatment_total),
                                title="לא הוחלט",
@@ -121,7 +358,7 @@ class MedicalDal:
                                icon="treatment",
                            ),
                        ] + [
-                           WingFilter(
+                           dict(
                                key=".".join(["treatment", treatment.replace('.', '')]),
                                count=len(patients),
                                title=treatment.replace('.', ''),
@@ -130,134 +367,94 @@ class MedicalDal:
                            )
                            for treatment, patients in treatments.items()
                        ],
-            awaiting=[
-                WingFilter(
-                    key="awaiting",
-                    count=len(awaiting_total),
-                    title="ממתינים.ות",
-                    valid=True,
-                    icon="awaiting",
-                    children=[
-                        WingFilter(
-                            key=".".join(['awaiting', awaiting]),
-                            count=len(set(p for l in keys.values() for p, _ in l)),
-                            icon=awaiting,
-                            title=awaiting_name,
-                            valid=True,
-                            duration=average_date([d for l in keys.values() for _, d in l]),
-                            children=[
-                                WingFilter(
-                                    key=".".join(['awaiting', awaiting, key]),
-                                    count=len(patients),
-                                    title=key_name,
-                                    icon=awaiting,
-                                    valid=True,
-                                    duration=average_date([d for _, d in patients]),
-                                )
-                                for (key, key_name), patients in keys.items()
-                            ],
-                        )
+            awaiting=[dict(
+                key="awaiting",
+                count=len(awaiting_total),
+                title="ממתינים.ות",
+                valid=True,
+                icon="awaiting",
+            )] + [dict(
+                key=".".join(['awaiting', awaiting]),
+                count=len(set(p for l in keys.values() for p, _ in l)),
+                icon=awaiting,
+                title=awaiting_name,
+                valid=True,
+                duration=average_date([d for l in keys.values() for _, d in l]),
+                parent="awaiting"
+            ) for (awaiting, awaiting_name), keys in awaitings.items()] + [dict(
+                key=".".join(['awaiting', awaiting, key]),
+                count=len(patients),
+                title=key_name,
+                icon=awaiting,
+                valid=True,
+                duration=average_date([d for _, d in patients]),
+                parent=".".join(['awaiting', awaiting]),
+            ) for (awaiting, awaiting_name), keys in awaitings.items()
+                         for (key, key_name), patients in keys.items()] + [dict(
+                key="not-awaiting",
+                count=len(patients) - len(awaiting_total),
+                title="ממתינים.ות להחלטה",
+                icon="awaiting",
+                valid=False,
+            ), dict(
+                key='waiting-intake',
+                count=len(waiting_intake),
+                title="אחות ממיינת",
+                icon="awaiting",
+                valid=False
+            )
+                     ],
+            time_since_arrival=[dict(
+                key=".".join(["time_since", time_since.replace('.', '')]),
+                count=len(patients),
+                title=f"ממתינים.ות {time_since} שעות",
+                icon="awaiting",
+                valid=True
+            ) for time_since, patients in time_since_arrival.items()],
+            mapping=[dict(key=k, values=v) for k, v in (
+                    [
+                        (".".join(["treatment", treatment]), patients) for
+                        treatment, patients in treatments.items()
+                    ] + [
+                        (".".join(["treatment", "ללא"]),
+                         list({oid for oid in patients} - treatment_total))
+                    ] + [
+                        (".".join(["physician", doctor]), patients) for
+                        doctor, patients in doctors.items()
+                    ] + [
+                        (".".join(["physician", "ללא"]),
+                         list({oid for oid in patients} - doctor_total))
+                    ] + [
+                        (".".join(['awaiting', awaiting, key]),
+                         [p for p, _ in patients])
                         for (awaiting, awaiting_name), keys in awaitings.items()
-                    ],
-                ),
-                WingFilter(
-                    key="not-awaiting",
-                    count=len(patients) - len(awaiting_total),
-                    title="ממתינים.ות להחלטה",
-                    icon="awaiting",
-                    valid=False,
-                ),
-                WingFilter(
-                    key='waiting-intake',
-                    count=len(waiting_intake),
-                    title="אחות ממיינת",
-                    icon="awaiting",
-                    valid=False
-                )
-            ],
-            time_since_arrival=[
-                WingFilter(
-                    key=".".join(["time_since", time_since.replace('.', '')]),
-                    count=len(patients),
-                    title=f"ממתינים.ות {time_since} שעות",
-                    icon="awaiting"
-                )
-                for time_since, patients in time_since_arrival.items()
-            ],
-            mapping=dict(
-                [(".".join(["treatment", treatment]), patients) for treatment, patients in treatments.items()]
-                + [(".".join(["treatment", "ללא"]), list({oid for oid in patients} - treatment_total))]
-                + [(".".join(["physician", doctor]), patients) for doctor, patients in doctors.items()]
-                + [(".".join(["physician", "ללא"]), list({oid for oid in patients} - doctor_total))]
-                + [
-                    (".".join(['awaiting', awaiting, key]), [p for p, _ in patients])
-                    for (awaiting, awaiting_name), keys in awaitings.items()
-                    for (key, key_name), patients in keys.items()
-                ]
-                + [
-                    (".".join(['awaiting', awaiting]),
-                     list(set(patient for patients in keys.values() for patient, _ in patients)))
-                    for (awaiting, awaiting_name), keys in awaitings.items()
-                ]
-                + [
-                    ("awaiting", list(awaiting_total)),
-                    ("not-awaiting", list({oid for oid in patients} - awaiting_total)),
-                ] +
-                [("waiting-intake", waiting_intake)]
-                + [
-                    (".".join(["time_since", time_since]), patients)
-                    for time_since, patients in time_since_arrival.items()
-                ]
-            ),
+                        for (key, key_name), patients in keys.items()
+                    ] + [
+                        (".".join(['awaiting', awaiting]),
+                         list(set(
+                             patient for patients in keys.values() for patient, _ in
+                             patients)))
+                        for (awaiting, awaiting_name), keys in awaitings.items()
+                    ] + [
+                        ("awaiting", list(awaiting_total)),
+                        ("not-awaiting",
+                         list({oid for oid in patients} - awaiting_total)),
+                    ] + [
+                        ("waiting-intake", waiting_intake)
+                    ] + [
+                        (".".join(["time_since", time_since]), patients)
+                        for time_since, patients in time_since_arrival.items()
+                    ]
+            )]
         )
 
-    async def get_departments(self) -> AsyncIterable[Department]:
-        departments = {}
-        async for key, patient in self.get_patients({}):
-            departments.setdefault(
-                patient.admission.department_id, {}
-            ).setdefault(
-                patient.admission.wing_id, {}
-            ).__setitem__(key, patient)
+    async def get_patient_members(self, query, members) -> AsyncIterable[Tuple[str, Dict]]:
+        async for patient in self.db.patients.find(query, {k: 1 for k in members}):
+            yield str(patient.pop('_id')), patient
 
-        department_names = {}
-        department_indices = {}
-        for department in (await self.application_dal.get_config('departments', []))['value']:
-            department_names[department['key']] = department['name']
-            department_indices[department['key']] = department['index']
-        wing_names = {}
-        wing_colors = {}
-        wing_indices = {}
-        for wing in (await self.application_dal.get_config('wings', []))['value']:
-            wing_names.setdefault(wing['department'], {}).__setitem__(wing['key'], wing['name'])
-            wing_colors.setdefault(wing['department'], {}).__setitem__(wing['key'], wing.get('color'))
-            wing_indices.setdefault(wing['department'], {}).__setitem__(wing['key'], wing['index'])
-
-        for department in sorted(
-                set(departments) | set(department_names),
-                key=lambda d: department_indices.get(d, 0),
-                reverse=True
-        ):
-            yield Department(
-                key=department,
-                name=department_names.get(department, department),
-                patients=(department_patients := {k: v for wing, patients in departments.get(department, {}).items()
-                                                  for k, v in patients.items()}),
-                wings=sorted([
-                    Wing(
-                        details=WingDetails(
-                            index=wing_indices.get(department, {}).get(wing, 0),
-                            key=wing or 'wingless',
-                            name=wing_names.get(department, {}).get(wing, wing or 'ללא מחלקה'),
-                            department=department,
-                            color=wing_colors.get(department, {}).get(wing),
-                        ),
-                        filters=await self.get_filters(departments.get(department, {}).get(wing, {})),
-                        patients=departments.get(department, {}).get(wing, {}),
-                        department_patients=department_patients,
-                    ) for wing in set(departments.get(department, {})) | set(wing_names.get(department, {}))
-                ], key=lambda w: w.details.index, reverse=True)
-            )
+    async def get_patient_entries(self, query) -> AsyncIterable[Tuple[str, Patient]]:
+        async for oid, patient in self.get_patient_members(query=query, members=[]):
+            yield oid, Patient(**patient)
 
     async def get_medication_effects(self, medication) -> List[ExpectedEffect]:
         async for medication_effects in self.settings_db.medication_effects.find({'name': medication}):
@@ -291,7 +488,7 @@ class MedicalDal:
                         admission=Admission(
                             arrival=existing_patient.admission.arrival,
                             department_id=MCI_DEPARTMENT,
-                            wing_id=str(MCIIntakeWing.intake.name),
+                            wing_id=MCI_INTAKE_MAPPING.get(existing_patient.admission.wing_id),
                         )
                     )
 
@@ -301,12 +498,14 @@ class MedicalDal:
     async def update_patient(self, patient_query: dict, path: List[str], value: Any, type_: str | bool):
         if type_:
             value = {
-                'Severity': Severity,
-                'WatchKey': WatchKey,
-                'MCIBooleanValue': MCIBooleanValue,
-                'MCIStringValue': MCIStringValue,
-                'Admission': Admission,
-            }[type_](**value)
+                'Severity': Severity.parse,
+                'WatchKey': WatchKey.parse,
+                'MCIBooleanValue': MCIBooleanValue.parse,
+                'MCIStringValue': MCIStringValue.parse,
+                'MCIListItemValue': MCIListItemValue.parse,
+                'Admission': Admission.parse,
+                'MCIList': lambda v: [MCIListItemValue(**item) for item in v],
+            }[type_](value)
 
         async def _update(prev):
             obj = prev
@@ -333,12 +532,34 @@ class MedicalDal:
             )
         raise PatientNotFoundException()
 
-    async def get_bed(self, department: str, wing: str, bed: str) -> Bed:
+    async def insert_patient(self, patient: Patient) -> str:
+        async def _create() -> Patient:
+            return Patient(
+                version=patient.version,
+                external_id=patient.external_id,
+                info=patient.info,
+                admission=patient.admission,
+                source_identity=patient.source_identity,
+                status=Status.unassigned,
+                severity=Severity(value=patient.esi.value, at=patient.esi.at) if patient.esi else None,
+                awaiting={
+                    AwaitingTypes.doctor: {
+                        'exam': Awaiting(subtype='exam', name='בדיקת צוות רפואי',
+                                         since=patient.admission.arrival or "",
+                                         status='לא בוצעה', limit=1500)
+                    },
+                    AwaitingTypes.nurse: {
+                        'exam': Awaiting(subtype='exam', name='בדיקת צוות סיעודי',
+                                         since=patient.admission.arrival or "",
+                                         status='לא בוצעה', limit=1500)
+                    },
+                },
+                flagged=False,
+            )
+
         with AtomicUpdate.set_connection(self):
-            oid, _ = await Patient.from_db({
-                "admission.department_id": department, "admission.wing_id": wing, "admission.bed": bed
-            })
-        return Bed(patient=oid if oid else None)
+            oid = await Patient.atomic_update({"external_id": patient.external_id}, create=_create)
+        return oid
 
     async def upsert_admission(self, external_id: str, patient: Optional[ExternalData]):
         async def _update(prev: Patient):
@@ -470,3 +691,42 @@ class MedicalDal:
 
         with AtomicUpdate.set_connection(self):
             await Patient.atomic_update({"external_id": patient_id}, update)
+
+    async def merge_mci_patient(self, anonymous_id, patient_id):
+        anon_oid, anon_patient = await  self.get_patient({'external_id': anonymous_id})
+
+        async def update_patient(patient) -> None:
+            patient.mci = anon_patient.mci
+            patient.source_identity = anon_oid
+
+        async def update_anonymous(anonymous) -> None:
+            anonymous.source_identity = 'merged'
+
+        with AtomicUpdate.set_connection(self):
+            await Patient.atomic_update({"external_id": patient_id}, update=update_patient)
+        with AtomicUpdate.set_connection(self):
+            await Patient.atomic_update({"external_id": anonymous_id}, update=update_anonymous)
+
+    async def unmerge_mci_patient(self, patient_id):
+        old_patient = await  self.get_patient({'external_id': patient_id})
+        anonymous_patient = await self.get_patient({'_id': ObjectId(old_patient.source_identity)})
+
+        async def update_patient(patient) -> None:
+            patient.mci = {}
+            patient.source_identity = None
+
+        async def update_anonymous(patient) -> None:
+            patient.source_identity = 'manually'
+            patient.mci = old_patient.mci
+
+        with AtomicUpdate.set_connection(self):
+            await Patient.atomic_update({"external_id": anonymous_patient.external_id}, update=update_anonymous)
+        with AtomicUpdate.set_connection(self):
+            await Patient.atomic_update({"external_id": patient_id}, update=update_patient)
+
+    async def update_mci(self, results: list, id_: str):
+        async def update(patient) -> None:
+            patient.mci_results = results
+
+        with AtomicUpdate.set_connection(self):
+            await Patient.atomic_update({"info.id_": id_, "external_id": {"$regex": "^mci"}}, update)

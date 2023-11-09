@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 import logbook
 from aiohttp.web_exceptions import HTTPError
@@ -41,8 +41,8 @@ async def get_patient_info_by_id(
 
 
 @patient_router.post("/{patient}")
-async def update_patient_by_id(patient: str, path=Body(...), value=Body(...), type_: str | bool = Body(...),
-                               _=Depends(login_manager)) -> dict:
+async def update_patient_by_id(patient: str, path=Body(...), value: Any = Body(default=None),
+                               type_: str | bool = Body(...), _=Depends(login_manager)) -> dict:
     return await post_dal_json(f"/patients/{patient}", json_payload=dict(path=path, value=value, type_=type_))
 
 

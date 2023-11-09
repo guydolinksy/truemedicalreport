@@ -1,6 +1,6 @@
 import aiohttp
 import logbook
-from typing import List
+from typing import List, Any, Iterable
 
 from .. import config
 

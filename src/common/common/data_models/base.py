@@ -193,10 +193,10 @@ class AtomicUpdate(Diffable):
     async def atomic_update(
             cls,
             query: dict,
-            update: Optional[Callable[['AtomicUpdate'], Awaitable[Any]]],
+            update: Optional[Callable[['AtomicUpdate'], Awaitable[Any]]] = None,
             create: Optional[Callable[[], Awaitable['AtomicUpdate']]] = None,
             max_retries=10
-    ) -> None:
+    ) -> Optional[str]:
         for i in range(max_retries):
             oid, old = await cls.from_db(query)
             if oid:
@@ -205,6 +205,7 @@ class AtomicUpdate(Diffable):
                     await cls.watcher.run_recursive_diff(old, new)
                     if not any(_diff((), old, new)):
                         return
+
                     update_result = await getattr(AtomicUpdate.get_connection().db, cls.collection).update_one(
                         {'_id': ObjectId(oid), 'version': old.version},
                         {"$set": dict(version=old.version + 1, **new.model_dump(exclude={'version': True}))}
@@ -233,6 +234,7 @@ class AtomicUpdate(Diffable):
         else:
             raise MaxRetriesExceeded(msg=f"{cls.__name__}({query})")
         await cls.watcher.run_notify(oid, old, new)
+        return str(oid)
 
     @classmethod
     async def from_db(cls, patient_query):
@@ -254,3 +256,9 @@ class AtomicUpdate(Diffable):
     @staticmethod
     def get_connection():
         return connection
+
+
+class ParsableMixin:
+    @classmethod
+    def parse(cls, value) -> 'ParsableMixin':
+        raise NotImplemented()

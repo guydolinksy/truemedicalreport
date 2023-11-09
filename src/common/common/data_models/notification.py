@@ -22,7 +22,7 @@ class Notification(Diffable):
     static_id: str
     message: str
     at: str
-    type: NotificationType
+    type_: NotificationType
     level: NotificationLevel
     link: Optional[str] = None
 

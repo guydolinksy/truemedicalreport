@@ -17,3 +17,5 @@ decorator
 aiohttp
 motor
 ariadne
+pandas==1.2.3
+pyodbc

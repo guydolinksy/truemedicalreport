@@ -1,0 +1,28 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="nginx" type="docker-deploy" factoryName="docker-image" folderName="local" server-name="Docker">
+    <deployment type="docker-image">
+      <settings>
+        <option name="imageTag" value="docker-virtual.artifactory.arc-devops.sheba.gov.il/library/nginx" />
+        <option name="containerName" value="tmr-nginx" />
+        <option name="portBindings">
+          <list>
+            <DockerPortBindingImpl>
+              <option name="containerPort" value="80" />
+              <option name="hostPort" value="9090" />
+            </DockerPortBindingImpl>
+          </list>
+        </option>
+        <option name="commandLineOptions" value="--link tmr-backend:tmr-backend --link tmr-frontend:tmr-frontend --link tmr-digest:tmr-digest --link tmr-dal:tmr-dal" />
+        <option name="volumeBindings">
+          <list>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/etc/nginx/conf.d" />
+              <option name="hostPath" value="$PROJECT_DIR$/dev/nginx" />
+            </DockerVolumeBindingImpl>
+          </list>
+        </option>
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>

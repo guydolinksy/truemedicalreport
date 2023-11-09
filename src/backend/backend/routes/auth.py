@@ -9,6 +9,7 @@ from fastapi_login import LoginManager
 from pydantic import ValidationError
 from starlette.responses import Response
 
+from common.mci import MCI_DEPARTMENT
 from .. import config
 from ..logics.exceptions import UnauthorizedException, InvalidSettingsException, BadRequestException
 from ..logics.settings import Settings, settings, current_general_settings, Proxy, current_settings
@@ -100,7 +101,7 @@ def get_user(user: User = Depends(login_manager), user_settings_=Depends(user_se
         ),
         userSettings=dict(
             theme=getattr(user_settings_, "display", {}).get("theme", "light-theme"),
-            statistics=getattr(user_settings_, "display", {}).get("statistics", {'default': [
+            statistics=getattr(user_settings_, "statistics", {'default': [
                 ('^physician\\.(?!ללא$).*$', False),
                 ('^treatment\\.(?!ללא$).*$', False),
                 ('^awaiting$', False),
@@ -109,7 +110,12 @@ def get_user(user: User = Depends(login_manager), user_settings_=Depends(user_se
                 ('^awaiting\\.imaging$', False),
                 ('^awaiting\\.referral$', False),
                 ('^awaiting\\.laboratory\\..*$', False),
-            ]})
+            ]}),
+            actions=getattr(user_settings_, "actions", [
+                dict(key='new', name='קליטת מטופל', url=f'/views/department/{MCI_DEPARTMENT}/modes/patients#new'),
+                dict(key='views', name='צפייה במחלקה', url='/views'),
+                dict(key='trauma', name='תצוגה סיכומית', url='/views/custom/trauma/modes/trauma'),
+            ])
         ),
     )
 

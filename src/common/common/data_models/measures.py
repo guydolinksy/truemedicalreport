@@ -45,14 +45,17 @@ class Value(Diffable, Generic[T]):
     @property
     def is_valid(self) -> Optional[bool]:
         if self.minimum is not None and self.maximum is not None and self.value is not None:
-            if not isinstance(self.value, tuple):
-                return self.minimum <= float(self.value) <= self.maximum
-            for minimum, value, maximum in zip(self.minimum, self.value, self.maximum):
-                if minimum is not None and maximum is not None and value is not None and \
-                        not minimum <= float(value) <= maximum:
-                    return False
-            else:
-                return True
+            try:
+                if not isinstance(self.value, tuple):
+                    return float(self.minimum) <= float(self.value) <= float(self.maximum)
+                for minimum, value, maximum in zip(self.minimum, self.value, self.maximum):
+                    if minimum is not None and maximum is not None and value is not None and \
+                            not float(minimum) <= float(value) <= float(maximum):
+                        return False
+                else:
+                    return True
+            except ValueError:
+                return False
 
 
 class EffectType(str, Enum):
@@ -85,17 +88,17 @@ class Measure(DynamicValue[T], Generic[T]):
 
 
 class BP(NamedTuple):
-    systolic: int
-    diastolic: Optional[int]
+    systolic: str
+    diastolic: Optional[str]
 
 
 class Measures(Diffable):
-    systolic: Optional[Value[int]] = None
-    diastolic: Optional[Value[int]] = None
-    pain: Optional[Value[int]] = None
-    pulse: Optional[Value[int]] = None
-    temperature: Optional[Value[float]] = None
-    saturation: Optional[Value[int]] = None
+    systolic: Optional[Value[str]] = None
+    diastolic: Optional[Value[str]] = None
+    pain: Optional[Value[str]] = None
+    pulse: Optional[Value[str]] = None
+    temperature: Optional[Value[str]] = None
+    saturation: Optional[Value[str]] = None
 
     @computed_field
     @property
@@ -124,7 +127,10 @@ class FullMeasures(Diffable):
 
         for measure in measures:
             if measure.value is not None:
-                res.get(measure.type, []).append((int(measure.at_.timestamp() * 1000), measure.value))
+                try:
+                    res.get(measure.type, []).append((int(measure.at_.timestamp() * 1000), float(measure.value)))
+                except ValueError:
+                    logger.exception('Invalid format for measurement {}@{}', measure.type, measure.at_)
 
         systolic, diastolic = dict(res.pop('systolic')), dict(res.pop('diastolic'))
         if systolic and not diastolic:

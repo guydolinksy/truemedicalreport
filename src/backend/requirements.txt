@@ -10,4 +10,4 @@ environs
 cachetools
 aiohttp
 sentry_sdk
-
+faker

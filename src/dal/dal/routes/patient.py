@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 import logbook
 from bson import ObjectId
@@ -25,7 +25,7 @@ async def get_patient_info_plugin_data_by_id_v1(patient: str,
 
 
 @patient_router.post("/{patient}")
-async def update_patient_by_id(patient: str, path=Body(...), value=Body(...), type_: str | bool = Body(...),
-                               dal: MedicalDal = Depends(medical_dal)) -> None:
+async def update_patient_by_id(patient: str, path=Body(...), value: Any = Body(default=None),
+                               type_: str | bool = Body(...), dal: MedicalDal = Depends(medical_dal)) -> None:
     await dal.update_patient({"_id": ObjectId(patient)}, path=path, value=value, type_=type_)
     return {}

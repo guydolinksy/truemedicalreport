@@ -390,3 +390,30 @@
 .ant-progress-inner {
     background-color: #c8c8c8 !important;
 }
+
+.main-display-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.main-display-item .ant-card-extra:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+.main-display-item .ant-card-body:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+.custom-layout-content {
+    flex: 1 1 0%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+    align-items: center;
+}
+
+.ant-picker-time-panel-column {
+    overflow-y: auto !important;
+}

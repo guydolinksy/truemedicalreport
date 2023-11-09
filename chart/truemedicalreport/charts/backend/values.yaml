@@ -69,6 +69,11 @@ affinity: {}
 
 enabled: true
 
+input:
+  arc:
+    secretName: ''
+    secretValue: ''
+
 devMappings:
   - relativePath: src/backend/backend
     containerPath: /opt/backend/backend

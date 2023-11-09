@@ -1,0 +1,33 @@
+.ant-ribbon-wrapper {
+    height: 100%;
+}
+
+.ant-carousel {
+    display: flex!important;
+    flex-direction: column !important;
+    min-height: 0;
+    flex: 1 1 1px;
+}
+.ant-carousel .slick-slider {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0;
+    flex: 1 1 1px;
+}
+.ant-carousel .slick-list {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0;
+    flex: 1 1 1px;
+}
+.ant-carousel .slick-slider .slick-track {
+    flex: 1 1 1px;
+    overflow-y: hidden;
+    min-height: 0;
+}
+.ant-carousel .slick-slider .slick-track .slick-slide{
+    overflow-y: auto;
+}
+.ant-carousel .slick-slider .slick-track .slick-slide > div{
+    height: 100%;
+}

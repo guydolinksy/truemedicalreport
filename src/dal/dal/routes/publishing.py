@@ -25,7 +25,6 @@ async def notify_admission(oid: str, old_value: Optional[Admission], new_value: 
 
 @Patient.watcher.notify()
 async def notify_patient(oid: str, old: Optional[Patient], new: Optional[Patient]):
-    logger.debug(oid)
     await publish(f'{Patient.__name__}', dict(
         oid=oid,
         old=old.model_dump() if old else None,

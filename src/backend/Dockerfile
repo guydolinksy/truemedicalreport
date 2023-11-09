@@ -18,6 +18,11 @@
 #ENV DEBUG=1
 #CMD python -m backend
 
+FROM docker-virtual.artifactory.arc-devops.sheba.gov.il/guydo/tmr-backend:dev AS dev
+
+RUN python -m pip install faker --index-url=https://cicd:AKCp8pQbcJai5MX9uk4qH3V2JCQ6LQHbwWiXDvf4YjFPYYvQUry8NoPByRz7rcviekAkaDxTB@artifactory.arc-devops.sheba.gov.il/artifactory/api/pypi/pypi-virtual/simple --trusted-host=artifactory.arc-devops.sheba.gov.il
+
+
 FROM guydo/tmr-backend:dev AS prod
 
 COPY common/common /opt/common/common

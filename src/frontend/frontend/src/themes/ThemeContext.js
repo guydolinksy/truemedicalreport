@@ -1,4 +1,4 @@
-import React, {useContext, lazy, Suspense, useEffect, useState} from "react";
+import React, {lazy, Suspense, useContext, useEffect, useState} from "react";
 import {loginContext} from "../components/LoginContext";
 
 export const LightTheme = lazy(() => import("./LightTheme"));

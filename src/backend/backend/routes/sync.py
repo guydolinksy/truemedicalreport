@@ -31,9 +31,8 @@ async def patient_handler(data: dict):
         f"/api/patients/{patient_oid}",
         f"/api/patients/{patient_oid}/info",
         f"/api/departments/{admission.department_id}",
+        f"/api/departments/{admission.department_id}/wings/{admission.wing_id or 'wingless'}"
     }
-    if admission.wing_id:
-        keys.add(f"/api/departments/{admission.department_id}/wings/{admission.wing_id}")
 
     await notify(keys)
 

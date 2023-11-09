@@ -71,7 +71,7 @@ class Laboratory(Diffable):
 
 
 class LabsNotification(Notification):
-    type: NotificationType = NotificationType.lab
+    type_: NotificationType = NotificationType.lab
 
 
 class LabCategory(Diffable):

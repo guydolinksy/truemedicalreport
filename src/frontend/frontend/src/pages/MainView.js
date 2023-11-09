@@ -1,29 +1,52 @@
-import React, {useEffect, useState} from 'react';
-import {Outlet, useLocation, useNavigate} from 'react-router-dom';
+import React, {useContext, useEffect} from 'react';
+import {Layout, Modal, Spin} from "antd";
 import {LoginRequired} from "../components/LoginContext";
-import {Layout, Modal} from 'antd';
+import {modeContext} from "../contexts/ModeContext";
 import {MainMenu} from "../components/MainMenu";
-import axios from 'axios';
-import {Settings} from "../components/settings/Settings";
-import {hashMatchContext} from "../components/HashMatch";
-import {createContext} from "../hooks/DataContext";
+import {Outlet} from 'react-router-dom';
+import {viewsDataContext} from '../contexts/ViewsDataContext'
+import {NotificationsProvider} from "../contexts/NotificationContext";
 
 const {Header} = Layout;
 
 export const MAIN_URL = '/'
+export const MainView = () => {
+    const {isTablet, isTiny, isFullScreen} = useContext(modeContext);
+    const [modal, modalContext] = Modal.useModal();
 
-export const menuContext = createContext({});
+    useEffect(() => {
+        console.log('RESIZE?', isTablet, isFullScreen)
+        if (isTablet && !isFullScreen) {
+            modal.info({
+                icon: null,
+                width: "70%",
+                okText: "עבור למסך מלא",
+                centered: true,
+                closeable: false,
+                maskCloseable: true,
+                content: <div>
+                    שמנו לב שאת.ה כנראה גולש.ת מטאבלט. לחצ.י כאן כדי לעבור למסך מלא
+                </div>,
+                onOk: () => {
+                    document.body.requestFullscreen()
+                }
+            })
+        }
+    }, [modal, isTablet, isFullScreen])
 
-export const MainView = (() => {
-    return <menuContext.Provider url={'/api/departments/'} defaultValue={[]}>
-        {() => <Layout style={{height: '100vh', display: 'flex'}}>
-            <Header>
-                <MainMenu/>
-            </Header>
-            <LoginRequired>
-                <Outlet/>
-            </LoginRequired>
-        </Layout>}
-    </menuContext.Provider>
-});
-
+    return <>
+        <LoginRequired>
+            <NotificationsProvider>
+                <viewsDataContext.Provider url={'/api/views/'} defaultValue={{views: []}}>
+                    {({loading}) => <Layout style={{height: '100vh', display: 'flex'}}>
+                        <Header style={isTiny ? {padding: "0 8px"} : {}}>
+                            <MainMenu/>
+                        </Header>
+                        {loading ? <Spin/> : <Outlet/>}
+                    </Layout>}
+                </viewsDataContext.Provider>
+            </NotificationsProvider>
+        </LoginRequired>
+        {modalContext}
+    </>
+}

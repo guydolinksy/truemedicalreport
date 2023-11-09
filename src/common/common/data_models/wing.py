@@ -7,13 +7,9 @@ from .patient import Patient
 
 class WingDetails(Diffable):
     index: int
-    key: str
-    name: str
-    department: str
-    color: Optional[str] = None
-    columns: Optional[List[dict]] = None
-    rows: Optional[List[dict]] = None
-    beds: Optional[List[List[Optional[str]]]] = None
+    columns: Optional[str] = None
+    rows: Optional[str] = None
+    beds: Optional[List[Optional[str]]] = None
 
 
 class WingFilter(Diffable):
@@ -35,7 +31,9 @@ class WingFilters(Diffable):
 
 
 class Wing(Diffable):
+    key: str
+    department: str
+    name: str
     details: WingDetails
-    filters: WingFilters
     patients: Dict[str, Patient]
     department_patients: Dict[str, Patient]
