@@ -1,9 +1,10 @@
-import React, {useContext, useMemo} from "react";
+import React, {useCallback, useContext, useMemo, useState} from "react";
 import {Button, Card, TimePicker} from "antd";
 import {patientDataContext} from "../card/PatientBase";
 import moment from 'moment';
 import {DeleteOutlined} from "@ant-design/icons";
 import {useParams} from 'react-router-dom';
+import {Customizer} from './Customizer';
 
 export const MCI_DEPARTMENT = 'mci'
 export const MCIFormItem = ({current, sectionKey, index, item}) => {
@@ -24,14 +25,38 @@ export const MCIFormItem = ({current, sectionKey, index, item}) => {
     </div>
 }
 
+const INITIAL_MODAL_PROPS = { customizer: undefined, isOpen: false, onEnd: () => {}, onCancel: () => {} };
+
 export const MCISection = ({config}) => {
+    const [modalProps, setModalProps] = useState(INITIAL_MODAL_PROPS);
     const {patient} = useParams();
     const {value, update} = useContext(patientDataContext.context);
 
-    console.log(config, value);
     const current = useMemo(() => {
         return value.mci[config.key] ?? [];
-    }, [value, config.key])
+    }, [value, config.key]);
+    const getOnDone = useCallback((option) => {
+      const onCancel = () => {
+        setModalProps(INITIAL_MODAL_PROPS);
+      };
+      const onDone = (value) => {
+        setModalProps(INITIAL_MODAL_PROPS);
+        return update(
+          [MCI_DEPARTMENT, config.key], [...current, {
+            key: `${option.key}-${current.length}`,
+            value: `${option.name}${value ? ` - ${value}` : ''}`,
+            at: moment().toISOString().replace('Z', '+00:00'),
+            type: 'list_item'
+          }], 'MCIList');
+      };
+      return () => {
+        if (option.customizers?.length) {
+          setModalProps({ customizer: option.customizers[0], isOpen: true, onEnd: onDone, onCancel })
+          return;
+        }
+        return onDone();
+      };
+    }, [config.key, current, update]);
     return <Card size={'small'} title={config.name} key={config.key}
                  style={{
                      width: '100%',
@@ -55,16 +80,11 @@ export const MCISection = ({config}) => {
             <div style={{flex: 1}}/>
             <div style={{display: 'flex', flexWrap: 'wrap'}}>
                 {config.options.map(option =>
-                    <Button style={{flex: 1}} size={'small'} key={option.key} onClick={() => update(
-                        [MCI_DEPARTMENT, config.key], [...current, {
-                            key: `${option.key}-${current.length}`,
-                            value: option.name,
-                            at: moment().toISOString().replace('Z', '+00:00'),
-                            type: 'list_item'
-                        }], 'MCIList')}>
-                        {option.name}
-                    </Button>)}
+                  <Button style={{flex: 1}} size={'small'} key={option.key} onClick={getOnDone(option)}>
+                    {option.name}
+                  </Button>)}
             </div>
         </div>
+        <Customizer {...modalProps} />
     </Card>
 }
