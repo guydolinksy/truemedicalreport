@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "strict": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "preserveSymlinks": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "declaration": false,
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "./src/**/*",
+  ],
+}

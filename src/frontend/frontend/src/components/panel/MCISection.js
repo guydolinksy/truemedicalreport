@@ -4,7 +4,7 @@ import {patientDataContext} from "../card/PatientBase";
 import moment from 'moment';
 import {DeleteOutlined} from "@ant-design/icons";
 import {useParams} from 'react-router-dom';
-import {Customizer} from './Customizer';
+import {Customizer} from './Customizer.tsx';
 
 export const MCI_DEPARTMENT = 'mci'
 export const MCIFormItem = ({current, sectionKey, index, item}) => {
@@ -50,8 +50,8 @@ export const MCISection = ({config}) => {
           }], 'MCIList');
       };
       return () => {
-        if (option.customizers?.length && option.customizers[0].type === 'location') {
-          setModalProps({ customizer: option.customizers[0], isOpen: true, onEnd: onDone, onCancel })
+        if (option.customizer) {
+          setModalProps({ customizer: option.customizer, isOpen: true, onEnd: onDone, onCancel })
           return;
         }
         return onDone();

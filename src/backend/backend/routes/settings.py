@@ -66,19 +66,19 @@ async def get_display_settings(
                     options=[dict(
                         key="gunshot",
                         name="פצע ירי",
-                        customizers=[dict(
+                        customizer=dict(
                             key='location',
                             name='מיקום',
                             type='location',
-                        )]
+                        )
                     ), dict(
                         key="stab_wound",
                         name="פצע דקירה",
-                        customizers=[dict(
+                        customizer=dict(
                             key='location',
                             name='מיקום',
                             type='location',
-                        )]
+                        )
                     )]
                 ),
             ),
@@ -95,17 +95,15 @@ async def get_display_settings(
                     options=[dict(
                         key="drug",
                         name="תרופה",
-                        customizers=[dict(
-                            key='name',
+                        customizer=dict(
+                            key='drugs',
                             name='סוג התרופה',
-                            type='select',
-                            options=['אדרנלין', 'דורמיקום']
-                        ), dict(
-                            key='dosage',
-                            name='מינון',
-                            type='select',
-                            options=['0.5mg', '1mg']
-                        )]
+                            type='drugs',
+                            options=[
+                                dict(name='דורמיקום', dosage_amount=0.5, dosage_unit='mg', maximum=10),
+                                dict(name='אדרנלין', dosage_amount=0.1, dosage_unit='mg', maximum=2)
+                            ],
+                        )
                     )]
                 ),
             ),
@@ -122,17 +120,15 @@ async def get_display_settings(
                     options=[dict(
                         key="drug",
                         name="תרופה",
-                        customizers=[dict(
-                            key='name',
+                        customizer=dict(
+                            key='drugs',
                             name='סוג התרופה',
-                            type='select',
-                            options=['אדרנלין', 'דורמיקום']
-                        ), dict(
-                            key='dosage',
-                            name='מינון',
-                            type='select',
-                            options=['0.5mg', '1mg']
-                        )]
+                            type='drugs',
+                            options=[
+                                dict(name='דורמיקום', dosage_amount=0.5, dosage_unit='mg', maximum=10),
+                                dict(name='אדרנלין', dosage_amount=0.1, dosage_unit='mg', maximum=2)
+                            ],
+                        )
                     )]
                 ),
             ),
@@ -149,11 +145,11 @@ async def get_display_settings(
                     options=[dict(
                         key="mri",
                         name="MRI",
-                        customizers=[dict(
+                        customizer=dict(
                             key='location',
                             name='מיקום',
                             type='location'
-                        )]
+                        )
                     )]
                 ),
             ),
