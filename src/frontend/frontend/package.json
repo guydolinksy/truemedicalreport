@@ -5,7 +5,8 @@
   "description": "Frontend",
   "overrides": {
     "react": "$react",
-    "react-dom": "$react-dom"
+    "react-dom": "$react-dom",
+    "typescript": "$typescript"
   },
   "dependencies": {
     "@ant-design/colors": "^6.0.0",
