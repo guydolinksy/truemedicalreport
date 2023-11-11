@@ -1,3 +1,3 @@
-import {createDataContext} from "../../contexts/DataContext";
+import { createDataContext } from '../../contexts/DataContext';
 
 export const patientDataContext = createDataContext();

@@ -1,11 +1,9 @@
 import React from 'react';
 
-const Foo = () => {
-
-}
+const Foo = () => {};
 const Bar = () => {
-    return <Foo/>
-}
+  return <Foo />;
+};
 const FooBar = () => {
-    return Foo()
-}
+  return Foo();
+};

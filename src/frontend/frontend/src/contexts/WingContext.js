@@ -1,3 +1,3 @@
-import {createContext} from "./DataContext";
+import { createContext } from './DataContext';
 
 export const wingDataContext = createContext();

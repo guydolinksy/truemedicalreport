@@ -1,4 +1,4 @@
-import type {FC} from "react";
+import type { FC } from 'react';
 
 interface ICustomizerProps {
   onChange: (value: string) => void;
