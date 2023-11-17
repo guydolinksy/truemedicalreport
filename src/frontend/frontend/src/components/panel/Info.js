@@ -15,12 +15,30 @@ import { MedicalSummary } from './MedicalSummary';
 import { ECGs } from './ECGs';
 import { MCISection } from './MCISection';
 import { MCIHeader } from './MCIHeader';
+import { MCI } from './MCI';
 import { createDataContext } from '../../contexts/DataContext';
 import { INFO_URL } from '../../pages/InfoView';
 import { hashMatchContext } from '../HashMatch';
 import { modeContext } from '../../contexts/ModeContext';
 import { Drawer, Button } from 'antd';
 import { ArrowsAltOutlined } from '@ant-design/icons';
+
+const COMPONENT_TYPE_TO_COMPONENT = {
+  Notes,
+  FullMeasures,
+  BasicInfo,
+  Notifications,
+  Imaging,
+  Labs,
+  Referrals,
+  Visits,
+  MedicalSummary,
+  ECGs,
+  MCIHeader,
+  MCISection,
+  InfoPlugin,
+  MCI,
+};
 
 export const panelContext = createDataContext();
 
@@ -65,22 +83,9 @@ export const InfoPanel = ({ setHeader }) => {
     <panelContext.Provider url={`/api/settings/views/${viewType}/${view}/modes/${mode}/info/format`}>
       {({ value }) =>
         value.components.map((component) => {
-          if (component.type === 'Notes') return <Notes key={component.key} config={component.config} />;
-          if (component.type === 'FullMeasures') return <FullMeasures key={component.key} config={component.config} />;
-          if (component.type === 'BasicInfo') return <BasicInfo key={component.key} config={component.config} />;
-          if (component.type === 'Notifications')
-            return <Notifications key={component.key} config={component.config} />;
-          if (component.type === 'Imaging') return <Imaging key={component.key} config={component.config} />;
-          if (component.type === 'Labs') return <Labs key={component.key} config={component.config} />;
-          if (component.type === 'Referrals') return <Referrals key={component.key} config={component.config} />;
-          if (component.type === 'Visits') return <Visits key={component.key} config={component.config} />;
-          if (component.type === 'MedicalSummary')
-            return <MedicalSummary key={component.key} config={component.config} />;
-          if (component.type === 'ECGs') return <ECGs key={component.key} config={component.config} />;
-          if (component.type === 'MCIHeader') return <MCIHeader key={component.key} config={component.config} />;
-          if (component.type === 'MCISection') return <MCISection key={component.key} config={component.config} />;
-          if (component.type === 'InfoPlugin') return <InfoPlugin key={component.key} config={component.config} />;
-          return <div key={component.key}>Unknown Component {component.type}</div>;
+          const Component = COMPONENT_TYPE_TO_COMPONENT[component.type];
+          if (!Component) return <div key={component.key}>Unknown Component {component.type}</div>;
+          return <Component key={component.key} config={component.config} />;
         })
       }
     </panelContext.Provider>
