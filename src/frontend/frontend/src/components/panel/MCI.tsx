@@ -170,11 +170,10 @@ const Flip: FC = () => (
   </svg>
 );
 
-const Tag: FC<{ tag: string; checked: boolean; onChange: (checked: boolean) => void; first?: boolean }> = ({
+const Tag: FC<{ tag: string; checked: boolean; onChange: (checked: boolean) => void }> = ({
   tag,
   checked,
   onChange,
-  first,
 }) => (
   <AntdTag.CheckableTag
     checked={checked}
@@ -185,7 +184,7 @@ const Tag: FC<{ tag: string; checked: boolean; onChange: (checked: boolean) => v
       alignItems: 'center',
       height: '45px',
       background: checked ? 'gray' : 'white',
-      marginRight: first ? '0' : undefined,
+      marginTop: '6px',
       font: 'normal normal 600 18px/13px Source Sans Pro',
       color: '#4D565C',
     }}
@@ -195,6 +194,13 @@ const Tag: FC<{ tag: string; checked: boolean; onChange: (checked: boolean) => v
 );
 const Divider: FC = () => <AntdDivider type="vertical" orientation={'center'} style={{ backgroundColor: '#A4AFB7' }} />;
 
+const Identification: FC<{ title: string }> = ({ title }) => (
+  <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+    <span style={{ font: 'normal normal normal 20px/27px Segoe UI', color: '#605F86' }}>{title}</span>
+    <InputNumber controls={false} size={'small'} style={{ width: '164px' }} />
+  </div>
+);
+
 const columns = [
   { title: 'שעה', dataIndex: 'at' },
   { title: 'פרוצדורה', dataIndex: 'procedure' },
@@ -202,23 +208,39 @@ const columns = [
   { title: 'הערות', dataIndex: 'notes' },
 ];
 
-export const InfoPanel2: FC = () => {
+interface IMCIProps {
+  config: {
+    johnDoeName: string;
+    identification: { key: string; value: string }[];
+    ageGroups: { values: { key: string; value: string }[]; defaultValue: string };
+    tags: { key: string; value: string }[];
+  };
+}
+
+export const MCI: FC<IMCIProps> = ({ config }) => {
   const [tags, setTags] = useState<Record<string, boolean>>({});
   const onTagChange = useCallback(
     (value: string) => (checked: boolean) => setTags((v) => ({ ...v, [value]: checked })),
     [],
   );
   return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex' }}>
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        margin: '-8vh',
+      }}
+    >
       <div
         style={{
-          width: '715px',
+          width: '600px',
           height: '1200px',
           background: '#F0F0F7 0% 0% no-repeat padding-box',
           display: 'flex',
           flexDirection: 'column',
           paddingRight: '56px',
-          paddingTop: '57px',
+          paddingTop: '56px',
         }}
       >
         <div style={{ width: '100%', display: 'inline-flex' }}>
@@ -228,45 +250,34 @@ export const InfoPanel2: FC = () => {
               color: '#605F86',
             }}
           >
-            אלמוני/ת
+            {config.johnDoeName}
           </span>
         </div>
-        <div style={{ width: '100%', display: 'inline-flex', alignItems: 'center' }}>
-          <span style={{ font: 'normal normal normal 20px/27px Segoe UI', color: '#605F86', marginLeft: '51px' }}>
-            ת.ז
-          </span>
-          <InputNumber controls={false} size={'small'} style={{ width: '164px' }} />
-          <Radio.Group defaultValue={'adult'} style={{ marginRight: '62px' }}>
-            <Radio value="adult">בוגר</Radio>
-            <Radio value="child">ילד</Radio>
-            <Radio value="infant">תינוק</Radio>
-          </Radio.Group>
-        </div>
-        <div
-          style={{
-            width: '100%',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginTop: '10px',
-          }}
-        >
-          <div>
-            <span
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '250px' }}>
+            {config.identification.map(({ key, value }) => (
+              <Identification key={key} title={value} />
+            ))}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Radio.Group defaultValue={config.ageGroups.defaultValue} style={{ marginRight: '62px' }}>
+              {config.ageGroups.values.map(({ key, value }) => (
+                <Radio key={key} value={key}>
+                  {value}
+                </Radio>
+              ))}
+            </Radio.Group>
+            <div
               style={{
-                font: 'normal normal normal 20px/27px Segoe UI',
-                color: '#605F86',
-                marginLeft: '10px',
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                marginTop: '10px',
               }}
             >
-              מס׳ ידון
-            </span>
-            <InputNumber controls={false} size={'small'} style={{ width: '164px' }} />
-          </div>
-          <div>
-            <Button style={{ marginLeft: '35px' }} type={'primary'}>
-              הבא נתונים
-            </Button>
+              <Button type={'primary'}>הבא נתונים</Button>
+            </div>
           </div>
         </div>
         <div
@@ -275,24 +286,12 @@ export const InfoPanel2: FC = () => {
             display: 'inline-flex',
             alignItems: 'center',
             marginTop: '20px',
+            flexWrap: 'wrap',
           }}
         >
-          <Tag tag={'חוסר הכרה'} checked={tags['חוסר הכרה']} onChange={onTagChange('חוסר הכרה')} first />
-          <Tag tag={'תגובת קרב'} checked={tags['תגובת קרב']} onChange={onTagChange('תגובת קרב')} />
-          <Tag tag={'שאיפת עשן'} checked={tags['שאיפת עשן']} onChange={onTagChange('שאיפת עשן')} />
-          <Tag tag={'מעיכה'} checked={tags['מעיכה']} onChange={onTagChange('מעיכה')} />
-        </div>
-        <div
-          style={{
-            width: '100%',
-            display: 'inline-flex',
-            alignItems: 'center',
-            marginTop: '10px',
-          }}
-        >
-          <Tag tag={'הדף'} checked={tags['הדף']} onChange={onTagChange('הדף')} first />
-          <Tag tag={'ירי'} checked={tags['ירי']} onChange={onTagChange('ירי')} />
-          <Tag tag={'קינמטיקה'} checked={tags['קינמטיקה']} onChange={onTagChange('קינמטיקה')} />
+          {config.tags.map(({ key, value }) => (
+            <Tag key={key} tag={value} checked={tags[key]} onChange={onTagChange(key)} />
+          ))}
         </div>
         <div>
           <Menu
@@ -341,7 +340,7 @@ export const InfoPanel2: FC = () => {
           <Table columns={columns} locale={{ emptyText: 'טרם נרשמו טיפולים' }} size={'small'} />
         </div>
       </div>
-      <div style={{ display: 'grid', width: '1205px', height: '1200px', background: 'white' }}>
+      <div style={{ display: 'grid', flex: 1, height: '1200px', background: 'white' }}>
         <div
           style={{
             marginLeft: '10px',
@@ -408,7 +407,6 @@ export const InfoPanel2: FC = () => {
             flexDirection: 'column',
             alignItems: 'center',
             marginTop: '-550px',
-            marginRight: '-200px',
           }}
         >
           <div style={{ marginBottom: '10px' }}>
