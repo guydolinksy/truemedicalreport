@@ -1,26 +1,22 @@
-#FROM python:3.10.8-alpine3.15 AS dev
-#WORKDIR /opt
-#
-#RUN apk add build-base openldap-dev
-#RUN echo -n "INPUT ( libldap.so )" > /usr/lib/libldap_r.so
-#
-#COPY common/requirements.txt /opt/common/requirements.txt
-#COPY common/setup.py /opt/common/setup.py
-#COPY common/common/__init__.py /opt/common/common/__init__.py
-#RUN python -m pip install -e /opt/common
-#
-#COPY backend/requirements.txt /opt/backend/requirements.txt
-#COPY backend/requirements-ldap.txt /opt/backend/requirements-ldap.txt
-#COPY backend/setup.py /opt/backend/setup.py
-#COPY backend/backend/__init__.py /opt/backend/backend/__init__.py
-#RUN python -m pip install -e /opt/backend[ldap]
-#
-#ENV DEBUG=1
-#CMD python -m backend
+FROM python:3.10.8-alpine3.15 AS dev
+WORKDIR /opt
 
-FROM docker-virtual.artifactory.arc-devops.sheba.gov.il/guydo/tmr-backend:dev AS dev
+RUN apk add build-base openldap-dev
+RUN echo -n "INPUT ( libldap.so )" > /usr/lib/libldap_r.so
 
-RUN python -m pip install faker --index-url=https://cicd:AKCp8pQbcJai5MX9uk4qH3V2JCQ6LQHbwWiXDvf4YjFPYYvQUry8NoPByRz7rcviekAkaDxTB@artifactory.arc-devops.sheba.gov.il/artifactory/api/pypi/pypi-virtual/simple --trusted-host=artifactory.arc-devops.sheba.gov.il
+COPY common/requirements.txt /opt/common/requirements.txt
+COPY common/setup.py /opt/common/setup.py
+COPY common/common/__init__.py /opt/common/common/__init__.py
+RUN python -m pip install -e /opt/common
+
+COPY backend/requirements.txt /opt/backend/requirements.txt
+COPY backend/requirements-ldap.txt /opt/backend/requirements-ldap.txt
+COPY backend/setup.py /opt/backend/setup.py
+COPY backend/backend/__init__.py /opt/backend/backend/__init__.py
+RUN python -m pip install -e /opt/backend[ldap]
+
+ENV DEBUG=1
+CMD python -m backend
 
 
 FROM guydo/tmr-backend:dev AS prod
