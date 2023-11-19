@@ -39,6 +39,8 @@ class MCIResult(Diffable):
 
 
 class MCI(Diffable):
+    gender: Optional[MCIStringValue] = None
+    age_group: Optional[MCIStringValue] = None
     occupation: Optional[MCIStringValue] = None
     transport: Optional[MCIStringValue] = None
     diagnosis: List[MCIListItemValue] = []
