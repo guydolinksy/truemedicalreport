@@ -1,19 +1,20 @@
-import { PlusOutlined, MinusOutlined } from '@ant-design/icons';
-import { Button, Card, Checkbox, Input, InputNumber, Menu, Radio, Slider, Table } from 'antd';
+import { Button, Card, Checkbox, InputNumber, Menu, Radio, Slider, Table } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import Moment from 'react-moment';
-import moment from 'moment';
 import 'moment';
 
 import { useArterySliderProps } from '../../hooks/arterySlider';
+import { getAt } from '../../utils';
+import { patientDataContext } from '../card/PatientBase';
 import { Drugs, Flip, Person, Procedures, Other, Vitals, Ambulance, Helicopter } from '../icons';
 import { MCIDivider } from './MCIDivider';
+import { MCIDosages } from './MCIDosages';
+import type { IDosagesProps } from './MCIDosages';
 import { MCIHeaderNew } from './MCIHeaderNew';
 import { MCIRadio } from './MCIRadio';
 import { MCISectionNew } from './MCISectionNew';
 import { MCITag } from './MCITag';
-import { patientDataContext } from '../card/PatientBase';
 
 const Identification: FC<{ title: string }> = ({ title }) => (
   <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -36,13 +37,6 @@ const toggleIcons = {
 
 type ToggleKey = 'gender' | 'age_group' | 'occupation' | 'transport';
 
-interface IMedications {
-  key: 'pre_hospital_fluids' | 'pre_hospital_medications';
-  title: string;
-  values: { key: string; value: string; subtitle?: string; step: number; unit: string }[];
-  other?: string;
-}
-
 interface IMCIProps {
   config: {
     john_doe_name: string;
@@ -61,8 +55,8 @@ interface IMCIProps {
       diagnosis: { key: 'pre_hospital_diagnosis'; title: string; values: { key: string; name: string }[] };
       procedures: { title: string; values: { key: string; value: string }[] };
       arteries: { title: string; values: { key: string; value: string }[] };
-      blood_and_fluids: IMedications;
-      medications: IMedications;
+      blood_and_fluids: IDosagesProps;
+      medications: IDosagesProps;
       vitals: {
         key: 'pre_hospital_vitals';
         title: string;
@@ -80,92 +74,6 @@ interface IMCIProps {
   };
 }
 
-const DosageInput: FC<{ value?: number; dosage?: number; onChange: (value: number) => void }> = ({
-  value,
-  dosage = 1,
-  onChange,
-  children,
-}) => {
-  const onClick = useCallback(
-    (plus: boolean) => {
-      const diff = plus ? dosage : -dosage;
-      const newValue = (value ?? 0) + diff;
-      return onChange(newValue > 0 ? newValue : 0);
-    },
-    [dosage, onChange, value],
-  );
-  return (
-    <div
-      style={{
-        display: 'flex',
-        width: '70%',
-        justifyContent: 'space-between',
-        margin: '6px',
-        alignItems: 'center',
-      }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>{children}</div>
-      <InputNumber
-        addonAfter={<MinusOutlined onClick={() => onClick(false)} />}
-        addonBefore={<PlusOutlined onClick={() => onClick(true)} />}
-        controls={false}
-        value={value ?? 0}
-        onChange={(v) => onChange(v ?? 0)}
-        style={{ width: '120px' }}
-      />
-    </div>
-  );
-};
-
-const DosagesSection: FC<IMedications & { fieldKey: IMedications['key'] }> = ({ fieldKey, title, values, other }) => {
-  const { value: { mci } = { mci: undefined }, update } = useContext(patientDataContext.context);
-  // TODO - get additional medications from mci value, and add them to the list
-  // const medications = useMemo(() => [...values, ...[value?.mci.pre_hospital_diagnosis]], [value, values]);
-  const onChange = useCallback(
-    (innerKey: string, v: number) => {
-      return update(
-        ['mci', fieldKey, innerKey],
-        { key: innerKey, value: `${v}`, at: moment().toISOString().replace('Z', '+00:00') },
-        'MCIListItemValue',
-      );
-    },
-    [fieldKey, update],
-  );
-
-  return (
-    <MCISectionNew title={title}>
-      <div
-        style={{
-          width: '100%',
-          display: 'inline-flex',
-          alignItems: 'start',
-          marginTop: '10px',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-        }}
-      >
-        {values.map(({ key: innerKey, value, subtitle }) => (
-          <DosageInput
-            key={innerKey}
-            value={parseInt(mci?.[fieldKey][innerKey]?.value ?? '0')}
-            onChange={(v) => onChange(innerKey, v)}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-              <span>{value}</span>
-              {subtitle && <span>{subtitle}</span>}
-            </div>
-          </DosageInput>
-        ))}
-        {other && (
-          <DosageInput value={0} onChange={() => {}}>
-            <Input placeholder={'אחר'} />
-          </DosageInput>
-        )}
-      </div>
-    </MCISectionNew>
-  );
-};
-
 // TODO - when removing khosem orakim - choose from existing ones
 // TODO - other in main tab - blood products, looks like drugs modal, without suggested column
 // TODO - procedures -> treatments, allow notes like in injuries modal
@@ -177,8 +85,7 @@ const DosagesSection: FC<IMedications & { fieldKey: IMedications['key'] }> = ({ 
 export const MCI: FC<IMCIProps> = ({ config }) => {
   const { value: { mci } = { mci: undefined }, update } = useContext(patientDataContext.context);
   const stringUpdate = useCallback(
-    (key: string, value: string) =>
-      update(['mci', key], { value, at: moment().toISOString().replace('Z', '+00:00') }, 'MCIStringValue'),
+    (key: string, value: string) => update(['mci', key], { value, at: getAt() }, 'MCIStringValue'),
     [update],
   );
   const { max, marks, formatter } = useArterySliderProps();
@@ -191,11 +98,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
   const onTagChange = useCallback(
     ({ key, innerKey, name }: { checked: boolean; key: string; innerKey: string; name: string }) =>
       // TODO - this doesn't actually work with lists...
-      update(
-        ['mci', key, innerKey],
-        { value: name, key: innerKey, at: moment().toISOString().replace('Z', '+00:00') },
-        'MCIListItemValue',
-      ),
+      update(['mci', key, innerKey], { value: name, key: innerKey, at: getAt() }, 'MCIListItemValue'),
     [update],
   );
   if (filled) {
@@ -487,14 +390,11 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
               />
             </div>
           </MCISectionNew>
-          <DosagesSection
-            {...config.field_intake.blood_and_fluids}
-            fieldKey={config.field_intake.blood_and_fluids.key}
-          />
+          <MCIDosages {...config.field_intake.blood_and_fluids} fieldKey={config.field_intake.blood_and_fluids.key} />
         </div>
         <MCIDivider.Full />
         <div style={{ flex: 1, height: '100%', flexDirection: 'column', padding: '10px' }}>
-          <DosagesSection {...config.field_intake.medications} fieldKey={config.field_intake.medications.key} />
+          <MCIDosages {...config.field_intake.medications} fieldKey={config.field_intake.medications.key} />
           <MCISectionNew title={config.field_intake.vitals.title}>
             {config.field_intake.vitals.values.map(
               ({ key, name, min = 0, max: vitalMax = 250, min_label, max_label, step }) => (
@@ -515,7 +415,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
                     onAfterChange={(value) =>
                       update(
                         ['mci', config.field_intake.vitals.key, key],
-                        { key, value: `${value}`, at: moment().toISOString().replace('Z', '+00:00') },
+                        { key, value: `${value}`, at: getAt() },
                         'MCIListItemValue',
                       )
                     }
