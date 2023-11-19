@@ -1,16 +1,18 @@
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import { Button, Card, Checkbox, Divider as AntdDivider, Input, InputNumber, Menu, Radio, Slider, Table } from 'antd';
 import type { FC } from 'react';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import Moment from 'react-moment';
 import 'moment';
 import moment from 'moment';
 
+import { useArterySliderProps } from '../../hooks/arterySlider';
 import { Drugs, Flip, Person, Procedures, Other, Vitals, Ambulance, Helicopter } from '../icons';
 import { MCIHeaderNew } from './MCIHeaderNew';
 import { MCIRadio } from './MCIRadio';
 import { MCISectionNew } from './MCISectionNew';
 import { MCITag } from './MCITag';
+import { patientDataContext } from '../card/PatientBase';
 
 const Divider: FC<{ full?: boolean }> = ({ full }) => (
   <AntdDivider
@@ -57,8 +59,8 @@ interface IMCIProps {
       identification: { key: string; value: string }[];
       toggles: {
         key: string;
-        value: string;
-        values: { key: string; value?: string; icon?: keyof typeof toggleIcons }[];
+        name: string;
+        values: { key: string; name?: string; icon?: keyof typeof toggleIcons }[];
         default_value: string;
       }[];
       injury_mechanisms: { title: string; values: { key: string; value: string }[] };
@@ -93,38 +95,13 @@ interface IMCIProps {
 // TODO - fields drugs should have time selector
 
 export const MCI: FC<IMCIProps> = ({ config }) => {
-  const { max, marks, formatter } = useMemo(() => {
-    const now = moment();
-    const start = moment(now).add(-4, 'h');
-
-    const max = moment(now).diff(start, 'm');
-    const offset = moment(now).diff(moment(now).startOf('h'), 'm');
-    const marks = {
-      0: now.format('HH:mm'),
-      ...(offset > 30
-        ? {
-            [max - 240 + offset]: moment(start)
-              .add(240 - offset, 'm')
-              .format('HH:mm'),
-          }
-        : {}),
-      [max - 180 + offset]: moment(start)
-        .add(180 - offset, 'm')
-        .format('HH:mm'),
-      [max - 120 + offset]: moment(start)
-        .add(120 - offset, 'm')
-        .format('HH:mm'),
-      [max - 60 + offset]: moment(start)
-        .add(60 - offset, 'm')
-        .format('HH:mm'),
-    };
-    const formatter = (value?: number) =>
-      moment(now)
-        .add(-(value ?? 0), 'm')
-        .format('HH:mm');
-
-    return { max, marks, formatter };
-  }, []);
+  const { value, update } = useContext(patientDataContext.context);
+  const stringUpdate = useCallback(
+    (key: string, value: string) =>
+      update(['mci', key], { value, at: moment().toISOString().replace('Z', '+00:00') }, 'MCIStringValue'),
+    [update],
+  );
+  const { max, marks, formatter } = useArterySliderProps();
   const [filled, setFilled] = useState(false);
   const [tags, setTags] = useState<Record<string, boolean>>({});
   const onTagChange = useCallback(
@@ -334,16 +311,17 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
               flexDirection: 'column',
             }}
           >
-            {config.field_intake.toggles.map(({ key, value, default_value, values }) => (
+            {config.field_intake.toggles.map(({ key, name, default_value, values }) => (
               <div key={key} style={{ display: 'flex', margin: '15px', alignItems: 'center' }}>
-                <div style={{ display: 'flex', width: '50px', alignItems: 'start' }}>{value}:</div>
-                <Radio.Group defaultValue={default_value}>
-                  {values.map(({ key: innerKey, value: innerValue, icon }) => (
+                <div style={{ display: 'flex', width: '50px', alignItems: 'start' }}>{name}:</div>
+                <Radio.Group defaultValue={value?.mci[key as keyof (typeof value)['mci']]?.value ?? default_value}>
+                  {values.map(({ key: innerKey, name: innerName, icon }) => (
                     <MCIRadio
                       key={innerKey}
                       value={innerKey}
-                      name={icon ? toggleIcons[icon] : innerValue}
+                      name={icon ? toggleIcons[icon] : innerName}
                       style={{ minWidth: '75px', alignItems: 'center' }}
+                      onClick={() => stringUpdate(key, innerKey)}
                     />
                   ))}
                 </Radio.Group>

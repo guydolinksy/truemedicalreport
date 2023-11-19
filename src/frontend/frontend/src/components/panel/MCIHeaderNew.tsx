@@ -10,7 +10,6 @@ export const MCIHeaderNew: FC<{ onClick: () => void; header?: string; buttonText
   buttonText,
 }) => {
   const { value } = useContext(patientDataContext.context);
-  console.log(value);
   const header = `${value?.info?.name}, ת.ז. ${value?.info?.id_}`;
   return (
     <div
