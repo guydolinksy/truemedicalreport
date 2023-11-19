@@ -389,7 +389,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
             </div>
             <div style={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
               <Slider
-                style={{ width: '90%', marginTop: '60px' }}
+                style={{ width: '90%', marginTop: '30px' }}
                 included={false}
                 max={max}
                 marks={marks}
