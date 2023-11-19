@@ -9,7 +9,13 @@ import moment from 'moment';
 import { Drugs, Flip, Person, Procedures, Other, Vitals, Ambulance, Helicopter } from '../icons';
 import { MCITag } from './MCITag';
 
-const Divider: FC<{ full?: boolean }> = ({ full }) => <AntdDivider type="vertical" orientation={'center'} style={{ backgroundColor: '#A4AFB7', height: full ? '75%' : undefined }} />;
+const Divider: FC<{ full?: boolean }> = ({ full }) => (
+  <AntdDivider
+    type="vertical"
+    orientation={'center'}
+    style={{ backgroundColor: '#A4AFB7', height: full ? '75%' : undefined }}
+  />
+);
 
 const FullDivider: FC = () => (
   <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
@@ -32,9 +38,9 @@ const columns = [
 ];
 
 const toggleIcons = {
-    ambulance: <Ambulance />,
-    helicopter: <Helicopter />,
-}
+  ambulance: <Ambulance />,
+  helicopter: <Helicopter />,
+};
 
 interface IMCIProps {
   config: {
@@ -45,15 +51,35 @@ interface IMCIProps {
     table: { empty_text: string };
     vitals: { empty_text: string; values: { key: string; value: string; title: string; empty_text: string }[] };
     field_intake: {
-        identification: { key: string; value: string }[];
-        toggles: { key: string; value: string; values: { key: string; value?: string; icon?: string }[]; default_value: string }[];
-        injury_mechanisms: { title: string; values: { key: string; value: string }[] };
-        additional_information: { title: string; values: { key: string; value: string }[] };
-        procedures: { title: string; values: { key: string; value: string }[] };
-        arteries: { title: string; values: { key: string; value: string }[] };
-        blood_and_fluids: { title: string; values: { key: string; value: string }[] };
-        medications: { title: string; values: { key: string; value: string; subtitle: string; step: number; unit: string }[]; other: string };
-        vitals: { title: string; values: { min?: number; max: number; key: string; value: string; min_label?: string; max_label?: string; step?: number }[] };
+      identification: { key: string; value: string }[];
+      toggles: {
+        key: string;
+        value: string;
+        values: { key: string; value?: string; icon?: string }[];
+        default_value: string;
+      }[];
+      injury_mechanisms: { title: string; values: { key: string; value: string }[] };
+      additional_information: { title: string; values: { key: string; value: string }[] };
+      procedures: { title: string; values: { key: string; value: string }[] };
+      arteries: { title: string; values: { key: string; value: string }[] };
+      blood_and_fluids: { title: string; values: { key: string; value: string }[] };
+      medications: {
+        title: string;
+        values: { key: string; value: string; subtitle: string; step: number; unit: string }[];
+        other: string;
+      };
+      vitals: {
+        title: string;
+        values: {
+          min?: number;
+          max: number;
+          key: string;
+          value: string;
+          min_label?: string;
+          max_label?: string;
+          step?: number;
+        }[];
+      };
     };
   };
 }
@@ -65,22 +91,34 @@ interface IMCIProps {
 
 export const MCI: FC<IMCIProps> = ({ config }) => {
   const { max, marks, formatter } = useMemo(() => {
-      const now = moment();
-      const start = moment(now).add(-4, 'h');
+    const now = moment();
+    const start = moment(now).add(-4, 'h');
 
-      const max = moment(now).diff(start, 'm');
-      const offset = moment(now).diff(moment(now).startOf('h'), 'm');
-      const marks = {
-          0: now.format('HH:mm'),
-          ...(offset > 30 ? {[max - 240 + offset]: moment(start).add(240 - offset, 'm').format('HH:mm')} : {}),
-          [max - 180 + offset]: moment(start).add(180 - offset, 'm').format('HH:mm'),
-          [max - 120 + offset]: moment(start).add(120 - offset, 'm').format('HH:mm'),
-          [max - 60 + offset]: moment(start).add(60 - offset, 'm').format('HH:mm'),
-          // [max]: start.format('HH:mm'),
-      };
-      const formatter = (value: number) => moment(now).add(-value, 'm').format('HH:mm')
+    const max = moment(now).diff(start, 'm');
+    const offset = moment(now).diff(moment(now).startOf('h'), 'm');
+    const marks = {
+      0: now.format('HH:mm'),
+      ...(offset > 30
+        ? {
+            [max - 240 + offset]: moment(start)
+              .add(240 - offset, 'm')
+              .format('HH:mm'),
+          }
+        : {}),
+      [max - 180 + offset]: moment(start)
+        .add(180 - offset, 'm')
+        .format('HH:mm'),
+      [max - 120 + offset]: moment(start)
+        .add(120 - offset, 'm')
+        .format('HH:mm'),
+      [max - 60 + offset]: moment(start)
+        .add(60 - offset, 'm')
+        .format('HH:mm'),
+      // [max]: start.format('HH:mm'),
+    };
+    const formatter = (value: number) => moment(now).add(-value, 'm').format('HH:mm');
 
-      return { max, marks, formatter };
+    return { max, marks, formatter };
   }, []);
   const [filled, setFilled] = useState(false);
   const [tags, setTags] = useState<Record<string, boolean>>({});
@@ -213,7 +251,15 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
           </div>
         </div>
         <div style={{ display: 'flex', height: '100%', background: 'white', flexDirection: 'column' }}>
-          <div style={{ marginLeft: '10px', marginTop: '10px', display: 'flex', justifyContent: 'end', alignItems: 'center' }}>
+          <div
+            style={{
+              marginLeft: '10px',
+              marginTop: '10px',
+              display: 'flex',
+              justifyContent: 'end',
+              alignItems: 'center',
+            }}
+          >
             <span>
               <Moment format={'hh:mm'} style={{ marginRight: '5px' }} />
               <Moment format={'A'} />
@@ -248,7 +294,16 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
     );
   }
   return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex', margin: '-8vh', overflow: 'hidden', background: 'white' }}>
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        margin: '-8vh',
+        overflow: 'hidden',
+        background: 'white',
+      }}
+    >
       <div
         style={{
           flex: 1,
@@ -277,7 +332,13 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
           </div>
         </div>
         <div
-          style={{ width: '100%', display: 'flex', alignItems: 'flex-start', marginTop: '20px', flexDirection: 'column' }}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'flex-start',
+            marginTop: '20px',
+            flexDirection: 'column',
+          }}
         >
           {config.field_intake.toggles.map(({ key, value, default_value, values }) => (
             <div key={key} style={{ display: 'flex', margin: '15px', alignItems: 'center' }}>
@@ -294,7 +355,13 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
         </div>
         {/* TODO - merge with below, only leave smoke, abc, unconscious  */}
         <div
-          style={{ width: '100%', display: 'flex', alignItems: 'flex-start', marginTop: '20px', flexDirection: 'column' }}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'flex-start',
+            marginTop: '20px',
+            flexDirection: 'column',
+          }}
         >
           <div>{config.field_intake.injury_mechanisms.title}</div>
           <div
@@ -306,7 +373,13 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
           </div>
         </div>
         <div
-          style={{ width: '100%', display: 'flex', alignItems: 'flex-start', marginTop: '20px', flexDirection: 'column' }}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'flex-start',
+            marginTop: '20px',
+            flexDirection: 'column',
+          }}
         >
           <div>{config.field_intake.additional_information.title}</div>
           <div
@@ -330,11 +403,24 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
         }}
       >
         <div
-          style={{ width: '100%', display: 'flex', alignItems: 'flex-start', marginTop: '20px', flexDirection: 'column' }}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'flex-start',
+            marginTop: '20px',
+            flexDirection: 'column',
+          }}
         >
           <div>{config.field_intake.procedures.title}</div>
           <div
-            style={{ width: '100%', display: 'inline-flex', alignItems: 'center', marginTop: '10px', flexWrap: 'wrap', justifyContent: 'space-between' }}
+            style={{
+              width: '100%',
+              display: 'inline-flex',
+              alignItems: 'center',
+              marginTop: '10px',
+              flexWrap: 'wrap',
+              justifyContent: 'space-between',
+            }}
           >
             {config.field_intake.procedures.values.map(({ key, value }) => (
               <MCITag key={key} tag={value} checked={tags[key]} onChange={onTagChange(key)} />
@@ -342,32 +428,79 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
           </div>
         </div>
         <div
-          style={{ width: '100%', display: 'flex', alignItems: 'flex-start', marginTop: '20px', flexDirection: 'column' }}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'flex-start',
+            marginTop: '20px',
+            flexDirection: 'column',
+          }}
         >
           <div>{config.field_intake.arteries.title}</div>
           <div
-            style={{ width: '100%', display: 'inline-flex', alignItems: 'center', marginTop: '10px', flexWrap: 'wrap', justifyContent: 'space-between' }}
+            style={{
+              width: '100%',
+              display: 'inline-flex',
+              alignItems: 'center',
+              marginTop: '10px',
+              flexWrap: 'wrap',
+              justifyContent: 'space-between',
+            }}
           >
             {config.field_intake.arteries.values.map(({ key, value }) => (
               <Checkbox key={key}>{value}</Checkbox>
             ))}
           </div>
           <div style={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
-            <Slider style={{ width: '90%', marginTop: '60px' }} included={false} max={max} marks={marks} tooltip={{ formatter, open: true }} reverse />
+            <Slider
+              style={{ width: '90%', marginTop: '60px' }}
+              included={false}
+              max={max}
+              marks={marks}
+              tooltip={{ formatter, open: true }}
+              reverse
+            />
           </div>
         </div>
         <div
-          style={{ width: '100%', display: 'flex', alignItems: 'flex-start', marginTop: '20px', flexDirection: 'column' }}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'flex-start',
+            marginTop: '20px',
+            flexDirection: 'column',
+          }}
         >
           <div>{config.field_intake.blood_and_fluids.title}</div>
           <div
-            style={{ width: '100%', display: 'inline-flex', alignItems: 'start', marginTop: '10px', flexDirection: 'column', justifyContent: 'space-between' }}
+            style={{
+              width: '100%',
+              display: 'inline-flex',
+              alignItems: 'start',
+              marginTop: '10px',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+            }}
           >
             {config.field_intake.blood_and_fluids.values.map(({ key, value }) => (
-              <div key={key} style={{ display: 'flex', width: '70%', justifyContent: 'space-between', margin: '6px', alignItems: 'center' }}>
+              <div
+                key={key}
+                style={{
+                  display: 'flex',
+                  width: '70%',
+                  justifyContent: 'space-between',
+                  margin: '6px',
+                  alignItems: 'center',
+                }}
+              >
                 <Checkbox>{value}</Checkbox>
                 <div>
-                  <InputNumber addonBefore={<PlusOutlined />} addonAfter={<MinusOutlined />} defaultValue={0} style={{ width: '120px' }} />
+                  <InputNumber
+                    addonBefore={<PlusOutlined />}
+                    addonAfter={<MinusOutlined />}
+                    defaultValue={0}
+                    style={{ width: '120px' }}
+                  />
                 </div>
               </div>
             ))}
@@ -376,7 +509,15 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
       </div>
       <FullDivider />
       <div style={{ flex: 1, height: '100%', flexDirection: 'column' }}>
-        <div style={{ marginLeft: '10px', marginTop: '10px', display: 'flex', justifyContent: 'end', alignItems: 'center' }}>
+        <div
+          style={{
+            marginLeft: '10px',
+            marginTop: '10px',
+            display: 'flex',
+            justifyContent: 'end',
+            alignItems: 'center',
+          }}
+        >
           <span>
             <Moment format={'hh:mm'} style={{ marginRight: '5px' }} />
             <Moment format={'A'} />
@@ -386,14 +527,36 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
           </Button>
         </div>
         <div
-          style={{ width: '100%', display: 'flex', alignItems: 'flex-start', marginTop: '20px', flexDirection: 'column' }}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'flex-start',
+            marginTop: '20px',
+            flexDirection: 'column',
+          }}
         >
           <div>{config.field_intake.medications.title}</div>
           <div
-            style={{ width: '100%', display: 'inline-flex', alignItems: 'start', marginTop: '10px', flexDirection: 'column', justifyContent: 'space-between' }}
+            style={{
+              width: '100%',
+              display: 'inline-flex',
+              alignItems: 'start',
+              marginTop: '10px',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+            }}
           >
             {config.field_intake.medications.values.map(({ key, value, subtitle }) => (
-              <div key={key} style={{ display: 'flex', width: '70%', justifyContent: 'space-between', margin: '6px', alignItems: 'center' }}>
+              <div
+                key={key}
+                style={{
+                  display: 'flex',
+                  width: '70%',
+                  justifyContent: 'space-between',
+                  margin: '6px',
+                  alignItems: 'center',
+                }}
+              >
                 <Checkbox style={{ alignItems: 'center' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
                     <span>{value}</span>
@@ -401,34 +564,72 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
                   </div>
                 </Checkbox>
                 <div>
-                  <InputNumber addonBefore={<PlusOutlined />} addonAfter={<MinusOutlined />} defaultValue={0} style={{ width: '120px' }} />
+                  <InputNumber
+                    addonBefore={<PlusOutlined />}
+                    addonAfter={<MinusOutlined />}
+                    defaultValue={0}
+                    style={{ width: '120px' }}
+                  />
                 </div>
               </div>
             ))}
             {/* TODO - if other is used - add another below it, remove checkboxes here and in fluids */}
             {config.field_intake.medications.other && (
-              <div style={{ display: 'flex', width: '70%', justifyContent: 'space-between', margin: '6px', alignItems: 'center' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  width: '70%',
+                  justifyContent: 'space-between',
+                  margin: '6px',
+                  alignItems: 'center',
+                }}
+              >
                 <Checkbox style={{ alignItems: 'center' }}>
-                  <Input placeholder={'אחר'}/>
+                  <Input placeholder={'אחר'} />
                 </Checkbox>
                 <div>
-                  <InputNumber addonBefore={<PlusOutlined />} addonAfter={<MinusOutlined />} defaultValue={0} style={{ width: '120px' }} />
+                  <InputNumber
+                    addonBefore={<PlusOutlined />}
+                    addonAfter={<MinusOutlined />}
+                    defaultValue={0}
+                    style={{ width: '120px' }}
+                  />
                 </div>
               </div>
             )}
           </div>
         </div>
         <div
-          style={{ width: '100%', display: 'flex', alignItems: 'flex-start', marginTop: '20px', flexDirection: 'column' }}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'flex-start',
+            marginTop: '20px',
+            flexDirection: 'column',
+          }}
         >
           <div>{config.field_intake.vitals.title}</div>
-          {config.field_intake.vitals.values.map(({ key, value, min = 0, max: vitalMax = 250, min_label, max_label, step }) => (
-            <div key={key} style={{ display: 'flex', width: '100%', justifyContent: 'space-around' }}>
-              <div style={{ display: 'flex', width: '90px', justifyContent: 'start' }}>{value}</div>
-              <Slider style={{ width: '60%' }} included={false} min={min} max={vitalMax} marks={{[min]: min_label ?? '0', [vitalMax]: max_label ?? `${vitalMax}`}} step={step} tooltip={{ open: false }} defaultValue={(min + vitalMax) / 2} reverse />
-              <div style={{ display: 'flex', width: '90px', justifyContent: 'start', marginRight: '30px' }}>{value}</div>
-            </div>
-          ))}
+          {config.field_intake.vitals.values.map(
+            ({ key, value, min = 0, max: vitalMax = 250, min_label, max_label, step }) => (
+              <div key={key} style={{ display: 'flex', width: '100%', justifyContent: 'space-around' }}>
+                <div style={{ display: 'flex', width: '90px', justifyContent: 'start' }}>{value}</div>
+                <Slider
+                  style={{ width: '60%' }}
+                  included={false}
+                  min={min}
+                  max={vitalMax}
+                  marks={{ [min]: min_label ?? '0', [vitalMax]: max_label ?? `${vitalMax}` }}
+                  step={step}
+                  tooltip={{ open: false }}
+                  defaultValue={(min + vitalMax) / 2}
+                  reverse
+                />
+                <div style={{ display: 'flex', width: '90px', justifyContent: 'start', marginRight: '30px' }}>
+                  {value}
+                </div>
+              </div>
+            ),
+          )}
         </div>
       </div>
     </div>
