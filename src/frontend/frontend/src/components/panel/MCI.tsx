@@ -7,13 +7,16 @@ import 'moment';
 import moment from 'moment';
 
 import { Drugs, Flip, Person, Procedures, Other, Vitals, Ambulance, Helicopter } from '../icons';
+import { MCIHeaderNew } from './MCIHeaderNew';
+import { MCIRadio } from './MCIRadio';
+import { MCISectionNew } from './MCISectionNew';
 import { MCITag } from './MCITag';
 
 const Divider: FC<{ full?: boolean }> = ({ full }) => (
   <AntdDivider
     type="vertical"
     orientation={'center'}
-    style={{ backgroundColor: '#A4AFB7', height: full ? '75%' : undefined }}
+    style={{ backgroundColor: '#A4AFB7', height: full ? '100%' : undefined }}
   />
 );
 
@@ -55,7 +58,7 @@ interface IMCIProps {
       toggles: {
         key: string;
         value: string;
-        values: { key: string; value?: string; icon?: string }[];
+        values: { key: string; value?: string; icon?: keyof typeof toggleIcons }[];
         default_value: string;
       }[];
       injury_mechanisms: { title: string; values: { key: string; value: string }[] };
@@ -114,9 +117,11 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
       [max - 60 + offset]: moment(start)
         .add(60 - offset, 'm')
         .format('HH:mm'),
-      // [max]: start.format('HH:mm'),
     };
-    const formatter = (value: number) => moment(now).add(-value, 'm').format('HH:mm');
+    const formatter = (value?: number) =>
+      moment(now)
+        .add(-(value ?? 0), 'm')
+        .format('HH:mm');
 
     return { max, marks, formatter };
   }, []);
@@ -159,9 +164,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <Radio.Group defaultValue={config.age_groups.default_value} style={{ marginRight: '62px' }}>
                 {config.age_groups.values.map(({ key, value }) => (
-                  <Radio key={key} value={key}>
-                    {value}
-                  </Radio>
+                  <MCIRadio key={key} value={key} name={value} />
                 ))}
               </Radio.Group>
               <div
@@ -237,11 +240,9 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
               <Person />
               <div style={{ marginTop: '20px' }}>
                 <Radio.Group defaultValue={'injuries'}>
-                  <Radio value="injuries" style={{ marginLeft: '50px' }}>
-                    פציעות
-                  </Radio>
+                  <MCIRadio value={'injuries'} name={'פציעות'} style={{ marginLeft: '50px' }} />
                   {/* TODO - change to imaging, title of modal should be body part, full body should be a button next to figure */}
-                  <Radio value="burns">כוויות</Radio>
+                  <MCIRadio value={'imaging'} name={'הדמיות'} />
                 </Radio.Group>
               </div>
             </div>
@@ -302,334 +303,262 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
         margin: '-8vh',
         overflow: 'hidden',
         background: 'white',
+        flexDirection: 'column',
       }}
     >
-      <div
-        style={{
-          flex: 1,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          paddingRight: '30px',
-          paddingTop: '30px',
-        }}
-      >
-        <div style={{ width: '100%', display: 'inline-flex', marginBottom: '20px' }}>
-          <span
-            style={{
-              font: 'normal normal 600 28px/37px Segoe UI',
-              color: '#605F86',
-            }}
-          >
-            רישום מטופל.ת - טיפול בשטח
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'row' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '275px' }}>
-            {config.field_intake.identification.map(({ key, value }) => (
-              <Identification key={key} title={value} />
-            ))}
-          </div>
-        </div>
+      <MCIHeaderNew onClick={() => setFilled(true)} buttonText={'סיום טיפול בשטח'} />
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'row' }}>
         <div
           style={{
-            width: '100%',
+            flex: 1,
+            height: '100%',
             display: 'flex',
-            alignItems: 'flex-start',
-            marginTop: '20px',
             flexDirection: 'column',
+            paddingRight: '30px',
+            paddingTop: '30px',
           }}
         >
-          {config.field_intake.toggles.map(({ key, value, default_value, values }) => (
-            <div key={key} style={{ display: 'flex', margin: '15px', alignItems: 'center' }}>
-              <div style={{ display: 'flex', width: '50px', alignItems: 'start' }}>{value}:</div>
-              <Radio.Group defaultValue={default_value}>
-                {values.map(({ key: innerKey, value: innerValue, icon }) => (
-                  <Radio key={innerKey} value={innerKey} style={{ minWidth: '75px', alignItems: 'center' }}>
-                    {icon ? toggleIcons[icon] : innerValue}
-                  </Radio>
-                ))}
-              </Radio.Group>
+          <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '275px' }}>
+              {config.field_intake.identification.map(({ key, value }) => (
+                <Identification key={key} title={value} />
+              ))}
             </div>
-          ))}
-        </div>
-        {/* TODO - merge with below, only leave smoke, abc, unconscious  */}
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'flex-start',
-            marginTop: '20px',
-            flexDirection: 'column',
-          }}
-        >
-          <div>{config.field_intake.injury_mechanisms.title}</div>
-          <div
-            style={{ width: '100%', display: 'inline-flex', alignItems: 'center', marginTop: '10px', flexWrap: 'wrap' }}
-          >
-            {config.field_intake.injury_mechanisms.values.map(({ key, value }) => (
-              <MCITag key={key} tag={value} checked={tags[key]} onChange={onTagChange(key)} />
-            ))}
           </div>
-        </div>
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'flex-start',
-            marginTop: '20px',
-            flexDirection: 'column',
-          }}
-        >
-          <div>{config.field_intake.additional_information.title}</div>
-          <div
-            style={{ width: '100%', display: 'inline-flex', alignItems: 'center', marginTop: '10px', flexWrap: 'wrap' }}
-          >
-            {config.field_intake.additional_information.values.map(({ key, value }) => (
-              <MCITag key={key} tag={value} checked={tags[key]} onChange={onTagChange(key)} />
-            ))}
-          </div>
-        </div>
-      </div>
-      <FullDivider />
-      <div
-        style={{
-          flex: 1,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          marginTop: '75px',
-          padding: '15px',
-        }}
-      >
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'flex-start',
-            marginTop: '20px',
-            flexDirection: 'column',
-          }}
-        >
-          <div>{config.field_intake.procedures.title}</div>
           <div
             style={{
               width: '100%',
-              display: 'inline-flex',
-              alignItems: 'center',
-              marginTop: '10px',
-              flexWrap: 'wrap',
-              justifyContent: 'space-between',
-            }}
-          >
-            {config.field_intake.procedures.values.map(({ key, value }) => (
-              <MCITag key={key} tag={value} checked={tags[key]} onChange={onTagChange(key)} />
-            ))}
-          </div>
-        </div>
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'flex-start',
-            marginTop: '20px',
-            flexDirection: 'column',
-          }}
-        >
-          <div>{config.field_intake.arteries.title}</div>
-          <div
-            style={{
-              width: '100%',
-              display: 'inline-flex',
-              alignItems: 'center',
-              marginTop: '10px',
-              flexWrap: 'wrap',
-              justifyContent: 'space-between',
-            }}
-          >
-            {config.field_intake.arteries.values.map(({ key, value }) => (
-              <Checkbox key={key}>{value}</Checkbox>
-            ))}
-          </div>
-          <div style={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
-            <Slider
-              style={{ width: '90%', marginTop: '60px' }}
-              included={false}
-              max={max}
-              marks={marks}
-              tooltip={{ formatter, open: true }}
-              reverse
-            />
-          </div>
-        </div>
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'flex-start',
-            marginTop: '20px',
-            flexDirection: 'column',
-          }}
-        >
-          <div>{config.field_intake.blood_and_fluids.title}</div>
-          <div
-            style={{
-              width: '100%',
-              display: 'inline-flex',
-              alignItems: 'start',
-              marginTop: '10px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              marginTop: '20px',
               flexDirection: 'column',
-              justifyContent: 'space-between',
             }}
           >
-            {config.field_intake.blood_and_fluids.values.map(({ key, value }) => (
-              <div
-                key={key}
-                style={{
-                  display: 'flex',
-                  width: '70%',
-                  justifyContent: 'space-between',
-                  margin: '6px',
-                  alignItems: 'center',
-                }}
-              >
-                <Checkbox>{value}</Checkbox>
-                <div>
-                  <InputNumber
-                    addonBefore={<PlusOutlined />}
-                    addonAfter={<MinusOutlined />}
-                    defaultValue={0}
-                    style={{ width: '120px' }}
-                  />
-                </div>
+            {config.field_intake.toggles.map(({ key, value, default_value, values }) => (
+              <div key={key} style={{ display: 'flex', margin: '15px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', width: '50px', alignItems: 'start' }}>{value}:</div>
+                <Radio.Group defaultValue={default_value}>
+                  {values.map(({ key: innerKey, value: innerValue, icon }) => (
+                    <MCIRadio
+                      key={innerKey}
+                      value={innerKey}
+                      name={icon ? toggleIcons[icon] : innerValue}
+                      style={{ minWidth: '75px', alignItems: 'center' }}
+                    />
+                  ))}
+                </Radio.Group>
               </div>
             ))}
           </div>
+          {/* TODO - merge with below, only leave smoke, abc, unconscious  */}
+          <MCISectionNew title={config.field_intake.injury_mechanisms.title}>
+            <div
+              style={{
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                marginTop: '10px',
+                flexWrap: 'wrap',
+              }}
+            >
+              {config.field_intake.injury_mechanisms.values.map(({ key, value }) => (
+                <MCITag key={key} tag={value} checked={tags[key]} onChange={onTagChange(key)} />
+              ))}
+            </div>
+          </MCISectionNew>
+          <MCISectionNew title={config.field_intake.additional_information.title}>
+            <div
+              style={{
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                marginTop: '10px',
+                flexWrap: 'wrap',
+              }}
+            >
+              {config.field_intake.additional_information.values.map(({ key, value }) => (
+                <MCITag key={key} tag={value} checked={tags[key]} onChange={onTagChange(key)} />
+              ))}
+            </div>
+          </MCISectionNew>
         </div>
-      </div>
-      <FullDivider />
-      <div style={{ flex: 1, height: '100%', flexDirection: 'column' }}>
+        <FullDivider />
         <div
           style={{
-            marginLeft: '10px',
-            marginTop: '10px',
+            flex: 1,
+            height: '100%',
             display: 'flex',
-            justifyContent: 'end',
-            alignItems: 'center',
-          }}
-        >
-          <span>
-            <Moment format={'hh:mm'} style={{ marginRight: '5px' }} />
-            <Moment format={'A'} />
-          </span>
-          <Button type={'primary'} style={{ marginRight: '10px' }} onClick={() => setFilled(true)}>
-            המשך טיפול
-          </Button>
-        </div>
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'flex-start',
-            marginTop: '20px',
             flexDirection: 'column',
+            padding: '15px',
           }}
         >
-          <div>{config.field_intake.medications.title}</div>
-          <div
-            style={{
-              width: '100%',
-              display: 'inline-flex',
-              alignItems: 'start',
-              marginTop: '10px',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-            }}
-          >
-            {config.field_intake.medications.values.map(({ key, value, subtitle }) => (
-              <div
-                key={key}
-                style={{
-                  display: 'flex',
-                  width: '70%',
-                  justifyContent: 'space-between',
-                  margin: '6px',
-                  alignItems: 'center',
-                }}
-              >
-                <Checkbox style={{ alignItems: 'center' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-                    <span>{value}</span>
-                    <span>{subtitle}</span>
+          <MCISectionNew title={config.field_intake.procedures.title}>
+            <div
+              style={{
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                marginTop: '10px',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+              }}
+            >
+              {config.field_intake.procedures.values.map(({ key, value }) => (
+                <MCITag key={key} tag={value} checked={tags[key]} onChange={onTagChange(key)} block />
+              ))}
+            </div>
+          </MCISectionNew>
+          <MCISectionNew title={config.field_intake.arteries.title}>
+            <div
+              style={{
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                marginTop: '10px',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+              }}
+            >
+              {config.field_intake.arteries.values.map(({ key, value }) => (
+                <Checkbox key={key}>{value}</Checkbox>
+              ))}
+            </div>
+            <div style={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
+              <Slider
+                style={{ width: '90%', marginTop: '60px' }}
+                included={false}
+                max={max}
+                marks={marks}
+                tooltip={{ formatter, open: true }}
+                reverse
+              />
+            </div>
+          </MCISectionNew>
+          <MCISectionNew title={config.field_intake.blood_and_fluids.title}>
+            <div
+              style={{
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'start',
+                marginTop: '10px',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}
+            >
+              {config.field_intake.blood_and_fluids.values.map(({ key, value }) => (
+                <div
+                  key={key}
+                  style={{
+                    display: 'flex',
+                    width: '70%',
+                    justifyContent: 'space-between',
+                    margin: '6px',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Checkbox>{value}</Checkbox>
+                  <div>
+                    <InputNumber
+                      addonBefore={<PlusOutlined />}
+                      addonAfter={<MinusOutlined />}
+                      defaultValue={0}
+                      style={{ width: '120px' }}
+                    />
                   </div>
-                </Checkbox>
-                <div>
-                  <InputNumber
-                    addonBefore={<PlusOutlined />}
-                    addonAfter={<MinusOutlined />}
-                    defaultValue={0}
-                    style={{ width: '120px' }}
-                  />
                 </div>
-              </div>
-            ))}
-            {/* TODO - if other is used - add another below it, remove checkboxes here and in fluids */}
-            {config.field_intake.medications.other && (
-              <div
-                style={{
-                  display: 'flex',
-                  width: '70%',
-                  justifyContent: 'space-between',
-                  margin: '6px',
-                  alignItems: 'center',
-                }}
-              >
-                <Checkbox style={{ alignItems: 'center' }}>
-                  <Input placeholder={'אחר'} />
-                </Checkbox>
-                <div>
-                  <InputNumber
-                    addonBefore={<PlusOutlined />}
-                    addonAfter={<MinusOutlined />}
-                    defaultValue={0}
-                    style={{ width: '120px' }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          </MCISectionNew>
         </div>
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'flex-start',
-            marginTop: '20px',
-            flexDirection: 'column',
-          }}
-        >
-          <div>{config.field_intake.vitals.title}</div>
-          {config.field_intake.vitals.values.map(
-            ({ key, value, min = 0, max: vitalMax = 250, min_label, max_label, step }) => (
-              <div key={key} style={{ display: 'flex', width: '100%', justifyContent: 'space-around' }}>
-                <div style={{ display: 'flex', width: '90px', justifyContent: 'start' }}>{value}</div>
-                <Slider
-                  style={{ width: '60%' }}
-                  included={false}
-                  min={min}
-                  max={vitalMax}
-                  marks={{ [min]: min_label ?? '0', [vitalMax]: max_label ?? `${vitalMax}` }}
-                  step={step}
-                  tooltip={{ open: false }}
-                  defaultValue={(min + vitalMax) / 2}
-                  reverse
-                />
-                <div style={{ display: 'flex', width: '90px', justifyContent: 'start', marginRight: '30px' }}>
-                  {value}
+        <FullDivider />
+        <div style={{ flex: 1, height: '100%', flexDirection: 'column' }}>
+          <MCISectionNew title={config.field_intake.medications.title}>
+            <div
+              style={{
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'start',
+                marginTop: '10px',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}
+            >
+              {config.field_intake.medications.values.map(({ key, value, subtitle }) => (
+                <div
+                  key={key}
+                  style={{
+                    display: 'flex',
+                    width: '70%',
+                    justifyContent: 'space-between',
+                    margin: '6px',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Checkbox style={{ alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+                      <span>{value}</span>
+                      <span>{subtitle}</span>
+                    </div>
+                  </Checkbox>
+                  <div>
+                    <InputNumber
+                      addonBefore={<PlusOutlined />}
+                      addonAfter={<MinusOutlined />}
+                      defaultValue={0}
+                      style={{ width: '120px' }}
+                    />
+                  </div>
                 </div>
-              </div>
-            ),
-          )}
+              ))}
+              {/* TODO - if other is used - add another below it, remove checkboxes here and in fluids */}
+              {config.field_intake.medications.other && (
+                <div
+                  style={{
+                    display: 'flex',
+                    width: '70%',
+                    justifyContent: 'space-between',
+                    margin: '6px',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Checkbox style={{ alignItems: 'center' }}>
+                    <Input placeholder={'אחר'} />
+                  </Checkbox>
+                  <div>
+                    <InputNumber
+                      addonBefore={<PlusOutlined />}
+                      addonAfter={<MinusOutlined />}
+                      defaultValue={0}
+                      style={{ width: '120px' }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </MCISectionNew>
+          <MCISectionNew title={config.field_intake.vitals.title}>
+            {config.field_intake.vitals.values.map(
+              ({ key, value, min = 0, max: vitalMax = 250, min_label, max_label, step }) => (
+                <div key={key} style={{ display: 'flex', width: '100%', justifyContent: 'space-around' }}>
+                  <div style={{ display: 'flex', width: '90px', justifyContent: 'start' }}>{value}</div>
+                  <Slider
+                    style={{ width: '60%' }}
+                    included={false}
+                    min={min}
+                    max={vitalMax}
+                    marks={{ [min]: min_label ?? '0', [vitalMax]: max_label ?? `${vitalMax}` }}
+                    step={step}
+                    tooltip={{ open: false }}
+                    defaultValue={(min + vitalMax) / 2}
+                    reverse
+                  />
+                  <div style={{ display: 'flex', width: '90px', justifyContent: 'start', marginRight: '30px' }}>
+                    {value}
+                  </div>
+                </div>
+              ),
+            )}
+          </MCISectionNew>
         </div>
       </div>
     </div>

@@ -1,13 +1,43 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import type { FC, ReactElement } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import type { AxiosError } from 'axios';
 import Axios from 'axios';
 import useWebSocket from 'react-use-websocket';
 import debounce from 'lodash/debounce';
 import { notification } from 'antd';
 
-export const createDataContext = () => {
-  const context = React.createContext(null);
+interface IProviderValue<T> {
+  value?: T;
+  update: (path: string[], newValue: any, type: string) => void;
+  loading: boolean;
+  flush: () => void;
+  lastMessage?: unknown;
+}
 
-  const Provider = ({ url, updateURL, socketURL, defaultValue = undefined, onError, ...props }) => {
+type ChildrenProps<T, U extends {} = {}> = U & Omit<IProviderValue<T>, 'loading'>;
+
+interface IProviderProps<T, U extends {} = {}> {
+  url: string;
+  updateURL?: string;
+  socketURL?: never;
+  defaultValue?: T;
+  onError?: (error: AxiosError) => void;
+  children: (props: ChildrenProps<T, U>) => ReactElement;
+}
+
+type ProviderProps<T, U extends {} = {}> = IProviderProps<T, U> & U;
+
+export const createDataContext = <T, U extends {} = {}>() => {
+  const context = createContext<IProviderValue<T>>(null as unknown as IProviderValue<T>);
+
+  const Provider: FC<ProviderProps<T, U>> = ({
+    url,
+    updateURL,
+    socketURL,
+    defaultValue = undefined,
+    onError,
+    ...props
+  }) => {
     const [{ loading, value }, setValue] = useState({ loading: true, value: defaultValue });
 
     // When the website is served over HTTPs, the browser blocks non-TLS websocket connections.
@@ -61,13 +91,15 @@ export const createDataContext = () => {
     }, [lastJsonMessage, url, flush]);
 
     const update = useCallback(
-      (path, newValue, type) => {
-        const deepReplace = (path, data, value) => {
+      (path: string[], newValue: any, type: string) => {
+        const deepReplace = (path: string[], data: any, value: any): any => {
           if (!path.length) {
             return value;
           }
           const key = path.pop();
-          return Object.assign({}, data, { [key]: deepReplace(path, data[key], value) });
+          return Object.assign({}, data, {
+            [key as string]: deepReplace(path, data[key as string], value),
+          });
         };
         setValue((prevState) => {
           const newData = deepReplace(path.slice().reverse(), prevState.value, newValue);
@@ -89,20 +121,14 @@ export const createDataContext = () => {
           flush: flush,
         }}
       >
-        {!loading &&
-          props.children({
-            value: value,
-            update: update,
-            flush: flush,
-            ...props,
-          })}
+        {!loading && props.children?.({ value: value, update: update, flush: flush, ...props } as ChildrenProps<T, U>)}
       </context.Provider>
     );
   };
 
   const withData =
-    (Component) =>
-    ({ ...props }) => {
+    (Component: FC<U & IProviderValue<T>>) =>
+    ({ ...props }: U) => {
       return (
         <context.Consumer>
           {({ value, update, loading, flush, lastMessage }) => (
