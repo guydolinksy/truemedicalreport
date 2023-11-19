@@ -419,114 +419,115 @@ DEFAULT_PANEL_FORMAT = dict(
     ]
 )
 NEW_MCI_VIEW = {
-    "components": [
-        {"key": "mci", "type": "MCI", "config": {
-            "john_doe_name": "אלמוני/ת",
-            "identification": [{"key": "id", "value": "ת.ז"}, {"key": "bracelet", "value": "מס' ידון"}],
-            "age_groups": {"values": [{"key": "adult", "value": "בוגר"}, {"key": "child", "value": "ילד"}, {"key": "infant", "value": "תינוק"}], "default_value": "adult"},
-            "tags": [{"key": "unconscious", "value": "חסר הכרה"}, {"key": "shell_shock", "value": "תגובת קרב"}, {"key": "smoke_inhalation", "value": "שאיפת עשן"}, {"key": "crushing", "value": "מעיכה"}, {"key": "blast", "value": "הדף"}, {"key": "gunshot", "value": "ירי"}, {"key": "kinematics", "value": "קינמטיקה"}],
-            "table": {"empty_text": "טרם נרשמו טיפולים"},
-            "vitals": {"empty_text": "טרם נלקחו מדדים", "values": [
-                {"key": "blood_pressure", "title": "B.P.", "value": "לחץ דם", "empty_text": "None"},
-                {"key": "pulse", "title": "Pulse", "value": "דופק", "empty_text": "None"},
-                {"key": "saturation", "title": "Saturation", "value": "סטורציה", "empty_text": "None"},
-                {"key": "temperature", "title": "Temperature", "value": "חום", "empty_text": "None"},
-                {"key": "burns", "title": "Burns", "value": "כוויות", "empty_text": "0%"},
-            ]},
-            "field_intake": {
-                "identification": [{"key": "iron", "value": "מס' ברזל:"}],
-                "toggles": [
-                    {"key": "gender", "value": "מין", "values": [
-                        {"key": "male", "value": "זכר"},
-                        {"key": "female", "value": "נקבה"},
-                    ], "default_value": "male"},
-                    {"key": "age", "value": "גיל", "values": [
-                        {"key": "adult", "value": "בוגר"},
-                        {"key": "child", "value": "ילד"},
-                        {"key": "infant", "value": "תינוק"},
-                    ], "default_value": "adult"},
-                    {"key": "soldier", "value": "חייל", "values": [
-                        {"key": "civilian", "value": "אזרח"},
-                        {"key": "soldier", "value": "חייל"},
-                    ], "default_value": "civilian"},
-                    {"key": "arrival", "value": "הגעה", "values": [
-                        {"key": "ambulance", "icon": "ambulance"},
-                        {"key": "helicopter", "icon": "helicopter"},
-                        {"key": "other", "value": "אחר"},
-                    ], "default_value": "ambulance"},
-                ],
-                "injury_mechanisms": {
-                    "title": "מנגנון פציעה",
-                    "values": [
-                        {"key": "gunshot", "value": "ירי"},
-                        {"key": "smoke_inhalation", "value": "שאיפת עשן"},
-                        {"key": "traffic_accident", "value": "תאונת דרכים"},
-                        {"key": "stabbing", "value": "דקירה"},
-                        {"key": "burns", "value": "כוויות"},
-                        {"key": "shrapnel", "value": "רסיסים"},
-                        {"key": "unconventional", "value": 'אב"כ'},
-                    ],
-                },
-                "additional_information": {
-                    "title": "מידע נוסף",
-                    "values": [
-                        {"key": "unconscious", "value": "חוסר הכרה"},
-                    ]
-                },
-                "procedures": {
-                    "title": "פרוצדורות בשטח",
-                    "values": [
-                        {"key": "intubation", "value": "אינטובציה"},
-                        {"key": "troker", "value": "טרוקר"},
-                        {"key": "coniotomia", "value": "קוניוטומיה"},
-                        {"key": "zonda", "value": "זונדה"},
-                        {"key": "tracheotomy", "value": "טרכוטומיה"},
-                        {"key": "poly", "value": "פולי"},
-                        {"key": "na", "value": "NA"},
-                        {"key": "big", "value": "B.I.G"},
-                    ]
-                },
-                "arteries": {
-                    "title": "חוסם עורקים",
-                    "values": [
-                        {"key": "right_hand", "value": "יד ימין"},
-                        {"key": "left_hand", "value": "יד שמאל"},
-                        {"key": "right_leg", "value": "רגל ימין"},
-                        {"key": "left_leg", "value": "רגל שמאל"},
-                    ]
-                },
-                "blood_and_fluids": {
-                    "title": "דם ונוזלים בשטח",
-                    "values": [
-                        {"key": "blood", "value": "דם"},
-                        {"key": "plasma", "value": "פלזמה"},
-                        {"key": "hartman", "value": "הרטמן"},
-                        {"key": "cells", "value": "Packed cells"},
-                    ]
-                },
-                "medications": {
-                    "title": "תרופות בשטח",
-                    "values": [
-                        {"key": "morphine", "value": "מורפיום (IV)", "subtitle": "Morphine"},
-                        {"key": "actic", "value": "אקטיק", "subtitle": "Actic"},
-                        {"key": "hexakapron", "value": "הקסקפרון", "subtitle": "Hexakapron"},
-                        {"key": "neloxone", "value": "נלוקסון", "subtitle": "Neloxone"},
-                    ],
-                    "other": "אחר"
-                },
-                "vitals": {
-                    "title": "מדדים בשטח",
-                    "values": [
-                        {"key": "systolic", "value": "SYS"},
-                        {"key": "diastolic", "value": "DIA"},
-                        {"key": "temperature", "value": "TEMP", "min": 35, "max": 42, "step": 0.1, "min_label": "35°>", "max_label": "42°"},
-                        {"key": "pulse", "value": "PULSE"},
-                        {"key": "saturation", "value": "SAT", "min": 60, "max": 100, "min_label": "60>"},
-                    ]
-                },
-            },
-        }},
-    ],
+   "components": [
+       {"key": "mci", "type": "MCI", "config": {
+           "john_doe_name": "אלמוני/ת",
+           "identification": [{"key": "id", "value": "ת.ז"}, {"key": "bracelet", "value": "מס' ידון"}],
+           "age_groups": {"values": [{"key": "adult", "value": "בוגר"}, {"key": "child", "value": "ילד"}, {"key": "infant", "value": "תינוק"}], "default_value": "adult"},
+           "tags": [
+               {"key": "unconscious", "value": "חסר הכרה"},
+               {"key": "shell_shock", "value": "תגובת קרב"},
+               {"key": "smoke_inhalation", "value": "שאיפת עשן"},
+               {"key": "crushing", "value": "מעיכה"},
+               {"key": "blast", "value": "הדף"},
+               {"key": "gunshot", "value": "ירי"},
+               {"key": "kinematics", "value": "קינמטיקה"}
+           ],
+           "table": {"empty_text": "טרם נרשמו טיפולים"},
+           "vitals": {"empty_text": "טרם נלקחו מדדים", "values": [
+               {"key": "blood_pressure", "title": "B.P.", "value": "לחץ דם", "empty_text": "None"},
+               {"key": "pulse", "title": "Pulse", "value": "דופק", "empty_text": "None"},
+               {"key": "saturation", "title": "Saturation", "value": "סטורציה", "empty_text": "None"},
+               {"key": "temperature", "title": "Temperature", "value": "חום", "empty_text": "None"},
+           ]},
+           "field_intake": {
+               "identification": [{"key": "iron", "value": "מס' ברזל:"}],
+               "toggles": [
+                   {"key": "gender", "name": "מין", "values": [
+                       {"key": "male", "name": "זכר"},
+                       {"key": "female", "name": "נקבה"},
+                   ], "default_value": "male"},
+                   {"key": "age_group", "name": "גיל", "values": [
+                       {"key": "adult", "name": "בוגר"},
+                       {"key": "child", "name": "ילד"},
+                       {"key": "infant", "name": "תינוק"},
+                   ], "default_value": "adult"},
+                   {"key": "occupation", "name": "חייל", "values": [
+                       {"key": "civilian", "name": "אזרח"},
+                       {"key": "soldier", "name": "חייל"},
+                   ], "default_value": "civilian"},
+                   {"key": "transport", "name": "הגעה", "values": [
+                       {"key": "ambulance", "icon": "ambulance"},
+                       {"key": "helicopter", "icon": "helicopter"},
+                       {"key": "other", "name": "אחר"},
+                   ], "default_value": "ambulance"},
+               ],
+               "diagnosis": {
+                   "key": "pre_hospital_diagnosis",
+                   "title": "מנגנון פציעה",
+                   "values": [
+                       {"key": "smoke_inhalation", "name": "שאיפת עשן"},
+                       {"key": "unconventional", "name": 'אב"כ'},
+                       {"key": "unconscious", "name": "חוסר הכרה"},
+                   ],
+               },
+               "procedures": {
+                   "title": "פרוצדורות בשטח",
+                   "values": [
+                       {"key": "intubation", "value": "אינטובציה"},
+                       {"key": "troker", "value": "טרוקר"},
+                       {"key": "coniotomia", "value": "קוניוטומיה"},
+                       {"key": "zonda", "value": "זונדה"},
+                       {"key": "tracheotomy", "value": "טרכוטומיה"},
+                       {"key": "poly", "value": "פולי"},
+                       {"key": "na", "value": "NA"},
+                       {"key": "big", "value": "B.I.G"},
+                   ]
+               },
+               "arteries": {
+                   "title": "חוסם עורקים",
+                   "values": [
+                       {"key": "right_hand", "value": "יד ימין"},
+                       {"key": "left_hand", "value": "יד שמאל"},
+                       {"key": "right_leg", "value": "רגל ימין"},
+                       {"key": "left_leg", "value": "רגל שמאל"},
+                   ]
+               },
+               "blood_and_fluids": {
+                   "key": "pre_hospital_fluids",
+                   "title": "דם ונוזלים בשטח",
+                   "values": [
+                       {"key": "blood", "value": "דם"},
+                       {"key": "plasma", "value": "פלזמה"},
+                       {"key": "hartman", "value": "הרטמן"},
+                       {"key": "cells", "value": "Packed cells"},
+                   ]
+               },
+               "medications": {
+                   "key": "pre_hospital_medications",
+                   "title": "תרופות בשטח",
+                   "values": [
+                       {"key": "morphine", "value": "מורפיום (IV)", "subtitle": "Morphine"},
+                       {"key": "actic", "value": "אקטיק", "subtitle": "Actic"},
+                       {"key": "hexakapron", "value": "הקסקפרון", "subtitle": "Hexakapron"},
+                       {"key": "neloxone", "value": "נלוקסון", "subtitle": "Neloxone"},
+                   ],
+                   "other": "אחר"
+               },
+               "vitals": {
+                   "title": "מדדים בשטח",
+                   "key": "pre_hospital_vitals",
+                   "values": [
+                       {"key": "systolic", "name": "SYS"},
+                       {"key": "diastolic", "name": "DIA"},
+                       {"key": "temperature", "name": "TEMP", "min": 35, "max": 42, "step": 0.1, "min_label": "35°>", "max_label": "42°"},
+                       {"key": "pulse", "name": "PULSE"},
+                       {"key": "saturation", "name": "SAT", "min": 60, "max": 100, "min_label": "60>"},
+                   ]
+               },
+           },
+       }},
+   ],
 }
 
 
