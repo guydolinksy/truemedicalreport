@@ -1,10 +1,10 @@
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import { Button, Card, Checkbox, Input, InputNumber, Menu, Radio, Slider, Table } from 'antd';
 import type { FC } from 'react';
-import React, { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 import Moment from 'react-moment';
-import 'moment';
 import moment from 'moment';
+import 'moment';
 
 import { useArterySliderProps } from '../../hooks/arterySlider';
 import { Drugs, Flip, Person, Procedures, Other, Vitals, Ambulance, Helicopter } from '../icons';
