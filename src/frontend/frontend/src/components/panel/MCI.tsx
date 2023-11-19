@@ -1,5 +1,5 @@
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons';
-import { Button, Card, Checkbox, Divider as AntdDivider, Input, InputNumber, Menu, Radio, Slider, Table } from 'antd';
+import { Button, Card, Checkbox, Input, InputNumber, Menu, Radio, Slider, Table } from 'antd';
 import type { FC } from 'react';
 import React, { useCallback, useContext, useState } from 'react';
 import Moment from 'react-moment';
@@ -8,25 +8,12 @@ import moment from 'moment';
 
 import { useArterySliderProps } from '../../hooks/arterySlider';
 import { Drugs, Flip, Person, Procedures, Other, Vitals, Ambulance, Helicopter } from '../icons';
+import { MCIDivider } from './MCIDivider';
 import { MCIHeaderNew } from './MCIHeaderNew';
 import { MCIRadio } from './MCIRadio';
 import { MCISectionNew } from './MCISectionNew';
 import { MCITag } from './MCITag';
 import { patientDataContext } from '../card/PatientBase';
-
-const Divider: FC<{ full?: boolean }> = ({ full }) => (
-  <AntdDivider
-    type="vertical"
-    orientation={'center'}
-    style={{ backgroundColor: '#A4AFB7', height: full ? '100%' : undefined }}
-  />
-);
-
-const FullDivider: FC = () => (
-  <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-    <Divider full />
-  </div>
-);
 
 const Identification: FC<{ title: string }> = ({ title }) => (
   <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -89,10 +76,13 @@ interface IMCIProps {
   };
 }
 
-// TODO - remove khosem orakim - choose from existing
+// TODO - when removing khosem orakim - choose from existing ones
 // TODO - other in main tab - blood products, looks like drugs modal, without suggested column
 // TODO - procedures -> treatments, allow notes like in injuries modal
 // TODO - fields drugs should have time selector
+// TODO - when clicking on body part, title of modal should be body part, full body (imaging) should be a button next to figure
+// TODO - in field meds, if other is used - add another below it, remove checkboxes here and in fluids
+// TODO - merge injury mechanisms and additional information, only leave smoke, abc, unconscious
 
 export const MCI: FC<IMCIProps> = ({ config }) => {
   const { value, update } = useContext(patientDataContext.context);
@@ -187,15 +177,15 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
               <Button type={'text'} icon={<Procedures />} style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '10px' }}>פרוצדורות</span>
               </Button>
-              <Divider />
+              <MCIDivider />
               <Button type={'text'} icon={<Drugs />} style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '10px' }}>תרופות</span>
               </Button>
-              <Divider />
+              <MCIDivider />
               <Button type={'text'} icon={<Vitals />} style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '10px' }}>מדדים</span>
               </Button>
-              <Divider />
+              <MCIDivider />
               <Button type={'text'} icon={<Other />} style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '10px' }}>אחר</span>
               </Button>
@@ -218,7 +208,6 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
               <div style={{ marginTop: '20px' }}>
                 <Radio.Group defaultValue={'injuries'}>
                   <MCIRadio value={'injuries'} name={'פציעות'} style={{ marginLeft: '50px' }} />
-                  {/* TODO - change to imaging, title of modal should be body part, full body should be a button next to figure */}
                   <MCIRadio value={'imaging'} name={'הדמיות'} />
                 </Radio.Group>
               </div>
@@ -242,9 +231,8 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
               <Moment format={'hh:mm'} style={{ marginRight: '5px' }} />
               <Moment format={'A'} />
             </span>
-            {/* TODO - העבר */}
             <Button type={'primary'} style={{ marginRight: '10px' }} onClick={() => setFilled(false)}>
-              המשך טיפול
+              העבר
             </Button>
           </div>
           <div
@@ -255,7 +243,6 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
               flexDirection: 'column',
             }}
           >
-            {/* TODO - remove burns */}
             {config.vitals.empty_text}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', direction: 'ltr' }}>
               {config.vitals.values.map(({ key, value, title, empty_text }) => (
@@ -328,7 +315,6 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
               </div>
             ))}
           </div>
-          {/* TODO - merge with below, only leave smoke, abc, unconscious  */}
           <MCISectionNew title={config.field_intake.injury_mechanisms.title}>
             <div
               style={{
@@ -360,7 +346,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
             </div>
           </MCISectionNew>
         </div>
-        <FullDivider />
+        <MCIDivider.Full />
         <div
           style={{
             flex: 1,
@@ -407,7 +393,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
                 included={false}
                 max={max}
                 marks={marks}
-                tooltip={{ formatter, open: true }}
+                tooltip={{ formatter }}
                 reverse
               />
             </div>
@@ -428,13 +414,13 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
                   key={key}
                   style={{
                     display: 'flex',
-                    width: '70%',
+                    width: '50%',
                     justifyContent: 'space-between',
                     margin: '6px',
                     alignItems: 'center',
                   }}
                 >
-                  <Checkbox>{value}</Checkbox>
+                  {value}
                   <div>
                     <InputNumber
                       addonBefore={<PlusOutlined />}
@@ -448,7 +434,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
             </div>
           </MCISectionNew>
         </div>
-        <FullDivider />
+        <MCIDivider.Full />
         <div style={{ flex: 1, height: '100%', flexDirection: 'column' }}>
           <MCISectionNew title={config.field_intake.medications.title}>
             <div
@@ -472,12 +458,10 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
                     alignItems: 'center',
                   }}
                 >
-                  <Checkbox style={{ alignItems: 'center' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-                      <span>{value}</span>
-                      <span>{subtitle}</span>
-                    </div>
-                  </Checkbox>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+                    <span>{value}</span>
+                    <span>{subtitle}</span>
+                  </div>
                   <div>
                     <InputNumber
                       addonBefore={<PlusOutlined />}
@@ -488,7 +472,6 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
                   </div>
                 </div>
               ))}
-              {/* TODO - if other is used - add another below it, remove checkboxes here and in fluids */}
               {config.field_intake.medications.other && (
                 <div
                   style={{
@@ -499,9 +482,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
                     alignItems: 'center',
                   }}
                 >
-                  <Checkbox style={{ alignItems: 'center' }}>
-                    <Input placeholder={'אחר'} />
-                  </Checkbox>
+                  <Input placeholder={'אחר'} />
                   <div>
                     <InputNumber
                       addonBefore={<PlusOutlined />}
