@@ -5,7 +5,8 @@
   "description": "Frontend",
   "overrides": {
     "react": "$react",
-    "react-dom": "$react-dom"
+    "react-dom": "$react-dom",
+    "typescript": "$typescript"
   },
   "dependencies": {
     "@ant-design/colors": "^6.0.0",
@@ -47,13 +48,15 @@
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired --openssl-legacy-provider build",
+    "lint": "eslint src",
     "serve": "serve -l tcp://0.0.0.0:80 -s build",
     "test": "react-app-rewired  test"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
-      "react-app/jest"
+      "react-app/jest",
+      "plugin:prettier/recommended"
     ]
   },
   "browserslist": {
@@ -69,7 +72,10 @@
     ]
   },
   "devDependencies": {
+    "eslint-config-prettier": "9.0.0",
+    "eslint-plugin-prettier": "5.0.1",
     "http-proxy-middleware": "^2.0.6",
+    "prettier": "3.0.3",
     "typescript": "^4.9.5"
   }
 }

@@ -1,3 +1,3 @@
-import {createDataContext} from "./DataContext";
+import { createDataContext } from './DataContext';
 
 export const viewsDataContext = createDataContext();
