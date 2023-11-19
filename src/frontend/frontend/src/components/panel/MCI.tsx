@@ -1,7 +1,7 @@
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import { Button, Card, Checkbox, Input, InputNumber, Menu, Radio, Slider, Table } from 'antd';
 import type { FC } from 'react';
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 import Moment from 'react-moment';
 import moment from 'moment';
 import 'moment';
@@ -34,39 +34,43 @@ const toggleIcons = {
   helicopter: <Helicopter />,
 };
 
+type ToggleKey = 'gender' | 'age_group' | 'occupation' | 'transport';
+
+interface IMedications {
+  key: 'pre_hospital_fluids' | 'pre_hospital_medications';
+  title: string;
+  values: { key: string; value: string; subtitle?: string; step: number; unit: string }[];
+  other?: string;
+}
+
 interface IMCIProps {
   config: {
     john_doe_name: string;
     identification: { key: string; value: string }[];
     age_groups: { values: { key: string; value: string }[]; default_value: string };
-    tags: { key: string; value: string }[];
     table: { empty_text: string };
     vitals: { empty_text: string; values: { key: string; value: string; title: string; empty_text: string }[] };
     field_intake: {
       identification: { key: string; value: string }[];
       toggles: {
-        key: string;
+        key: ToggleKey;
         name: string;
         values: { key: string; name?: string; icon?: keyof typeof toggleIcons }[];
         default_value: string;
       }[];
-      injury_mechanisms: { title: string; values: { key: string; value: string }[] };
-      additional_information: { title: string; values: { key: string; value: string }[] };
+      diagnosis: { key: 'pre_hospital_diagnosis'; title: string; values: { key: string; name: string }[] };
       procedures: { title: string; values: { key: string; value: string }[] };
       arteries: { title: string; values: { key: string; value: string }[] };
-      blood_and_fluids: { title: string; values: { key: string; value: string }[] };
-      medications: {
-        title: string;
-        values: { key: string; value: string; subtitle: string; step: number; unit: string }[];
-        other: string;
-      };
+      blood_and_fluids: IMedications;
+      medications: IMedications;
       vitals: {
+        key: 'pre_hospital_vitals';
         title: string;
         values: {
           min?: number;
           max: number;
           key: string;
-          value: string;
+          name: string;
           min_label?: string;
           max_label?: string;
           step?: number;
@@ -75,6 +79,92 @@ interface IMCIProps {
     };
   };
 }
+
+const DosageInput: FC<{ value?: number; dosage?: number; onChange: (value: number) => void }> = ({
+  value,
+  dosage = 1,
+  onChange,
+  children,
+}) => {
+  const onClick = useCallback(
+    (plus: boolean) => {
+      const diff = plus ? dosage : -dosage;
+      const newValue = (value ?? 0) + diff;
+      return onChange(newValue > 0 ? newValue : 0);
+    },
+    [dosage, onChange, value],
+  );
+  return (
+    <div
+      style={{
+        display: 'flex',
+        width: '70%',
+        justifyContent: 'space-between',
+        margin: '6px',
+        alignItems: 'center',
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>{children}</div>
+      <InputNumber
+        addonAfter={<MinusOutlined onClick={() => onClick(false)} />}
+        addonBefore={<PlusOutlined onClick={() => onClick(true)} />}
+        controls={false}
+        value={value ?? 0}
+        onChange={(v) => onChange(v ?? 0)}
+        style={{ width: '120px' }}
+      />
+    </div>
+  );
+};
+
+const DosagesSection: FC<IMedications & { fieldKey: IMedications['key'] }> = ({ fieldKey, title, values, other }) => {
+  const { value: { mci } = { mci: undefined }, update } = useContext(patientDataContext.context);
+  // TODO - get additional medications from mci value, and add them to the list
+  // const medications = useMemo(() => [...values, ...[value?.mci.pre_hospital_diagnosis]], [value, values]);
+  const onChange = useCallback(
+    (innerKey: string, v: number) => {
+      return update(
+        ['mci', fieldKey, innerKey],
+        { key: innerKey, value: `${v}`, at: moment().toISOString().replace('Z', '+00:00') },
+        'MCIListItemValue',
+      );
+    },
+    [fieldKey, update],
+  );
+
+  return (
+    <MCISectionNew title={title}>
+      <div
+        style={{
+          width: '100%',
+          display: 'inline-flex',
+          alignItems: 'start',
+          marginTop: '10px',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+        }}
+      >
+        {values.map(({ key: innerKey, value, subtitle }) => (
+          <DosageInput
+            key={innerKey}
+            value={parseInt(mci?.[fieldKey][innerKey]?.value ?? '0')}
+            onChange={(v) => onChange(innerKey, v)}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+              <span>{value}</span>
+              {subtitle && <span>{subtitle}</span>}
+            </div>
+          </DosageInput>
+        ))}
+        {other && (
+          <DosageInput value={0} onChange={() => {}}>
+            <Input placeholder={'אחר'} />
+          </DosageInput>
+        )}
+      </div>
+    </MCISectionNew>
+  );
+};
 
 // TODO - when removing khosem orakim - choose from existing ones
 // TODO - other in main tab - blood products, looks like drugs modal, without suggested column
@@ -85,7 +175,7 @@ interface IMCIProps {
 // TODO - merge injury mechanisms and additional information, only leave smoke, abc, unconscious
 
 export const MCI: FC<IMCIProps> = ({ config }) => {
-  const { value, update } = useContext(patientDataContext.context);
+  const { value: { mci } = { mci: undefined }, update } = useContext(patientDataContext.context);
   const stringUpdate = useCallback(
     (key: string, value: string) =>
       update(['mci', key], { value, at: moment().toISOString().replace('Z', '+00:00') }, 'MCIStringValue'),
@@ -93,10 +183,20 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
   );
   const { max, marks, formatter } = useArterySliderProps();
   const [filled, setFilled] = useState(false);
-  const [tags, setTags] = useState<Record<string, boolean>>({});
+  const fieldDiagnosis = useMemo<Record<string, boolean>>(
+    () =>
+      Object.keys({ ...mci?.[config.field_intake.diagnosis.key] }).reduce((agg, val) => ({ ...agg, [val]: true }), {}),
+    [config.field_intake.diagnosis.key, mci],
+  );
   const onTagChange = useCallback(
-    (value: string) => (checked: boolean) => setTags((v) => ({ ...v, [value]: checked })),
-    [],
+    ({ key, innerKey, name }: { checked: boolean; key: string; innerKey: string; name: string }) =>
+      // TODO - this doesn't actually work with lists...
+      update(
+        ['mci', key, innerKey],
+        { value: name, key: innerKey, at: moment().toISOString().replace('Z', '+00:00') },
+        'MCIListItemValue',
+      ),
+    [update],
   );
   if (filled) {
     return (
@@ -150,9 +250,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
           <div
             style={{ width: '100%', display: 'inline-flex', alignItems: 'center', marginTop: '20px', flexWrap: 'wrap' }}
           >
-            {config.tags.map(({ key, value }) => (
-              <MCITag key={key} tag={value} checked={tags[key]} onChange={onTagChange(key)} />
-            ))}
+            TODO - remove
           </div>
           <div>
             <Menu
@@ -264,7 +362,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
         width: '100vw',
         height: '100vh',
         display: 'flex',
-        margin: '-8vh',
+        margin: '-13vh -8vh',
         overflow: 'hidden',
         background: 'white',
         flexDirection: 'column',
@@ -278,8 +376,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            paddingRight: '30px',
-            paddingTop: '30px',
+            padding: '10px',
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -301,7 +398,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
             {config.field_intake.toggles.map(({ key, name, default_value, values }) => (
               <div key={key} style={{ display: 'flex', margin: '15px', alignItems: 'center' }}>
                 <div style={{ display: 'flex', width: '50px', alignItems: 'start' }}>{name}:</div>
-                <Radio.Group defaultValue={value?.mci[key as keyof (typeof value)['mci']]?.value ?? default_value}>
+                <Radio.Group defaultValue={mci?.[key]?.value ?? default_value}>
                   {values.map(({ key: innerKey, name: innerName, icon }) => (
                     <MCIRadio
                       key={innerKey}
@@ -315,7 +412,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
               </div>
             ))}
           </div>
-          <MCISectionNew title={config.field_intake.injury_mechanisms.title}>
+          <MCISectionNew title={config.field_intake.diagnosis.title}>
             <div
               style={{
                 width: '100%',
@@ -325,23 +422,15 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
                 flexWrap: 'wrap',
               }}
             >
-              {config.field_intake.injury_mechanisms.values.map(({ key, value }) => (
-                <MCITag key={key} tag={value} checked={tags[key]} onChange={onTagChange(key)} />
-              ))}
-            </div>
-          </MCISectionNew>
-          <MCISectionNew title={config.field_intake.additional_information.title}>
-            <div
-              style={{
-                width: '100%',
-                display: 'inline-flex',
-                alignItems: 'center',
-                marginTop: '10px',
-                flexWrap: 'wrap',
-              }}
-            >
-              {config.field_intake.additional_information.values.map(({ key, value }) => (
-                <MCITag key={key} tag={value} checked={tags[key]} onChange={onTagChange(key)} />
+              {config.field_intake.diagnosis.values.map(({ key, name }) => (
+                <MCITag
+                  key={key}
+                  tag={name}
+                  checked={fieldDiagnosis[key]}
+                  onChange={(checked) =>
+                    onTagChange({ checked, key: config.field_intake.diagnosis.key, innerKey: key, name })
+                  }
+                />
               ))}
             </div>
           </MCISectionNew>
@@ -353,7 +442,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            padding: '15px',
+            padding: '10px',
           }}
         >
           <MCISectionNew title={config.field_intake.procedures.title}>
@@ -368,7 +457,7 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
               }}
             >
               {config.field_intake.procedures.values.map(({ key, value }) => (
-                <MCITag key={key} tag={value} checked={tags[key]} onChange={onTagChange(key)} block />
+                <MCITag key={key} tag={value} checked={false} block />
               ))}
             </div>
           </MCISectionNew>
@@ -398,108 +487,19 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
               />
             </div>
           </MCISectionNew>
-          <MCISectionNew title={config.field_intake.blood_and_fluids.title}>
-            <div
-              style={{
-                width: '100%',
-                display: 'inline-flex',
-                alignItems: 'start',
-                marginTop: '10px',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-              }}
-            >
-              {config.field_intake.blood_and_fluids.values.map(({ key, value }) => (
-                <div
-                  key={key}
-                  style={{
-                    display: 'flex',
-                    width: '50%',
-                    justifyContent: 'space-between',
-                    margin: '6px',
-                    alignItems: 'center',
-                  }}
-                >
-                  {value}
-                  <div>
-                    <InputNumber
-                      addonBefore={<PlusOutlined />}
-                      addonAfter={<MinusOutlined />}
-                      defaultValue={0}
-                      style={{ width: '120px' }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </MCISectionNew>
+          <DosagesSection
+            {...config.field_intake.blood_and_fluids}
+            fieldKey={config.field_intake.blood_and_fluids.key}
+          />
         </div>
         <MCIDivider.Full />
-        <div style={{ flex: 1, height: '100%', flexDirection: 'column' }}>
-          <MCISectionNew title={config.field_intake.medications.title}>
-            <div
-              style={{
-                width: '100%',
-                display: 'inline-flex',
-                alignItems: 'start',
-                marginTop: '10px',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-              }}
-            >
-              {config.field_intake.medications.values.map(({ key, value, subtitle }) => (
-                <div
-                  key={key}
-                  style={{
-                    display: 'flex',
-                    width: '70%',
-                    justifyContent: 'space-between',
-                    margin: '6px',
-                    alignItems: 'center',
-                  }}
-                >
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-                    <span>{value}</span>
-                    <span>{subtitle}</span>
-                  </div>
-                  <div>
-                    <InputNumber
-                      addonBefore={<PlusOutlined />}
-                      addonAfter={<MinusOutlined />}
-                      defaultValue={0}
-                      style={{ width: '120px' }}
-                    />
-                  </div>
-                </div>
-              ))}
-              {config.field_intake.medications.other && (
-                <div
-                  style={{
-                    display: 'flex',
-                    width: '70%',
-                    justifyContent: 'space-between',
-                    margin: '6px',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Input placeholder={'אחר'} />
-                  <div>
-                    <InputNumber
-                      addonBefore={<PlusOutlined />}
-                      addonAfter={<MinusOutlined />}
-                      defaultValue={0}
-                      style={{ width: '120px' }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </MCISectionNew>
+        <div style={{ flex: 1, height: '100%', flexDirection: 'column', padding: '10px' }}>
+          <DosagesSection {...config.field_intake.medications} fieldKey={config.field_intake.medications.key} />
           <MCISectionNew title={config.field_intake.vitals.title}>
             {config.field_intake.vitals.values.map(
-              ({ key, value, min = 0, max: vitalMax = 250, min_label, max_label, step }) => (
+              ({ key, name, min = 0, max: vitalMax = 250, min_label, max_label, step }) => (
                 <div key={key} style={{ display: 'flex', width: '100%', justifyContent: 'space-around' }}>
-                  <div style={{ display: 'flex', width: '90px', justifyContent: 'start' }}>{value}</div>
+                  <div style={{ display: 'flex', width: '90px', justifyContent: 'start' }}>{name}</div>
                   <Slider
                     style={{ width: '60%' }}
                     included={false}
@@ -507,12 +507,22 @@ export const MCI: FC<IMCIProps> = ({ config }) => {
                     max={vitalMax}
                     marks={{ [min]: min_label ?? '0', [vitalMax]: max_label ?? `${vitalMax}` }}
                     step={step}
-                    tooltip={{ open: false }}
-                    defaultValue={(min + vitalMax) / 2}
+                    defaultValue={
+                      mci?.[config.field_intake.vitals.key][key]?.value
+                        ? parseInt(mci[config.field_intake.vitals.key][key].value)
+                        : (min + vitalMax) / 2
+                    }
+                    onAfterChange={(value) =>
+                      update(
+                        ['mci', config.field_intake.vitals.key, key],
+                        { key, value: `${value}`, at: moment().toISOString().replace('Z', '+00:00') },
+                        'MCIListItemValue',
+                      )
+                    }
                     reverse
                   />
                   <div style={{ display: 'flex', width: '90px', justifyContent: 'start', marginRight: '30px' }}>
-                    {value}
+                    {mci?.[config.field_intake.vitals.key][key]?.value}
                   </div>
                 </div>
               ),
