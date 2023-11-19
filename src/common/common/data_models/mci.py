@@ -44,6 +44,10 @@ class MCI(Diffable):
     occupation: Optional[MCIStringValue] = None
     transport: Optional[MCIStringValue] = None
     diagnosis: List[MCIListItemValue] = []
+    # pre_hospital_diagnosis: Dict[str, MCIListItemValue] = {}  # TODO - this should be a list :(
+    # pre_hospital_fluids: Dict[str, MCIListItemValue] = {}  # TODO - this should be a list :(
+    # pre_hospital_medications: Dict[str, MCIListItemValue] = {}  # TODO - this should be a list :(
+    # pre_hospital_vitals: Dict[str, MCIListItemValue] = {}  # TODO - this should be a list :(
     pre_hospital_treatment: List[MCIListItemValue] = []
     hospital_treatment: List[MCIListItemValue] = []
     imaging: List[MCIListItemValue] = []
